@@ -15,6 +15,7 @@ no runtime network calls (product promise, see DESIGN.md §3–4).
 | Validating / runtime-testing a change | `.claude/docs/VERIFY.md` |
 | Design direction, visual signature, legal posture, changelog | `DESIGN.md` |
 | Feature roadmap detail (layouts, calendar, onboarding) | `docs/IMPROVEMENTS.md` |
+| First use, shell, Home, Calendar visibility, or motion | `docs/UX_SIMPLIFICATION.md` |
 | Visual targets | `design/previews/*.png` (newest file dates win) |
 
 Run one full improvement cycle with the `/iterate` command (`.claude/commands/iterate.md`).

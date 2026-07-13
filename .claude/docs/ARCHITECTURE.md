@@ -77,8 +77,9 @@ pre-paint inline script in newtab.html (prevents theme flash). Keep both in sync
 | Board layouts | `renderBoard`, `renderListView`, `renderCanvasView`, `renderExplorerView`, `renderTimelineView`, `renderGalleryView`, `renderGraphView` |
 | Group pages + item detail | `openGroupPage`, `renderItemDetail` (route `?item=<id>`) |
 | Calendar | `openCalendar`, `renderCalendar` |
-| Search + operators | `applySearchFilter`, operators `type: is: domain: site: url: in: tag: color:` with `-` negation |
-| Command palette | `openCommandPalette`, `cmds.push` |
+| Search + operators | `renderSearchSurface`, `collectWorkspaceItems`, `searchItemMatches`, `applySearchFilter`, operators `type: is: domain: site: url: in: tag: color:` with `-` negation |
+| Command palette | `openCommandPalette`, `buildPaletteCommands`, `_palSavedLinkCommand` |
+| Shared empty states | `buildSystemEmptyState`, `buildEmptySpaceState`, `SYSTEM_EMPTY_ICONS` |
 | App menu / About / Welcome | `openAppMenu`, `openAbout`, `openWelcome`, `wcShow` |
 | Tools hub (plugins) | `openToolsHub`, overlays `pomo/fin/habit/water/books/goals/workout/subs` |
 | All bindings | `function init()` at the bottom — global Escape handler + `_escBlockers` list |
@@ -86,8 +87,9 @@ pre-paint inline script in newtab.html (prevents theme flash). Keep both in sync
 ## Surfaces & navigation
 
 One page, many surfaces, switched by state flags + `#board` mode classes:
-`activeHome` (home-mode), `activeLibraryMode` (`all|favorites|read-later|archive|trash`),
-`activeGroupPage`, `activeCalendar`, else the active category board. The settings
+`activeHome` (home-mode), `activeSearch` (search-mode), `activeLibraryMode`
+(`all|favorites|read-later|archive|trash`), `activeGroupPage`, `activeCalendar`,
+else the active category board. The settings
 page (`#settings-drawer`) and tools overlays sit above as fixed overlays. Router
 syncs hash routes so surfaces survive reload/back.
 
@@ -99,6 +101,29 @@ category's Inbox and `collectReminders()`. Saved-link typeahead reads
 `collectWorkspaceTabs()` and the shared `parseSearchQuery()` operator parser;
 web submission uses `chrome.search.query()` (manifest `search` permission) so the
 browser's configured default engine remains authoritative.
+
+The command palette is an overlay, not a route. `buildPaletteCommands()` rebuilds
+its localized actions from current workspace/Space/group/layout state whenever it
+opens; recent and query link rows come from `collectWorkspaceTabs(activeWs())` and
+reuse the board's local operator matcher. Commands must call existing navigation,
+capture, settings, and persistence paths rather than maintaining parallel state.
+
+Search is a first-class `…/search` route. Query text, type/Space/time/tag filters,
+sort, filter-panel visibility, and selected result ride its hash query so reload,
+back, and forward restore the view without a schema field. `collectWorkspaceItems()`
+walks links, notes, tasks, stacks, and nested stack contents; `searchItemMatches()`
+is the data-level operator matcher reused by the launch layer and command palette.
+The older hidden `#search-bar`/`applySearchFilter()` path remains as the layout DOM
+filter used after board/list/canvas/gallery renders; do not make it a second public
+search entry point.
+
+`buildSystemEmptyState()` is the shared presentation and behavior contract for
+zero-data and no-match states across Home, Spaces/groups, Search, Library, Read
+Later, Archive, and Trash. Give it a surface-specific title/body and at most two
+real recovery actions; callbacks must reuse existing navigation, capture, import,
+filter-reset, and persistence paths. Use `buildEmptySpaceState()` for empty boards
+and keep compact states inside constrained group/filter contexts. Do not add
+decorative placeholder controls or actions that cannot complete their label.
 
 ## Settings page specifics (since 2026-07-12)
 

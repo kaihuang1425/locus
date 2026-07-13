@@ -2,6 +2,12 @@
 
 Status: proposal / living document. Created: 2026-07-02.
 
+> **Corrective direction (2026-07-13).**
+> [`UX_SIMPLIFICATION.md`](./UX_SIMPLIFICATION.md) now governs first use, the
+> application shell, Home, Calendar visibility, Space-view disclosure,
+> microinteractions, and motion. Where the documents conflict, follow that spec.
+> This plan remains the implementation history and detailed feature rationale.
+
 **Progress.** Phase 0 (the Spine) has landed: a hash router (`Router`, §2.1), a
 layout registry (`LAYOUTS` / `renderBoardView`, §2.2), a reminder aggregator
 (`collectReminders`, §2.3), and `createdAt` stamping on new items behind schema

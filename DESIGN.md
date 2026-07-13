@@ -316,3 +316,53 @@ differentiator we can market honestly.
   account/profile-photo, and remote feedback remain excluded by the
   no-host-access/account/network boundary; no fabricated local release-notes source
   was added solely to populate the mock's What's new row.
+- **2026-07-13** — Completed the **command palette fidelity review** against
+  `design/previews/locus_command_popup.png`. Its preview-aligned two-column home
+  now separates Quick actions, Go to, live recent links, and Shortcuts; query mode
+  fuzzily searches the full local command set and the user's actual saved links,
+  including a handoff to the existing operator-aware board search. Capture, note,
+  window, bookmark-import, navigation, layout, workspace/Space/group, theme,
+  sidebar, settings-section, and tools commands all reuse current state and browser
+  paths. The dialog adds localized empty/error/result states, listbox semantics,
+  focus containment, Escape and full keyboard navigation, responsive 800px/narrow
+  treatment, dark themes, and reduced-motion gating. Remote Help center and
+  upload/file concepts shown in the mock remain intentionally excluded by the
+  local-only, no-host-permissions product boundary.
+- **2026-07-13** — Completed the **search surface fidelity review** against
+  `design/previews/search_prototype.png`. Search is now a first-class, reload-safe
+  route with a preview-aligned query header, live type counts, real Space/time/tag
+  filters, best/newest sorting, keyboard-selected result list, and contextual
+  detail column. It walks the active workspace's actual links, notes, tasks,
+  stacks, and nested stack contents; the shared data matcher carries the existing
+  quoted-text, type/state/domain/url/Space/tag/color, and negation operators into
+  the launch layer and command palette as well. Selected links open through
+  `chrome.tabs`, favorites persist on the real item, and Details hands off to the
+  existing deep-linked editor. Loading, empty, filtered-empty, and error states,
+  Escape, back/forward and reload persistence, 800px layout, light/dark themes,
+  reduced motion, and en/zh-TW are covered. The mock's file/image/tweet sources,
+  AI search/auto-sort, scraped remote previews, and premium upgrade card remain
+  intentionally excluded by the local-only, no-host-permissions, free-tier scope.
+- **2026-07-13** — Ran a corrective **Search + command palette UX pass** after
+  exercising both surfaces as user flows rather than treating visual resemblance
+  as completion. Search now has one clear query owner, a stable result/detail
+  selection contract, real counted tag filters, useful note summaries, stored-data
+  details and related results, and honest loading/error/empty layouts. Its keyboard
+  path advances from the visibly selected first result and Escape returns Home.
+  The palette removes the duplicate Search command, uses independent scrolling so
+  Recent remains reachable at 1280×720, and restores the invoking result's focus.
+  Rendered verification covered query, tag, related-result, reload, keyboard,
+  light/dark, and en/zh-TW states with no duplicate IDs or console errors. The
+  managed browser ignored its 800px viewport override, so narrow behavior remains
+  a required fresh runtime check despite the responsive CSS review.
+- **2026-07-13** — Completed the **system empty-state fidelity review** against
+  `design/previews/locus_system_empty_state_each_page.png`. A shared responsive
+  component now gives Home, Spaces/groups and Inbox, Search, All Links, Favorites,
+  Read Later, Archive, and Trash a consistent visual hierarchy while keeping copy
+  and recovery actions specific to each user's situation. Every state exposes at
+  most two meaningful actions and calls existing create, capture, bookmark-import,
+  navigation, filter-reset, and persistence flows. The pass also removed Read
+  Later's duplicate empty shell, fixed active-filter contrast, restored focus after
+  palette and filter actions, and localized the surrounding Library/Archive shells.
+  Rendered verification covered light/dark, reduced motion, en/zh-TW, zero/no-match
+  states, real note creation, and Archive-to-Trash recovery. No new schema field,
+  permission, remote dependency, or fabricated data source was added.

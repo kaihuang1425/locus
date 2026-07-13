@@ -54,6 +54,14 @@ Extension pages throw on plain http (`chrome.storage` missing). Recipe:
 
 ### Checklist per slice
 
+- Before implementation, write the component contract: entry point, primary
+  action, default selection, loading/empty/error states, Escape/focus/keyboard
+  behavior, persistence boundary, and narrow-layout behavior. A screenshot is
+  visual direction, not a substitute for this interaction contract.
+- Compare the rendered surface to its reference at the same viewport, then walk
+  the complete primary task. Decorative stand-ins, duplicate entry points, and
+  controls without real product data or actions fail the slice even if they look
+  close to the reference.
 - `read_console_messages` with onlyErrors — must be empty.
 - Duplicate-id scan:
   `[...document.querySelectorAll('[id]')].map(e=>e.id).filter((v,i,a)=>a.indexOf(v)!==i)` → `[]`.
@@ -74,3 +82,9 @@ frames; `document.visibilityState === "hidden"`). Verify through
 pixel screenshots weren't possible. A human load-unpacked pass
 (chrome://extensions → Developer mode → Load unpacked → repo root) is the final
 visual check.
+
+Some managed browser surfaces reject `javascript:` shim injection as a security
+policy. Do not bypass that policy with another browser backend, raw CDP, or indirect
+page execution. In that environment, run a local VM/state harness for feature logic
+and a static DOM fixture for computed-style checks, report the full shim/reload pass
+as unavailable, and leave the human load-unpacked pass as the final runtime check.

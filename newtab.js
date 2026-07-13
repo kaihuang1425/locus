@@ -174,6 +174,54 @@ const I18N = {
     'landing.quote': '“The quieter you become, the more you can hear.”',
     'landing.savedResults': 'Saved links',
     'landing.noResults': 'No saved links match. Press Enter to search the web.',
+    'palette.ariaLabel': 'Command palette',
+    'palette.placeholder': 'Type a command or search…',
+    'palette.quickActions': 'Quick actions',
+    'palette.goTo': 'Go to',
+    'palette.recent': 'Search recent',
+    'palette.shortcuts': 'Shortcuts',
+    'palette.results': 'Results',
+    'palette.noMatch': 'No commands or saved links match this search.',
+    'palette.recentEmpty': 'Recently saved links will appear here.',
+    'palette.footer': 'Use ↑ ↓ to navigate, Enter to open, and Esc to close',
+    'palette.saveTab': 'Add / Save current tab',
+    'palette.saveTabDesc': 'Save the active browser tab to Inbox',
+    'palette.createNote': 'Create note',
+    'palette.createNoteDesc': 'Start a note in the active Inbox',
+    'palette.newSpace': 'New space',
+    'palette.newSpaceDesc': 'Create a space in this workspace',
+    'palette.saveWindow': 'Save open window',
+    'palette.saveWindowDesc': 'Save this window as a session group',
+    'palette.importBookmarks': 'Import from browser',
+    'palette.importBookmarksDesc': 'Import bookmarks into the active space',
+    'palette.homeDesc': 'Open the workspace overview',
+    'palette.inboxDesc': 'Open the active space Inbox',
+    'palette.calendarDesc': 'View reminders and dated tasks',
+    'palette.readLaterDesc': 'Open your reading queue',
+    'palette.allLinksDesc': 'Browse every saved link',
+    'palette.favoritesDesc': 'Open starred links',
+    'palette.archiveDesc': 'Review archived items',
+    'palette.trashDesc': 'Restore recently deleted items',
+    'palette.search': 'Search saved links',
+    'palette.searchDesc': 'Open the local saved-content search',
+    'palette.toggleSidebar': 'Toggle sidebar',
+    'palette.toggleSidebarDesc': 'Show or hide workspace navigation',
+    'palette.nextTheme': 'Toggle theme',
+    'palette.nextThemeDesc': 'Switch to the next local theme',
+    'palette.help': 'Keyboard shortcuts',
+    'palette.helpDesc': 'Open the shortcut reference',
+    'palette.settingsDesc': 'Open Locus settings',
+    'palette.searchBoard': 'Search Locus for “{query}”',
+    'palette.searchBoardDesc': 'Open the full local search with filters and operators',
+    'palette.switchLayout': 'Switch layout: {name}',
+    'palette.workspace': 'Workspace: {name}',
+    'palette.space': 'Space: {name}',
+    'palette.group': 'Group: {name}',
+    'palette.savedLink': 'Saved link',
+    'palette.savedLinkDesc': '{host} · {space}',
+    'palette.resultCount': '{count} results',
+    'palette.noActiveTab': 'No savable active tab was found',
+    'palette.noSpace': 'Create a space first',
     'toast.theme': 'Theme: {theme}',
     'toast.language': 'Language: {language}',
     'nav.home': 'Home',
@@ -222,6 +270,15 @@ const I18N = {
     'trash.invalid': '{count} damaged trash entries could not be displayed. They remain in exports.',
     'archive.moveToTrash': 'Move to Trash',
     'archive.movedToTrash': 'Moved to Trash',
+    'archive.subtitle': 'Archived content stays on this device until you restore it or move it to Trash.',
+    'archive.search': 'Search archive',
+    'archive.summary.entries': 'Archived {count}',
+    'archive.summary.items': 'Saved {count}',
+    'archive.summary.groups': '{count} groups',
+    'archive.summary.local': 'Local',
+    'archive.summary.localBody': 'Stored only on this device',
+    'archive.selected': '{count} selected',
+    'archive.restoreSelected': 'Restore selected',
     'nav.spaces': 'Spaces',
     'nav.storage': 'Local storage',
     'priv.title': 'Private by design',
@@ -242,7 +299,96 @@ const I18N = {
     'home.empty': 'Empty — drag a tab here to start',
     'home.emptyTitle': 'No spaces yet',
     'home.emptyBody': 'Create a category to start organizing your tabs.',
-    'search.placeholder': 'Search your links…'
+    'empty.addSave': 'Add / Save',
+    'empty.addNote': 'Add note',
+    'empty.importBookmarks': 'Import bookmarks',
+    'empty.createGroup': 'Create group',
+    'empty.browseLibrary': 'Browse all links',
+    'empty.browseArchive': 'Browse archive',
+    'empty.clearSearch': 'Clear search',
+    'empty.clearFilters': 'Clear filters',
+    'empty.searchAllSpaces': 'Search all spaces',
+    'empty.returnHome': 'Return home',
+    'empty.showAll': 'Show all',
+    'empty.inboxTitle': 'Nothing to triage right now',
+    'empty.inboxBody': 'New links from the extension, opened-tabs rail, or imports will appear here.',
+    'empty.spaceTitle': '{space} is ready for its first resources',
+    'empty.spaceBody': 'Add links, notes, tasks, or stacks to build this space.',
+    'empty.searchTitle': 'No results for “{query}”',
+    'empty.searchBody': 'Try broader keywords or remove the active filters.',
+    'empty.readLaterTitle': 'Your reading queue is clear',
+    'empty.readLaterBody': 'Save any library link for later, then come back when it matters.',
+    'empty.favoritesTitle': 'Start with the links you use most',
+    'empty.favoritesBody': 'Star any saved link to keep it one click away.',
+    'empty.trashTitle': 'No deleted items',
+    'empty.trashBody': 'Items moved from Archive wait here for 30 days before permanent deletion.',
+    'empty.archiveTitle': 'Nothing archived',
+    'empty.archiveBody': 'Items and groups you archive will wait here until you need them again.',
+    'empty.libraryTitle': 'Nothing saved yet',
+    'empty.libraryBody': 'Add a link, import bookmarks, or start a note to build your local library.',
+    'empty.noMatchTitle': 'Nothing matches these filters',
+    'empty.noMatchBody': 'Clear the search or filters to see everything again.',
+    'empty.localNote': 'Everything stays on this device.',
+    'library.linksAcross': '{count} links across this workspace',
+    'library.filterLinks': 'Filter links…',
+    'library.workspace': 'Workspace: {name}',
+    'readLater.subtitle': 'A calm queue for links you want to return to.',
+    'search.placeholder': 'Search your links…',
+    'search.title': 'Search Results',
+    'search.subtitle': 'Find anything instantly across your saved links, notes, tasks, and spaces.',
+    'search.nav': 'Search',
+    'search.inputPlaceholder': 'Search everything…',
+    'search.filters': 'Filters',
+    'search.hideFilters': 'Hide filters',
+    'search.clear': 'Clear',
+    'search.clearAll': 'Clear all',
+    'search.filterBy': 'Filter by',
+    'search.contentType': 'Content type',
+    'search.all': 'All',
+    'search.links': 'Links',
+    'search.notes': 'Notes',
+    'search.todos': 'Tasks',
+    'search.stacks': 'Stacks',
+    'search.space': 'Space',
+    'search.allSpaces': 'All spaces',
+    'search.time': 'Time saved',
+    'search.anyTime': 'Any time',
+    'search.today': 'Today',
+    'search.thisWeek': 'This week',
+    'search.thisMonth': 'This month',
+    'search.hasTags': 'Has tags',
+    'search.tags': 'Tags',
+    'search.related': 'Related results',
+    'search.sortBy': 'Sort by',
+    'search.bestMatch': 'Best match',
+    'search.newest': 'Newest',
+    'search.results': 'Results',
+    'search.recent': 'Recently saved',
+    'search.resultCount': '{count} results',
+    'search.loading': 'Searching your local library…',
+    'search.noItems': 'Nothing saved yet',
+    'search.noItemsBody': 'Save a link, note, task, or stack and it will become searchable here.',
+    'search.noResults': 'No results match this search',
+    'search.noResultsBody': 'Try fewer words, another space, or clear a filter.',
+    'search.error': 'Search could not be completed',
+    'search.errorBody': 'Your data was not changed. Clear the query and try again.',
+    'search.open': 'Open',
+    'search.details': 'Details',
+    'search.favorite': 'Favorite',
+    'search.unfavorite': 'Remove favorite',
+    'search.preview': 'Selected result',
+    'search.selectResult': 'Select a result to preview it.',
+    'search.saved': 'Saved',
+    'search.location': 'Location',
+    'search.noNotes': 'No notes added.',
+    'search.stats': 'Search stats',
+    'search.tips': 'Search tips',
+    'search.tipOperators': 'Use type:, in:, tag:, domain:, color:, or is: operators.',
+    'search.tipQuotes': 'Put phrases in quotes for an exact text match.',
+    'search.tipExclude': 'Prefix a word or operator with - to exclude it.',
+    'search.resultAria': 'Search result: {title}',
+    'search.stackItems': '{count} nested items',
+    'search.unknownDate': 'Date unavailable'
   },
   'zh-TW': {
     'shell.openTabs': '開啟分頁',
@@ -392,6 +538,54 @@ const I18N = {
     'landing.quote': '「越安靜，就越能聽見真正重要的聲音。」',
     'landing.savedResults': '已儲存的連結',
     'landing.noResults': '沒有符合的已儲存連結。按 Enter 搜尋網路。',
+    'palette.ariaLabel': '指令面板',
+    'palette.placeholder': '輸入指令或搜尋…',
+    'palette.quickActions': '快速動作',
+    'palette.goTo': '前往',
+    'palette.recent': '最近項目',
+    'palette.shortcuts': '快捷操作',
+    'palette.results': '搜尋結果',
+    'palette.noMatch': '找不到符合的指令或已儲存連結。',
+    'palette.recentEmpty': '最近儲存的連結會顯示在這裡。',
+    'palette.footer': '使用 ↑ ↓ 移動、Enter 開啟、Esc 關閉',
+    'palette.saveTab': '新增／儲存目前分頁',
+    'palette.saveTabDesc': '將目前瀏覽器分頁儲存到收件匣',
+    'palette.createNote': '建立筆記',
+    'palette.createNoteDesc': '在目前空間的收件匣開始筆記',
+    'palette.newSpace': '新增空間',
+    'palette.newSpaceDesc': '在此工作區建立空間',
+    'palette.saveWindow': '儲存目前視窗',
+    'palette.saveWindowDesc': '將此視窗儲存為工作階段群組',
+    'palette.importBookmarks': '從瀏覽器匯入',
+    'palette.importBookmarksDesc': '將書籤匯入目前空間',
+    'palette.homeDesc': '開啟工作區總覽',
+    'palette.inboxDesc': '開啟目前空間的收件匣',
+    'palette.calendarDesc': '查看提醒與有日期的待辦',
+    'palette.readLaterDesc': '開啟稍後閱讀清單',
+    'palette.allLinksDesc': '瀏覽所有已儲存連結',
+    'palette.favoritesDesc': '開啟已收藏連結',
+    'palette.archiveDesc': '查看已封存項目',
+    'palette.trashDesc': '復原最近刪除的項目',
+    'palette.search': '搜尋已儲存連結',
+    'palette.searchDesc': '開啟本機已儲存內容搜尋',
+    'palette.toggleSidebar': '切換側邊欄',
+    'palette.toggleSidebarDesc': '顯示或隱藏工作區導覽',
+    'palette.nextTheme': '切換主題',
+    'palette.nextThemeDesc': '切換至下一個本機主題',
+    'palette.help': '鍵盤快捷鍵',
+    'palette.helpDesc': '開啟快捷鍵參考',
+    'palette.settingsDesc': '開啟 Locus 設定',
+    'palette.searchBoard': '在 Locus 搜尋「{query}」',
+    'palette.searchBoardDesc': '開啟含有篩選條件與運算子的完整本機搜尋',
+    'palette.switchLayout': '切換版面：{name}',
+    'palette.workspace': '工作區：{name}',
+    'palette.space': '空間：{name}',
+    'palette.group': '群組：{name}',
+    'palette.savedLink': '已儲存連結',
+    'palette.savedLinkDesc': '{host} · {space}',
+    'palette.resultCount': '{count} 個結果',
+    'palette.noActiveTab': '找不到可儲存的目前分頁',
+    'palette.noSpace': '請先建立空間',
     'toast.theme': '主題：{theme}',
     'toast.language': '語言：{language}',
     'nav.home': '首頁',
@@ -440,6 +634,15 @@ const I18N = {
     'trash.invalid': '有 {count} 筆損壞的垃圾桶資料無法顯示，但仍會保留在匯出檔中。',
     'archive.moveToTrash': '移至垃圾桶',
     'archive.movedToTrash': '已移至垃圾桶',
+    'archive.subtitle': '封存內容會留在此裝置，直到你將它復原或移至垃圾桶。',
+    'archive.search': '搜尋封存',
+    'archive.summary.entries': '已封存 {count} 筆',
+    'archive.summary.items': '已儲存 {count} 個項目',
+    'archive.summary.groups': '{count} 個群組',
+    'archive.summary.local': '本機',
+    'archive.summary.localBody': '只儲存在這台裝置上',
+    'archive.selected': '已選取 {count} 筆',
+    'archive.restoreSelected': '復原所選項目',
     'nav.spaces': '空間',
     'nav.storage': '本機儲存',
     'priv.title': '隱私優先設計',
@@ -460,7 +663,96 @@ const I18N = {
     'home.empty': '空的 — 拖一個分頁進來開始',
     'home.emptyTitle': '尚無空間',
     'home.emptyBody': '建立分類即可開始整理你的分頁。',
-    'search.placeholder': '搜尋你的連結…'
+    'empty.addSave': '新增／儲存',
+    'empty.addNote': '新增筆記',
+    'empty.importBookmarks': '匯入書籤',
+    'empty.createGroup': '建立群組',
+    'empty.browseLibrary': '瀏覽所有連結',
+    'empty.browseArchive': '瀏覽封存',
+    'empty.clearSearch': '清除搜尋',
+    'empty.clearFilters': '清除篩選條件',
+    'empty.searchAllSpaces': '搜尋所有空間',
+    'empty.returnHome': '返回首頁',
+    'empty.showAll': '顯示全部',
+    'empty.inboxTitle': '目前沒有需要整理的內容',
+    'empty.inboxBody': '從擴充功能、開啟分頁側欄或匯入功能加入的新連結會顯示在這裡。',
+    'empty.spaceTitle': '「{space}」已準備好收納第一批資源',
+    'empty.spaceBody': '新增連結、筆記、待辦或堆疊，開始建立這個空間。',
+    'empty.searchTitle': '找不到「{query}」的結果',
+    'empty.searchBody': '請嘗試更廣泛的關鍵字，或移除目前的篩選條件。',
+    'empty.readLaterTitle': '稍後閱讀清單是空的',
+    'empty.readLaterBody': '將資料庫中的連結留待稍後閱讀，需要時再回來。',
+    'empty.favoritesTitle': '先收藏你最常使用的連結',
+    'empty.favoritesBody': '將任何已儲存連結加上星號，即可快速開啟。',
+    'empty.trashTitle': '沒有已刪除的項目',
+    'empty.trashBody': '從封存移除的項目會在這裡保留 30 天，之後永久刪除。',
+    'empty.archiveTitle': '尚無封存內容',
+    'empty.archiveBody': '你封存的項目和群組會留在這裡，直到再次需要。',
+    'empty.libraryTitle': '尚未儲存任何內容',
+    'empty.libraryBody': '新增連結、匯入書籤或建立筆記，開始打造你的本機資料庫。',
+    'empty.noMatchTitle': '沒有符合這些篩選條件的內容',
+    'empty.noMatchBody': '清除搜尋或篩選條件，即可重新查看所有內容。',
+    'empty.localNote': '所有內容都只留在這台裝置上。',
+    'library.linksAcross': '此工作區共有 {count} 個連結',
+    'library.filterLinks': '篩選連結…',
+    'library.workspace': '工作區：{name}',
+    'readLater.subtitle': '平靜收納你想稍後再看的連結。',
+    'search.placeholder': '搜尋你的連結…',
+    'search.title': '搜尋結果',
+    'search.subtitle': '立即搜尋已儲存的連結、筆記、待辦與空間。',
+    'search.nav': '搜尋',
+    'search.inputPlaceholder': '搜尋所有內容…',
+    'search.filters': '篩選條件',
+    'search.hideFilters': '隱藏篩選條件',
+    'search.clear': '清除',
+    'search.clearAll': '全部清除',
+    'search.filterBy': '篩選',
+    'search.contentType': '內容類型',
+    'search.all': '全部',
+    'search.links': '連結',
+    'search.notes': '筆記',
+    'search.todos': '待辦',
+    'search.stacks': '堆疊',
+    'search.space': '空間',
+    'search.allSpaces': '所有空間',
+    'search.time': '儲存時間',
+    'search.anyTime': '不限時間',
+    'search.today': '今天',
+    'search.thisWeek': '本週',
+    'search.thisMonth': '本月',
+    'search.hasTags': '含有標籤',
+    'search.tags': '標籤',
+    'search.related': '相關結果',
+    'search.sortBy': '排序方式',
+    'search.bestMatch': '最佳符合',
+    'search.newest': '最新',
+    'search.results': '搜尋結果',
+    'search.recent': '最近儲存',
+    'search.resultCount': '{count} 個結果',
+    'search.loading': '正在搜尋你的本機資料庫…',
+    'search.noItems': '尚未儲存任何內容',
+    'search.noItemsBody': '儲存連結、筆記、待辦或堆疊後，就能在這裡搜尋。',
+    'search.noResults': '沒有符合此搜尋的結果',
+    'search.noResultsBody': '請減少關鍵字、改選其他空間，或清除篩選條件。',
+    'search.error': '無法完成搜尋',
+    'search.errorBody': '你的資料未被變更。請清除查詢後再試一次。',
+    'search.open': '開啟',
+    'search.details': '詳細資料',
+    'search.favorite': '加入收藏',
+    'search.unfavorite': '移除收藏',
+    'search.preview': '已選取的結果',
+    'search.selectResult': '選取一筆結果即可預覽。',
+    'search.saved': '儲存時間',
+    'search.location': '位置',
+    'search.noNotes': '尚未新增筆記。',
+    'search.stats': '搜尋統計',
+    'search.tips': '搜尋提示',
+    'search.tipOperators': '可使用 type:、in:、tag:、domain:、color: 或 is: 運算子。',
+    'search.tipQuotes': '將詞組放在引號中可進行精確文字比對。',
+    'search.tipExclude': '在文字或運算子前加上 - 即可排除。',
+    'search.resultAria': '搜尋結果：{title}',
+    'search.stackItems': '{count} 個巢狀項目',
+    'search.unknownDate': '沒有日期'
   }
 };
 
@@ -758,6 +1050,42 @@ let activeHome = false;
 // while the underlying favorite flag is stored on each tab item.
 let activeLibraryMode = null; // null | 'all' | 'favorites' | 'read-later' | 'archive' | 'trash'
 
+// Dedicated saved-content search surface. Its state rides the URL rather than
+// chrome.storage so a query/filter/selection survives reload and back/forward
+// without becoming durable user data.
+let activeSearch = null;
+function searchStateFromQuery(query = {}) {
+  const type = ['all', 'tab', 'note', 'todo', 'stack'].includes(query.type) ? query.type : 'all';
+  const time = ['any', 'today', 'week', 'month'].includes(query.time) ? query.time : 'any';
+  const sort = ['best', 'recent'].includes(query.sort) ? query.sort : 'best';
+  return {
+    query: String(query.q || ''),
+    type,
+    spaceId: String(query.space || 'all'),
+    time,
+    hasTags: query.tags === '1',
+    tag: String(query.tag || ''),
+    sort,
+    selectedId: query.item ? String(query.item) : null,
+    filtersOpen: query.filters !== '0',
+    loading: false,
+  };
+}
+function searchRouteQuery(state = activeSearch) {
+  if (!state) return {};
+  const query = {};
+  if (state.query) query.q = state.query;
+  if (state.type && state.type !== 'all') query.type = state.type;
+  if (state.spaceId && state.spaceId !== 'all') query.space = state.spaceId;
+  if (state.time && state.time !== 'any') query.time = state.time;
+  if (state.hasTags) query.tags = '1';
+  if (state.tag) query.tag = state.tag;
+  if (state.sort && state.sort !== 'best') query.sort = state.sort;
+  if (state.selectedId) query.item = state.selectedId;
+  if (!state.filtersOpen) query.filters = '0';
+  return query;
+}
+
 // The item whose detail pane (§4.2) is open on the *board* surface, mirrored
 // into the board route as `?item=<id>` so it survives reload / back-forward.
 // On a group page the open detail item lives in activeGroupPage.itemId instead
@@ -810,6 +1138,7 @@ const Router = (() => {
     if (seg[2] === 'cat' && seg[3]) return { type: 'board', wsId, catId: decodeURIComponent(seg[3]), query };
     if (seg[2] === 'group' && seg[3]) return { type: 'group', wsId, groupId: decodeURIComponent(seg[3]), itemId: seg[4] === 'item' ? decodeURIComponent(seg[5] || '') : null, query };
     if (seg[2] === 'calendar') return { type: 'calendar', wsId, query };
+    if (seg[2] === 'search') return { type: 'search', wsId, query };
     if (seg[2] === 'home') return { type: 'home', wsId, query };
     return { type: 'board', wsId, catId: null, query };
   }
@@ -824,6 +1153,8 @@ const Router = (() => {
       if (route.itemId) path += `/item/${encodeURIComponent(route.itemId)}`;
     } else if (route.type === 'calendar') {
       path = `/ws/${ws}/calendar`;
+    } else if (route.type === 'search') {
+      path = `/ws/${ws}/search`;
     } else if (route.type === 'home') {
       path = `/ws/${ws}/home`;
     } else {
@@ -840,6 +1171,7 @@ const Router = (() => {
   function currentRoute() {
     const ws = activeWs();
     if (!ws) return null;
+    if (activeSearch) return { type: 'search', wsId: ws.id, query: searchRouteQuery(activeSearch) };
     if (activeCalendar) {
       // Only the view is durable in the URL; a bare `…/calendar` means month.
       const q = activeCalendar.view && activeCalendar.view !== 'month' ? { cal: activeCalendar.view } : {};
@@ -869,6 +1201,19 @@ const Router = (() => {
     if (activeLibraryMode) { activeLibraryMode = null; changed = true; }
     const ws = s.workspaces.find(w => w.id === route.wsId);
     if (ws && s.activeWsId !== ws.id) { s.activeWsId = ws.id; changed = true; }
+
+    if (route.type === 'search') {
+      if (activeHome) { activeHome = false; changed = true; }
+      if (activeGroupPage) { activeGroupPage = null; changed = true; }
+      if (activeCalendar) { activeCalendar = null; changed = true; }
+      if (boardDetailItemId) { boardDetailItemId = null; changed = true; }
+      const next = searchStateFromQuery(route.query);
+      const current = activeSearch ? JSON.stringify(searchRouteQuery(activeSearch)) : '';
+      const wanted = JSON.stringify(searchRouteQuery(next));
+      if (!activeSearch || current !== wanted) { activeSearch = next; changed = true; }
+      return changed;
+    }
+    if (activeSearch) { activeSearch = null; changed = true; }
 
     if (route.type === 'home') {
       // Home is the workspace overview; it leaves every other surface behind.
@@ -962,11 +1307,14 @@ const Router = (() => {
     // canonical hash actually changes (a real navigation); otherwise no-op, so
     // incidental re-renders (creating a group, editing a note) never spam
     // history. Called at the tail of renderAll().
-    sync() {
+    sync({ replace = false } = {}) {
       if (!_ready) return;
       const want = build(currentRoute());
       const have = location.hash.replace(/^#/, '');
-      if (want !== have) history.pushState(null, '', '#' + want);
+      if (want !== have) {
+        if (replace) history.replaceState(null, '', '#' + want);
+        else history.pushState(null, '', '#' + want);
+      }
     },
     // Deep-link navigation used by future surfaces; replace avoids a history
     // entry when appropriate.
@@ -3311,7 +3659,7 @@ function renderCategoryTabs() {
     b.className = 'cat-tab' + (cat.id === ws.activeCatId ? ' active' : '');
     b.dataset.cid = cat.id;
     b.textContent = cat.name;
-    b.onclick = () => { ws.activeCatId = cat.id; State.persist(); renderCategoryTabs(); renderBoard(); Router.sync(); };
+    b.onclick = () => openCategory(cat.id);
     b.ondblclick = () => {
       const nn = prompt('Rename category:', cat.name);
       if (nn && nn.trim()) { State.snapshot('Rename cat'); cat.name = nn.trim(); State.persist(); renderCategoryTabs(); }
@@ -3455,14 +3803,15 @@ function renderBoard() {
   // Home is a block-scrolling surface; clear its class up front so the calendar
   // and group-page gates (which early-return below) never inherit it. renderHome()
   // re-adds it when Home is the active surface.
-  document.getElementById('board').classList.remove('home-mode', 'library-mode', 'archive-mode', 'trash-mode', 'read-later-mode');
+  document.getElementById('board').classList.remove('home-mode', 'library-mode', 'archive-mode', 'trash-mode', 'read-later-mode', 'search-mode');
   // Reflect the active surface on <body> (diagnostic / styling hook), computed
   // from the flags so it stays correct through every early-returning gate.
-  document.body.dataset.surface = activeCalendar ? 'calendar' : activeGroupPage ? 'group' : activeLibraryMode ? 'library' : activeHome ? 'home' : 'board';
+  document.body.dataset.surface = activeSearch ? 'search' : activeCalendar ? 'calendar' : activeGroupPage ? 'group' : activeLibraryMode ? 'library' : activeHome ? 'home' : 'board';
   // The calendar (§5) and group pages (§4.1) are surfaces that sit above the
   // layout registry: when one is open every re-render keeps showing it. Each
   // renderer returns false if the user has navigated away, so we fall through to
   // the normal board in that case.
+  if (activeSearch && renderSearchSurface()) return;
   if (activeCalendar && renderCalendar()) return;
   // A group page (§4.1) is a surface that sits above the layout registry: when
   // one is open every re-render keeps showing it. renderGroupPage() returns
@@ -3494,6 +3843,7 @@ function renderBoard() {
 // Enter Home. Clears the other above-registry surfaces so Home wins the next
 // renderBoard() dispatch, then mirrors `…/home` into the URL.
 function goHome() {
+  activeSearch = null;
   activeLibraryMode = null;
   activeHome = true;
   activeGroupPage = null;
@@ -3509,6 +3859,7 @@ function goHome() {
 function openCategory(catId) {
   const ws = activeWs(); if (!ws) return;
   if (!ws.categories.some(c => c.id === catId)) return;
+  activeSearch = null;
   activeLibraryMode = null;
   activeHome = false;
   activeGroupPage = null;
@@ -3549,6 +3900,22 @@ function collectWorkspaceTabs(ws = activeWs()) {
   return rows;
 }
 
+// Search uses every saved item kind, including stack containers and their
+// descendants. Parent stack names travel with each row so `in:` works without
+// reading rendered DOM or duplicating layout-specific traversal.
+function collectWorkspaceItems(ws = activeWs()) {
+  if (!ws) return [];
+  const rows = [];
+  const walk = (items, cat, group, parents = []) => {
+    (items || []).forEach(item => {
+      rows.push({ item, cat, group, parents });
+      if (item.type === 'stack') walk(item.items, cat, group, [...parents, item]);
+    });
+  };
+  ws.categories.forEach(cat => cat.groups.forEach(group => walk(group.items, cat, group)));
+  return rows;
+}
+
 // ── Zen launch layer ──────────────────────────────────────────────────────
 let _landingClockTimer = null;
 let _landingResultIndex = -1;
@@ -3561,29 +3928,7 @@ function landingInbox(ws = activeWs()) {
 }
 
 function landingLinkMatches(row, query) {
-  const { item, cat, group } = row;
-  const { raw, pos, neg } = parseSearchQuery(query);
-  if (!raw) return false;
-  let host = '';
-  try { host = new URL(item.url).hostname.toLowerCase(); } catch {}
-  const url = String(item.url || '').toLowerCase();
-  const color = String(item.color || '').toLowerCase();
-  const tags = (item.tags || []).map(t => String(t).toLowerCase());
-  const containers = [cat.name, group.name].map(v => String(v || '').toLowerCase());
-  const text = [item.title, item.url, cat.name, group.name, ...(item.tags || [])].join(' ').toLowerCase();
-  const familyMatches = (bucket, negative = false) => {
-    const checks = [];
-    if (bucket.color.length) checks.push(bucket.color.includes(color));
-    if (bucket.type.length) checks.push(bucket.type.includes('tab'));
-    if (bucket.state.length) checks.push(false);
-    if (bucket.domain.length) checks.push(!!host && bucket.domain.some(v => host.includes(v)));
-    if (bucket.url.length) checks.push(!!url && bucket.url.some(v => url.includes(v)));
-    if (bucket.in.length) checks.push(bucket.in.some(v => containers.some(n => n.includes(v))));
-    if (bucket.tag.length) checks.push(bucket.tag.some(v => tags.some(t => t.includes(v))));
-    if (bucket.text.length) checks.push(negative ? bucket.text.some(v => text.includes(v)) : bucket.text.every(v => text.includes(v)));
-    return negative ? checks.some(Boolean) : checks.every(Boolean);
-  };
-  return familyMatches(pos) && !familyMatches(neg, true);
+  return !!String(query || '').trim() && searchItemMatches({ ...row, parents: row.parents || [] }, query);
 }
 
 function landingResults(query) {
@@ -3808,7 +4153,83 @@ function toggleReadStatus(it) {
   toast(it.readAt ? 'Marked as read' : 'Marked as unread');
 }
 
+// Shared empty-state system. The reference image defines these as calm starting
+// points, not decorative placeholders: every state explains why it is empty and
+// exposes no more than two actions that enter an existing product flow.
+const SYSTEM_EMPTY_ICONS = {
+  inbox: `<svg viewBox="0 0 64 64" fill="none"><path d="M14 31h36l5 19H9l5-19Z" fill="currentColor" opacity=".14"/><path d="M17 31l5-17h20l5 17" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M10 31h44l-3 20H13l-3-20Z" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M10 37h13a9 9 0 0018 0h13" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></svg>`,
+  space: `<svg viewBox="0 0 64 64" fill="none"><path d="M9 21h18l5 6h23v25H9V21Z" fill="currentColor" opacity=".15"/><path d="M9 18h18l5 6h23v28H9V18Z" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M32 32v12M26 38h12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>`,
+  search: `<svg viewBox="0 0 64 64" fill="none"><circle cx="27" cy="27" r="17" fill="currentColor" opacity=".12"/><circle cx="27" cy="27" r="17" stroke="currentColor" stroke-width="3"/><path d="m40 40 13 13" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>`,
+  read: `<svg viewBox="0 0 64 64" fill="none"><path d="M19 9h26v46L32 47 19 55V9Z" fill="currentColor" opacity=".15"/><path d="M19 9h26v46L32 47 19 55V9Z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/></svg>`,
+  favorites: `<svg viewBox="0 0 64 64" fill="none"><path d="m32 8 7 15 17 2-12 12 3 17-15-8-15 8 3-17L8 25l17-2 7-15Z" fill="currentColor" opacity=".16"/><path d="m32 8 7 15 17 2-12 12 3 17-15-8-15 8 3-17L8 25l17-2 7-15Z" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></svg>`,
+  trash: `<svg viewBox="0 0 64 64" fill="none"><path d="M17 19h30l-3 37H20l-3-37Z" fill="currentColor" opacity=".13"/><path d="M17 19h30l-3 37H20l-3-37Z" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M13 19h38M25 19v-7h14v7M27 28v18M37 28v18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>`,
+  archive: `<svg viewBox="0 0 64 64" fill="none"><path d="M11 20h42v34H11V20Z" fill="currentColor" opacity=".13"/><path d="M11 20h42v34H11V20ZM8 11h48v9H8v-9Z" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M25 31h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>`,
+  library: `<svg viewBox="0 0 64 64" fill="none"><path d="M25 39 19 45a9 9 0 01-13-13l9-9a9 9 0 0113 0" stroke="currentColor" stroke-width="2.7" stroke-linecap="round"/><path d="m39 25 6-6a9 9 0 0113 13l-9 9a9 9 0 01-13 0" stroke="currentColor" stroke-width="2.7" stroke-linecap="round"/><path d="m23 41 18-18" stroke="currentColor" stroke-width="2.7" stroke-linecap="round"/></svg>`,
+};
+let _systemEmptySeq = 0;
+
+function buildSystemEmptyState({ kind = 'library', title, body, actions = [], note = '', compact = false } = {}) {
+  const safeKind = Object.prototype.hasOwnProperty.call(SYSTEM_EMPTY_ICONS, kind) ? kind : 'library';
+  const section = document.createElement('section');
+  const titleId = `system-empty-title-${++_systemEmptySeq}`;
+  section.className = 'system-empty' + (compact ? ' compact' : '');
+  section.dataset.kind = safeKind;
+  section.setAttribute('aria-labelledby', titleId);
+  section.innerHTML = `
+    <div class="system-empty-visual" aria-hidden="true"><span>${SYSTEM_EMPTY_ICONS[safeKind]}</span><i></i><i></i></div>
+    <div class="system-empty-copy">
+      <h2 id="${titleId}">${esc(title || '')}</h2>
+      <p>${esc(body || '')}</p>
+      <div class="system-empty-actions"></div>
+      ${note ? `<div class="system-empty-note"><span aria-hidden="true">✓</span>${esc(note)}</div>` : ''}
+    </div>`;
+  const actionHost = section.querySelector('.system-empty-actions');
+  actions.filter(action => action && action.label && typeof action.run === 'function').slice(0, 2).forEach((action, index) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = (index === 0 ? 'btn-primary' : 'btn-secondary') + ' system-empty-action';
+    if (action.icon) {
+      const icon = document.createElement('span');
+      icon.className = 'system-empty-action-icon';
+      icon.setAttribute('aria-hidden', 'true');
+      icon.textContent = action.icon;
+      button.appendChild(icon);
+    }
+    const label = document.createElement('span');
+    label.textContent = action.label;
+    button.appendChild(label);
+    button.onclick = async () => {
+      if (button.disabled) return;
+      try {
+        const outcome = action.run();
+        if (outcome && typeof outcome.then === 'function') {
+          button.disabled = true;
+          await outcome;
+        }
+      }
+      catch (error) { console.error(error); toast(error?.message || tr('search.error'), { danger: true }); }
+      finally { if (button.isConnected) button.disabled = false; }
+    };
+    actionHost.appendChild(button);
+  });
+  if (!actionHost.children.length) actionHost.remove();
+  return section;
+}
+
+function buildEmptySpaceState(cat) {
+  const createGroup = { label: tr('empty.createGroup'), icon: '+', run: () => openModal('new-group') };
+  const addSave = { label: tr('empty.addSave'), icon: '↗', run: () => openCommandPalette() };
+  return buildSystemEmptyState({
+    kind: 'space',
+    title: tr('empty.spaceTitle', { space: cat?.name || tr('search.space') }),
+    body: tr('empty.spaceBody'),
+    actions: cat?.groups?.length ? [addSave, createGroup] : [createGroup, addSave],
+    note: tr('empty.localNote'),
+  });
+}
+
 function openLibrarySurface(mode) {
+  activeSearch = null;
   activeLibraryMode = ['all', 'favorites', 'read-later', 'archive', 'trash'].includes(mode) ? mode : 'all';
   activeHome = false;
   activeGroupPage = null;
@@ -3840,31 +4261,51 @@ function renderLibrarySurface() {
   shell.innerHTML = `
     <header class="library-head">
       <div>
-        <h1>${activeLibraryMode === 'favorites' ? 'Favorites' : 'All Links'}</h1>
-        <p>${rows.length} ${rows.length === 1 ? 'link' : 'links'} across this workspace</p>
+        <h1>${esc(tr(activeLibraryMode === 'favorites' ? 'nav.favorites' : 'nav.allLinks'))}</h1>
+        <p>${esc(tr('library.linksAcross', { count: rows.length }))}</p>
       </div>
       <label class="library-search">
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        <input type="search" placeholder="Filter links…" aria-label="Filter links">
+        <input type="search" placeholder="${esc(tr('library.filterLinks'))}" aria-label="${esc(tr('library.filterLinks'))}">
       </label>
     </header>
     <div class="library-toolbar">
-      <span class="library-filter active">All</span>
-      <span class="library-location">Workspace: ${esc(ws.name)}</span>
+      <span class="library-filter active">${esc(tr('search.all'))}</span>
+      <span class="library-location">${esc(tr('library.workspace', { name: ws.name }))}</span>
     </div>
     <div class="library-list" role="list"></div>`;
   board.appendChild(shell);
   const list = shell.querySelector('.library-list');
+  const searchInput = shell.querySelector('.library-search input');
 
   const paint = query => {
-    const needle = String(query || '').trim().toLowerCase();
+    const rawQuery = String(query || '').trim();
+    const needle = rawQuery.toLowerCase();
     list.innerHTML = '';
     const visible = rows.filter(({ item, cat, group }) => !needle || [item.title, item.url, cat.name, group.name].join(' ').toLowerCase().includes(needle));
     if (!visible.length) {
-      const empty = document.createElement('div');
-      empty.className = 'library-empty';
-      empty.innerHTML = `<div class="library-empty-icon">${activeLibraryMode === 'favorites' ? '☆' : '↗'}</div><h2>${needle ? 'No matching links' : activeLibraryMode === 'favorites' ? 'No favorites yet' : 'No saved links yet'}</h2><p>${needle ? 'Try a different search.' : activeLibraryMode === 'favorites' ? 'Use the star on any saved link to keep it here.' : 'Save a tab or drag one into a space to get started.'}</p>`;
-      list.appendChild(empty);
+      if (needle) {
+        list.appendChild(buildSystemEmptyState({
+          kind: 'search', compact: true,
+          title: tr('empty.searchTitle', { query: rawQuery }), body: tr('empty.noMatchBody'),
+          actions: [{ label: tr('empty.clearSearch'), icon: '×', run: () => { searchInput.value = ''; paint(''); searchInput.focus(); } }],
+        }));
+      } else if (activeLibraryMode === 'favorites') {
+        list.appendChild(buildSystemEmptyState({
+          kind: 'favorites', title: tr('empty.favoritesTitle'), body: tr('empty.favoritesBody'),
+          actions: [{ label: tr('empty.browseLibrary'), icon: '↗', run: () => openLibrarySurface('all') }],
+          note: tr('empty.localNote'),
+        }));
+      } else {
+        list.appendChild(buildSystemEmptyState({
+          kind: 'library', title: tr('empty.libraryTitle'), body: tr('empty.libraryBody'),
+          actions: [
+            { label: tr('empty.addSave'), icon: '+', run: () => openCommandPalette() },
+            { label: tr('empty.importBookmarks'), icon: '⇩', run: () => importBookmarks() },
+          ],
+          note: tr('empty.localNote'),
+        }));
+      }
       return;
     }
     visible.forEach(({ item, cat, group }) => {
@@ -3895,7 +4336,7 @@ function renderLibrarySurface() {
     });
   };
   paint('');
-  shell.querySelector('.library-search input').oninput = e => paint(e.target.value);
+  searchInput.oninput = e => paint(e.target.value);
   updateNavChrome();
   return true;
 }
@@ -3919,8 +4360,8 @@ function renderReadLaterSurface() {
   shell.innerHTML = `
     <header class="library-head read-later-head">
       <div>
-        <h1>Read Later</h1>
-        <p>A calm queue for links you want to return to.</p>
+        <h1>${esc(tr('nav.readLater'))}</h1>
+        <p>${esc(tr('readLater.subtitle'))}</p>
       </div>
       <label class="library-search">
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -3957,6 +4398,26 @@ function renderReadLaterSurface() {
     </section>`;
   board.appendChild(shell);
 
+  if (!rows.length) {
+    shell.querySelector('.library-search')?.remove();
+    shell.querySelector('.read-later-summary')?.remove();
+    shell.querySelector('.read-later-next')?.remove();
+    shell.querySelector('.read-later-all')?.remove();
+    const emptyHost = document.createElement('div');
+    emptyHost.className = 'library-list read-later-empty-host';
+    emptyHost.appendChild(buildSystemEmptyState({
+      kind: 'read', title: tr('empty.readLaterTitle'), body: tr('empty.readLaterBody'),
+      actions: [
+        { label: tr('empty.browseLibrary'), icon: '↗', run: () => openLibrarySurface('all') },
+        { label: tr('empty.addSave'), icon: '+', run: () => openCommandPalette() },
+      ],
+      note: tr('empty.localNote'),
+    }));
+    shell.appendChild(emptyHost);
+    updateNavChrome();
+    return true;
+  }
+
   const next = shell.querySelector('.read-later-cards');
   if (!unread.length) {
     next.innerHTML = `<div class="read-later-next-empty"><span>✓</span><strong>You're caught up</strong><small>Save any link for later from its action menu.</small></div>`;
@@ -3992,7 +4453,23 @@ function renderReadLaterSurface() {
     });
     list.innerHTML = '';
     if (!visible.length) {
-      list.innerHTML = `<div class="library-empty read-later-empty"><div class="library-empty-icon">${needle ? '?' : status === 'read' ? '✓' : '⌑'}</div><h2>${needle ? 'No matching links' : status === 'read' ? 'Nothing finished yet' : 'Your reading queue is clear'}</h2><p>${needle ? 'Try a different search.' : status === 'read' ? 'Mark an item as read and it will stay available here.' : 'Use a saved link’s action menu and choose Save to Read Later.'}</p></div>`;
+      const reset = () => {
+        if (needle) search.value = '';
+        else status = 'all';
+        shell.querySelectorAll('.read-later-filters button').forEach(button => {
+          const active = button.dataset.status === status;
+          button.classList.toggle('active', active);
+          button.setAttribute('aria-pressed', String(active));
+        });
+        paint();
+        if (needle) search.focus();
+      };
+      list.appendChild(buildSystemEmptyState({
+        kind: needle ? 'search' : 'read', compact: true,
+        title: needle ? tr('empty.searchTitle', { query: search.value.trim() }) : tr('empty.noMatchTitle'),
+        body: tr('empty.noMatchBody'),
+        actions: [{ label: tr(needle ? 'empty.clearSearch' : 'empty.showAll'), icon: needle ? '×' : '↗', run: reset }],
+      }));
       return;
     }
     visible.forEach(({ item, cat, group }) => {
@@ -4114,27 +4591,27 @@ function renderArchiveSurface() {
   shell.innerHTML = `
     <header class="library-head archive-head">
       <div>
-        <h1>Archive</h1>
-        <p>Hibernated and archived content stays on this device until you restore or delete it.</p>
+        <h1>${esc(tr('nav.archive'))}</h1>
+        <p>${esc(tr('archive.subtitle'))}</p>
       </div>
       <label class="library-search">
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        <input type="search" placeholder="Search archive" aria-label="Search archive">
+        <input type="search" placeholder="${esc(tr('archive.search'))}" aria-label="${esc(tr('archive.search'))}">
       </label>
     </header>
-    <div class="archive-summary" aria-label="Archive summary">
-      <div><strong>${allEntries.length}</strong><span>Archived ${allEntries.length === 1 ? 'entry' : 'entries'}</span></div>
-      <div><strong>${itemTotal}</strong><span>Saved ${itemTotal === 1 ? 'item' : 'items'}</span></div>
-      <div><strong>${groupTotal}</strong><span>${groupTotal === 1 ? 'Group' : 'Groups'}</span></div>
-      <div class="archive-local"><strong>Local</strong><span>Stored only on this device</span></div>
+    <div class="archive-summary" aria-label="${esc(tr('nav.archive'))}">
+      <div><strong>${allEntries.length}</strong><span>${esc(tr('archive.summary.entries', { count: allEntries.length }))}</span></div>
+      <div><strong>${itemTotal}</strong><span>${esc(tr('archive.summary.items', { count: itemTotal }))}</span></div>
+      <div><strong>${groupTotal}</strong><span>${esc(tr('archive.summary.groups', { count: groupTotal }))}</span></div>
+      <div class="archive-local"><strong>${esc(tr('archive.summary.local'))}</strong><span>${esc(tr('archive.summary.localBody'))}</span></div>
     </div>
     <div class="archive-toolbar">
-      <div class="archive-filters" role="group" aria-label="Filter archive by type">
-        ${[['all','All'],['links','Links'],['notes','Notes'],['todos','To-dos'],['groups','Groups']].map(([value, label]) => `<button type="button" data-type="${value}" aria-pressed="${value === 'all'}" class="${value === 'all' ? 'active' : ''}">${label}</button>`).join('')}
+      <div class="archive-filters" role="group" aria-label="${esc(tr('nav.archive'))}">
+        ${[['all','search.all'],['links','search.links'],['notes','search.notes'],['todos','search.todos'],['groups','trash.groups']].map(([value, key]) => `<button type="button" data-type="${value}" aria-pressed="${value === 'all'}" class="${value === 'all' ? 'active' : ''}">${esc(tr(key))}</button>`).join('')}
       </div>
       <div class="archive-selection" aria-live="polite">
-        <span>0 selected</span>
-        <button type="button" class="btn-primary" disabled>Restore selected</button>
+        <span>${esc(tr('archive.selected', { count: 0 }))}</span>
+        <button type="button" class="btn-primary" disabled>${esc(tr('archive.restoreSelected'))}</button>
         <button type="button" class="btn-secondary archive-trash-selected" disabled>${tr('archive.moveToTrash')}</button>
       </div>
     </div>
@@ -4145,11 +4622,24 @@ function renderArchiveSurface() {
   const selectionText = shell.querySelector('.archive-selection span');
   const restoreSelected = shell.querySelector('.archive-selection button');
   const trashSelected = shell.querySelector('.archive-trash-selected');
+  const search = shell.querySelector('.library-search input');
   const syncSelection = () => {
-    selectionText.textContent = `${selected.size} selected`;
+    selectionText.textContent = tr('archive.selected', { count: selected.size });
     restoreSelected.disabled = selected.size === 0;
     trashSelected.disabled = selected.size === 0;
   };
+  function resetFilters() {
+    query = '';
+    type = 'all';
+    search.value = '';
+    shell.querySelectorAll('.archive-filters button').forEach(button => {
+      const active = button.dataset.type === 'all';
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', String(active));
+    });
+    paint();
+    search.focus();
+  }
 
   const paint = () => {
     const needle = query.trim().toLowerCase();
@@ -4159,12 +4649,19 @@ function renderArchiveSurface() {
     });
     results.innerHTML = '';
     if (!visible.length) {
-      const empty = document.createElement('div');
-      empty.className = 'library-empty archive-empty';
-      empty.innerHTML = `<div class="library-empty-icon">${allEntries.length ? '⌕' : '✓'}</div><h2>${allEntries.length ? 'No archived items match' : 'Your archive is empty'}</h2><p>${allEntries.length ? 'Try another search or content type.' : 'Items and groups you archive will wait here until you need them again.'}</p>${allEntries.length ? '' : '<button type="button" class="btn-secondary">Return home</button>'}`;
-      const home = empty.querySelector('button');
-      if (home) home.onclick = goHome;
-      results.appendChild(empty);
+      results.appendChild(allEntries.length
+        ? buildSystemEmptyState({
+            kind: 'search', compact: true, title: tr('empty.noMatchTitle'), body: tr('empty.noMatchBody'),
+            actions: [{ label: tr('empty.clearFilters'), icon: '×', run: resetFilters }],
+          })
+        : buildSystemEmptyState({
+            kind: 'archive', title: tr('empty.archiveTitle'), body: tr('empty.archiveBody'),
+            actions: [
+              { label: tr('empty.browseLibrary'), icon: '↗', run: () => openLibrarySurface('all') },
+              { label: tr('empty.returnHome'), icon: '⌂', run: goHome },
+            ],
+            note: tr('empty.localNote'),
+          }));
       return;
     }
 
@@ -4206,7 +4703,7 @@ function renderArchiveSurface() {
     });
   };
 
-  shell.querySelector('.library-search input').oninput = e => { query = e.target.value; paint(); };
+  search.oninput = e => { query = e.target.value; paint(); };
   shell.querySelectorAll('.archive-filters button').forEach(button => {
     button.onclick = () => {
       type = button.dataset.type;
@@ -4292,11 +4789,24 @@ function renderTrashSurface() {
   const selectionText = shell.querySelector('.archive-selection span');
   const restoreSelected = shell.querySelector('.trash-restore-selected');
   const deleteSelected = shell.querySelector('.trash-delete-selected');
+  const search = shell.querySelector('.library-search input');
   const syncSelection = () => {
     selectionText.textContent = tr('trash.selected', { count: selected.size });
     restoreSelected.disabled = selected.size === 0;
     deleteSelected.disabled = selected.size === 0;
   };
+  function resetFilters() {
+    query = '';
+    type = 'all';
+    search.value = '';
+    shell.querySelectorAll('.archive-filters button').forEach(button => {
+      const active = button.dataset.type === 'all';
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-pressed', String(active));
+    });
+    paint();
+    search.focus();
+  }
 
   const paint = () => {
     const needle = query.trim().toLowerCase();
@@ -4306,13 +4816,19 @@ function renderTrashSurface() {
     });
     results.innerHTML = '';
     if (!visible.length) {
-      const empty = document.createElement('div');
-      empty.className = 'library-empty archive-empty trash-empty';
       const noMatch = allEntries.length > 0;
-      empty.innerHTML = `<div class="library-empty-icon">${noMatch ? '⌕' : '✓'}</div><h2>${tr(noMatch ? 'trash.noMatch' : 'trash.empty')}</h2><p>${tr(noMatch ? 'trash.noMatchBody' : 'trash.emptyBody')}</p>${noMatch ? '' : '<button type="button" class="btn-secondary">' + tr('nav.home') + '</button>'}`;
-      const home = empty.querySelector('button');
-      if (home) home.onclick = goHome;
-      results.appendChild(empty);
+      results.appendChild(noMatch
+        ? buildSystemEmptyState({
+            kind: 'search', compact: true, title: tr('empty.noMatchTitle'), body: tr('empty.noMatchBody'),
+            actions: [{ label: tr('empty.clearFilters'), icon: '×', run: resetFilters }],
+          })
+        : buildSystemEmptyState({
+            kind: 'trash', title: tr('empty.trashTitle'), body: tr('empty.trashBody'),
+            actions: [
+              { label: tr('empty.browseArchive'), icon: '↗', run: () => openLibrarySurface('archive') },
+              { label: tr('empty.returnHome'), icon: '⌂', run: goHome },
+            ],
+          }));
       return;
     }
 
@@ -4355,7 +4871,6 @@ function renderTrashSurface() {
     });
   };
 
-  const search = shell.querySelector('.library-search input');
   search.oninput = e => { query = e.target.value; paint(); };
   search.onkeydown = e => {
     if (e.key !== 'Escape') return;
@@ -4543,10 +5058,11 @@ function renderHome() {
   grid.className = 'home-grid';
 
   if (!ws.categories.length) {
-    const em = document.createElement('div');
-    em.className = 'home-empty';
-    em.innerHTML = `<h3>${esc(tr('home.emptyTitle'))}</h3><p>${esc(tr('home.emptyBody'))}</p>`;
-    grid.appendChild(em);
+    grid.appendChild(buildSystemEmptyState({
+      kind: 'space', title: tr('home.emptyTitle'), body: tr('home.emptyBody'),
+      actions: [{ label: tr('palette.newSpace'), icon: '+', run: () => openModal('new-cat') }],
+      note: tr('empty.localNote'),
+    }));
   }
 
   // Auto-pick the "collections" category (most groups, ≥3) → promoted to a
@@ -4703,7 +5219,7 @@ function renderSpaceNav() {
     ws.categories.forEach(cat => {
       const count = cat.groups.reduce((n, g) => n + g.items.length, 0);
       const el = document.createElement('button');
-      el.className = 'space-item' + (!activeHome && !activeLibraryMode && cat.id === ws.activeCatId ? ' active' : '');
+      el.className = 'space-item' + (!activeSearch && !activeHome && !activeLibraryMode && cat.id === ws.activeCatId ? ' active' : '');
       el.dataset.catId = cat.id;
       el.innerHTML =
         `<span class="space-sym">${esc(cat.symbol || '🗂')}</span>` +
@@ -4746,6 +5262,8 @@ function updateNavChrome() {
   setCount('nav-trash-count', (s.trash || []).length);
   const home = document.getElementById('nav-home');
   if (home) home.classList.toggle('active', !!activeHome);
+  const search = document.getElementById('nav-search');
+  if (search) search.classList.toggle('active', !!activeSearch);
   const all = document.getElementById('nav-all');
   if (all) all.classList.toggle('active', activeLibraryMode === 'all');
   const favorites = document.getElementById('nav-favorites');
@@ -4784,17 +5302,8 @@ function renderBoardView() {
   const cat = activeCat(); if (!cat) return;
 
   if (!cat.groups.length) {
-    const em = document.createElement('div');
-    em.className = 'board-empty';
-    em.innerHTML = `
-      <svg class="illus" width="64" height="64" viewBox="0 0 64 64" fill="none">
-        <rect x="4" y="4" width="26" height="26" rx="6" stroke="currentColor" stroke-width="2"/>
-        <rect x="34" y="4" width="26" height="26" rx="6" stroke="currentColor" stroke-width="2"/>
-        <rect x="4" y="34" width="26" height="26" rx="6" stroke="currentColor" stroke-width="2"/>
-        <rect x="34" y="34" width="26" height="26" rx="6" stroke="currentColor" stroke-width="2" stroke-dasharray="3 3"/>
-      </svg>
-      <p>No groups yet in <strong>${esc(cat.name)}</strong>.<br>Drag a tab from the sidebar to create one.</p>`;
-    $b.appendChild(em);
+    $b.appendChild(buildEmptySpaceState(cat));
+    return;
   }
 
   cat.groups.forEach(g => $b.appendChild(buildGroupCol(g)));
@@ -4993,7 +5502,26 @@ function buildGroupCol(g) {
   // Items
   const cardsEl = col.querySelector('.gcol-cards');
   const scrollWrap = col.querySelector('.gcol-scroll-wrap');
-  g.items.forEach(it => cardsEl.appendChild(buildItem(it, g.items, g)));
+  if (!g.items.length) {
+    const isInbox = g.name === 'Inbox';
+    cardsEl.appendChild(buildSystemEmptyState({
+      kind: isInbox ? 'inbox' : 'space',
+      title: isInbox ? tr('empty.inboxTitle') : tr('empty.spaceTitle', { space: g.name }),
+      body: isInbox ? tr('empty.inboxBody') : tr('empty.spaceBody'),
+      actions: isInbox
+        ? [
+            { label: tr('empty.addSave'), icon: '+', run: () => openCommandPalette() },
+            { label: tr('empty.importBookmarks'), icon: '⇩', run: () => importBookmarks() },
+          ]
+        : [
+            { label: tr('empty.addNote'), icon: '+', run: () => col.querySelector('.gcol-ft [data-act="add-note"]')?.click() },
+            { label: tr('empty.addSave'), icon: '↗', run: () => addSidebarOrActiveTabToGroup(g) },
+          ],
+      compact: true,
+    }));
+  } else {
+    g.items.forEach(it => cardsEl.appendChild(buildItem(it, g.items, g)));
+  }
   makeGroupDropZone(cardsEl, col, g, g.items);
 
   // Scroll fade indicators
@@ -6356,6 +6884,456 @@ function toggleSearchBar(force) {
   const hide = force === false || !bar.classList.contains('hidden');
   if (hide) { bar.classList.add('hidden'); document.getElementById('search-input').value = ''; applySearchFilter(); }
   else { bar.classList.remove('hidden'); setTimeout(() => document.getElementById('search-input').focus(), 40); }
+}
+
+// ── Dedicated search surface ────────────────────────────────────
+let _searchRenderTimer = null;
+
+function _searchPlainHtml(html) {
+  return String(html || '').replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function _searchNoteParts(item) {
+  const text = String(item?.html || '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p\s*>/gi, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ');
+  const lines = text.split(/\n+/).map(line => line.replace(/\s+/g, ' ').trim()).filter(Boolean);
+  const first = lines[0] || '';
+  const clipped = first.length > 72 ? `${first.slice(0, 69).trimEnd()}…` : first;
+  const remainder = lines.slice(1).join(' ') || (first.length > 72 ? first.slice(69).trim() : '');
+  return { title: clipped, snippet: remainder };
+}
+
+function _searchItemTitle(item) {
+  if (!item) return '';
+  if (item.type === 'tab') return item.title || dispUrl(item.url || '') || tr('search.links');
+  if (item.type === 'note') return _searchNoteParts(item).title || tr('search.notes');
+  if (item.type === 'todo') return item.text || tr('search.todos');
+  if (item.type === 'stack') return item.name || tr('search.stacks');
+  return item.title || item.text || item.name || item.type || '';
+}
+
+function _searchItemSnippet(item) {
+  if (!item) return '';
+  if (item.type === 'tab') return dispUrl(item.url || '');
+  if (item.type === 'note') return _searchPlainHtml(item.notes).slice(0, 180) || _searchNoteParts(item).snippet || tr('search.notes');
+  if (item.type === 'todo') return item.done ? tr('search.todos') + ' · ✓' : tr('search.todos');
+  if (item.type === 'stack') return tr('search.stackItems', { count: (item.items || []).length });
+  return '';
+}
+
+function _searchTypeLabel(type) {
+  return tr(type === 'tab' ? 'search.links' : type === 'note' ? 'search.notes' : type === 'todo' ? 'search.todos' : 'search.stacks');
+}
+
+function _searchItemBlob(row) {
+  const { item, cat, group, parents = [] } = row;
+  return [
+    _searchItemTitle(item), item.url, item.text, _searchPlainHtml(item.html), _searchPlainHtml(item.notes),
+    item.name, ...(item.tags || []), cat?.name, group?.name, ...parents.map(parent => parent.name),
+  ].filter(Boolean).join(' ').toLowerCase();
+}
+
+// Data-level counterpart to applySearchFilter's DOM matcher. The launch layer,
+// command palette, and search page now share this exact operator behavior.
+function searchItemMatches(row, query) {
+  const { item, cat, group, parents = [] } = row;
+  if (!item) return false;
+  const { pos, neg } = parseSearchQuery(query);
+  let host = '';
+  try { host = new URL(item.url || '').hostname.toLowerCase(); } catch {}
+  const url = String(item.url || '').toLowerCase();
+  const color = String(item.color || '').toLowerCase();
+  const type = SEARCH_TYPES[item.type] || item.type;
+  const tags = (item.tags || []).map(tag => String(tag).toLowerCase());
+  const containers = [cat?.name, group?.name, ...parents.map(parent => parent.name)].filter(Boolean).map(name => String(name).toLowerCase());
+  const text = _searchItemBlob(row);
+  const matchesBucket = (bucket, negative = false) => {
+    const checks = [];
+    if (bucket.color.length) checks.push(bucket.color.includes(color));
+    if (bucket.type.length) checks.push(bucket.type.includes(type));
+    if (bucket.state.length) checks.push(item.type === 'todo' && bucket.state.some(state => state === (item.done ? 'done' : 'open')));
+    if (bucket.domain.length) checks.push(item.type === 'tab' && !!host && bucket.domain.some(value => host.includes(value)));
+    if (bucket.url.length) checks.push(item.type === 'tab' && !!url && bucket.url.some(value => url.includes(value)));
+    if (bucket.in.length) checks.push(bucket.in.some(value => containers.some(name => name.includes(value))));
+    if (bucket.tag.length) checks.push(bucket.tag.some(value => tags.some(tag => tag.includes(value))));
+    if (bucket.text.length) checks.push(negative ? bucket.text.some(value => text.includes(value)) : bucket.text.every(value => text.includes(value)));
+    return negative ? checks.some(Boolean) : checks.every(Boolean);
+  };
+  return matchesBucket(pos) && !matchesBucket(neg, true);
+}
+
+function _searchTimeCutoff(time) {
+  const now = new Date();
+  if (time === 'today') return new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  if (time === 'week') return Date.now() - 7 * 86400000;
+  if (time === 'month') return Date.now() - 30 * 86400000;
+  return 0;
+}
+
+function _searchScore(row, query) {
+  const raw = String(query || '').trim().toLowerCase();
+  if (!raw) return Number(row.item.createdAt || 0);
+  const title = _searchItemTitle(row.item).toLowerCase();
+  const blob = _searchItemBlob(row);
+  const words = parseSearchQuery(raw).pos.text;
+  let score = 0;
+  words.forEach(word => {
+    if (title === word) score += 500;
+    else if (title.startsWith(word)) score += 300;
+    else if (title.includes(word)) score += 180;
+    else if (blob.includes(word)) score += 80;
+  });
+  return score + Math.min(50, Number(row.item.createdAt || 0) / 1e12);
+}
+
+function _searchRowsForState(state = activeSearch, { ignoreType = false } = {}) {
+  const cutoff = _searchTimeCutoff(state.time);
+  const rows = collectWorkspaceItems(activeWs()).filter(row => {
+    if (state.query && !searchItemMatches(row, state.query)) return false;
+    if (!ignoreType && state.type !== 'all' && row.item.type !== state.type) return false;
+    if (state.spaceId !== 'all' && row.cat.id !== state.spaceId) return false;
+    if (cutoff && (!row.item.createdAt || row.item.createdAt < cutoff)) return false;
+    if (state.hasTags && !(row.item.tags || []).length) return false;
+    if (state.tag && !(row.item.tags || []).some(tag => String(tag).toLowerCase() === state.tag.toLowerCase())) return false;
+    return true;
+  });
+  rows.sort(state.sort === 'recent' || !state.query
+    ? (a, b) => Number(b.item.createdAt || 0) - Number(a.item.createdAt || 0)
+    : (a, b) => _searchScore(b, state.query) - _searchScore(a, state.query));
+  return rows;
+}
+
+function openSearchSurface(prefill = '') {
+  const ws = activeWs();
+  if (!ws) return;
+  const query = {};
+  if (prefill) query.q = String(prefill);
+  Router.navigate({ type: 'search', wsId: ws.id, query });
+  setTimeout(() => document.getElementById('search-surface-input')?.focus({ preventScroll: true }), 40);
+}
+
+function closeSearchSurface() {
+  const ws = activeWs();
+  if (!ws) return;
+  Router.navigate({ type: 'home', wsId: ws.id, query: {} });
+}
+
+function _searchOpenDetails(row) {
+  if (!row?.item || !row.cat) return;
+  Router.navigate({ type: 'board', wsId: activeWs()?.id, catId: row.cat.id, query: { item: row.item.id } });
+}
+
+function _searchOpenPrimary(row) {
+  if (!row?.item) return;
+  if (row.item.type !== 'tab') return _searchOpenDetails(row);
+  try {
+    const result = chrome.tabs.create({ url: row.item.url });
+    if (result && typeof result.catch === 'function') result.catch(err => toast(String(err?.message || err), { danger: true }));
+  } catch (err) {
+    toast(String(err?.message || err), { danger: true });
+  }
+}
+
+function _searchSet(patch, focus = '') {
+  if (!activeSearch) return;
+  Object.assign(activeSearch, patch, { loading: false });
+  renderBoard();
+  Router.sync({ replace: true });
+  if (focus) setTimeout(() => document.getElementById(focus)?.focus({ preventScroll: true }), 0);
+}
+
+function _searchQueueQuery(query) {
+  if (!activeSearch) return;
+  activeSearch.query = query;
+  activeSearch.loading = true;
+  activeSearch.selectedId = null;
+  Router.sync({ replace: true });
+  const list = document.getElementById('search-result-list');
+  if (list) {
+    list.setAttribute('aria-busy', 'true');
+    list.innerHTML = `<div class="search-state"><span class="search-spinner" aria-hidden="true"></span><strong>${esc(tr('search.loading'))}</strong></div>`;
+  }
+  clearTimeout(_searchRenderTimer);
+  _searchRenderTimer = setTimeout(() => {
+    if (!activeSearch) return;
+    activeSearch.loading = false;
+    renderBoard();
+    Router.sync({ replace: true });
+    const input = document.getElementById('search-surface-input');
+    if (input) { input.focus({ preventScroll: true }); input.setSelectionRange(input.value.length, input.value.length); }
+  }, 90);
+}
+
+function _searchMoveSelection(delta, focusRow = false) {
+  if (!activeSearch) return;
+  const rows = _searchRowsForState().slice(0, 100);
+  if (!rows.length) return;
+  let index = rows.findIndex(row => row.item.id === activeSearch.selectedId);
+  if (index < 0) index = 0;
+  index = (index + delta + rows.length) % rows.length;
+  activeSearch.selectedId = rows[index].item.id;
+  renderBoard();
+  Router.sync({ replace: true });
+  const id = focusRow ? `search-result-${index}` : 'search-surface-input';
+  setTimeout(() => document.getElementById(id)?.focus({ preventScroll: true }), 0);
+}
+
+function _searchTypeIcon(type) {
+  if (type === 'note') return '✎';
+  if (type === 'todo') return '✓';
+  if (type === 'stack') return '▤';
+  return '↗';
+}
+
+function _searchStateNode(kind, title, body) {
+  const node = document.createElement('div');
+  node.className = `search-state ${kind}`;
+  node.innerHTML = `<span class="search-state-icon" aria-hidden="true">${kind === 'error' ? '!' : '⌕'}</span><strong>${esc(title)}</strong><p>${esc(body)}</p>`;
+  return node;
+}
+
+function _searchResultRow(row, index, selected) {
+  const item = row.item;
+  const title = _searchItemTitle(item);
+  const result = document.createElement('div');
+  result.id = `search-result-${index}`;
+  result.className = 'search-result-row' + (selected ? ' selected' : '');
+  result.tabIndex = 0;
+  result.setAttribute('role', 'option');
+  result.setAttribute('aria-selected', selected ? 'true' : 'false');
+  result.setAttribute('aria-label', tr('search.resultAria', { title }));
+  result.innerHTML = `
+    <span class="search-result-icon type-${esc(item.type)}">${esc(_searchTypeIcon(item.type))}</span>
+    <span class="search-result-copy">
+      <strong>${esc(title)}</strong>
+      <span class="search-result-snippet">${esc(_searchItemSnippet(item))}</span>
+      <span class="search-result-tags">${(item.tags || []).slice(0, 3).map(tag => `<span>${esc(tag)}</span>`).join('')}</span>
+      <span class="search-result-meta">${esc(row.cat.name)} <i>·</i> ${esc(row.group.name)} <i>·</i> ${esc(item.createdAt ? fmtTimeRelative(item.createdAt) : tr('search.unknownDate'))}</span>
+    </span>
+    <span class="search-result-end">
+      <span class="search-type-badge">${esc(_searchTypeLabel(item.type))}</span>
+      ${item.type === 'tab' ? `<button class="search-result-fav" type="button" aria-label="${esc(item.favorite ? tr('search.unfavorite') : tr('search.favorite'))}">${item.favorite ? '★' : '☆'}</button>` : ''}
+    </span>`;
+  result.addEventListener('click', event => {
+    if (event.target.closest('.search-result-fav')) return;
+    _searchSet({ selectedId: item.id }, `search-result-${index}`);
+  });
+  result.addEventListener('dblclick', event => { if (!event.target.closest('button')) _searchOpenPrimary(row); });
+  result.addEventListener('keydown', event => {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') { event.preventDefault(); _searchMoveSelection(event.key === 'ArrowDown' ? 1 : -1, true); }
+    else if (event.key === 'Enter') { event.preventDefault(); _searchOpenPrimary(row); }
+    else if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeSearchSurface(); }
+  });
+  const favorite = result.querySelector('.search-result-fav');
+  if (favorite) favorite.onclick = event => {
+    event.stopPropagation();
+    State.snapshot(item.favorite ? 'Remove favorite' : 'Favorite link');
+    item.favorite = !item.favorite;
+    State.persist();
+    renderBoard();
+    updateNavChrome();
+  };
+  return result;
+}
+
+function _searchDetail(row) {
+  const aside = document.createElement('aside');
+  aside.className = 'search-detail';
+  aside.setAttribute('aria-label', tr('search.preview'));
+  if (!row) {
+    aside.appendChild(_searchStateNode('idle', tr('search.preview'), tr('search.selectResult')));
+    return aside;
+  }
+  const item = row.item;
+  const title = _searchItemTitle(item);
+  const notes = item.type === 'note' ? _searchNoteParts(item).snippet : _searchPlainHtml(item.notes);
+  const currentRows = _searchRowsForState().slice(0, 100);
+  const related = currentRows
+    .map((candidate, index) => ({ candidate, index }))
+    .filter(({ candidate }) => candidate.item.id !== item.id)
+    .sort((a, b) => {
+      const rank = candidate => candidate.group.id === row.group.id ? 2 : candidate.cat.id === row.cat.id ? 1 : 0;
+      return rank(b.candidate) - rank(a.candidate) || a.index - b.index;
+    })
+    .slice(0, 3);
+  aside.innerHTML = `
+    <header><span class="search-detail-icon type-${esc(item.type)}">${esc(_searchTypeIcon(item.type))}</span><div><strong>${esc(title)}</strong><span>${esc(_searchItemSnippet(item))}</span></div></header>
+    <dl>
+      <div><dt>${esc(tr('search.location'))}</dt><dd>${esc(row.cat.name)} · ${esc(row.group.name)}</dd></div>
+      <div><dt>${esc(tr('search.saved'))}</dt><dd>${esc(item.createdAt ? new Date(item.createdAt).toLocaleString(appLocale(), { dateStyle: 'medium', timeStyle: 'short' }) : tr('search.unknownDate'))}</dd></div>
+      <div><dt>${esc(tr('search.contentType'))}</dt><dd>${esc(_searchTypeLabel(item.type))}</dd></div>
+    </dl>
+    <section><h3>${esc(tr('search.notes'))}</h3><p>${esc(notes || tr('search.noNotes'))}</p></section>
+    ${(item.tags || []).length ? `<section><h3>${esc(tr('search.tags'))}</h3><div class="search-detail-tags">${item.tags.map(tag => `<span>${esc(tag)}</span>`).join('')}</div></section>` : ''}
+    <footer></footer>
+    ${related.length ? `<section class="search-detail-related"><h3>${esc(tr('search.related'))}</h3><div>${related.map(({ candidate, index }) => `<button type="button" data-result-index="${index}" data-result-id="${esc(candidate.item.id)}"><span class="search-related-icon type-${esc(candidate.item.type)}">${esc(_searchTypeIcon(candidate.item.type))}</span><span><strong>${esc(_searchItemTitle(candidate.item))}</strong><small>${esc(candidate.cat.name)} · ${esc(candidate.group.name)}</small></span></button>`).join('')}</div></section>` : ''}`;
+  const footer = aside.querySelector('footer');
+  if (item.type === 'tab') {
+    const open = document.createElement('button'); open.type = 'button'; open.className = 'btn-primary'; open.textContent = tr('search.open'); open.onclick = () => _searchOpenPrimary(row); footer.appendChild(open);
+  }
+  const details = document.createElement('button'); details.type = 'button'; details.className = 'btn-secondary'; details.textContent = tr('search.details'); details.onclick = () => _searchOpenDetails(row); footer.appendChild(details);
+  aside.querySelectorAll('.search-detail-related button').forEach(button => {
+    button.onclick = () => _searchSet({ selectedId: button.dataset.resultId }, `search-result-${button.dataset.resultIndex}`);
+  });
+  return aside;
+}
+
+function _searchFilterButton(label, active, onclick, count = null) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'search-filter-option' + (active ? ' active' : '');
+  button.setAttribute('aria-pressed', active ? 'true' : 'false');
+  button.innerHTML = `<span class="search-filter-mark" aria-hidden="true"></span><span>${esc(label)}</span>${count == null ? '' : `<b>${count}</b>`}`;
+  button.onclick = onclick;
+  return button;
+}
+
+function renderSearchSurface() {
+  const state = activeSearch;
+  const ws = activeWs();
+  if (!state || !ws) return false;
+  hideBreadcrumb();
+  const board = document.getElementById('board');
+  board.classList.remove('group-page-mode', 'list-mode', 'canvas-mode', 'explorer-mode', 'timeline-mode', 'gallery-mode', 'graph-mode', 'calendar-mode', 'home-mode', 'library-mode');
+  board.classList.add('search-mode');
+  board.innerHTML = '';
+
+  let baseRows = [], rows = [], failure = null;
+  try {
+    if (state.spaceId !== 'all' && !ws.categories.some(cat => cat.id === state.spaceId)) state.spaceId = 'all';
+    baseRows = _searchRowsForState(state, { ignoreType: true });
+    rows = _searchRowsForState(state);
+  } catch (err) {
+    console.error(err);
+    failure = err;
+  }
+  const visibleRows = rows.slice(0, 100);
+  if (!failure && state.selectedId && !visibleRows.some(row => row.item.id === state.selectedId)) state.selectedId = null;
+  const selected = !failure ? (visibleRows.find(row => row.item.id === state.selectedId) || visibleRows[0] || null) : null;
+  const hasDetail = !state.loading && !failure && !!selected;
+  const typeCounts = { all: baseRows.length, tab: 0, note: 0, todo: 0, stack: 0 };
+  baseRows.forEach(row => { if (typeCounts[row.item.type] != null) typeCounts[row.item.type]++; });
+
+  const page = document.createElement('section');
+  page.className = 'search-page' + (state.filtersOpen ? ' filters-open' : '') + (hasDetail ? '' : ' no-detail');
+  page.innerHTML = `
+    <header class="search-page-head">
+      <div><span class="search-title-icon" aria-hidden="true">⌕</span><h2>${esc(tr('search.title'))}</h2><p>${esc(tr('search.subtitle'))}</p></div>
+      <ol class="search-steps" aria-hidden="true"><li><b>1</b>${esc(tr('search.nav'))}</li><li><b>2</b>${esc(tr('search.results'))}</li><li><b>3</b>${esc(tr('search.filterBy'))}</li><li><b>4</b>${esc(tr('search.open'))}</li></ol>
+    </header>
+    <div class="search-query-row">
+      <label class="search-query-box"><span aria-hidden="true">⌕</span><input id="search-surface-input" role="combobox" aria-controls="search-result-list" aria-autocomplete="list" autocomplete="off" spellcheck="false"><button type="button" class="search-query-clear" aria-label="${esc(tr('search.clear'))}">×</button></label>
+      <button type="button" class="search-filter-toggle"><span aria-hidden="true">⚙</span><span>${esc(state.filtersOpen ? tr('search.hideFilters') : tr('search.filters'))}</span></button>
+    </div>
+    <div class="search-type-tabs" role="tablist"></div>
+    <div class="search-workspace">
+      <aside class="search-filters"><header><strong>${esc(tr('search.filterBy'))}</strong><button type="button">${esc(tr('search.clearAll'))}</button></header><div class="search-filter-sections"></div></aside>
+      <main class="search-results"><header><strong>${esc(state.query ? tr('search.results') : tr('search.recent'))}</strong><span>${esc(tr('search.resultCount', { count: rows.length }))}</span><label>${esc(tr('search.sortBy'))}<select class="search-sort"><option value="best">${esc(tr('search.bestMatch'))}</option><option value="recent">${esc(tr('search.newest'))}</option></select></label></header><div id="search-result-list" role="listbox"></div></main>
+      <div class="search-detail-slot"></div>
+    </div>`;
+  board.appendChild(page);
+
+  const input = page.querySelector('#search-surface-input');
+  input.value = state.query;
+  input.placeholder = tr('search.inputPlaceholder');
+  input.setAttribute('aria-label', tr('search.inputPlaceholder'));
+  input.setAttribute('aria-expanded', 'true');
+  if (hasDetail) input.setAttribute('aria-activedescendant', `search-result-${visibleRows.indexOf(selected)}`);
+  input.oninput = event => _searchQueueQuery(event.target.value);
+  input.onkeydown = event => {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') { event.preventDefault(); _searchMoveSelection(event.key === 'ArrowDown' ? 1 : -1); }
+    else if (event.key === 'Enter' && (selected || rows[0])) { event.preventDefault(); _searchOpenPrimary(selected || rows[0]); }
+    else if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); closeSearchSurface(); }
+  };
+  page.querySelector('.search-query-clear').onclick = () => _searchSet({ query: '', selectedId: null }, 'search-surface-input');
+  page.querySelector('.search-filter-toggle').onclick = () => _searchSet({ filtersOpen: !state.filtersOpen }, 'search-surface-input');
+
+  const typeTabs = page.querySelector('.search-type-tabs');
+  [
+    ['all', tr('search.all')], ['tab', tr('search.links')], ['note', tr('search.notes')],
+    ['todo', tr('search.todos')], ['stack', tr('search.stacks')],
+  ].forEach(([type, label]) => {
+    const button = document.createElement('button'); button.type = 'button';
+    button.className = state.type === type ? 'active' : '';
+    button.setAttribute('role', 'tab'); button.setAttribute('aria-selected', state.type === type ? 'true' : 'false');
+    button.innerHTML = `${esc(label)} <b>${typeCounts[type]}</b>`;
+    button.onclick = () => _searchSet({ type, selectedId: null }, 'search-surface-input');
+    typeTabs.appendChild(button);
+  });
+
+  const filterSections = page.querySelector('.search-filter-sections');
+  const addFilterSection = title => { const section = document.createElement('section'); section.innerHTML = `<h3>${esc(title)}</h3>`; filterSections.appendChild(section); return section; };
+  const spaces = addFilterSection(tr('search.space'));
+  spaces.appendChild(_searchFilterButton(tr('search.allSpaces'), state.spaceId === 'all', () => _searchSet({ spaceId: 'all', selectedId: null }), collectWorkspaceItems(ws).length));
+  ws.categories.forEach(cat => spaces.appendChild(_searchFilterButton(cat.name, state.spaceId === cat.id, () => _searchSet({ spaceId: cat.id, selectedId: null }), collectWorkspaceItems({ categories: [cat] }).length)));
+  const times = addFilterSection(tr('search.time'));
+  [['any', tr('search.anyTime')], ['today', tr('search.today')], ['week', tr('search.thisWeek')], ['month', tr('search.thisMonth')]].forEach(([time, label]) => times.appendChild(_searchFilterButton(label, state.time === time, () => _searchSet({ time, selectedId: null }))));
+  const tagCounts = new Map();
+  const activeTag = String(state.tag || '');
+  collectWorkspaceItems(ws).forEach(({ item }) => (item.tags || []).forEach(rawTag => {
+    const label = String(rawTag || '').trim();
+    if (!label) return;
+    const key = label.toLowerCase();
+    const current = tagCounts.get(key);
+    tagCounts.set(key, { label: current?.label || label, count: (current?.count || 0) + 1 });
+  }));
+  const tags = addFilterSection(tr('search.tags'));
+  tags.appendChild(_searchFilterButton(tr('search.hasTags'), state.hasTags, () => _searchSet({ hasTags: !state.hasTags, tag: '', selectedId: null })));
+  [...tagCounts.values()]
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, appLocale()))
+    .slice(0, 8)
+    .forEach(({ label, count }) => tags.appendChild(_searchFilterButton(label, activeTag.toLowerCase() === label.toLowerCase(), () => _searchSet({ tag: activeTag.toLowerCase() === label.toLowerCase() ? '' : label, hasTags: false, selectedId: null }), count)));
+  page.querySelector('.search-filters header button').onclick = () => _searchSet({ type: 'all', spaceId: 'all', time: 'any', hasTags: false, tag: '', sort: 'best', selectedId: null }, 'search-surface-input');
+
+  const sort = page.querySelector('.search-sort');
+  sort.value = state.sort;
+  sort.onchange = () => _searchSet({ sort: sort.value, selectedId: null }, 'search-surface-input');
+
+  const list = page.querySelector('#search-result-list');
+  if (state.loading) {
+    list.setAttribute('aria-busy', 'true');
+    list.appendChild(_searchStateNode('loading', tr('search.loading'), ''));
+  } else if (failure) {
+    list.appendChild(_searchStateNode('error', tr('search.error'), tr('search.errorBody')));
+  } else if (!collectWorkspaceItems(ws).length) {
+    list.appendChild(buildSystemEmptyState({
+      kind: 'library', title: tr('empty.libraryTitle'), body: tr('search.noItemsBody'),
+      actions: [
+        { label: tr('empty.addSave'), icon: '+', run: () => openCommandPalette() },
+        { label: tr('empty.importBookmarks'), icon: '⇩', run: () => importBookmarks() },
+      ],
+      note: tr('empty.localNote'),
+    }));
+  } else if (!rows.length) {
+    const filtersActive = state.type !== 'all' || state.spaceId !== 'all' || state.time !== 'any' || state.hasTags || !!state.tag;
+    const clearFilters = () => _searchSet({ type: 'all', spaceId: 'all', time: 'any', hasTags: false, tag: '', selectedId: null }, 'search-surface-input');
+    const clearSearch = () => _searchSet({ query: '', selectedId: null }, 'search-surface-input');
+    const actions = [{
+      label: tr(filtersActive ? 'empty.clearFilters' : 'empty.clearSearch'), icon: '×',
+      run: filtersActive ? clearFilters : clearSearch,
+    }];
+    if (state.spaceId !== 'all') actions.push({ label: tr('empty.searchAllSpaces'), icon: '↗', run: () => _searchSet({ spaceId: 'all', selectedId: null }, 'search-surface-input') });
+    else actions.push({ label: tr('empty.browseLibrary'), icon: '↗', run: () => openLibrarySurface('all') });
+    list.appendChild(buildSystemEmptyState({
+      kind: 'search',
+      title: state.query ? tr('empty.searchTitle', { query: state.query }) : tr('empty.noMatchTitle'),
+      body: tr('empty.searchBody'), actions,
+    }));
+  } else {
+    visibleRows.forEach((row, index) => list.appendChild(_searchResultRow(row, index, row.item.id === selected?.item.id)));
+  }
+  if (hasDetail) page.querySelector('.search-detail-slot').appendChild(_searchDetail(selected));
+
+  const footer = document.createElement('div');
+  footer.className = 'search-page-footer';
+  footer.innerHTML = `
+    <section><h3>${esc(tr('search.tips'))}</h3><p>${esc(tr('search.tipOperators'))}</p><p>${esc(tr('search.tipQuotes'))}</p><p>${esc(tr('search.tipExclude'))}</p></section>
+    <section><h3>${esc(tr('search.stats'))}</h3><div><span><b>${typeCounts.all}</b>${esc(tr('search.all'))}</span><span><b>${typeCounts.tab}</b>${esc(tr('search.links'))}</span><span><b>${typeCounts.note}</b>${esc(tr('search.notes'))}</span><span><b>${typeCounts.todo}</b>${esc(tr('search.todos'))}</span></div></section>`;
+  page.appendChild(footer);
+  return true;
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -8189,7 +9167,7 @@ function renderCanvasView() {
   const cat = activeCat(); if (!cat) return;
 
   if (!cat.groups.length) {
-    $b.innerHTML = `<div class="board-empty"><p>No groups in <strong>${esc(cat.name)}</strong>.<br>Add a group, then drag it anywhere on the canvas.</p></div>`;
+    $b.appendChild(buildEmptySpaceState(cat));
     return;
   }
 
@@ -8281,7 +9259,7 @@ function renderListView() {
   const cat = activeCat(); if (!cat) return;
 
   if (!cat.groups.length) {
-    $b.innerHTML = `<div class="board-empty"><p>No groups yet in <strong>${esc(cat.name)}</strong>.</p></div>`;
+    $b.appendChild(buildEmptySpaceState(cat));
     return;
   }
 
@@ -8572,6 +9550,10 @@ function renderExplorerView() {
   $b.classList.add('explorer-mode');
   const ws = activeWs(), cat = activeCat();
   if (!ws || !cat) return;
+  if (!cat.groups.length) {
+    $b.appendChild(buildEmptySpaceState(cat));
+    return;
+  }
 
   const wrap = document.createElement('div');
   wrap.className = 'ex-wrap';
@@ -8802,7 +9784,7 @@ function renderTimelineView() {
   cat.groups.forEach(g => walk(g.items, g));
 
   if (!entries.length) {
-    $b.innerHTML = `<div class="board-empty"><p>Nothing to place on the timeline in <strong>${esc(cat.name)}</strong> yet.<br>Save a tab or set a reminder to see it here.</p></div>`;
+    $b.appendChild(buildEmptySpaceState(cat));
     return;
   }
 
@@ -8921,7 +9903,7 @@ function renderGalleryView() {
   const cat = activeCat(); if (!cat) return;
 
   if (!cat.groups.length) {
-    $b.innerHTML = `<div class="board-empty"><p>No groups yet in <strong>${esc(cat.name)}</strong>.<br>Save a tab or add a group to fill the gallery.</p></div>`;
+    $b.appendChild(buildEmptySpaceState(cat));
     return;
   }
 
@@ -8996,7 +9978,7 @@ function renderGraphView() {
     return { g, items };
   });
   if (!groups.length) {
-    $b.innerHTML = `<div class="board-empty"><p>No groups to map in <strong>${esc(cat.name)}</strong> yet.<br>Add a group to see how its links relate.</p></div>`;
+    $b.appendChild(buildEmptySpaceState(cat));
     return;
   }
   const totalItems = groups.reduce((n, x) => n + x.items.length, 0);
@@ -9751,14 +10733,9 @@ function openLayoutMenu(btn) {
 // across the 13 themes. Board text-search still opens directly on `/`.
 let _palState = null;
 
-// Open (never toggle) the board search bar, optionally pre-filled and filtered.
+// Open the dedicated local search route, optionally pre-filled from the palette.
 function openSearchBar(prefill) {
-  const bar = document.getElementById('search-bar');
-  if (bar.classList.contains('hidden')) bar.classList.remove('hidden');
-  const inp = document.getElementById('search-input');
-  if (prefill != null) inp.value = prefill;
-  if (prefill) applySearchFilter();
-  setTimeout(() => inp.focus(), 40);
+  openSearchSurface(prefill == null ? '' : prefill);
 }
 
 // Open the Settings page from anywhere (mirrors the settings button handler).
@@ -9787,62 +10764,185 @@ function cycleTheme() {
   toast(tr('toast.theme', { theme: t?.label || State.get().settings.theme }));
 }
 
-// The command set, rebuilt each open so workspaces/categories/groups are current.
+const _palSvg = body => `<svg viewBox="0 0 20 20" fill="none" aria-hidden="true">${body}</svg>`;
+const PAL_ICONS = Object.freeze({
+  link: _palSvg('<path d="M8.2 11.8l3.6-3.6M6.1 13.9l-1 .9a3 3 0 01-4.2-4.2l3-3a3 3 0 014.2 0M13.9 6.1l1-.9a3 3 0 114.2 4.2l-3 3a3 3 0 01-4.2 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'),
+  note: _palSvg('<path d="M4 2.5h8l4 4v11H4z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 2.5v4h4M7 10h6M7 13h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>'),
+  space: _palSvg('<path d="M2.5 6.5h6l1.5 2h7.5v8.5h-15zM2.5 6.5v-3h5l1.5 2h8.5v3" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>'),
+  window: _palSvg('<rect x="2.5" y="3" width="15" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M2.5 7h15M6 5h.01M9 5h.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'),
+  import: _palSvg('<path d="M10 2.5v10M6.5 9l3.5 3.5L13.5 9M3 15v2h14v-2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>'),
+  home: _palSvg('<path d="M2.5 9.5L10 3l7.5 6.5M4.5 8.5v8h11v-8M8 16.5v-5h4v5" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>'),
+  inbox: _palSvg('<path d="M3.5 3.5h13v13h-13zM3.5 11h3l1.5 2h4l1.5-2h3" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>'),
+  calendar: _palSvg('<rect x="2.5" y="4" width="15" height="13.5" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6 2.5v3M14 2.5v3M2.5 8h15M6 11h2M11 11h3M6 14h2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>'),
+  read: _palSvg('<path d="M5 2.5h10a1 1 0 011 1v14L10 14l-6 3.5v-14a1 1 0 011-1z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>'),
+  library: _palSvg('<path d="M3 3h4v14H3zM8 3h4v14H8zM13 4l3.5-1 3 13.5-3.5 1z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>'),
+  favorite: _palSvg('<path d="M10 2.2l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.6-4.8 2.6.9-5.4-3.9-3.8 5.4-.8z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>'),
+  archive: _palSvg('<path d="M3 5h14v12H3zM2.5 2.5h15V6h-15zM7.5 10h5" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>'),
+  trash: _palSvg('<path d="M4.5 6h11l-1 11h-9zM3 6h14M7.5 6V3h5v3M8 9.5v4M12 9.5v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'),
+  search: _palSvg('<circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.6"/><path d="M12.5 12.5L17 17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'),
+  sidebar: _palSvg('<rect x="2.5" y="3" width="15" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7.5 3v14M4.5 6h.01M4.5 9h.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'),
+  theme: _palSvg('<path d="M10 2.5a7.5 7.5 0 100 15c1.1 0 1.7-.9 1.3-1.9-.4-1 .3-2.1 1.4-2.1h1.8a3 3 0 003-3c0-4.4-3.4-8-7.5-8z" stroke="currentColor" stroke-width="1.5"/><circle cx="6" cy="8" r="1" fill="currentColor"/><circle cx="9" cy="5.5" r="1" fill="currentColor"/><circle cx="13" cy="7" r="1" fill="currentColor"/>'),
+  settings: _palSvg('<circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.7 4.7l1.4 1.4M13.9 13.9l1.4 1.4M15.3 4.7l-1.4 1.4M6.1 13.9l-1.4 1.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>'),
+  help: _palSvg('<circle cx="10" cy="10" r="7.5" stroke="currentColor" stroke-width="1.5"/><path d="M7.8 7.6a2.3 2.3 0 114 1.5c-.7.8-1.8 1-1.8 2.4M10 14.2h.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>'),
+  layout: _palSvg('<rect x="2.5" y="3" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="11.5" y="3" width="6" height="6" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="2.5" y="12" width="6" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="11.5" y="12" width="6" height="5" rx="1" stroke="currentColor" stroke-width="1.4"/>'),
+  tools: _palSvg('<path d="M4 4h5v5H4zM11 4h5v5h-5zM4 11h5v5H4zM13.5 11v5M11 13.5h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>'),
+});
+
+function _palModKey() {
+  return /Mac|iPhone|iPad/.test(navigator.platform || '') ? '⌘' : 'Ctrl';
+}
+
+async function _palSaveActiveTab() {
+  const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+  const tab = tabs && tabs[0];
+  if (!tab || !tab.url || isProto(tab.url)) return toast(tr('palette.noActiveTab'), { danger: true });
+  await saveTabToInbox(tab);
+}
+
+function _palCreateNote() {
+  const cat = activeCat();
+  if (!cat) return toast(tr('palette.noSpace'), { danger: true });
+  let inbox = cat.groups.find(g => g.name === 'Inbox');
+  if (!inbox) {
+    inbox = { id: uid(), name: 'Inbox', symbol: '📥', color: '#6366f1', collapsed: false, items: [] };
+    cat.groups.unshift(inbox);
+  }
+  State.snapshot('Add note');
+  const note = stampNew({ id: uid(), type: 'note', html: '' });
+  inbox.items.unshift(note);
+  State.persist();
+  openGroupPage(inbox.id);
+  setTimeout(() => document.querySelector(`[data-id="${note.id}"] .note-text`)?.focus(), 80);
+}
+
+function _palToggleSidebar() {
+  const settings = State.get().settings;
+  settings.sidebarCollapsed = !settings.sidebarCollapsed;
+  applySettings();
+  State.persist();
+}
+
+function _palOpenSavedLink(row) {
+  const ws = activeWs();
+  if (!ws || !row?.item || !row?.cat) return;
+  ws.activeCatId = row.cat.id;
+  activeLibraryMode = null;
+  activeHome = false;
+  activeGroupPage = null;
+  activeCalendar = null;
+  boardDetailItemId = null;
+  State.persist();
+  renderAll();
+  openItemDetail(row.item.id);
+}
+
+function _palRecentTime(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  const now = new Date();
+  if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString(appLocale(), { hour: 'numeric', minute: '2-digit' });
+  const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1);
+  if (d.toDateString() === yesterday.toDateString()) return tr('trash.yesterday');
+  return d.toLocaleDateString(appLocale(), { month: 'short', day: 'numeric' });
+}
+
+function _palSavedLinkCommand(row) {
+  let host = '';
+  try { host = new URL(row.item.url).hostname.replace(/^www\./, ''); } catch { host = dispUrl(row.item.url); }
+  return {
+    id: `link-${row.item.id}`,
+    section: 'recent',
+    icon: PAL_ICONS.link,
+    label: row.item.title || host || row.item.url,
+    desc: tr('palette.savedLinkDesc', { host: host || tr('palette.savedLink'), space: row.cat.name }),
+    badge: tr('palette.savedLink'),
+    meta: _palRecentTime(row.item.createdAt),
+    keywords: `${row.item.url || ''} ${(row.item.tags || []).join(' ')} ${row.cat.name} ${row.group.name}`,
+    run: () => _palOpenSavedLink(row),
+  };
+}
+
+function _palRecentCommands() {
+  return collectWorkspaceTabs(activeWs())
+    .slice()
+    .sort((a, b) => (b.item.createdAt || 0) - (a.item.createdAt || 0))
+    .slice(0, 4)
+    .map(_palSavedLinkCommand);
+}
+
+// The command set is rebuilt each time the palette opens so every label, recent
+// item, workspace, space, and group reflects live local state.
 function buildPaletteCommands() {
   const cmds = [];
+  const add = command => cmds.push(command);
   const s = State.get();
   const ws = activeWs();
   const cat = activeCat();
   const cur = getViewMode();
+  const mod = _palModKey();
+
+  add({ id: 'save-tab', section: 'quick', icon: PAL_ICONS.link, label: tr('palette.saveTab'), desc: tr('palette.saveTabDesc'), shortcut: [mod, '⇧', 'S'], run: _palSaveActiveTab });
+  add({ id: 'create-note', section: 'quick', icon: PAL_ICONS.note, label: tr('palette.createNote'), desc: tr('palette.createNoteDesc'), run: _palCreateNote });
+  add({ id: 'new-space', section: 'quick', icon: PAL_ICONS.space, label: tr('palette.newSpace'), desc: tr('palette.newSpaceDesc'), run: () => openModal('new-cat') });
+  add({ id: 'save-window', section: 'quick', icon: PAL_ICONS.window, label: tr('palette.saveWindow'), desc: tr('palette.saveWindowDesc'), run: saveAllTabs });
+  add({ id: 'import-bookmarks', section: 'quick', icon: PAL_ICONS.import, label: tr('palette.importBookmarks'), desc: tr('palette.importBookmarksDesc'), run: importBookmarks });
+
+  add({ id: 'home', section: 'go', icon: PAL_ICONS.home, label: tr('nav.home'), desc: tr('palette.homeDesc'), run: goHome });
+  add({ id: 'inbox', section: 'go', icon: PAL_ICONS.inbox, label: tr('nav.inbox'), desc: tr('palette.inboxDesc'), run: openInboxView });
+  add({ id: 'calendar', section: 'go', icon: PAL_ICONS.calendar, label: tr('action.calendar'), desc: tr('palette.calendarDesc'), run: openCalendar });
+  add({ id: 'read-later', section: 'go', icon: PAL_ICONS.read, label: tr('nav.readLater'), desc: tr('palette.readLaterDesc'), run: () => openLibrarySurface('read-later') });
+  add({ id: 'all-links', section: 'go', icon: PAL_ICONS.library, label: tr('nav.allLinks'), desc: tr('palette.allLinksDesc'), run: () => openLibrarySurface('all') });
+  add({ id: 'favorites', section: 'go', icon: PAL_ICONS.favorite, label: tr('nav.favorites'), desc: tr('palette.favoritesDesc'), home: false, run: () => openLibrarySurface('favorites') });
+  add({ id: 'archive', section: 'go', icon: PAL_ICONS.archive, label: tr('nav.archive'), desc: tr('palette.archiveDesc'), home: false, run: () => openLibrarySurface('archive') });
+  add({ id: 'trash', section: 'go', icon: PAL_ICONS.trash, label: tr('nav.trash'), desc: tr('palette.trashDesc'), home: false, run: () => openLibrarySurface('trash') });
+  add({ id: 'toggle-sidebar', section: 'shortcuts', icon: PAL_ICONS.sidebar, label: tr('palette.toggleSidebar'), desc: tr('palette.toggleSidebarDesc'), run: _palToggleSidebar });
+  add({ id: 'next-theme', section: 'shortcuts', icon: PAL_ICONS.theme, label: tr('palette.nextTheme'), desc: tr('palette.nextThemeDesc'), run: cycleTheme });
+  add({ id: 'focus-search', section: 'shortcuts', icon: PAL_ICONS.search, label: tr('palette.search'), desc: tr('palette.searchDesc'), shortcut: ['/'], run: () => openSearchBar() });
+  add({ id: 'shortcut-help', section: 'shortcuts', icon: PAL_ICONS.help, label: tr('palette.help'), desc: tr('palette.helpDesc'), shortcut: ['?'], run: openCheatsheet });
+  add({ id: 'settings', section: 'shortcuts', icon: PAL_ICONS.settings, label: tr('action.settings'), desc: tr('palette.settingsDesc'), run: openSettingsDrawer });
 
   LAYOUT_ORDER.filter(m => LAYOUTS[m] && m !== cur).forEach(m => {
-    cmds.push({ cat: 'Layout', icon: LAYOUTS[m].icon, label: `Switch to ${LAYOUTS[m].label}`, run: () => setViewMode(m) });
+    add({ id: `layout-${m}`, section: 'more', home: false, icon: PAL_ICONS.layout, label: tr('palette.switchLayout', { name: LAYOUTS[m].label }), keywords: LAYOUTS[m].label, run: () => setViewMode(m) });
   });
-
-  cmds.push(activeCalendar
-    ? { cat: 'Go', label: 'Close calendar', run: closeCalendar }
-    : { cat: 'Go', label: 'Open calendar', run: openCalendar });
-
   s.workspaces.forEach(w => {
     if (w.id === s.activeWsId) return;
-    cmds.push({ cat: 'Workspace', sym: w.symbol, label: `Workspace: ${w.name}`, run: () => { State.get().activeWsId = w.id; State.persist(); renderAll(); } });
+    add({ id: `workspace-${w.id}`, section: 'more', home: false, sym: w.symbol, label: tr('palette.workspace', { name: w.name }), run: () => { State.get().activeWsId = w.id; State.persist(); renderAll(); } });
   });
   if (ws) ws.categories.forEach(c => {
     if (c.id === ws.activeCatId) return;
-    cmds.push({ cat: 'Category', label: `Category: ${c.name}`, run: () => { ws.activeCatId = c.id; State.persist(); renderAll(); } });
+    add({ id: `space-${c.id}`, section: 'more', home: false, icon: PAL_ICONS.space, label: tr('palette.space', { name: c.name }), run: () => { ws.activeCatId = c.id; State.persist(); renderAll(); } });
   });
   if (cat) cat.groups.forEach(g => {
-    cmds.push({ cat: 'Group', sym: g.symbol, label: `Open group: ${g.name}`, run: () => openGroupPage(g.id) });
+    add({ id: `group-${g.id}`, section: 'more', home: false, sym: g.symbol, label: tr('palette.group', { name: g.name }), run: () => openGroupPage(g.id) });
   });
-
-  cmds.push({ cat: 'Action', label: 'Save all open tabs', run: saveAllTabs });
-  cmds.push({ cat: 'Navigate', label: 'Open Read Later', run: () => openLibrarySurface('read-later') });
-  cmds.push({ cat: 'Action', label: 'New workspace', run: () => openModal('new-ws') });
-  cmds.push({ cat: 'Action', label: 'New category', run: () => openModal('new-cat') });
-  cmds.push({ cat: 'Action', label: 'Open tools', run: openToolsHub });
-  cmds.push({ cat: 'Action', label: 'Open settings', run: openSettingsDrawer });
-  cmds.push({ cat: 'Action', label: 'Open capture settings', run: () => openSettingsDrawer('capture') });
-  cmds.push({ cat: 'Action', label: 'Open shortcut settings', run: () => openSettingsDrawer('shortcuts') });
-  cmds.push({ cat: 'Action', label: 'Open privacy settings', run: () => openSettingsDrawer('privacy') });
-  cmds.push({ cat: 'Action', label: 'Open storage settings', run: () => openSettingsDrawer('storage') });
-  cmds.push({ cat: 'Action', label: 'Import / export data', run: () => openSettingsDrawer('data') });
-  cmds.push({ cat: 'Action', label: 'Keyboard shortcuts', run: openCheatsheet });
-  cmds.push({ cat: 'Action', label: 'Next theme', run: cycleTheme });
+  SETTINGS_SECTIONS.forEach(section => {
+    add({ id: `settings-${section.id}`, section: 'more', home: false, icon: PAL_ICONS.settings, label: tr(section.title), desc: tr(section.sub), run: () => openSettingsDrawer(section.id) });
+  });
+  add({ id: 'tools', section: 'more', home: false, icon: PAL_ICONS.tools, label: tr('action.tools'), run: openToolsHub });
+  cmds.push(..._palRecentCommands());
   return cmds;
 }
 
-// Score a label against a lowercased query: a contiguous substring ranks above a
-// scattered subsequence, adjacency scores higher; -1 means no match.
-function _palScore(label, q) {
+// Contiguous matches rank above scattered subsequences; descriptions and local
+// metadata participate so a space name, hostname, or tag can find its command.
+function _palScore(command, q) {
   if (!q) return 0;
-  const s = label.toLowerCase();
-  const idx = s.indexOf(q);
+  const text = `${command.label || ''} ${command.desc || ''} ${command.keywords || ''}`.toLowerCase();
+  const idx = text.indexOf(q);
   if (idx >= 0) return 1000 - idx;
   let qi = 0, score = 0, last = -2;
-  for (let i = 0; i < s.length && qi < q.length; i++) {
-    if (s[i] === q[qi]) { score += (last === i - 1) ? 3 : 1; last = i; qi++; }
+  for (let i = 0; i < text.length && qi < q.length; i++) {
+    if (text[i] === q[qi]) { score += (last === i - 1) ? 3 : 1; last = i; qi++; }
   }
   return qi === q.length ? score : -1;
+}
+
+function _palMatchingLinks(query) {
+  return collectWorkspaceTabs(activeWs())
+    .filter(row => landingLinkMatches(row, query))
+    .sort((a, b) => (b.item.createdAt || 0) - (a.item.createdAt || 0))
+    .slice(0, 7)
+    .map(_palSavedLinkCommand);
 }
 
 function _palEnsureDom() {
@@ -9853,28 +10953,43 @@ function _palEnsureDom() {
   ov.className = 'hidden';
   ov.setAttribute('role', 'dialog');
   ov.setAttribute('aria-modal', 'true');
-  ov.setAttribute('aria-label', 'Command palette');
   ov.innerHTML =
     `<div class="cmdp-box">` +
       `<div class="cmdp-inputrow">` +
-        `<svg class="cmdp-ico" width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>` +
-        `<input id="cmdp-input" type="text" autocomplete="off" spellcheck="false" placeholder="Type a command or search…">` +
-        `<kbd class="cmdp-esc">Esc</kbd>` +
+        `<span class="cmdp-ico">${PAL_ICONS.search}</span>` +
+        `<input id="cmdp-input" type="text" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="cmdp-list" aria-autocomplete="list">` +
+        `<span class="cmdp-trigger" aria-hidden="true"><kbd></kbd><kbd>K</kbd></span>` +
       `</div>` +
       `<div class="cmdp-list" id="cmdp-list" role="listbox"></div>` +
+      `<div id="cmdp-status" class="cmdp-status" aria-live="polite"></div>` +
+      `<div class="cmdp-footer"><span aria-hidden="true">✧</span><span></span></div>` +
     `</div>`;
   document.body.appendChild(ov);
   const inp = ov.querySelector('#cmdp-input');
   ov.addEventListener('mousedown', e => { if (e.target === ov) closeCommandPalette(); });
+  ov.addEventListener('keydown', e => {
+    trapTabKey(e, ov);
+    if (e.target !== inp && ['ArrowDown', 'ArrowUp', 'Home', 'End', 'Enter', 'Escape'].includes(e.key)) _palKeydown(e);
+  });
   inp.addEventListener('input', () => _palRender(inp.value));
   inp.addEventListener('keydown', _palKeydown);
   return ov;
 }
 
+function _palSyncLocale(ov) {
+  ov.setAttribute('aria-label', tr('palette.ariaLabel'));
+  const inp = ov.querySelector('#cmdp-input');
+  inp.placeholder = tr('palette.placeholder');
+  inp.setAttribute('aria-label', tr('palette.placeholder'));
+  ov.querySelector('.cmdp-trigger kbd').textContent = _palModKey();
+  ov.querySelector('.cmdp-footer span:last-child').textContent = tr('palette.footer');
+}
+
 function openCommandPalette() {
   const ov = _palEnsureDom();
+  _palSyncLocale(ov);
   rememberOpener(ov);
-  _palState = { cmds: buildPaletteCommands(), filtered: [], sel: 0, query: '' };
+  _palState = { cmds: buildPaletteCommands(), filtered: [], sel: 0, query: '', noMatch: false };
   ov.classList.remove('hidden');
   const inp = ov.querySelector('#cmdp-input');
   inp.value = '';
@@ -9890,45 +11005,125 @@ function closeCommandPalette() {
   restoreOpener(ov);
 }
 
+function _palShortcutHtml(keys) {
+  return (keys || []).map(key => `<kbd>${esc(key)}</kbd>`).join('');
+}
+
+function _palRow(command, index) {
+  const row = document.createElement('button');
+  row.type = 'button';
+  row.id = `cmdp-option-${index}`;
+  row.className = 'cmdp-row' + (index === _palState.sel ? ' sel' : '');
+  row.dataset.palIndex = index;
+  row.setAttribute('role', 'option');
+  row.setAttribute('aria-selected', index === _palState.sel ? 'true' : 'false');
+  row.innerHTML =
+    `<span class="cmdp-row-ico">${command.icon || (command.sym ? esc(command.sym) : PAL_ICONS.link)}</span>` +
+    `<span class="cmdp-row-copy"><span class="cmdp-row-label">${esc(command.label)}</span>${command.desc ? `<span class="cmdp-row-desc">${esc(command.desc)}</span>` : ''}</span>` +
+    `<span class="cmdp-row-end">${command.badge ? `<span class="cmdp-row-badge">${esc(command.badge)}</span>` : ''}${command.meta ? `<span class="cmdp-row-meta">${esc(command.meta)}</span>` : ''}${command.shortcut ? `<span class="cmdp-row-shortcut">${_palShortcutHtml(command.shortcut)}</span>` : ''}</span>`;
+  row.addEventListener('mouseenter', () => { if (_palState && _palState.sel !== index) { _palState.sel = index; _palSyncSel(); } });
+  row.addEventListener('click', () => _palRun(index));
+  return row;
+}
+
+function _palSection(title, commands, emptyText = '') {
+  const section = document.createElement('section');
+  section.className = 'cmdp-section';
+  section.innerHTML = `<h3>${esc(title)}</h3>`;
+  if (!commands.length && emptyText) {
+    const empty = document.createElement('p');
+    empty.className = 'cmdp-section-empty';
+    empty.textContent = emptyText;
+    section.appendChild(empty);
+    return section;
+  }
+  commands.forEach(command => section.appendChild(_palRow(command, _palState.filtered.indexOf(command))));
+  return section;
+}
+
+function _palRenderHome(listEl) {
+  const quick = _palState.cmds.filter(c => c.section === 'quick' && c.home !== false);
+  const go = _palState.cmds.filter(c => c.section === 'go' && c.home !== false);
+  const recent = _palState.cmds.filter(c => c.section === 'recent');
+  const shortcuts = _palState.cmds.filter(c => c.section === 'shortcuts' && c.home !== false);
+  _palState.filtered = [...quick, ...go, ...recent, ...shortcuts];
+  listEl.className = 'cmdp-list cmdp-home';
+  const left = document.createElement('div'); left.className = 'cmdp-column cmdp-column-main';
+  const right = document.createElement('div'); right.className = 'cmdp-column cmdp-column-side';
+  left.appendChild(_palSection(tr('palette.quickActions'), quick));
+  left.appendChild(_palSection(tr('palette.goTo'), go));
+  left.appendChild(_palSection(tr('palette.recent'), recent, tr('palette.recentEmpty')));
+  right.appendChild(_palSection(tr('palette.shortcuts'), shortcuts));
+  listEl.append(left, right);
+}
+
+function _palRenderResults(listEl, commands) {
+  listEl.className = 'cmdp-list cmdp-results';
+  const section = document.createElement('section');
+  section.className = 'cmdp-section';
+  section.innerHTML = `<h3>${esc(tr('palette.results'))}</h3>`;
+  if (_palState.noMatch) {
+    const empty = document.createElement('p');
+    empty.className = 'cmdp-empty';
+    empty.textContent = tr('palette.noMatch');
+    section.appendChild(empty);
+  }
+  commands.forEach(command => section.appendChild(_palRow(command, _palState.filtered.indexOf(command))));
+  listEl.appendChild(section);
+}
+
 function _palRender(query) {
   if (!_palState) return;
   _palState.query = query;
-  const q = query.trim().toLowerCase();
-  let ranked;
-  if (!q) ranked = _palState.cmds.slice();
-  else ranked = _palState.cmds
-    .map(c => ({ c, score: _palScore(c.label, q) }))
-    .filter(x => x.score >= 0)
-    .sort((a, b) => b.score - a.score)
-    .map(x => x.c);
-  const items = ranked.slice();
-  // Always offer a board-search fallback when there's a query.
-  if (q) items.push({ cat: 'Search', label: `Search board for “${query.trim()}”`, run: () => openSearchBar(query.trim()) });
-  _palState.filtered = items;
-  _palState.sel = Math.max(0, Math.min(_palState.sel, items.length - 1));
-
+  _palState.sel = 0;
+  const raw = query.trim();
+  const q = raw.toLowerCase();
   const listEl = document.getElementById('cmdp-list');
   listEl.innerHTML = '';
-  if (!items.length) { listEl.innerHTML = `<div class="cmdp-empty">No matching commands</div>`; return; }
-  items.forEach((c, i) => {
-    const row = document.createElement('div');
-    row.className = 'cmdp-row' + (i === _palState.sel ? ' sel' : '');
-    row.setAttribute('role', 'option');
-    row.innerHTML =
-      `<span class="cmdp-row-ico">${c.icon || (c.sym ? esc(c.sym) : '')}</span>` +
-      `<span class="cmdp-row-label">${esc(c.label)}</span>` +
-      `<span class="cmdp-row-cat">${esc(c.cat || '')}</span>`;
-    row.addEventListener('mousemove', () => { if (_palState.sel !== i) { _palState.sel = i; _palSyncSel(); } });
-    row.addEventListener('click', () => _palRun(i));
-    listEl.appendChild(row);
-  });
+
+  if (!q) {
+    _palState.noMatch = false;
+    _palRenderHome(listEl);
+  } else {
+    const ranked = _palState.cmds
+      .filter(c => c.section !== 'recent')
+      .map(c => ({ c, score: _palScore(c, q) }))
+      .filter(x => x.score >= 0)
+      .sort((a, b) => b.score - a.score);
+    _palMatchingLinks(raw).forEach(c => ranked.push({ c, score: 900 }));
+    const seen = new Set();
+    const matches = ranked.filter(({ c }) => !seen.has(c.id) && seen.add(c.id)).map(({ c }) => c).slice(0, 11);
+    _palState.noMatch = matches.length === 0;
+    const fallback = {
+      id: 'search-board-fallback', section: 'results', icon: PAL_ICONS.search,
+      label: tr('palette.searchBoard', { query: raw }), desc: tr('palette.searchBoardDesc'),
+      shortcut: ['Enter'], run: () => openSearchBar(raw),
+    };
+    _palState.filtered = [...matches, fallback];
+    _palRenderResults(listEl, _palState.filtered);
+  }
+
+  const count = _palState.filtered.length;
+  document.getElementById('cmdp-status').textContent = tr('palette.resultCount', { count });
+  _palSyncSel();
 }
 
 function _palSyncSel() {
+  if (!_palState) return;
   const rows = document.querySelectorAll('#cmdp-list .cmdp-row');
-  rows.forEach((r, i) => r.classList.toggle('sel', i === _palState.sel));
-  const sel = rows[_palState.sel];
-  if (sel && sel.scrollIntoView) sel.scrollIntoView({ block: 'nearest' });
+  rows.forEach(row => {
+    const on = Number(row.dataset.palIndex) === _palState.sel;
+    row.classList.toggle('sel', on);
+    row.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  const sel = document.querySelector(`#cmdp-list .cmdp-row[data-pal-index="${_palState.sel}"]`);
+  const inp = document.getElementById('cmdp-input');
+  if (sel) {
+    inp?.setAttribute('aria-activedescendant', sel.id);
+    if (sel.scrollIntoView) sel.scrollIntoView({ block: 'nearest' });
+  } else {
+    inp?.removeAttribute('aria-activedescendant');
+  }
 }
 
 function _palKeydown(e) {
@@ -9936,16 +11131,24 @@ function _palKeydown(e) {
   const n = _palState.filtered.length;
   if (e.key === 'ArrowDown') { e.preventDefault(); _palState.sel = n ? (_palState.sel + 1) % n : 0; _palSyncSel(); }
   else if (e.key === 'ArrowUp') { e.preventDefault(); _palState.sel = n ? (_palState.sel - 1 + n) % n : 0; _palSyncSel(); }
+  else if (e.key === 'Home') { e.preventDefault(); _palState.sel = 0; _palSyncSel(); }
+  else if (e.key === 'End') { e.preventDefault(); _palState.sel = Math.max(0, n - 1); _palSyncSel(); }
   else if (e.key === 'Enter') { e.preventDefault(); _palRun(_palState.sel); }
   else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeCommandPalette(); }
 }
 
 function _palRun(i) {
   if (!_palState) return;
-  const c = _palState.filtered[i];
-  if (!c) return;
+  const command = _palState.filtered[i];
+  if (!command) return;
   closeCommandPalette();
-  try { c.run(); } catch (err) { console.error(err); }
+  try {
+    const result = command.run();
+    if (result && typeof result.catch === 'function') result.catch(err => { console.error(err); toast(String(err?.message || err), { danger: true }); });
+  } catch (err) {
+    console.error(err);
+    toast(String(err?.message || err), { danger: true });
+  }
 }
 
 function toggleSelectMode() {
@@ -11978,6 +13181,7 @@ function bindStatic() {
 
   // ── Sidebar smart views ──
   document.getElementById('nav-home').onclick = goHome;
+  document.getElementById('nav-search').onclick = () => openSearchSurface();
   document.getElementById('nav-all').onclick = () => openLibrarySurface('all');
   document.getElementById('nav-favorites').onclick = () => openLibrarySurface('favorites');
   document.getElementById('nav-read-later').onclick = () => openLibrarySurface('read-later');
@@ -12024,7 +13228,7 @@ function bindStatic() {
     document.getElementById('about-replay').onclick = () => { closeAbout(); setTimeout(openWelcome, 200); };
   }
   document.getElementById('modal-overlay').addEventListener('keydown', e => trapTabKey(e, document.getElementById('modal-overlay')));
-  document.getElementById('search-btn').onclick = () => toggleSearchBar();
+  document.getElementById('search-btn').onclick = () => openSearchSurface();
   const topSearch = document.getElementById('topbar-search');
   if (topSearch) topSearch.onclick = () => openCommandPalette();
   document.getElementById('undo-btn').onclick = performUndo;
@@ -12228,6 +13432,8 @@ function bindStatic() {
       // leaving the surface beneath intact; a second Escape then leaves that.
       if (currentDetailItemId() && !inField && !_overlayWasOpen) {
         closeItemDetail();
+      } else if (activeSearch && !inField && !_overlayWasOpen) {
+        closeSearchSurface();
       } else if (activeGroupPage && !inField && !_overlayWasOpen) {
         closeGroupPage();
       } else if (activeCalendar && !inField && !_overlayWasOpen) {

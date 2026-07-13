@@ -7,16 +7,66 @@ Last updated: 2026-07-13.
 
 ## Queue (highest impact first)
 
-1. **Command palette fidelity review** (`locus_command_popup.png`) — the local
-   command palette is functional and keyboard-driven, but its visual hierarchy,
-   query/empty states, and preview parity have never had a focused pass. It is a
-   high-frequency navigation surface and needs no new permissions or remote data.
-2. **Search surface fidelity review** (`search_prototype.png`) — the operator
-   engine is shipped, but the saved-link search presentation and complete
-   keyboard/empty-state flow remain visually unreviewed against the preview.
+1. **First-use and shell simplification** (`docs/UX_SIMPLIFICATION.md`) — stop
+   adding default-visible capability and implement the corrective sequence in
+   order: one-task welcome, no chained landing handoff, five-entry core navigation,
+   one-action top bar, collapsed opened-tabs rail, and a three-zone Home. Validate
+   the save-and-find loop before promoting Calendar or alternate Space views.
+2. **Space layout fidelity triage** (`spaces_*` previews) — Canvas, Explorer,
+   Gallery, Graph, Timeline, and details are functional, but fidelity and user-flow
+   quality vary. Audit the highest-friction layout first, then re-rank the rest from
+   rendered evidence rather than treating all six as one rewrite. Keep layouts
+   under Advanced views until each passes the core-ready gate.
 
 ## Done (newest first)
 
+- **2026-07-13 — System empty-state fidelity review** — replaced the scattered
+  zero/no-match placeholders with one responsive, localized contract modeled on
+  `locus_system_empty_state_each_page.png`. Home, empty Spaces and Inbox/groups,
+  Search, All Links, Favorites, Read Later, Archive, and Trash now use calm
+  surface-specific copy, a restrained illustration, and no more than two real
+  recovery actions wired to existing create, capture, import, navigation, and
+  filter-reset paths. Empty Read Later no longer stacks duplicate shells; filtered
+  Archive/Trash states restore rows and focus; action focus survives palette
+  dismissal. Rendered checks covered zero and no-match variants, real note creation
+  and Archive→Trash recovery, keyboard focus, light/dark, reduced motion, en/zh-TW,
+  duplicate-state/ID checks, and console errors. No schema or permission changes.
+- **2026-07-13 — Search + command palette corrective UX pass** — the dedicated
+  Search route now owns its query field instead of competing with the global
+  command trigger; its first visible result and detail always agree, Arrow Down
+  advances from that result, and loading/error/no-result states no longer leave a
+  misleading detail column behind. Filters now expose real tag choices with
+  counts and reload-safe URLs; notes use a concise title/snippet; selected details
+  contain only stored metadata, notes, tags, actions, and related local results.
+  The command palette has one canonical Search command, keeps Recent visible at a
+  1280×720 laptop viewport, scrolls each column independently, and restores focus
+  after Escape. Rendered checks covered query/tag/related-result/reload flows,
+  keyboard navigation, light/dark, en/zh-TW, duplicate IDs, and console errors.
+- **2026-07-13 — Search surface fidelity review** — promoted the old in-board
+  filter into a reload-safe `/search` route modeled on `search_prototype.png`.
+  It searches real links, notes, tasks, stacks, and nested stack contents across
+  the active workspace; the existing text, quoted phrase, type/state/domain/url,
+  Space, tag, color, and negation vocabulary now powers the launch layer,
+  command palette, and dedicated page through one data-level matcher. The page
+  adds live type counts, real Space/time/tag filters, best/newest sorting,
+  selected-result detail, external open plus existing item-detail handoff,
+  favorite mutation, loading/empty/error states, keyboard selection, Escape,
+  reload/back-forward persistence, 800px layout, light/dark themes, reduced
+  motion, and en + zh-TW. Files/images/tweets, AI search/auto-sort, remote content
+  previews, and premium upgrade concepts from the mock were intentionally omitted
+  because Locus stores no page/file content and remains local-only/free-tier.
+- **2026-07-13 — Command palette fidelity review** — rebuilt the local command
+  palette around `locus_command_popup.png`: a preview-aligned two-column home
+  groups Quick actions, Go to, live recently saved links, and Shortcuts, while
+  query mode fuzzily searches commands plus the user's real saved links and hands
+  complex/operator queries to the existing board search. Save tab, create note,
+  save window, import bookmarks, navigation, settings, theme, and sidebar actions
+  all call existing state/browser paths; workspace, Space, group, layout, and
+  settings-section commands are generated from live local state. Empty/error
+  handling, listbox semantics, focus containment, Escape/arrow/Home/End/Enter,
+  800px/narrow layout, light/dark themes, reduced motion, and en + zh-TW are
+  covered. The preview's remote Help center and upload/file concepts were omitted
+  to preserve the local-only, no-host-permissions boundary.
 - **2026-07-13 — Popup preview remainders** — completed the remaining local/free
   intent in `locus_extension_popup.png`. The new More view provides real Save
   current tab, `chrome.bookmarks` import into the active Space, and browser-managed
@@ -99,9 +149,10 @@ Last updated: 2026-07-13.
 | new_tab_landing_page.png (Jul 11) | ✅ Done 2026-07-12 |
 | dashboard.png | ✅ Home surface |
 | favorites / read_later / all_links / archive / inbox prototypes | ✅ Library surfaces |
-| search_prototype.png | ✅ Board search + operators (fidelity unreviewed) |
+| search_prototype.png | ✅ Done 2026-07-13 (local/free fidelity pass) |
+| locus_system_empty_state_each_page.png | ✅ Done 2026-07-13 (shared local/free empty-state contract) |
 | locus_extension_popup.png | ✅ Done 2026-07-13 (local/free subset + remainder pass) |
-| locus_command_popup.png | ✅ Command palette (fidelity unreviewed) |
+| locus_command_popup.png | ✅ Done 2026-07-13 (local/free fidelity pass) |
 | spaces_* layout pngs (canvas/explorer/gallery/graph/timeline/details) | ✅ Layouts shipped (fidelity varies) |
 | calendar.png, calendar_dark_expand.png | ✅ Calendar |
 | locus_startup_1–5.png | ✅ Welcome questionnaire |
@@ -112,6 +163,11 @@ Last updated: 2026-07-13.
 
 ## Known issues / tensions
 
+- The managed in-app browser stayed at 1280×720 when asked for an 800px viewport
+  during the corrective Search/palette and empty-state passes. The narrow
+  media-query paths were inspected statically, but the next unpacked-extension pass
+  should repeat the interactive Search, palette, and empty-state checks at 800px
+  before treating that viewport as fresh runtime evidence.
 - `renderArchiveList()` in newtab.js is a harmless no-op since the drawer's archive
   tab was removed (element gone, function null-guards); callers remain. Delete
   function + call sites opportunistically when touching those paths.
