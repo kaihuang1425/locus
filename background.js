@@ -1,4 +1,4 @@
-/* ═══ Folio background.js ═══ */
+/* ═══ Locus background.js ═══ */
 
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const normalizeLanguage = value => /^zh(?:[-_]|$)/i.test(String(value || '').trim()) ? 'zh-TW' : 'en';
@@ -17,14 +17,14 @@ async function setState(s) {
   try {
     await chrome.storage.local.set({ te: s });
   } catch (err) {
-    console.error('Folio storage write failed:', err);
+    console.error('Locus storage write failed:', err);
     if (/quota/i.test(String(err?.message || err))) {
       try {
         chrome.notifications.create('te-storage-quota-' + Date.now(), {
           type: 'basic',
           iconUrl: chrome.runtime.getURL('icons/icon128.png'),
-          title: 'Folio storage full',
-          message: 'A background save failed. Open Folio to free space.',
+          title: 'Locus storage full',
+          message: 'A background save failed. Open Locus to free space.',
           priority: 2
         });
       } catch {}
@@ -51,22 +51,65 @@ async function ensureDefault(s) {
   return s;
 }
 
+function captureFields(s, tab, url = tab?.url) {
+  const settings = s?.settings || {};
+  let fallback = url || 'Untitled';
+  try { fallback = new URL(url).hostname || fallback; } catch {}
+  return {
+    title: settings.captureIncludeTitle !== false ? (tab?.title || fallback) : fallback,
+    fav: settings.captureIncludeFavicon !== false ? (tab?.favIconUrl || tab?.fav || '') : ''
+  };
+}
+
+function resolveCaptureTarget(s, { useLast = true } = {}) {
+  const settings = s.settings || {};
+  if (useLast && settings.captureRememberLast !== false && settings.captureLastTarget?.groupId) {
+    for (const ws of (s.workspaces || [])) {
+      for (const cat of (ws.categories || [])) {
+        const group = (cat.groups || []).find(g => g.id === settings.captureLastTarget.groupId);
+        if (group) return { ws, cat, group };
+      }
+    }
+  }
+  let ws = (s.workspaces || []).find(w => (w.categories || []).some(c => c.id === settings.captureDefaultCategoryId));
+  ws = ws || s.workspaces.find(w => w.id === s.activeWsId) || s.workspaces[0];
+  let cat = (ws.categories || []).find(c => c.id === settings.captureDefaultCategoryId);
+  cat = cat || (ws.categories || []).find(c => c.id === ws.activeCatId) || ws.categories[0];
+  if (!cat) return null;
+  let group = (cat.groups || []).find(g => g.name === 'Inbox');
+  if (!group) {
+    group = { id: uid(), name: 'Inbox', symbol: '📥', color: '#6366f1', collapsed: false, items: [] };
+    cat.groups = cat.groups || [];
+    cat.groups.unshift(group);
+  }
+  return { ws, cat, group };
+}
+
 async function addToInbox(item) {
   let s = await getState();
   s = await ensureDefault(s);
-  const ws = s.workspaces.find(w => w.id === s.activeWsId) || s.workspaces[0];
-  const cat = ws.categories.find(c => c.id === ws.activeCatId) || ws.categories[0];
-  let inbox = cat.groups.find(g => g.name === 'Inbox');
-  if (!inbox) {
-    inbox = { id: uid(), name: 'Inbox', symbol: '📥', color: '#6366f1', collapsed: false, items: [] };
-    cat.groups.unshift(inbox);
-  }
-  if (item.type === 'tab' && inbox.items.find(it => it.type === 'tab' && it.url === item.url)) {
+  const target = resolveCaptureTarget(s);
+  if (!target) return false;
+  const inbox = target.group;
+  if (item.type === 'tab' && s.settings.captureDeduplicate !== false && inbox.items.find(it => it.type === 'tab' && it.url === item.url)) {
     return false;
   }
+  if (item.type === 'tab') {
+    const meta = captureFields(s, item, item.url);
+    item.title = meta.title;
+    item.fav = meta.fav;
+  }
+  if (!item.createdAt) item.createdAt = Date.now();
   inbox.items.push(item);
   await setState(s);
   return true;
+}
+
+async function closeCapturedTabIfEnabled(tabId) {
+  if (tabId == null) return;
+  const s = await getState();
+  if (s?.settings?.closeTabOnSave === false) return;
+  try { await chrome.tabs.remove(tabId); } catch {}
 }
 
 function flash(text = '✓', color = '#22c55e') {
@@ -81,8 +124,8 @@ function flash(text = '✓', color = '#22c55e') {
 // upgrade paths). Also re-registering on onStartup is defense-in-depth for
 // rare cases where persisted menu state desyncs from the SW.
 const MENU_ITEMS = [
-  { id: 'te-save-page',      title: '💾 Save page to Folio',  contexts: ['page'] },
-  { id: 'te-save-link',      title: '🔗 Save link to Folio',  contexts: ['link'] },
+  { id: 'te-save-page',      title: '💾 Save page to Locus',  contexts: ['page'] },
+  { id: 'te-save-link',      title: '🔗 Save link to Locus',  contexts: ['link'] },
   { id: 'te-save-selection', title: '📝 Save selection as note',  contexts: ['selection'] },
   { id: 'te-save-image',     title: '🖼️ Save image',              contexts: ['image'] },
   { id: 'te-sep',            type: 'separator',                   contexts: ['page'] },
@@ -101,7 +144,7 @@ chrome.runtime.onStartup.addListener(registerContextMenus);
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId === 'te-save-page' && tab) {
     const ok = await addToInbox({ id: uid(), type:'tab', title:tab.title||'Untitled', url:tab.url, fav:tab.favIconUrl||'' });
-    if (ok) flash();
+    if (ok) { flash(); await closeCapturedTabIfEnabled(tab.id); }
   } else if (info.menuItemId === 'te-save-link') {
     const ok = await addToInbox({ id: uid(), type:'tab', title: info.selectionText || info.linkUrl, url: info.linkUrl, fav:'' });
     if (ok) flash(); else flash('dup', '#f97316');
@@ -115,18 +158,25 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   } else if (info.menuItemId === 'te-save-all' && tab) {
     let s = await getState();
     s = await ensureDefault(s);
-    const ws = s.workspaces.find(w => w.id === s.activeWsId) || s.workspaces[0];
-    const cat = ws.categories.find(c => c.id === ws.activeCatId) || ws.categories[0];
+    const target = resolveCaptureTarget(s);
+    const cat = target?.cat;
+    if (!cat) return;
     const tabs = await chrome.tabs.query({ currentWindow: true });
     const valid = tabs.filter(t => t.url && !t.url.startsWith('chrome') && !t.url.startsWith('edge') && !t.url.startsWith('about'));
     const now = new Date();
     cat.groups.push({
       id: uid(), symbol:'💾', color:'#06b6d4', collapsed:false,
       name: `Session ${now.toLocaleDateString(appLocale(s), { month:'short', day:'numeric' })} ${now.toLocaleTimeString(appLocale(s), { hour:'2-digit', minute:'2-digit' })}`,
-      items: valid.map(t => ({ id: uid(), type:'tab', title:t.title||'Untitled', url:t.url, fav:t.favIconUrl||'' }))
+      items: valid.map(t => { const meta = captureFields(s, t); return { id: uid(), type:'tab', title:meta.title, url:t.url, fav:meta.fav, createdAt:Date.now() }; })
     });
     await setState(s);
     flash(String(valid.length));
+    if (s.settings?.closeTabOnSave !== false) {
+      for (const captured of valid) {
+        if (captured.id === tab.id) continue;
+        try { await chrome.tabs.remove(captured.id); } catch {}
+      }
+    }
   }
 });
 
@@ -141,7 +191,7 @@ chrome.commands.onCommand.addListener(async (cmd) => {
     if (!tab?.url) return;
     if (tab.url.startsWith('chrome') || tab.url.startsWith('edge') || tab.url.startsWith('about')) return;
     const ok = await addToInbox({ id: uid(), type:'tab', title:tab.title||'Untitled', url:tab.url, fav:tab.favIconUrl||'' });
-    if (ok) flash();
+    if (ok) { flash(); await closeCapturedTabIfEnabled(tab.id); }
     else flash('dup', '#f97316');
   }
 });
@@ -283,7 +333,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
       });
     }
   } catch (err) {
-    console.error('Folio alarm failed:', alarm.name, err);
+    console.error('Locus alarm failed:', alarm.name, err);
   }
 });
 
@@ -291,7 +341,7 @@ function stripHtml(html) {
   return String(html).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
 }
 
-// Click notification → open Folio. Subscription and storage-quota
+// Click notification → open Locus. Subscription and storage-quota
 // notifications previously did nothing on click — now they all open newtab.
 const NOTIF_OPEN_PREFIXES = ['te-notif-', 'te-gnotif-', 'te-cnotif-', 'te-sub-notif-', 'te-storage-quota-'];
 chrome.notifications.onClicked.addListener((notifId) => {

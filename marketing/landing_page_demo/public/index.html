@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Locus — Organize what matters</title>
+  <meta name="description" content="Save, organize, and rediscover links, notes, files, and ideas in focused spaces with Locus." />
+  <meta name="theme-color" content="#f7f8ff" />
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <link rel="canonical" href="https://locus.example/" />
+  <meta property="og:title" content="Locus — Organize what matters" />
+  <meta property="og:description" content="Turn scattered resources into organized spaces." />
+  <meta property="og:type" content="website" />
+  <link rel="preload" href="/styles.css" as="style" />
+  <link rel="stylesheet" href="/styles.css" />
+  <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"SoftwareApplication","name":"Locus","applicationCategory":"BrowserApplication","operatingSystem":"Chrome, Edge, Firefox, Safari","description":"A browser extension for saving and organizing digital resources."}
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="page-glow page-glow--one" aria-hidden="true"></div>
+  <div class="page-glow page-glow--two" aria-hidden="true"></div>
+
+  <header class="site-header" data-header>
+    <div class="shell nav-wrap">
+      <a class="brand" href="#top" aria-label="Locus home">
+        <img src="/assets/locus-logo.svg" alt="Locus" width="156" height="44" />
+      </a>
+      <button class="menu-button" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-button>
+        <span class="sr-only">Open navigation</span>
+        <span></span><span></span>
+      </button>
+      <nav class="primary-nav" id="primary-nav" data-nav>
+        <a href="#features">Features</a>
+        <a href="#use-cases">Use cases</a>
+        <a href="#plugins">Plugins</a>
+        <a href="#changelog">Changelog</a>
+        <a href="#feedback">Feedback</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="text-link" href="#login">Log in</a>
+        <a class="button button--small button--primary" href="#install" data-install-link>
+          <span class="browser-dot" aria-hidden="true"></span>
+          Add to Chrome
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero shell" id="top">
+      <div class="hero-copy reveal">
+        <div class="eyebrow"><span></span> Your internet, finally in order</div>
+        <h1>Turn scattered resources into <em>organized spaces.</em></h1>
+        <p class="hero-lede">Save, sort, rediscover, and act on what matters—without letting tabs, links, files, and notes become chaos.</p>
+        <div class="hero-actions">
+          <a class="button button--primary button--large" href="#install" data-install-link>
+            <span class="browser-dot" aria-hidden="true"></span>
+            Add to Chrome
+          </a>
+          <button class="button button--ghost button--large" type="button" data-open-demo>
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m9 7 8 5-8 5V7Z"/></svg>
+            See how it works
+          </button>
+        </div>
+        <p class="microcopy">Free to start · No credit card · Import your bookmarks anytime</p>
+        <div class="hero-proof" aria-label="Product benefits">
+          <div><span class="proof-icon">⌁</span><strong>Works everywhere</strong><small>Web and extension</small></div>
+          <div><span class="proof-icon">◇</span><strong>Private by design</strong><small>Your data, your choice</small></div>
+          <div><span class="proof-icon">↯</span><strong>Fast retrieval</strong><small>Find anything instantly</small></div>
+        </div>
+      </div>
+
+      <div class="hero-stage reveal reveal--delay" aria-label="Locus product preview">
+        <div class="resource-stream" aria-hidden="true">
+          <span class="stream-chip stream-chip--1"><i>◫</i> notion.so/research</span>
+          <span class="stream-chip stream-chip--2"><i>◆</i> figma.com/board</span>
+          <span class="stream-chip stream-chip--3"><i>◉</i> arxiv.org/paper</span>
+          <span class="stream-chip stream-chip--4"><i>▶</i> video.com/watch</span>
+          <span class="stream-chip stream-chip--5"><i>✦</i> github.com/project</span>
+          <svg class="stream-lines" viewBox="0 0 480 480" preserveAspectRatio="none">
+            <path d="M8 70C180 72 202 190 462 200"/>
+            <path d="M0 148C175 150 225 220 470 230"/>
+            <path d="M16 234C170 224 236 242 472 250"/>
+            <path d="M24 322C190 292 250 276 474 268"/>
+            <path d="M42 408C200 350 285 306 475 286"/>
+          </svg>
+        </div>
+
+        <div class="app-window">
+          <div class="app-topbar">
+            <img src="/assets/locus-mark.svg" alt="" width="28" height="28" />
+            <div class="app-search"><span>⌕</span> Search your resources… <kbd>⌘K</kbd></div>
+            <button class="icon-button" aria-label="Notifications">♢</button>
+            <span class="avatar" aria-label="User avatar">K</span>
+          </div>
+          <div class="app-body">
+            <aside class="app-sidebar">
+              <div class="side-link"><span>◎</span>All items <b>2,438</b></div>
+              <div class="side-link"><span>☆</span>Favorites <b>312</b></div>
+              <div class="side-link"><span>▣</span>Inbox <b>24</b></div>
+              <p>SPACES <button aria-label="Add space">+</button></p>
+              <div class="side-link active"><span>⌬</span>Research <b>698</b></div>
+              <div class="side-link"><span>◇</span>Inspiration <b>432</b></div>
+              <div class="side-link"><span>⌘</span>Tools <b>256</b></div>
+              <div class="side-link"><span>▱</span>Read later <b>523</b></div>
+              <div class="side-link"><span>◫</span>Projects <b>225</b></div>
+              <div class="storage-card">
+                <small>Storage</small><strong>3.2 of 10 GB</strong>
+                <span><i></i></span>
+                <button>Upgrade</button>
+              </div>
+            </aside>
+            <div class="app-content">
+              <article class="space-card space-card--research">
+                <header><div><span class="space-icon">⌬</span><strong>Research</strong><small>698 items</small></div><button>•••</button></header>
+                <ul>
+                  <li><span class="file-dot file-dot--violet"></span><div><b>The State of AI</b><small>analysis.example</small></div><i class="thumb thumb--wave"></i></li>
+                  <li><span class="file-dot file-dot--gold"></span><div><b>Attention is all you need</b><small>paper.example</small></div></li>
+                  <li><span class="file-dot file-dot--blue"></span><div><b>LLM benchmark notes</b><small>notes</small></div></li>
+                </ul>
+                <a href="#">View all →</a>
+              </article>
+              <article class="space-card space-card--inspiration">
+                <header><div><span class="space-icon space-icon--purple">◇</span><strong>Inspiration</strong><small>432 items</small></div><button>•••</button></header>
+                <div class="moodboard"><i></i><i></i><i></i></div>
+                <div class="tags"><span>product</span><span>editorial</span><span>motion</span></div>
+                <a href="#">View all →</a>
+              </article>
+              <article class="space-card">
+                <header><div><span class="space-icon space-icon--green">⌘</span><strong>Tools</strong><small>256 items</small></div><button>•••</button></header>
+                <ul class="compact-list">
+                  <li><span class="tool-mark">F</span><div><b>Figma</b><small>Design</small></div><i>↗</i></li>
+                  <li><span class="tool-mark tool-mark--dark">L</span><div><b>Linear</b><small>Planning</small></div><i>↗</i></li>
+                  <li><span class="tool-mark tool-mark--red">R</span><div><b>Raycast</b><small>Productivity</small></div><i>↗</i></li>
+                </ul>
+                <a href="#">View all →</a>
+              </article>
+              <article class="space-card">
+                <header><div><span class="space-icon space-icon--orange">▱</span><strong>Read later</strong><small>523 items</small></div><button>•••</button></header>
+                <ul>
+                  <li><span class="file-dot file-dot--blue"></span><div><b>Building a second brain</b><small>article</small></div><i class="thumb thumb--stairs"></i></li>
+                  <li><span class="file-dot file-dot--pink"></span><div><b>How to think clearly</b><small>essay</small></div></li>
+                  <li><span class="file-dot file-dot--green"></span><div><b>A calmer internet</b><small>reading</small></div></li>
+                </ul>
+                <a href="#">View all →</a>
+              </article>
+              <article class="space-card space-card--wide">
+                <header><div><span class="space-icon space-icon--mint">◫</span><strong>Projects</strong><small>6 collections</small></div><button>•••</button></header>
+                <div class="project-row">
+                  <div><i class="project-preview project-preview--one"></i><b>Website refresh</b><small>128 links</small></div>
+                  <div><i class="project-preview project-preview--two"></i><b>Mobile launch</b><small>96 links</small></div>
+                  <div><i class="project-preview project-preview--three"></i><b>Research sprint</b><small>74 links</small></div>
+                  <div><i class="project-preview project-preview--four"></i><b>Design system</b><small>61 links</small></div>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="trust-strip shell reveal" aria-label="Built for modern work">
+      <span>Built for people who work across</span>
+      <div><b>RESEARCH</b><b>DESIGN</b><b>LEARNING</b><b>PLANNING</b><b>CREATION</b></div>
+    </section>
+
+    <section class="section shell" id="features">
+      <div class="section-heading reveal">
+        <span class="section-kicker">The calmer layer for your internet</span>
+        <h2>Everything you need to collect, understand, and act.</h2>
+        <p>Locus keeps capture effortless while giving your resources enough structure to become useful again.</p>
+      </div>
+      <div class="feature-grid">
+        <article class="feature-card feature-card--large reveal">
+          <div class="feature-copy"><span class="feature-icon">⌬</span><h3>Spaces that adapt to the way you think</h3><p>Group links, files, notes, and open tabs by project, topic, or workflow. Switch between visual layouts without rebuilding your library.</p><a href="#use-cases">Explore spaces <span>→</span></a></div>
+          <div class="mini-spaces" aria-hidden="true"><i><b>Research</b><small>698 items</small></i><i><b>Studio</b><small>284 items</small></i><i><b>Read later</b><small>91 items</small></i></div>
+        </article>
+        <article class="feature-card reveal"><span class="feature-icon">⌕</span><h3>Fast, forgiving search</h3><p>Search titles, domains, tags, notes, and saved content from one command bar.</p><div class="search-demo"><span>⌕</span><b>knowledge work</b><kbd>6 results</kbd></div></article>
+        <article class="feature-card reveal"><span class="feature-icon">↯</span><h3>Capture without breaking flow</h3><p>Save a page, selection, image, or entire tab group in a few seconds.</p><div class="capture-demo"><i>Current page</i><i>All open tabs</i><i>Highlighted text</i></div></article>
+        <article class="feature-card reveal"><span class="feature-icon">◇</span><h3>Collections within spaces</h3><p>Create smaller, reusable groupings without losing the wider context around them.</p><div class="collection-demo"><i></i><i></i><i></i><i></i></div></article>
+        <article class="feature-card reveal" id="plugins"><span class="feature-icon">✣</span><h3>Plugins, not feature bloat</h3><p>Add tools such as calendar, notes, Pomodoro, finance diary, or RSS only when they help.</p><div class="plugin-row"><i>25</i><i>◷</i><i>▦</i><i>◌</i><i>＋</i></div></article>
+        <article class="feature-card feature-card--dark reveal"><span class="feature-icon">◈</span><h3>Privacy is a product decision</h3><p>Clear controls, transparent permissions, and no selling personal data. Cloud features stay optional.</p><div class="privacy-line"><span><i></i>Local-first options</span><span><i></i>Export anytime</span><span><i></i>No ad profiles</span></div></article>
+      </div>
+    </section>
+
+    <section class="section section--tinted" id="use-cases">
+      <div class="shell">
+        <div class="section-heading section-heading--split reveal">
+          <div><span class="section-kicker">Built around real work</span><h2>One home. Different ways of thinking.</h2></div>
+          <p>Use Locus as a quiet reading shelf, a visual reference board, a project hub, or a research archive.</p>
+        </div>
+        <div class="use-case-grid">
+          <article class="use-card use-card--research reveal"><div class="use-visual"><span class="paper paper--one"></span><span class="paper paper--two"></span><span class="orbit"></span></div><h3>Research</h3><p>Keep sources, PDFs, citations, and notes connected and ready to revisit.</p><a href="#">See the research workflow →</a></article>
+          <article class="use-card use-card--design reveal"><div class="use-visual"><span class="image-tile image-tile--one"></span><span class="image-tile image-tile--two"></span><span class="image-tile image-tile--three"></span></div><h3>Design inspiration</h3><p>Save references and organize them into calm, visual collections.</p><a href="#">Build an inspiration space →</a></article>
+          <article class="use-card use-card--learning reveal"><div class="use-visual"><span class="book"></span><span class="note"></span><span class="pencil"></span></div><h3>Learning</h3><p>Track courses, readings, videos, and notes as your knowledge grows.</p><a href="#">Create a learning library →</a></article>
+          <article class="use-card use-card--planning reveal"><div class="use-visual"><span class="checklist"></span><span class="timeline"></span></div><h3>Project planning</h3><p>Bring briefs, references, decisions, and useful links into one place.</p><a href="#">Organize your next project →</a></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section shell story-section">
+      <div class="story-card reveal">
+        <div class="story-copy"><span class="section-kicker">From capture to clarity</span><h2>Save now. Find it when it actually matters.</h2><p>Every resource keeps its context—where it came from, why you saved it, and what else belongs nearby.</p><ol><li><b>01</b><div><strong>Capture</strong><span>Save the page, selection, tab set, file, or thought.</span></div></li><li><b>02</b><div><strong>Place</strong><span>Choose a space, or let smart suggestions reduce the work.</span></div></li><li><b>03</b><div><strong>Rediscover</strong><span>Search, browse, and resurface resources at the right moment.</span></div></li></ol></div>
+        <div class="story-visual" aria-hidden="true"><div class="focus-ring"></div><span class="floating-card floating-card--a"><i>◫</i><b>Product brief</b><small>Project planning</small></span><span class="floating-card floating-card--b"><i>◆</i><b>Visual reference</b><small>Design inspiration</small></span><span class="floating-card floating-card--c"><i>▱</i><b>Reading note</b><small>Research</small></span><div class="center-mark"><img src="/assets/locus-mark.svg" alt="" /></div></div>
+      </div>
+    </section>
+
+    <section class="section shell split-section">
+      <div class="changelog-panel reveal" id="changelog">
+        <div class="panel-heading"><div><span class="section-kicker">What’s new</span><h2>Changelog</h2></div><a href="/changelog.html">View all updates →</a></div>
+        <div class="release-list">
+          <article><time datetime="2026-07-10">Jul 10</time><span class="release-dot"></span><div><div class="release-title"><b>Quick Capture, rebuilt</b><span>New</span></div><p>A faster capture flow with tab groups, selections, and smarter space suggestions.</p><small>v1.9.0</small></div></article>
+          <article><time datetime="2026-06-28">Jun 28</time><span class="release-dot"></span><div><div class="release-title"><b>Spaces refresh</b><span>Improved</span></div><p>Cleaner navigation, custom icons, bulk actions, and less visual noise.</p><small>v1.8.0</small></div></article>
+          <article><time datetime="2026-06-05">Jun 05</time><span class="release-dot"></span><div><div class="release-title"><b>Plugin foundations</b><span>Developer</span></div><p>The first building blocks for a modular Locus plugin ecosystem.</p><small>v1.7.0</small></div></article>
+        </div>
+      </div>
+
+      <div class="feedback-panel reveal" id="feedback">
+        <div class="feedback-intro"><span class="section-kicker">Help shape Locus</span><h2>Tell us what would make it better.</h2><p>Feature idea, bug report, confusing interaction, or honest criticism—all useful.</p></div>
+        <form class="feedback-form" data-feedback-form novalidate>
+          <div class="feedback-types" role="group" aria-label="Feedback type">
+            <label><input type="radio" name="type" value="feature" checked /><span>Feature request</span></label>
+            <label><input type="radio" name="type" value="bug" /><span>Bug report</span></label>
+            <label><input type="radio" name="type" value="general" /><span>General</span></label>
+          </div>
+          <div class="form-row"><label>Name <input type="text" name="name" autocomplete="name" maxlength="80" placeholder="Your name" /></label><label>Email <input type="email" name="email" autocomplete="email" maxlength="160" placeholder="you@example.com" /></label></div>
+          <label>Feedback <textarea name="message" required minlength="10" maxlength="4000" placeholder="What should we improve, add, or rethink?"></textarea></label>
+          <label class="hp-field" aria-hidden="true">Company website <input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+          <input type="hidden" name="pageUrl" value="" />
+          <div class="turnstile-slot" data-turnstile-slot></div>
+          <div class="form-footer"><p>Your email is only used to follow up on this submission.</p><button class="button button--primary" type="submit"><span>Send feedback</span><i aria-hidden="true">→</i></button></div>
+          <div class="form-status" role="status" aria-live="polite" data-form-status></div>
+        </form>
+      </div>
+    </section>
+
+    <section class="section shell" id="faq">
+      <div class="section-heading reveal"><span class="section-kicker">Questions, answered</span><h2>The important things before you install.</h2></div>
+      <div class="faq-grid reveal">
+        <details><summary>Is Locus free to use?<span>＋</span></summary><p>Locus is designed to have a useful free tier. Premium features can later cover advanced automation, cloud sync, AI organization, additional plugins, and themes.</p></details>
+        <details><summary>What data does the extension access?<span>＋</span></summary><p>Only the permissions needed for features you choose to use. The final store listing should explain every permission in plain language and link to a detailed privacy policy.</p></details>
+        <details><summary>Can I import and export my library?<span>＋</span></summary><p>Yes. Import and export should be first-class features so your saved resources are never trapped inside Locus.</p></details>
+        <details><summary>Does it replace my browser’s new tab?<span>＋</span></summary><p>It can provide a Locus new-tab experience while preserving familiar search and shortcut access. The exact behavior should remain configurable.</p></details>
+        <details><summary>Will sync work across devices?<span>＋</span></summary><p>Local use can remain available, while optional cloud sync can be introduced as a premium feature for people who need it.</p></details>
+        <details><summary>Which browsers are planned?<span>＋</span></summary><p>Chrome-compatible browsers are the natural first target, followed by Firefox and Safari as the product matures.</p></details>
+      </div>
+    </section>
+
+    <section class="final-cta shell reveal" id="install">
+      <div><img src="/assets/locus-mark.svg" alt="" width="48" height="48" /><span><strong>Make the internet feel manageable again.</strong><small>Start organizing what matters with Locus.</small></span></div>
+      <a class="button button--light button--large" href="#" data-install-link><span class="browser-dot" aria-hidden="true"></span>Add to Chrome</a>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="shell footer-main">
+      <div class="footer-brand"><img src="/assets/locus-logo.svg" alt="Locus" width="156" height="44" /><p>Organize what matters.<br />Focus on what’s next.</p></div>
+      <div class="footer-links"><div><b>Product</b><a href="#features">Features</a><a href="#use-cases">Use cases</a><a href="#plugins">Plugins</a><a href="/changelog.html">Changelog</a></div><div><b>Company</b><a href="#feedback">Feedback</a><a href="mailto:hello@locus.example">Contact</a><a href="#">About</a></div><div><b>Legal</b><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="#">Security</a></div></div>
+    </div>
+    <div class="shell footer-bottom"><span>© <span data-year></span> Locus. All rights reserved.</span><span>Built for a calmer internet.</span></div>
+  </footer>
+
+  <dialog class="demo-dialog" data-demo-dialog>
+    <button class="dialog-close" type="button" aria-label="Close demo" data-close-demo>×</button>
+    <div class="demo-placeholder"><img src="/assets/locus-mark.svg" alt="" /><span>Product demo</span><p>Replace this panel with a lightweight MP4/WebM or an interactive walkthrough when your extension footage is ready.</p></div>
+  </dialog>
+
+  <script src="/app.js" defer></script>
+</body>
+</html>

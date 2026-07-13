@@ -1,15 +1,15 @@
 {
   "manifest_version": 3,
-  "name": "Folio",
+  "name": "Locus",
   "version": "3.1.0",
   "description": "Turn scattered tabs into organized spaces - save, group, and rediscover tabs, notes, stacks, and reminders. Local-first, no account.",
-  "permissions": ["tabs", "storage", "contextMenus", "bookmarks", "alarms", "notifications"],
+  "permissions": ["tabs", "storage", "contextMenus", "bookmarks", "alarms", "notifications", "search"],
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "Folio",
+    "default_title": "Locus",
     "default_icon": {
       "16": "icons/icon16.png",
       "32": "icons/icon32.png",
@@ -23,7 +23,7 @@
   "commands": {
     "_execute_action": {
       "suggested_key": { "default": "Ctrl+Shift+E" },
-      "description": "Open Folio popup"
+      "description": "Open Locus popup"
     },
     "save-current-tab": {
       "suggested_key": { "default": "Ctrl+Shift+S" },

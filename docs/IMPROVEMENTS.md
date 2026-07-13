@@ -1,4 +1,4 @@
-# Folio — Improvements Plan
+# Locus — Improvements Plan
 
 Status: proposal / living document. Created: 2026-07-02.
 
@@ -61,7 +61,7 @@ filters with a subsequence match; a query that matches no command offers a
 board-search fallback, and plain board search moves to `/`. All additive — no
 schema change.
 
-This document plans a set of **major** features for Folio: spatial, animated, design-forward
+This document plans a set of **major** features for Locus: spatial, animated, design-forward
 interfaces and the systems work needed to make them cohere. Every proposal here is grounded in
 the current codebase (vanilla JS, MV3, no build step, local-first, no host permissions) and
 respects the visual signature laid out in [`DESIGN.md`](../DESIGN.md).
@@ -74,7 +74,7 @@ respects the visual signature laid out in [`DESIGN.md`](../DESIGN.md).
 
 ---
 
-## 1. Where Folio is today (baseline)
+## 1. Where Locus is today (baseline)
 
 Understanding the constraints is what makes the plan buildable, not aspirational.
 
@@ -197,7 +197,7 @@ A macOS-Finder / column-browser view of the hierarchy.
   power-user navigation the app currently lacks.
 - Breadcrumb bar at the top reflects the selection path and is itself the §2.1 route.
 - Bento signature is preserved: each column reuses the `.gcol` compartment framing and gradient
-  top-accent so it reads as Folio, not Finder.
+  top-accent so it reads as Locus, not Finder.
 
 *Why it matters:* getting column-browser focus/scroll/selection to feel native in vanilla JS —
 the "snap to reveal the next column," the retained selection per column, the keyboard model — is
@@ -365,7 +365,7 @@ The user asked for navigation "compatible with the current overall layout." Conc
 
 ## 8. Supporting feature — a calmer, progressive onboarding (not all at once)
 
-**Today.** Folio fires a **9-step spotlight tour up front on first run** (`TOUR_STEPS`,
+**Today.** Locus fires a **9-step spotlight tour up front on first run** (`TOUR_STEPS`,
 newtab.js:6483; `startTour`/`showTourStep`, gated by `settings.tourCompleted`). It marches
 through workspaces → open tabs → board → categories → tools → view mode → search in one
 sitting. Two problems, both of which the features in this plan make worse if left alone:
@@ -384,7 +384,7 @@ surface the moment they first touch it — one small hint at a time, never a que
 ### 8.1 Three tiers, never stacked
 
 1. **A 15-second welcome (≤3 cards).** Reduce the upfront `TOUR_STEPS` to the essentials only:
-   *what Folio is → save your first tab → where things live.* Everything else graduates to a
+   *what Locus is → save your first tab → where things live.* Everything else graduates to a
    contextual hint. Skippable in one click; never shown twice (`settings.onboarding.welcomeSeen`).
 2. **Just-in-time coach-marks.** A single small hint appears the **first time** a user reaches a
    surface — the first empty board, the first time the tools menu opens, the first group page

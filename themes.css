@@ -1,18 +1,20 @@
 /* ═══════════════════════════════════════════════════════════════
-   Folio — themes.css
+   Locus — themes.css
    Shared theme palettes for every extension surface (new tab + popup).
    Each block defines the core color tokens a surface reads
    (--bg…--bg5, --panel, --border/2, --text/2/3, --accent*, --green/red…).
    Loaded before newtab.css and popup.css so both stay in visual lockstep.
    ═══════════════════════════════════════════════════════════════ */
 
-/* Folio — signature light theme. A white canvas with a soft blue→purple
+/* Locus — signature light theme. A white canvas with a soft blue→purple
    gradient identity and glassy cards; this is the first-launch default.
    --brand-grad (defined in newtab.css) reads --accent → --accent2, so the
    blue→violet through-line travels across every surface automatically. */
 [data-theme="folio"] {
-  /* Board is a faint cool lavender; panels/cards sit pure white so they lift. */
-  --bg: #f7f8fc; --bg2: #ffffff; --bg3: #f1f3fb; --bg4: #e8ecf8; --bg5: #d7def1;
+  /* Near-white canvas; panels/cards sit pure white and lift on soft borders +
+     subtle dividers rather than a heavy tinted board (premium SaaS feel). Kept
+     only a whisper of lavender so it never reads blue-gray (Waypoint target). */
+  --bg: #fcfdfe; --bg2: #ffffff; --bg3: #f1f3fb; --bg4: #e8ecf8; --bg5: #d7def1;
   --panel: #ffffff;
   --border: rgba(35,45,86,0.075); --border2: rgba(35,45,86,0.14);
   --text: #12172d; --text2: #5b647c; --text3: #98a0b5;
@@ -30,7 +32,7 @@
   --shadow-3: 0 20px 48px rgba(43,54,116,0.14), 0 3px 10px rgba(43,54,116,0.07);
 }
 
-/* Folio Dark — deep indigo-ink variant of the signature theme. Same
+/* Locus Dark — deep indigo-ink variant of the signature theme. Same
    blue→violet accent on a near-black cool base. */
 [data-theme="folio-dark"] {
   --bg: #0c0e1a; --bg2: #141626; --bg3: #1b1e33; --bg4: #262a45; --bg5: #343a5c;

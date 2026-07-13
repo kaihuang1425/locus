@@ -1,0 +1,17 @@
+{
+  "name": "locus-landing",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:create": "wrangler d1 create locus-feedback",
+    "db:migrate:local": "wrangler d1 migrations apply locus-feedback --local",
+    "db:migrate:remote": "wrangler d1 migrations apply locus-feedback --remote",
+    "db:list": "wrangler d1 execute locus-feedback --remote --command=\"SELECT id,type,email,status,created_at FROM feedback ORDER BY created_at DESC LIMIT 50\""
+  },
+  "devDependencies": {
+    "wrangler": "latest"
+  }
+}

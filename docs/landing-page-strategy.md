@@ -1,4 +1,4 @@
-﻿# Landing page strategy
+# Landing page strategy
 
 Status: positioning + implementation record for `docs/index.html`. Created 2026-07-04.
 Audience: future contributors and future model sessions editing the landing page. Every claim
@@ -87,13 +87,13 @@ Every landing-page claim maps to proof at git HEAD (e18a078):
 | Eight built-in tools (Pomodoro, finance, habits, water, goals, subscriptions, reading, workout) | `FLOATING_TOOLS` registry in `newtab.js`; tools pop out as draggable floating windows |
 | Search operators: type, color, domain, site, url, in, tag, is, has:reminder, reminder, quoted phrases, `-` negation | `newtab.js` search; README examples |
 | Capture: popup save current/all tabs, context-menu saves (page, link, selection, image), bookmarks import, Ctrl+Shift+S | `popup.js`, `background.js`, `manifest.json` commands |
-| Seventeen themes including Folio, Folio Dark, Rice Paper, and Lacquer | `themes.css` (`data-theme` blocks) |
+| Seventeen themes including Locus, Locus Dark, Rice Paper, and Lacquer | `themes.css` (`data-theme` blocks) |
 | Seven typefaces, three densities, column widths | `newtab.html` settings (`seg-font` has 7 options) |
 | Undo/redo, archive, batch actions | `newtab.js`; README |
 | Export/import JSON with versioned envelope and preview before restore | README; `newtab.js` import preview |
 | Privacy blur mode for screen sharing | `privacyBlur` setting in `newtab.js` |
 | English + Traditional Chinese UI | `SUPPORTED_LOCALES = ['en','zh-TW']` in `newtab.js` |
-| Free for noncommercial research, contribution, and informal personal use; source-available under the Folio Research and Contribution License, no build step | `README.md` License; repo layout |
+| Free for noncommercial research, contribution, and informal personal use; source-available under the Locus Research and Contribution License, no build step | `README.md` License; repo layout |
 | Works on Chrome and Edge, Manifest V3 | `manifest.json`, RELEASE_NOTES v3.0.0 |
 
 ### 10. Roadmap-only ideas (must not be sold as shipped)
@@ -110,7 +110,7 @@ Every landing-page claim maps to proof at git HEAD (e18a078):
 ## Position A: Defend the app
 
 - Strongest user pain: the browser is slow and cluttered because work is unfinished. People
-  keep tabs open as external memory. Folio saves that memory to disk and gives it back
+  keep tabs open as external memory. Locus saves that memory to disk and gives it back
   only when asked, so closing a window stops feeling like losing your place.
 - Strongest proof: the code itself. Hibernation is a real file (`suspended.html`), zero host
   permissions is a real manifest line, the eight tools are real registries in `newtab.js`.
@@ -120,7 +120,7 @@ Every landing-page claim maps to proof at git HEAD (e18a078):
 - Strongest product advantage: the combination. Tab managers do not have finance diaries and
   habit streaks; dashboard new-tabs do not hibernate tabs or run without a cloud account.
   Nobody else in the category combines hibernation + local-only data + a working toolset.
-- Why local-first matters: a tab manager sees everything you browse toward. Folio cannot
+- Why local-first matters: a tab manager sees everything you browse toward. Locus cannot
   phone home because there is nothing to phone: no server, no account, no host access. That
   is a structural guarantee, not a policy promise.
 - Why free matters: there is no server to pay for, so there is no meter running. Free here
@@ -132,7 +132,7 @@ Every landing-page claim maps to proof at git HEAD (e18a078):
 - Why the plugin direction matters: eight built-in tools prove the workspace can host small
   utilities well. Rebuilding them as plugins turns one product into a platform without
   changing the promise: local, free core, user-controlled.
-- Why this is more than a pretty new tab: pretty new tabs show a clock and a photo. Folio
+- Why this is more than a pretty new tab: pretty new tabs show a clock and a photo. Locus
   holds work: saved sessions, notes beside them, reminders that fire, tools that track. It
   is a workspace that happens to live in the new tab, not a decoration.
 
@@ -178,7 +178,7 @@ Every landing-page claim maps to proof at git HEAD (e18a078):
   system), gallery/graph layouts (uncommitted), store availability, AI features, teams.
 - Plugins, honest phrasing: "The eight tools are built in today. The plan is to rebuild
   them as plugins, so the workspace grows tool by tool and you add only what earns space."
-- User-owned automation, honest phrasing: "Automation that runs on your keys. If Folio
+- User-owned automation, honest phrasing: "Automation that runs on your keys. If Locus
   ever talks to outside services, you bring your own API keys; there is no cloud account to
   rent."
 - Desktop collaboration, honest phrasing: "A desktop companion that shares the same
@@ -209,7 +209,7 @@ Every landing-page claim maps to proof at git HEAD (e18a078):
   "no host permissions" stated plainly and linked to the manifest; tools presented as
   shipped with a count (eight) instead of vague "many utilities".
 - Premium moves: the accent gradient appears only as 2px hairlines (card tops, frame edge);
-  everything else is solid ink; Folio/Folio Dark palettes lifted from `themes.css` so the page matches
+  everything else is solid ink; Locus/Locus Dark palettes lifted from `themes.css` so the page matches
   the product; generous section spacing; sentence-case headings; one screenshot, framed;
   no stock art, no fake browser mockups with invented data; a light/dark toggle and an
   EN/蝜葉 toggle that quietly prove "your workspace, your rules" on the page itself.
@@ -256,7 +256,7 @@ Use these copy rules for future edits:
   step, matching the repo convention). Images live in `docs/images/` because GitHub Pages
   will serve the `docs/` folder as the site root.
 - Publishing is a manual owner step: GitHub repo Settings, Pages, "Deploy from a branch",
-  branch `main`, folder `/docs`. Expected URL: <https://erichuang1425.github.io/tabento/>.
+  branch `main`, folder `/docs`. Expected URL: <https://erichuang1425.github.io/locus/>.
 - Both signature palettes are lifted from `themes.css` (`folio`, `folio-dark`). If those tokens
   change, update the `:root` blocks in `docs/index.html` to match.
 - The language toggle stores `tabento-landing-lang` in localStorage and defaults from

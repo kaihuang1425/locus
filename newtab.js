@@ -1,11 +1,11 @@
 /* ═══════════════════════════════════════════════════════════════
-   Folio — newtab.js (v3)
+   Locus — newtab.js (v3)
    ═══════════════════════════════════════════════════════════════ */
 
 // Schema version of the in-storage state. Bump when state shape changes,
 // then add a forward-migration branch in migrate(). Older builds reading
 // data stamped with a higher value get a blocking "newer data" guard.
-const CURRENT_SCHEMA = 6;
+const CURRENT_SCHEMA = 11;
 
 const SUPPORTED_LOCALES = ['en', 'zh-TW'];
 
@@ -44,11 +44,33 @@ const I18N = {
     'action.saveAllTabs': 'Save all open tabs',
     'action.more': 'More',
     'action.settings': 'Settings',
+    'action.reminders': 'Reminders',
+    'action.plugins': 'Plugins',
+    'action.menu': 'Menu',
+    'menu.settings': 'Settings',
+    'menu.plugins': 'Plugins',
+    'menu.calendar': 'Calendar & reminders',
+    'menu.theme': 'Theme',
+    'menu.workspaces': 'Workspaces',
+    'menu.guide': 'Guide / tutorial',
+    'menu.about': 'About Locus',
+    'menu.resetOnboarding': 'Reset onboarding',
+    'menu.resetConfirm': 'Show the first-run welcome again? Your saved data is not affected.',
+    'about.tagline': 'A calmer, local-first home for your tabs, notes, and small trackers.',
+    'about.private': 'Private by design — no account, local-only, no host permissions.',
+    'about.replay': 'Replay welcome guide',
+    'about.close': 'Close',
+    'plugins.title': 'Plugins',
+    'plugins.subtitle': 'Built-in mini-apps — turn on what you need',
+    'cal.addTask': 'Add a task on this day…',
+    'cal.addPrompt': 'New task for {date}:',
+    'cal.added': 'Task added for {date}',
+    'cal.needSpace': 'Create a space first to add tasks',
     'settings.title': 'Settings',
     'settings.appearance': 'Appearance',
     'settings.behavior': 'Behavior',
     'settings.archive': 'Archive',
-    'settings.data': 'Data',
+    'settings.data': 'Import & Export',
     'settings.theme': 'Theme',
     'settings.language': 'Language',
     'settings.language.en': 'English',
@@ -81,12 +103,125 @@ const I18N = {
     'settings.archivedItems': 'Archived items',
     'settings.storage': 'Storage',
     'settings.exportJson': 'Export all data as JSON',
+    'settings.general': 'General',
+    'settings.generalSub': 'Profile, language, and how Locus behaves.',
+    'settings.appearanceSub': 'Theme, type, and board density.',
+    'settings.capture': 'Capture',
+    'settings.captureSub': 'Control how links, tabs, and notes enter Locus.',
+    'settings.shortcutsSub': 'Speed up your workflow with keyboard shortcuts.',
+    'settings.privacy': 'Privacy & Security',
+    'settings.privacySub': 'Your data is yours. Always.',
+    'settings.storageSub': 'See what your library stores on this device.',
+    'settings.dataSub': 'Bring your data in, or take it out. Anytime.',
+    'settings.about': 'About Locus',
+    'settings.aboutSub': 'Built with focus. Designed for your privacy.',
+    'settings.profile': 'Profile',
+    'settings.yourName': 'Your name',
+    'settings.yourNameHint': 'Used for the home greeting. Stored only on this device.',
+    'settings.tipsOnboarding': 'Tips & onboarding',
+    'settings.privacyFirst': 'Privacy first',
+    'settings.privacyFirstBody': 'Everything stays on your device. No servers, no tracking.',
+    'settings.globalShortcuts': 'Browser shortcuts',
+    'settings.customizeShortcuts': 'Customize',
+    'settings.customizeShortcutsHint': "Opens the browser's extension-shortcuts page",
+    'settings.globalShortcutsHint': 'These work anywhere in the browser and are managed by the browser itself.',
+    'settings.inAppShortcuts': 'Inside Locus',
+    'settings.searchShortcuts': 'Search shortcuts…',
+    'settings.noShortcuts': 'No shortcuts match your search.',
+    'settings.privateByDesign': 'Private by design',
+    'settings.privateByDesignBody': 'Locus runs entirely on your device. We never collect, read, or transmit your data.',
+    'settings.check.local': '100% local storage',
+    'settings.check.tracking': 'No tracking or analytics',
+    'settings.check.account': 'No account required',
+    'settings.check.host': "No host permissions — Locus can't read pages",
+    'settings.onScreen': 'On-screen privacy',
+    'settings.yourData': 'Your data',
+    'settings.yourDataBody': 'Everything lives in extension-local storage. Export a full backup anytime, or import it back on any device.',
+    'settings.exportBackup': 'Export backup',
+    'settings.openImportExport': 'Open Import & Export',
+    'settings.localStorage': 'Local storage',
+    'settings.storageHint': 'All data is stored on this device in extension-local storage. Nothing leaves your browser.',
+    'settings.manageStorage': 'Manage',
+    'settings.openArchive': 'Open archive',
+    'settings.manageHint': 'Export a backup before pruning old items — exports keep working forever.',
+    'settings.whatsUsingSpace': "What's using space",
+    'settings.import': 'Import',
+    'settings.export': 'Export',
+    'settings.importJson': 'Import JSON',
+    'settings.importJsonHint': 'Locus, Folio, TabNest, or TabExtend exports',
+    'settings.importBookmarks': 'Import bookmarks',
+    'settings.importBookmarksHint': "From the browser's bookmark bar and folders",
+    'settings.pasteLinks': 'Paste links',
+    'settings.pasteLinksHint': 'One URL per line, straight into a group',
+    'settings.exportJsonHint': 'A complete backup of every workspace',
+    'settings.exportHint': 'Exports are plain JSON — readable anywhere, re-importable anytime.',
+    'settings.aboutBody': 'A local-first home for your tabs, notes, todos, and small trackers.',
+    'settings.proof.account': 'No account',
+    'settings.proof.server': 'No Locus server',
+    'settings.proof.host': 'No host permissions',
+    'settings.proof.export': 'Export anytime',
+    'settings.showLanding': 'Show calm new-tab welcome',
+    'settings.showLandingHint': 'Dismiss it to reveal your Home workspace',
+    'landing.ariaLabel': 'New tab welcome',
+    'landing.greeting': '{greeting}, {name}.',
+    'landing.greetingNoName': '{greeting}.',
+    'landing.subtitle': 'Where will your focus take you today?',
+    'landing.searchPlaceholder': 'Search the web or your saved links…',
+    'landing.searchWeb': 'Search the web',
+    'landing.enter': 'Open Locus home',
+    'landing.unsorted': 'Unsorted',
+    'landing.reminders': 'Reminders',
+    'landing.quote': '“The quieter you become, the more you can hear.”',
+    'landing.savedResults': 'Saved links',
+    'landing.noResults': 'No saved links match. Press Enter to search the web.',
     'toast.theme': 'Theme: {theme}',
     'toast.language': 'Language: {language}',
     'nav.home': 'Home',
     'nav.allLinks': 'All Links',
+    'nav.favorites': 'Favorites',
+    'nav.readLater': 'Read Later',
     'nav.inbox': 'Inbox',
     'nav.archive': 'Archive',
+    'nav.trash': 'Trash',
+    'trash.title': 'Trash',
+    'trash.subtitle': 'Deleted items stay recoverable on this device for 30 days.',
+    'trash.search': 'Search trash',
+    'trash.summary.entries': 'Deleted {count}',
+    'trash.summary.items': 'Recoverable {count}',
+    'trash.summary.space': 'Recoverable space',
+    'trash.summary.retention': 'Auto-delete window',
+    'trash.retention': 'Items in trash are permanently deleted after 30 days.',
+    'trash.localOnly': 'Local only',
+    'trash.all': 'All',
+    'trash.links': 'Links',
+    'trash.notes': 'Notes',
+    'trash.todos': 'To-dos',
+    'trash.groups': 'Groups',
+    'trash.selected': '{count} selected',
+    'trash.restoreSelected': 'Restore selected',
+    'trash.deleteSelected': 'Delete forever',
+    'trash.empty': 'Your trash is empty',
+    'trash.emptyBody': 'Items deleted from Archive wait here for 30 days.',
+    'trash.noMatch': 'No deleted items match',
+    'trash.noMatchBody': 'Try another search or content type.',
+    'trash.restore': 'Restore',
+    'trash.select': 'Select {title}',
+    'trash.deleteForever': 'Delete forever',
+    'trash.daysLeft': '{count} days left',
+    'trash.dayLeft': '1 day left',
+    'trash.expiresToday': 'Deletes today',
+    'trash.confirmOne': 'Permanently delete “{title}”? This cannot be undone.',
+    'trash.confirmMany': 'Permanently delete {count} selected items? This cannot be undone.',
+    'trash.restored': 'Restored from Trash',
+    'trash.restoredMany': 'Restored {count} items from Trash',
+    'trash.deleted': 'Permanently deleted',
+    'trash.today': 'Today',
+    'trash.yesterday': 'Yesterday',
+    'trash.thisWeek': 'This week',
+    'trash.earlier': 'Earlier',
+    'trash.invalid': '{count} damaged trash entries could not be displayed. They remain in exports.',
+    'archive.moveToTrash': 'Move to Trash',
+    'archive.movedToTrash': 'Moved to Trash',
     'nav.spaces': 'Spaces',
     'nav.storage': 'Local storage',
     'priv.title': 'Private by design',
@@ -127,11 +262,33 @@ const I18N = {
     'action.saveAllTabs': '儲存所有開啟分頁',
     'action.more': '更多',
     'action.settings': '設定',
+    'action.reminders': '提醒',
+    'action.plugins': '外掛',
+    'action.menu': '選單',
+    'menu.settings': '設定',
+    'menu.plugins': '外掛',
+    'menu.calendar': '行事曆與提醒',
+    'menu.theme': '主題',
+    'menu.workspaces': '工作區',
+    'menu.guide': '導覽 / 教學',
+    'menu.about': '關於 Locus',
+    'menu.resetOnboarding': '重設新手導覽',
+    'menu.resetConfirm': '要再次顯示首次啟動的歡迎導覽嗎？您儲存的資料不受影響。',
+    'about.tagline': '為你的分頁、筆記與小工具打造更沉靜、以本機為先的家。',
+    'about.private': '隱私優先－無需帳號、僅存本機、無主機權限。',
+    'about.replay': '重播歡迎導覽',
+    'about.close': '關閉',
+    'plugins.title': '外掛',
+    'plugins.subtitle': '內建小工具－依需求啟用',
+    'cal.addTask': '在這一天新增待辦…',
+    'cal.addPrompt': '{date} 的新待辦：',
+    'cal.added': '已為 {date} 新增待辦',
+    'cal.needSpace': '請先建立一個空間才能新增待辦',
     'settings.title': '設定',
     'settings.appearance': '外觀',
     'settings.behavior': '行為',
     'settings.archive': '封存',
-    'settings.data': '資料',
+    'settings.data': '匯入與匯出',
     'settings.theme': '主題',
     'settings.language': '語言',
     'settings.language.en': 'English',
@@ -164,12 +321,125 @@ const I18N = {
     'settings.archivedItems': '封存項目',
     'settings.storage': '儲存空間',
     'settings.exportJson': '匯出所有資料為 JSON',
+    'settings.general': '一般',
+    'settings.generalSub': '個人資料、語言，以及 Locus 的行為方式。',
+    'settings.appearanceSub': '主題、字體與版面密度。',
+    'settings.capture': '擷取',
+    'settings.captureSub': '控制連結、分頁與筆記如何進入 Locus。',
+    'settings.shortcutsSub': '用鍵盤快捷鍵加速你的工作流程。',
+    'settings.privacy': '隱私與安全',
+    'settings.privacySub': '你的資料永遠屬於你。',
+    'settings.storageSub': '查看你的資料庫在此裝置上的使用情況。',
+    'settings.dataSub': '隨時帶入或帶走你的資料。',
+    'settings.about': '關於 Locus',
+    'settings.aboutSub': '為專注而生，為隱私而設計。',
+    'settings.profile': '個人資料',
+    'settings.yourName': '你的名字',
+    'settings.yourNameHint': '用於首頁問候語，僅儲存在此裝置上。',
+    'settings.tipsOnboarding': '提示與新手導覽',
+    'settings.privacyFirst': '隱私優先',
+    'settings.privacyFirstBody': '所有資料都留在你的裝置上。沒有伺服器，沒有追蹤。',
+    'settings.globalShortcuts': '瀏覽器快捷鍵',
+    'settings.customizeShortcuts': '自訂',
+    'settings.customizeShortcutsHint': '開啟瀏覽器的擴充功能快捷鍵頁面',
+    'settings.globalShortcutsHint': '這些快捷鍵在瀏覽器任何地方都有效，由瀏覽器管理。',
+    'settings.inAppShortcuts': 'Locus 內',
+    'settings.searchShortcuts': '搜尋快捷鍵…',
+    'settings.noShortcuts': '沒有符合搜尋的快捷鍵。',
+    'settings.privateByDesign': '隱私優先設計',
+    'settings.privateByDesignBody': 'Locus 完全在你的裝置上執行。我們永遠不會收集、讀取或傳送你的資料。',
+    'settings.check.local': '100% 本機儲存',
+    'settings.check.tracking': '無追蹤、無分析',
+    'settings.check.account': '無需帳號',
+    'settings.check.host': '無主機權限 — Locus 無法讀取網頁內容',
+    'settings.onScreen': '螢幕隱私',
+    'settings.yourData': '你的資料',
+    'settings.yourDataBody': '所有內容都存在擴充功能的本機儲存空間。隨時匯出完整備份，也能在任何裝置匯入。',
+    'settings.exportBackup': '匯出備份',
+    'settings.openImportExport': '開啟匯入與匯出',
+    'settings.localStorage': '本機儲存',
+    'settings.storageHint': '所有資料都儲存在此裝置的擴充功能本機空間，不會離開你的瀏覽器。',
+    'settings.manageStorage': '管理',
+    'settings.openArchive': '開啟封存',
+    'settings.manageHint': '清理舊項目前先匯出備份 — 匯出檔案永久可用。',
+    'settings.whatsUsingSpace': '空間使用情況',
+    'settings.import': '匯入',
+    'settings.export': '匯出',
+    'settings.importJson': '匯入 JSON',
+    'settings.importJsonHint': '支援 Locus、Folio、TabNest 或 TabExtend 匯出檔',
+    'settings.importBookmarks': '匯入書籤',
+    'settings.importBookmarksHint': '從瀏覽器的書籤列與資料夾',
+    'settings.pasteLinks': '貼上連結',
+    'settings.pasteLinksHint': '每行一個網址，直接匯入群組',
+    'settings.exportJsonHint': '所有工作區的完整備份',
+    'settings.exportHint': '匯出為純 JSON — 隨處可讀，隨時可再匯入。',
+    'settings.aboutBody': '為你的分頁、筆記、待辦與小工具打造的本機優先之家。',
+    'settings.proof.account': '免帳號',
+    'settings.proof.server': '無 Locus 伺服器',
+    'settings.proof.host': '免主機權限',
+    'settings.proof.export': '隨時匯出',
+    'settings.showLanding': '顯示寧靜的新分頁歡迎畫面',
+    'settings.showLandingHint': '關閉後即可查看首頁工作區',
+    'landing.ariaLabel': '新分頁歡迎畫面',
+    'landing.greeting': '{greeting}，{name}。',
+    'landing.greetingNoName': '{greeting}。',
+    'landing.subtitle': '今天，你想把專注帶往哪裡？',
+    'landing.searchPlaceholder': '搜尋網路或已儲存的連結…',
+    'landing.searchWeb': '搜尋網路',
+    'landing.enter': '開啟 Locus 首頁',
+    'landing.unsorted': '未整理',
+    'landing.reminders': '提醒',
+    'landing.quote': '「越安靜，就越能聽見真正重要的聲音。」',
+    'landing.savedResults': '已儲存的連結',
+    'landing.noResults': '沒有符合的已儲存連結。按 Enter 搜尋網路。',
     'toast.theme': '主題：{theme}',
     'toast.language': '語言：{language}',
     'nav.home': '首頁',
     'nav.allLinks': '所有連結',
+    'nav.favorites': '收藏',
+    'nav.readLater': '稍後閱讀',
     'nav.inbox': '收件匣',
     'nav.archive': '封存',
+    'nav.trash': '垃圾桶',
+    'trash.title': '垃圾桶',
+    'trash.subtitle': '刪除的項目會在此裝置上保留 30 天，期間仍可復原。',
+    'trash.search': '搜尋垃圾桶',
+    'trash.summary.entries': '已刪除 {count} 筆',
+    'trash.summary.items': '可復原 {count} 個項目',
+    'trash.summary.space': '可回收空間',
+    'trash.summary.retention': '自動刪除期限',
+    'trash.retention': '垃圾桶中的項目會在 30 天後永久刪除。',
+    'trash.localOnly': '僅存本機',
+    'trash.all': '全部',
+    'trash.links': '連結',
+    'trash.notes': '筆記',
+    'trash.todos': '待辦',
+    'trash.groups': '群組',
+    'trash.selected': '已選取 {count} 筆',
+    'trash.restoreSelected': '復原所選項目',
+    'trash.deleteSelected': '永久刪除',
+    'trash.empty': '垃圾桶是空的',
+    'trash.emptyBody': '從封存中刪除的項目會在此保留 30 天。',
+    'trash.noMatch': '找不到符合的刪除項目',
+    'trash.noMatchBody': '請嘗試其他搜尋字詞或內容類型。',
+    'trash.restore': '復原',
+    'trash.select': '選取「{title}」',
+    'trash.deleteForever': '永久刪除',
+    'trash.daysLeft': '剩餘 {count} 天',
+    'trash.dayLeft': '剩餘 1 天',
+    'trash.expiresToday': '今天刪除',
+    'trash.confirmOne': '要永久刪除「{title}」嗎？此動作無法復原。',
+    'trash.confirmMany': '要永久刪除所選的 {count} 個項目嗎？此動作無法復原。',
+    'trash.restored': '已從垃圾桶復原',
+    'trash.restoredMany': '已從垃圾桶復原 {count} 個項目',
+    'trash.deleted': '已永久刪除',
+    'trash.today': '今天',
+    'trash.yesterday': '昨天',
+    'trash.thisWeek': '本週',
+    'trash.earlier': '更早',
+    'trash.invalid': '有 {count} 筆損壞的垃圾桶資料無法顯示，但仍會保留在匯出檔中。',
+    'archive.moveToTrash': '移至垃圾桶',
+    'archive.movedToTrash': '已移至垃圾桶',
     'nav.spaces': '空間',
     'nav.storage': '本機儲存',
     'priv.title': '隱私優先設計',
@@ -229,14 +499,20 @@ function applyLocale() {
 let loadedSchema = 0;
 const State = (() => {
   let state = {
-    workspaces: [], activeWsId: null, archive: [], recentEmoji: [],
+    workspaces: [], activeWsId: null, archive: [], trash: [], recentEmoji: [],
     columnWidths: {},
     settings: {
       theme:'folio', size:'normal', font:'dm', width:'normal',
       language: browserLanguage(),
       closeTabOnSave:true, hibernate:true, showUrls:true,
       animate:true, confirmDelete:true, sidebarCollapsed:false,
-      blurPrivacy:false, windowSync:false,
+      blurPrivacy:false, windowSync:false, showLanding:true,
+      captureDefaultCategoryId:'', captureAskEveryTime:true,
+      captureRememberLast:true, captureDeduplicate:true,
+      captureIncludeTitle:true, captureIncludeFavicon:true,
+      popupHibernateScope:'window', popupHibernateKeepPinned:true,
+      popupHibernateKeepAudio:true, popupHibernateSaveBefore:false,
+      popupHibernateSelectedTabIds:[], popupSaveMode:'group',
       onboarding: { welcomeSeen:false, hintsSeen:{}, disabled:false }
     }
   };
@@ -477,6 +753,11 @@ let activeGroupPage = null;
 // `…/home` so reload / back-forward restore it. Opening a category clears it.
 let activeHome = false;
 
+// Cross-space library surfaces from the Locus desktop navigation. These are
+// intentionally ephemeral (the active workspace remains the durable route),
+// while the underlying favorite flag is stored on each tab item.
+let activeLibraryMode = null; // null | 'all' | 'favorites' | 'read-later' | 'archive' | 'trash'
+
 // The item whose detail pane (§4.2) is open on the *board* surface, mirrored
 // into the board route as `?item=<id>` so it survives reload / back-forward.
 // On a group page the open detail item lives in activeGroupPage.itemId instead
@@ -585,6 +866,7 @@ const Router = (() => {
     if (!route) return false;
     const s = State.get();
     let changed = false;
+    if (activeLibraryMode) { activeLibraryMode = null; changed = true; }
     const ws = s.workspaces.find(w => w.id === route.wsId);
     if (ws && s.activeWsId !== ws.id) { s.activeWsId = ws.id; changed = true; }
 
@@ -732,7 +1014,11 @@ async function init() {
 
 function initAfterLoad() {
   migrate();
+  purgeExpiredTrash();
   ensureDefault();
+  // Persist schema/default normalization even before the user's next edit so a
+  // reload cannot repeatedly run the same migration.
+  State.persist();
   // Resolve any deep link into the active workspace/category/layout, then
   // normalize the URL — before the first render so we paint the right surface.
   Router.init();
@@ -743,6 +1029,11 @@ function initAfterLoad() {
   bindStatic();
 
   renderAll();
+  // First run: the welcome questionnaire owns the screen. The landing layer
+  // waits until it closes, so the first greeting uses the name the user just
+  // typed instead of stacking two full-screen layers.
+  if (ensureOnboarding(State.get().settings).welcomeSeen) showLandingLayer();
+  else _landingAfterWelcome = true;
 
   // Reveal the app once the first frame paints (avoids any layout flash).
   requestAnimationFrame(() => {
@@ -847,6 +1138,48 @@ function migrate() {
     if (!ob.hintsSeen || typeof ob.hintsSeen !== 'object') ob.hintsSeen = {};
     if (ob.disabled == null) ob.disabled = false;
     s.settings.onboarding = ob;
+  }
+
+  if (from < 7) {
+    // Schema 7 adds the opt-out for the calm launch layer. Existing profiles
+    // receive the new default once; after that the explicit boolean persists.
+    s.settings = s.settings || {};
+    if (s.settings.showLanding == null) s.settings.showLanding = true;
+  }
+
+  if (from < 8) {
+    // Schema 8 persists the toolbar popup's hibernate choices. The defaults
+    // preserve the pre-schema behavior: current window, pinned tabs awake,
+    // and audio-playing tabs awake.
+    s.settings = s.settings || {};
+    if (!['window', 'all'].includes(s.settings.popupHibernateScope)) s.settings.popupHibernateScope = 'window';
+    if (s.settings.popupHibernateKeepPinned == null) s.settings.popupHibernateKeepPinned = true;
+    if (s.settings.popupHibernateKeepAudio == null) s.settings.popupHibernateKeepAudio = true;
+  }
+
+  if (from < 9) {
+    // Schema 9 persists the popup's save-window mode. 'group' preserves the
+    // pre-schema behavior (each window save lands as a dated session group).
+    s.settings = s.settings || {};
+    if (!['links', 'group', 'queue'].includes(s.settings.popupSaveMode)) s.settings.popupSaveMode = 'group';
+  }
+
+  if (from < 10) {
+    // Schema 10 separates deliberate Archive storage from deletion recovery.
+    // Existing archived entries remain archived; Trash starts empty and keeps
+    // the same entry envelope plus a `trashedAt` retention timestamp.
+    if (!Array.isArray(s.trash)) s.trash = [];
+  }
+
+  if (from < 11) {
+    // Schema 11 completes the popup hibernate flow with an opt-in, local
+    // save-before-suspending safeguard and a live selected-tab scope. Existing
+    // profiles retain the previous behavior (no implicit save and current
+    // window scope); stale tab ids are reconciled against chrome.tabs on load.
+    s.settings = s.settings || {};
+    if (!['window', 'selected', 'all'].includes(s.settings.popupHibernateScope)) s.settings.popupHibernateScope = 'window';
+    if (s.settings.popupHibernateSaveBefore == null) s.settings.popupHibernateSaveBefore = false;
+    if (!Array.isArray(s.settings.popupHibernateSelectedTabIds)) s.settings.popupHibernateSelectedTabIds = [];
   }
 
   s.schema = CURRENT_SCHEMA;
@@ -963,8 +1296,7 @@ function bindQuotaOverlay() {
   const arch = document.getElementById('quota-archive');
   if (arch) arch.onclick = () => {
     closeStorageFull();
-    document.querySelector('#drawer-tabs .dt[data-tab="archive"]')?.click();
-    document.getElementById('settings-drawer')?.classList.remove('hidden');
+    openLibrarySurface('archive');
   };
 }
 
@@ -1102,6 +1434,8 @@ function bindBoardArrowNav() {
 function ensureDefault() {
   const s = State.get();
   if (!s.settings) s.settings = {};
+  if (!Array.isArray(s.archive)) s.archive = [];
+  if (!Array.isArray(s.trash)) s.trash = [];
   s.settings.language = normalizeLanguage(s.settings.language || browserLanguage());
   if (!s.workspaces.length) {
     const cat = { id: uid(), name:'Pinned', groups:[] };
@@ -1109,7 +1443,7 @@ function ensureDefault() {
     cat.groups.push({
       id: uid(), name:'Getting started', symbol:'✨', color:'#6366f1', collapsed:false,
       items: [
-        stampNew({ id: uid(), type:'note', html:'👋 <b>Welcome to Folio!</b><br><br>Drag tabs from the left sidebar into any group.<br>Select text for the rich-text toolbar.<br>Right-click anywhere for more options.' }),
+        stampNew({ id: uid(), type:'note', html:'👋 <b>Welcome to Locus!</b><br><br>Drag tabs from the left sidebar into any group.<br>Select text for the rich-text toolbar.<br>Right-click anywhere for more options.' }),
         stampNew({ id: uid(), type:'todo', text:'Try dragging a tab here', done:false }),
         stampNew({ id: uid(), type:'todo', text:'Right-click a group for context menu', done:false }),
         stampNew({ id: uid(), type:'todo', text:'Press Cmd/Ctrl + K to search', done:false })
@@ -1125,8 +1459,8 @@ function ensureDefault() {
 // SETTINGS
 // ════════════════════════════════════════════════════════════════
 const THEMES = [
-  { id:'folio',             label:'Folio',             colors:['#f7f8fc','#5566f2','#8b5cf6'] },
-  { id:'folio-dark',        label:'Folio Dark',        colors:['#0c0e1a','#8b9bff','#b78cff'] },
+  { id:'folio',             label:'Locus',             colors:['#f7f8fc','#5566f2','#8b5cf6'] },
+  { id:'folio-dark',        label:'Locus Dark',        colors:['#0c0e1a','#8b9bff','#b78cff'] },
   { id:'tabento',          label:'Rice Paper',       colors:['#f3ead7','#c2761a','#d2542f'] },
   { id:'tabento-dark',     label:'Lacquer',          colors:['#17120d','#f5b841','#ec6f4c'] },
   { id:'aurora',           label:'Aurora',           colors:['#0a0c14','#5eead4','#a78bfa'] },
@@ -1149,6 +1483,26 @@ const THEME_ALIASES = {
   'stow-dark': 'folio-dark'
 };
 const normalizeThemeId = theme => THEME_ALIASES[theme] || theme;
+
+// Classify a theme as light- or dark-inclined from its base surface color's
+// luminance, so the whole visual system (logo variant, banner art, home-card
+// icon set, overlay scrims, contrast) can respond to *any* theme generically
+// instead of via a hand-maintained per-theme list. Kept in sync with the DARK
+// map in newtab.html's pre-init script.
+function isDarkTheme(id) {
+  const t = THEMES.find(x => x.id === normalizeThemeId(id));
+  const hex = ((t && t.colors && t.colors[0]) || '#ffffff').replace('#', '');
+  if (hex.length < 6) return false;
+  const r = parseInt(hex.slice(0, 2), 16), g = parseInt(hex.slice(2, 4), 16), b = parseInt(hex.slice(4, 6), 16);
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5; // Rec.601 luma
+}
+// The concrete light/dark mode of the active theme ('auto' resolves to the OS
+// preference). Read by renderers that pick a themed asset (banner, card icons).
+function activeThemeMode() {
+  let theme = normalizeThemeId(State.get().settings.theme || 'folio');
+  if (theme === 'auto') theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'folio-dark' : 'folio';
+  return isDarkTheme(theme) ? 'dark' : 'light';
+}
 
 function buildThemeGrid() {
   const grid = document.getElementById('theme-grid');
@@ -1179,6 +1533,242 @@ function buildThemeGrid() {
   });
 }
 
+function renderCaptureSettings() {
+  const select = document.getElementById('capture-destination');
+  if (!select) return;
+  const state = State.get();
+  const settings = state.settings || {};
+  const selected = settings.captureDefaultCategoryId || 'active';
+  select.textContent = '';
+
+  const activeOption = document.createElement('option');
+  activeOption.value = 'active';
+  activeOption.textContent = 'Inbox in the active space';
+  select.appendChild(activeOption);
+
+  for (const ws of (state.workspaces || [])) {
+    for (const cat of (ws.categories || [])) {
+      const option = document.createElement('option');
+      option.value = cat.id;
+      option.textContent = `${ws.name} / ${cat.name} / Inbox`;
+      select.appendChild(option);
+    }
+  }
+  select.value = [...select.options].some(o => o.value === selected) ? selected : 'active';
+
+  const selectedLabel = select.options[select.selectedIndex]?.textContent || activeOption.textContent;
+  const previewTitle = document.getElementById('capture-preview-title');
+  const previewIcon = document.getElementById('capture-preview-icon');
+  const previewDestination = document.getElementById('capture-preview-destination');
+  if (previewTitle) previewTitle.textContent = settings.captureIncludeTitle === false ? 'example.com' : 'Page title';
+  if (previewIcon) {
+    previewIcon.textContent = settings.captureIncludeFavicon === false ? 'L' : 'e';
+    previewIcon.classList.toggle('muted', settings.captureIncludeFavicon === false);
+  }
+  if (previewDestination) {
+    const usingLast = settings.captureRememberLast !== false && settings.captureLastTarget?.groupId;
+    previewDestination.textContent = usingLast ? 'Last manually chosen destination' : selectedLabel;
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// SETTINGS PAGE (full-page surface: sidebar sections + panes)
+// ════════════════════════════════════════════════════════════════
+const SETTINGS_SECTIONS = [
+  { id: 'general',    title: 'settings.general',    sub: 'settings.generalSub' },
+  { id: 'appearance', title: 'settings.appearance', sub: 'settings.appearanceSub' },
+  { id: 'capture',    title: 'settings.capture',    sub: 'settings.captureSub' },
+  { id: 'shortcuts',  title: 'settings.shortcuts',  sub: 'settings.shortcutsSub' },
+  { id: 'privacy',    title: 'settings.privacy',    sub: 'settings.privacySub' },
+  { id: 'storage',    title: 'settings.storage',    sub: 'settings.storageSub' },
+  { id: 'data',       title: 'settings.data',       sub: 'settings.dataSub' },
+  { id: 'about',      title: 'settings.about',      sub: 'settings.aboutSub' },
+];
+
+// Activate one settings section: sidebar highlight, pane visibility, header
+// copy, and the pane's own (lazy) renderer. `tab` accepts the legacy drawer
+// names so old deep-links (menu "Theme" → appearance, palette entries) keep
+// working after the drawer → page migration.
+function setSettingsSection(tab) {
+  const legacy = { behavior: 'general', archive: 'storage' };
+  const id = legacy[tab] || tab;
+  const section = SETTINGS_SECTIONS.find(s => s.id === id) || SETTINGS_SECTIONS[0];
+
+  document.querySelectorAll('#drawer-tabs .dt').forEach(b => {
+    const on = b.dataset.tab === section.id;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-current', on ? 'page' : 'false');
+  });
+  SETTINGS_SECTIONS.forEach(s => {
+    const pane = document.getElementById('dp-' + s.id);
+    if (pane) pane.classList.toggle('hidden', s.id !== section.id);
+  });
+
+  const title = document.getElementById('sp-title');
+  const sub = document.getElementById('sp-sub');
+  if (title) { title.dataset.i18n = section.title; title.textContent = tr(section.title); }
+  if (sub) { sub.dataset.i18n = section.sub; sub.textContent = tr(section.sub); }
+
+  if (section.id === 'general') {
+    const name = document.getElementById('profile-name-input');
+    if (name) name.value = (State.get().settings.profile && State.get().settings.profile.name) || '';
+  }
+  if (section.id === 'capture') renderCaptureSettings();
+  if (section.id === 'shortcuts') renderShortcutsSettings();
+  if (section.id === 'storage') renderStorageSettings();
+  if (section.id === 'about') renderAboutSettings();
+
+  // Content scrolls back to the top and (when motion is allowed) the pane
+  // slides in — the movement tells you the page changed, nothing more.
+  const main = document.getElementById('sp-main');
+  if (main) main.scrollTop = 0;
+  const pane = document.getElementById('dp-' + section.id);
+  if (pane && !prefersReducedMotion() && State.get().settings.animate) {
+    pane.classList.remove('sp-enter');
+    void pane.offsetWidth;
+    pane.classList.add('sp-enter');
+  }
+}
+
+function prefersReducedMotion() {
+  return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+// The in-app shortcut list mirrors the cheatsheet overlay (kept in one place
+// here so the settings pane can filter it).
+const APP_SHORTCUTS = [
+  { keys: ['Ctrl/⌘', 'K'], label: 'Open the command palette' },
+  { keys: ['/'], label: 'Open search' },
+  { keys: ['Ctrl/⌘', 'Z'], label: 'Undo' },
+  { keys: ['Ctrl/⌘', '⇧', 'Z'], label: 'Redo' },
+  { keys: ['S'], label: 'Focus sidebar tab filter' },
+  { keys: ['C'], label: 'Open the calendar' },
+  { keys: ['?'], label: 'Show the shortcut cheatsheet' },
+  { keys: ['Esc'], label: 'Close any open overlay or menu' },
+  { keys: ['Ctrl/⌘', 'Click'], label: 'Multi-select a tab' },
+  { keys: ['⇧', 'Click'], label: 'Range-select tabs' },
+  { keys: ['/todo', '/done', '/red'], label: 'Slash commands in notes' },
+];
+
+function shortcutRow(keys, label) {
+  const row = document.createElement('div');
+  row.className = 'sp-shortcut-row';
+  row.setAttribute('role', 'listitem');
+  const kbds = keys.map(k => `<kbd>${esc(k)}</kbd>`).join('');
+  row.innerHTML = `<span class="sp-shortcut-lbl">${esc(label)}</span><span class="sp-shortcut-keys">${kbds}</span>`;
+  return row;
+}
+
+async function renderShortcutsSettings() {
+  const globalList = document.getElementById('shortcuts-global-list');
+  if (globalList) {
+    globalList.textContent = '';
+    // Live values from the browser when available; manifest defaults otherwise
+    // (e.g. when the page is previewed outside the extension context).
+    let commands = null;
+    try { if (chrome.commands?.getAll) commands = await chrome.commands.getAll(); } catch {}
+    const fallback = [
+      { description: 'Open Locus popup', shortcut: 'Ctrl+Shift+E' },
+      { description: 'Save current tab to Inbox', shortcut: 'Ctrl+Shift+S' },
+    ];
+    const rows = (commands && commands.length ? commands : fallback)
+      .map(c => ({
+        label: c.description || (c.name === '_execute_action' ? 'Open Locus popup' : c.name),
+        keys: c.shortcut ? c.shortcut.split('+') : ['Not set'],
+      }));
+    rows.forEach(r => globalList.appendChild(shortcutRow(r.keys, r.label)));
+  }
+  filterAppShortcuts();
+}
+
+function filterAppShortcuts() {
+  const appList = document.getElementById('shortcuts-app-list');
+  const empty = document.getElementById('shortcuts-empty');
+  if (!appList) return;
+  const q = (document.getElementById('shortcuts-filter')?.value || '').trim().toLowerCase();
+  appList.textContent = '';
+  const visible = APP_SHORTCUTS.filter(s =>
+    !q || s.label.toLowerCase().includes(q) || s.keys.join(' ').toLowerCase().includes(q));
+  visible.forEach(s => appList.appendChild(shortcutRow(s.keys, s.label)));
+  if (empty) empty.classList.toggle('hidden', visible.length > 0);
+}
+
+// Real usage numbers: total from chrome.storage, per-kind estimates from the
+// serialized size of each item. Estimates, but honest ones — derived from the
+// user's actual data, never invented.
+function renderStorageSettings() {
+  refreshStorageUsage();
+  const s = State.get();
+
+  const archiveMeta = document.getElementById('storage-archive-meta');
+  if (archiveMeta) {
+    const n = (s.archive || []).length;
+    const bytes = jsonSize(s.archive || []);
+    archiveMeta.textContent = n
+      ? `${n} ${n === 1 ? 'entry' : 'entries'} · ~${_formatBytes(bytes)}`
+      : 'Nothing archived yet';
+  }
+
+  const host = document.getElementById('storage-breakdown');
+  if (!host) return;
+  host.textContent = '';
+
+  const buckets = {
+    tab:   { label: 'Links',          count: 0, bytes: 0, color: '#5566f2' },
+    note:  { label: 'Notes',          count: 0, bytes: 0, color: '#8b5cf6' },
+    todo:  { label: 'Todos',          count: 0, bytes: 0, color: '#06b6d4' },
+    stack: { label: 'Stacks',         count: 0, bytes: 0, color: '#10b981' },
+    other: { label: 'Trackers & settings', count: 0, bytes: 0, color: '#f59e0b' },
+  };
+  const walk = items => (items || []).forEach(it => {
+    const b = buckets[it.type] || buckets.other;
+    b.count++;
+    b.bytes += jsonSize(it.type === 'stack' ? { ...it, items: [] } : it);
+    if (it.type === 'stack') walk(it.items);
+  });
+  (s.workspaces || []).forEach(ws => (ws.categories || []).forEach(cat => (cat.groups || []).forEach(g => walk(g.items))));
+
+  buckets.archive = { label: 'Archive', count: (s.archive || []).length, bytes: jsonSize(s.archive || []), color: '#f97316' };
+  buckets.trash = { label: tr('nav.trash'), count: (s.trash || []).length, bytes: jsonSize(s.trash || []), color: '#ef4444' };
+  const counted = Object.values(buckets).reduce((n, b) => n + b.bytes, 0);
+  buckets.other.bytes += Math.max(0, jsonSize(s) - counted);
+
+  const total = Object.values(buckets).reduce((n, b) => n + b.bytes, 0) || 1;
+  const rows = Object.values(buckets).filter(b => b.count > 0 || b.bytes > 512);
+  if (!rows.length) {
+    const em = document.createElement('div');
+    em.className = 'sp-empty';
+    em.textContent = 'Nothing saved yet — your library is empty.';
+    host.appendChild(em);
+    return;
+  }
+  rows.sort((a, b) => b.bytes - a.bytes);
+  rows.forEach(b => {
+    const pct = Math.round((b.bytes / total) * 100);
+    const row = document.createElement('div');
+    row.className = 'sp-breakdown-row';
+    row.setAttribute('role', 'listitem');
+    row.innerHTML = `
+      <span class="sp-breakdown-dot" style="--dot:${b.color}"></span>
+      <span class="sp-breakdown-lbl">${esc(b.label)}</span>
+      <span class="sp-breakdown-meta">${b.count ? b.count + ' · ' : ''}~${_formatBytes(b.bytes)} (${pct}%)</span>
+      <span class="sp-breakdown-track"><span class="sp-breakdown-fill" style="width:${Math.max(2, pct)}%;--dot:${b.color}"></span></span>`;
+    host.appendChild(row);
+  });
+}
+
+function jsonSize(value) {
+  try { return JSON.stringify(value).length; } catch { return 0; }
+}
+
+function renderAboutSettings() {
+  const el = document.getElementById('sp-about-version');
+  if (!el) return;
+  let version = '3.1.0';
+  try { version = chrome.runtime.getManifest?.().version || version; } catch {}
+  el.textContent = `Version ${version}`;
+}
+
 function applySettings() {
   const s = State.get().settings;
   let theme = normalizeThemeId(s.theme || 'folio');
@@ -1192,6 +1782,7 @@ function applySettings() {
   s.language = language;
   document.documentElement.lang = language;
   document.body.dataset.theme = theme;
+  document.body.dataset.themeMode = isDarkTheme(theme) ? 'dark' : 'light';
   document.body.dataset.size = s.size;
   document.body.dataset.font = s.font;
   document.body.dataset.width = s.width || 'normal';
@@ -1219,9 +1810,24 @@ function applySettings() {
     const key = id === 'seg-size' ? 'size' : id === 'seg-width' ? 'width' : 'font';
     document.querySelectorAll(`#${id} button`).forEach(b => b.classList.toggle('active', b.dataset.val === s[key]));
   });
-  const togs = [['tog-close','closeTabOnSave'],['tog-hibernate','hibernate'],['tog-urls','showUrls'],['tog-anim','animate'],['tog-confirm','confirmDelete'],['tog-blur','blurPrivacy'],['tog-autoswitch','autoSwitchWorkspace']];
+  const togs = [['tog-hibernate','hibernate'],['tog-urls','showUrls'],['tog-anim','animate'],['tog-confirm','confirmDelete'],['tog-blur','blurPrivacy'],['tog-autoswitch','autoSwitchWorkspace'],['tog-landing','showLanding']];
   togs.forEach(([id, key]) => { const el = document.getElementById(id); if (el) el.checked = !!s[key]; });
+  const captureTogs = [
+    ['tog-capture-ask','captureAskEveryTime', true],
+    ['tog-capture-remember','captureRememberLast', true],
+    ['tog-capture-close','closeTabOnSave', true],
+    ['tog-capture-dedupe','captureDeduplicate', true],
+    ['tog-capture-title','captureIncludeTitle', true],
+    ['tog-capture-favicon','captureIncludeFavicon', true]
+  ];
+  captureTogs.forEach(([id, key, defaultValue]) => {
+    const el = document.getElementById(id);
+    if (el) el.checked = s[key] == null ? defaultValue : !!s[key];
+  });
+  renderCaptureSettings();
   applyLocale();
+  const landing = document.getElementById('landing-layer');
+  if (landing && !landing.classList.contains('hidden')) renderLandingLayer();
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -1834,17 +2440,47 @@ const cmIcons = {
   stack: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3l4-2 4 2-4 2-4-2zM2 6l4 2 4-2M2 9l4 2 4-2" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>',
   move: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M2 6h8M4 4l-2 2 2 2M8 4l2 2-2 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   detail: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1.5" y="1.5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M7 1.5v9M3.2 4h2.2M3.2 6h2.2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg>',
+  favorite: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1.2l1.35 2.74 3.02.44-2.18 2.13.51 3.01L6 8.1 3.3 9.52l.51-3.01L1.63 4.38l3.02-.44L6 1.2z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>',
+  readLater: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 1.5h6a.8.8 0 01.8.8v8.2L6 8.35 2.2 10.5V2.3a.8.8 0 01.8-.8z" stroke="currentColor" stroke-width="1.15" stroke-linejoin="round"/></svg>',
 };
 
 // ════════════════════════════════════════════════════════════════
 // ARCHIVE
 // ════════════════════════════════════════════════════════════════
+const TRASH_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
+
+function trashTimestamp(entry) {
+  const value = Number(entry?.trashedAt);
+  return Number.isFinite(value) && value > 0 ? value : archiveEntryTimestamp(entry);
+}
+
+function purgeExpiredTrash(now = Date.now()) {
+  const s = State.get();
+  if (!Array.isArray(s.trash)) s.trash = [];
+  const keep = s.trash.filter(entry => {
+    // Preserve malformed imports for lossless export; the surface reports them
+    // without trying to render or silently destroy them.
+    if (!entry || !entry.data) return true;
+    const at = trashTimestamp(entry);
+    return !at || now - at < TRASH_RETENTION_MS;
+  });
+  if (keep.length === s.trash.length) return 0;
+  const removed = s.trash.length - keep.length;
+  s.trash = keep;
+  State.persist();
+  return removed;
+}
+
 function archiveItem(itemId) {
   const info = findItem(itemId);
   if (!info) return;
   State.snapshot('Archive item');
   const [removed] = info.parent.splice(info.index, 1);
-  State.get().archive.unshift({ kind:'item', data: removed, groupName: info.group.name, at: Date.now() });
+  State.get().archive.unshift({
+    kind:'item', data: removed,
+    wsId: info.ws.id, catId: info.cat.id, groupId: info.group.id,
+    catName: info.cat.name, groupName: info.group.name, at: Date.now()
+  });
   if (State.get().archive.length > 200) State.get().archive.pop();
   State.persist();
   renderBoard();
@@ -1857,36 +2493,120 @@ function archiveGroup(gId) {
   State.snapshot('Archive group');
   const idx = info.cat.groups.findIndex(g => g.id === gId);
   const [removed] = info.cat.groups.splice(idx, 1);
-  State.get().archive.unshift({ kind:'group', data: removed, catName: info.cat.name, at: Date.now() });
+  State.get().archive.unshift({
+    kind:'group', data: removed,
+    wsId: info.ws.id, catId: info.cat.id, catName: info.cat.name, at: Date.now()
+  });
   State.persist();
   renderBoard();
   renderArchiveList();
   toast('Group archived', { undo: true });
 }
-function restoreArchive(idx) {
+function archiveRestoreDestination(entry) {
   const s = State.get();
-  const entry = s.archive[idx];
-  if (!entry) return;
-  State.snapshot('Restore');
-  s.archive.splice(idx, 1);
-  const cat = activeCat();
-  if (entry.kind === 'item') {
-    let inbox = cat.groups.find(g => g.name === 'Inbox');
-    if (!inbox) { inbox = { id: uid(), name:'Inbox', symbol:'📥', color:'#6366f1', collapsed:false, items:[] }; cat.groups.unshift(inbox); }
-    inbox.items.push(entry.data);
-  } else {
-    cat.groups.push(entry.data);
+  const ws = s.workspaces.find(w => w.id === entry.wsId) || activeWs() || s.workspaces[0];
+  if (!ws) return null;
+  const cat = ws.categories.find(c => c.id === entry.catId)
+    || ws.categories.find(c => c.name === entry.catName)
+    || ws.categories.find(c => c.id === ws.activeCatId)
+    || ws.categories[0];
+  return cat ? { ws, cat } : null;
+}
+
+function captureTabFields(tab) {
+  const settings = State.get().settings || {};
+  let fallback = tab?.url || 'Untitled';
+  try { fallback = new URL(tab.url).hostname || fallback; } catch {}
+  return {
+    title: settings.captureIncludeTitle !== false ? (tab?.title || fallback) : fallback,
+    fav: settings.captureIncludeFavicon !== false ? (tab?.favIconUrl || tab?.fav || '') : ''
+  };
+}
+
+function captureDuplicateExists(group, url) {
+  return State.get().settings.captureDeduplicate !== false &&
+    !!group?.items?.find(it => it.type === 'tab' && it.url === url);
+}
+
+function restoreArchiveEntries(entries) {
+  return restoreStoredEntries(entries, 'archive');
+}
+
+function restoreTrashEntries(entries) {
+  return restoreStoredEntries(entries, 'trash');
+}
+
+function restoreStoredEntries(entries, collectionName) {
+  const s = State.get();
+  const collection = Array.isArray(s[collectionName]) ? s[collectionName] : [];
+  const valid = (entries || []).filter(entry => collection.includes(entry));
+  if (!valid.length) return;
+  const fromTrash = collectionName === 'trash';
+  State.snapshot(valid.length === 1 ? 'Restore' : `Restore ${collectionName} items`);
+  for (const entry of valid) {
+    const destination = archiveRestoreDestination(entry);
+    if (!destination) continue;
+    const { cat } = destination;
+    collection.splice(collection.indexOf(entry), 1);
+    if (entry.kind === 'item') {
+      let group = cat.groups.find(g => g.id === entry.groupId)
+        || cat.groups.find(g => g.name === entry.groupName);
+      if (!group) {
+        group = cat.groups.find(g => g.name === 'Inbox');
+        if (!group) {
+          group = { id: uid(), name:'Inbox', symbol:'📥', color:'#6366f1', collapsed:false, items:[] };
+          cat.groups.unshift(group);
+        }
+      }
+      group.items.push(entry.data);
+    } else {
+      cat.groups.push(entry.data);
+    }
   }
   State.persist();
   renderBoard();
   renderArchiveList();
-  toast('Restored');
+  updateNavChrome();
+  const message = fromTrash
+    ? (valid.length === 1 ? tr('trash.restored') : tr('trash.restoredMany', { count: valid.length }))
+    : (valid.length === 1 ? 'Restored' : `Restored ${valid.length} archived items`);
+  toast(message, { undo: true });
 }
-function permDelete(idx) {
-  State.snapshot('Perm delete');
-  State.get().archive.splice(idx, 1);
+
+function restoreArchive(idx) {
+  const entry = State.get().archive[idx];
+  if (entry) restoreArchiveEntries([entry]);
+}
+function moveArchiveEntriesToTrash(entries) {
+  const s = State.get();
+  const valid = (entries || []).filter(entry => s.archive.includes(entry));
+  if (!valid.length) return;
+  State.snapshot(valid.length === 1 ? 'Move to Trash' : 'Move archive items to Trash');
+  const now = Date.now();
+  valid.forEach(entry => {
+    s.archive.splice(s.archive.indexOf(entry), 1);
+    s.trash.unshift({ ...entry, trashedAt: now });
+  });
   State.persist();
+  renderBoard();
   renderArchiveList();
+  updateNavChrome();
+  toast(tr('archive.movedToTrash'), { undo: true });
+}
+
+function permanentlyDeleteTrashEntries(entries) {
+  const s = State.get();
+  const valid = (entries || []).filter(entry => s.trash.includes(entry));
+  if (!valid.length) return;
+  const message = valid.length === 1
+    ? tr('trash.confirmOne', { title: archiveEntryTitle(valid[0]) })
+    : tr('trash.confirmMany', { count: valid.length });
+  if (!confirm(message)) return;
+  valid.forEach(entry => s.trash.splice(s.trash.indexOf(entry), 1));
+  State.persist();
+  renderBoard();
+  updateNavChrome();
+  toast(tr('trash.deleted'), { danger: true });
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -2359,8 +3079,9 @@ async function saveSelectedToInbox() {
   State.snapshot(`Save ${tabs.length} to inbox`);
   let added = 0;
   for (const t of tabs) {
-    if (inbox.items.find(it => it.type === 'tab' && it.url === t.url)) continue;
-    inbox.items.push(stampNew({ id: uid(), type:'tab', title: t.title||'Untitled', url: t.url, fav: t.favIconUrl||'' }));
+    if (captureDuplicateExists(inbox, t.url)) continue;
+    const meta = captureTabFields(t);
+    inbox.items.push(stampNew({ id: uid(), type:'tab', title: meta.title, url: t.url, fav: meta.fav }));
     added++;
   }
   if (State.get().settings.closeTabOnSave) { for (const t of tabs) { try { await chrome.tabs.remove(t.id); } catch {} } }
@@ -2385,9 +3106,10 @@ async function saveTabToInbox(t) {
   const cat = activeCat();
   let inbox = cat.groups.find(g => g.name === 'Inbox');
   if (!inbox) { inbox = { id: uid(), name:'Inbox', symbol:'📥', color:'#6366f1', collapsed:false, items:[] }; cat.groups.unshift(inbox); }
-  if (inbox.items.find(it => it.type === 'tab' && it.url === t.url)) { toast('Already saved', { danger: true }); return; }
+  if (captureDuplicateExists(inbox, t.url)) { toast('Already saved', { danger: true }); return; }
   State.snapshot('Save to inbox');
-  inbox.items.push(stampNew({ id: uid(), type:'tab', title: t.title||'Untitled', url: t.url, fav: t.favIconUrl||'' }));
+  const meta = captureTabFields(t);
+  inbox.items.push(stampNew({ id: uid(), type:'tab', title: meta.title, url: t.url, fav: meta.fav }));
   if (State.get().settings.closeTabOnSave) { try { await chrome.tabs.remove(t.id); } catch {} }
   State.persist(); renderBoard(); toast('Saved to Inbox', { undo: true });
 }
@@ -2400,7 +3122,7 @@ async function saveSelectedAsGroup() {
   const g = {
     id: uid(), symbol:'📂', color:'#6366f1', collapsed:false,
     name: `${tabs.length} tabs ${now.toLocaleDateString(appLocale(), { month:'short', day:'numeric' })}`,
-    items: tabs.map(t => stampNew({ id: uid(), type:'tab', title:t.title||'Untitled', url:t.url, fav:t.favIconUrl||'' }))
+    items: tabs.map(t => { const meta = captureTabFields(t); return stampNew({ id: uid(), type:'tab', title:meta.title, url:t.url, fav:meta.fav }); })
   };
   cat.groups.push(g);
   if (State.get().settings.closeTabOnSave) { for (const t of tabs) { try { await chrome.tabs.remove(t.id); } catch {} } }
@@ -2412,11 +3134,12 @@ async function saveSelectedAsGroup() {
 async function addSidebarOrActiveTabToGroup(g) {
   const selectedTabs = allOpenTabs.filter(t => selectedTabIds.has(t.id));
   if (selectedTabs.length) {
-    const addedTabs = selectedTabs.filter(t => !g.items.find(it => it.type === 'tab' && it.url === t.url));
+    const addedTabs = selectedTabs.filter(t => !captureDuplicateExists(g, t.url));
     if (!addedTabs.length) return toast('Already saved', { danger: true });
     State.snapshot(`Add ${addedTabs.length} tabs`);
     addedTabs.forEach(t => {
-      g.items.push(stampNew({ id: uid(), type:'tab', title:t.title || 'Untitled', url:t.url, fav:t.favIconUrl || '' }));
+      const meta = captureTabFields(t);
+      g.items.push(stampNew({ id: uid(), type:'tab', title:meta.title, url:t.url, fav:meta.fav }));
     });
     if (State.get().settings.closeTabOnSave) {
       for (const t of addedTabs) {
@@ -2437,9 +3160,10 @@ async function addSidebarOrActiveTabToGroup(g) {
     toast('Select a tab on the left to add it here');
     return;
   }
-  if (g.items.find(it => it.type === 'tab' && it.url === t.url)) return toast('Already saved');
+  if (captureDuplicateExists(g, t.url)) return toast('Already saved');
   State.snapshot('Add tab');
-  g.items.push(stampNew({ id: uid(), type:'tab', title:t.title || 'Untitled', url:t.url, fav:t.favIconUrl || '' }));
+  const meta = captureTabFields(t);
+  g.items.push(stampNew({ id: uid(), type:'tab', title:meta.title, url:t.url, fav:meta.fav }));
   if (State.get().settings.closeTabOnSave) {
     try { await chrome.tabs.remove(t.id); } catch {}
   }
@@ -2458,7 +3182,7 @@ async function saveAllTabs() {
   cat.groups.push({
     id: uid(), symbol:'💾', color:'#06b6d4', collapsed:false,
     name:`Session ${now.toLocaleDateString(appLocale(), { month:'short', day:'numeric' })} ${now.toLocaleTimeString(appLocale(), { hour:'2-digit', minute:'2-digit' })}`,
-    items: valid.map(t => stampNew({ id: uid(), type:'tab', title:t.title||'Untitled', url:t.url, fav:t.favIconUrl||'' }))
+    items: valid.map(t => { const meta = captureTabFields(t); return stampNew({ id: uid(), type:'tab', title:meta.title, url:t.url, fav:meta.fav }); })
   });
   if (State.get().settings.closeTabOnSave) {
     const others = valid.slice(1);
@@ -2731,10 +3455,10 @@ function renderBoard() {
   // Home is a block-scrolling surface; clear its class up front so the calendar
   // and group-page gates (which early-return below) never inherit it. renderHome()
   // re-adds it when Home is the active surface.
-  document.getElementById('board').classList.remove('home-mode');
+  document.getElementById('board').classList.remove('home-mode', 'library-mode', 'archive-mode', 'trash-mode', 'read-later-mode');
   // Reflect the active surface on <body> (diagnostic / styling hook), computed
   // from the flags so it stays correct through every early-returning gate.
-  document.body.dataset.surface = activeCalendar ? 'calendar' : activeGroupPage ? 'group' : activeHome ? 'home' : 'board';
+  document.body.dataset.surface = activeCalendar ? 'calendar' : activeGroupPage ? 'group' : activeLibraryMode ? 'library' : activeHome ? 'home' : 'board';
   // The calendar (§5) and group pages (§4.1) are surfaces that sit above the
   // layout registry: when one is open every re-render keeps showing it. Each
   // renderer returns false if the user has navigated away, so we fall through to
@@ -2745,6 +3469,7 @@ function renderBoard() {
   // false if its group vanished or the user navigated away, so we fall through
   // to the normal board in that case.
   if (activeGroupPage && renderGroupPage()) return;
+  if (activeLibraryMode && renderLibrarySurface()) return;
   // Home (workspace overview) is the third surface above the layout registry, and
   // the default landing on a fresh new-tab. renderHome() returns false and clears
   // the flag if the workspace vanished, falling through to the category board.
@@ -2769,6 +3494,7 @@ function renderBoard() {
 // Enter Home. Clears the other above-registry surfaces so Home wins the next
 // renderBoard() dispatch, then mirrors `…/home` into the URL.
 function goHome() {
+  activeLibraryMode = null;
   activeHome = true;
   activeGroupPage = null;
   activeCalendar = null;
@@ -2783,6 +3509,7 @@ function goHome() {
 function openCategory(catId) {
   const ws = activeWs(); if (!ws) return;
   if (!ws.categories.some(c => c.id === catId)) return;
+  activeLibraryMode = null;
   activeHome = false;
   activeGroupPage = null;
   activeCalendar = null;
@@ -2804,8 +3531,851 @@ function openInboxView() {
     cat.groups.unshift(inbox);
     State.persist();
   }
+  activeLibraryMode = null;
   activeHome = false;
   openGroupPage(inbox.id);
+}
+
+function collectWorkspaceTabs(ws = activeWs()) {
+  if (!ws) return [];
+  const rows = [];
+  const walk = (items, cat, group) => {
+    (items || []).forEach(it => {
+      if (it.type === 'stack') walk(it.items, cat, group);
+      else if (it.type === 'tab') rows.push({ item: it, cat, group });
+    });
+  };
+  ws.categories.forEach(cat => cat.groups.forEach(group => walk(group.items, cat, group)));
+  return rows;
+}
+
+// ── Zen launch layer ──────────────────────────────────────────────────────
+let _landingClockTimer = null;
+let _landingResultIndex = -1;
+let _landingAfterWelcome = false;
+
+function landingInbox(ws = activeWs()) {
+  if (!ws) return null;
+  const cat = ws.categories.find(c => c.id === ws.activeCatId) || ws.categories[0];
+  return cat ? cat.groups.find(g => g.name === 'Inbox') || null : null;
+}
+
+function landingLinkMatches(row, query) {
+  const { item, cat, group } = row;
+  const { raw, pos, neg } = parseSearchQuery(query);
+  if (!raw) return false;
+  let host = '';
+  try { host = new URL(item.url).hostname.toLowerCase(); } catch {}
+  const url = String(item.url || '').toLowerCase();
+  const color = String(item.color || '').toLowerCase();
+  const tags = (item.tags || []).map(t => String(t).toLowerCase());
+  const containers = [cat.name, group.name].map(v => String(v || '').toLowerCase());
+  const text = [item.title, item.url, cat.name, group.name, ...(item.tags || [])].join(' ').toLowerCase();
+  const familyMatches = (bucket, negative = false) => {
+    const checks = [];
+    if (bucket.color.length) checks.push(bucket.color.includes(color));
+    if (bucket.type.length) checks.push(bucket.type.includes('tab'));
+    if (bucket.state.length) checks.push(false);
+    if (bucket.domain.length) checks.push(!!host && bucket.domain.some(v => host.includes(v)));
+    if (bucket.url.length) checks.push(!!url && bucket.url.some(v => url.includes(v)));
+    if (bucket.in.length) checks.push(bucket.in.some(v => containers.some(n => n.includes(v))));
+    if (bucket.tag.length) checks.push(bucket.tag.some(v => tags.some(t => t.includes(v))));
+    if (bucket.text.length) checks.push(negative ? bucket.text.some(v => text.includes(v)) : bucket.text.every(v => text.includes(v)));
+    return negative ? checks.some(Boolean) : checks.every(Boolean);
+  };
+  return familyMatches(pos) && !familyMatches(neg, true);
+}
+
+function landingResults(query) {
+  return collectWorkspaceTabs(activeWs())
+    .filter(row => landingLinkMatches(row, query))
+    .sort((a, b) => (b.item.createdAt || 0) - (a.item.createdAt || 0))
+    .slice(0, 6);
+}
+
+function paintLandingResults(query) {
+  const host = document.getElementById('landing-search-results');
+  if (!host) return;
+  const raw = String(query || '').trim();
+  _landingResultIndex = -1;
+  if (!raw) { host.innerHTML = ''; host.classList.add('hidden'); return; }
+  const rows = landingResults(raw);
+  host.classList.remove('hidden');
+  if (!rows.length) {
+    host.innerHTML = `<div class="landing-result-empty">${esc(tr('landing.noResults'))}</div>`;
+    return;
+  }
+  host.innerHTML = rows.map(({ item, cat, group }, index) => `
+    <button class="landing-result" type="button" role="option" data-index="${index}" data-id="${esc(item.id)}">
+      <img src="${esc(item.fav || favUrl(item.url))}" alt="" loading="lazy" decoding="async" onerror="this.src='${BLANK_FAV}'">
+      <span class="landing-result-copy">
+        <span class="landing-result-title">${esc(item.title || item.url || 'Untitled')}</span>
+        <span class="landing-result-url">${esc(dispUrl(item.url))}</span>
+      </span>
+      <span class="landing-result-space">${esc(cat.name)} / ${esc(group.name)}</span>
+    </button>`).join('');
+  host.querySelectorAll('.landing-result').forEach((button, index) => {
+    button.onclick = () => {
+      const row = rows[index];
+      if (!row) return;
+      closeLandingLayer({ immediate: true });
+      openTabMaybeHibernated(row.item.url, { focus: true });
+    };
+  });
+}
+
+function updateLandingClock() {
+  const time = document.getElementById('landing-time');
+  const date = document.getElementById('landing-date');
+  if (!time || !date) return;
+  const now = new Date();
+  const locale = appLocale() === 'zh-TW' ? 'zh-TW' : 'en-US';
+  // The zen clock reads "9:41" — 12-hour time with no meridiem (the scene art
+  // already says morning/evening), matching the landing preview.
+  time.textContent = new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit', hour12: appLocale() !== 'zh-TW' })
+    .formatToParts(now).filter(part => part.type !== 'dayPeriod').map(part => part.value).join('').trim();
+  date.textContent = appLocale() === 'zh-TW'
+    ? new Intl.DateTimeFormat(locale, { weekday: 'short', month: 'short', day: 'numeric' }).format(now)
+    : now.toLocaleDateString('en-GB', { weekday: 'short' }) + ', ' + now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
+}
+
+function renderLandingLayer() {
+  const layer = document.getElementById('landing-layer');
+  const ws = activeWs();
+  if (!layer || !ws) return;
+  const now = new Date();
+  const hour = now.getHours();
+  const tod = hour < 12 ? 'morning' : hour < 18 ? 'noon' : 'night';
+  const greetingKey = hour < 12 ? 'home.greeting.morning' : hour < 18 ? 'home.greeting.afternoon' : 'home.greeting.evening';
+  // Greet with the profile name only — the workspace name is an organizational
+  // label ("My Workspace"), not something to address the user by.
+  const name = ((State.get().settings.profile && State.get().settings.profile.name) || '').trim().split(/\s+/)[0];
+  document.getElementById('landing-greeting').textContent = name
+    ? tr('landing.greeting', { greeting: tr(greetingKey), name })
+    : tr('landing.greetingNoName', { greeting: tr(greetingKey) });
+  const scene = document.getElementById('landing-scene');
+  if (scene) scene.src = `media/png/${activeThemeMode() === 'dark' ? 'night' : tod}_transparent_corners.png`;
+  const face = document.getElementById('landing-avatar-face');
+  if (face) face.textContent = (name || ws.name || 'L').charAt(0).toUpperCase();
+  const inbox = landingInbox(ws);
+  const inboxCount = inbox ? (inbox.items || []).length : 0;
+  const reminders = collectReminders({ scope: ws.id }).filter(entry => !entry.notified).length;
+  document.getElementById('landing-unsorted-count').textContent = String(inboxCount);
+  document.getElementById('landing-reminder-count').textContent = String(reminders);
+  document.getElementById('landing-unsorted').setAttribute('aria-label', `${tr('landing.unsorted')}: ${inboxCount}`);
+  document.getElementById('landing-reminders').setAttribute('aria-label', `${tr('landing.reminders')}: ${reminders}`);
+  // A "0 Reminders" pill is noise on a calm surface — the segment only earns
+  // its place when something is actually pending.
+  document.getElementById('landing-reminders').classList.toggle('hidden', reminders === 0);
+  updateLandingClock();
+}
+
+function showLandingLayer() {
+  const layer = document.getElementById('landing-layer');
+  if (!layer || State.get().settings.showLanding === false) return;
+  rememberOpener(layer);
+  renderLandingLayer();
+  layer.classList.remove('hidden', 'landing-exit');
+  // Staggered entrance (greeting → search → footer). Re-trigger per show; the
+  // global data-anim/reduced-motion gates neutralize it when motion is off.
+  layer.classList.remove('landing-in');
+  void layer.offsetWidth;
+  layer.classList.add('landing-in');
+  clearInterval(_landingClockTimer);
+  _landingClockTimer = setInterval(updateLandingClock, 30000);
+  setTimeout(() => document.getElementById('landing-search-input')?.focus({ preventScroll: true }), 50);
+}
+
+function closeLandingLayer({ immediate = false } = {}) {
+  const layer = document.getElementById('landing-layer');
+  if (!layer || layer.classList.contains('hidden')) return;
+  clearInterval(_landingClockTimer);
+  const noMotion = immediate || prefersReducedMotion() || !State.get().settings.animate;
+  const finish = () => {
+    layer.classList.add('hidden');
+    layer.classList.remove('landing-exit', 'landing-in');
+    // Reset the search so a later reopen starts fresh instead of resurfacing
+    // a stale query.
+    const input = document.getElementById('landing-search-input');
+    if (input) input.value = '';
+    const results = document.getElementById('landing-search-results');
+    if (results) { results.innerHTML = ''; results.classList.add('hidden'); }
+    _landingResultIndex = -1;
+    restoreOpener(layer);
+  };
+  if (noMotion) finish();
+  else { layer.classList.add('landing-exit'); setTimeout(finish, 430); }
+}
+
+function submitLandingSearch() {
+  const input = document.getElementById('landing-search-input');
+  const button = document.getElementById('landing-search-submit');
+  const query = input ? input.value.trim() : '';
+  if (!query) { input?.focus(); return; }
+  const active = document.querySelector('.landing-result.active');
+  if (active) { active.click(); return; }
+  button.disabled = true;
+  button.setAttribute('aria-busy', 'true');
+  try {
+    if (!chrome.search?.query) throw new Error('Default search is unavailable');
+    chrome.search.query({ text: query, disposition: 'CURRENT_TAB' });
+  } catch (err) {
+    button.disabled = false;
+    button.removeAttribute('aria-busy');
+    toast(err.message || 'Default search is unavailable', { danger: true });
+  }
+}
+
+function bindLandingLayer() {
+  const layer = document.getElementById('landing-layer');
+  const input = document.getElementById('landing-search-input');
+  const results = document.getElementById('landing-search-results');
+  if (!layer || !input || !results) return;
+  layer.addEventListener('keydown', e => trapTabKey(e, layer));
+  document.getElementById('landing-search-form').onsubmit = e => { e.preventDefault(); submitLandingSearch(); };
+  input.oninput = debounce(() => paintLandingResults(input.value), 70);
+  input.onkeydown = e => {
+    const options = [...results.querySelectorAll('.landing-result')];
+    if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && options.length) {
+      e.preventDefault();
+      _landingResultIndex = (_landingResultIndex + (e.key === 'ArrowDown' ? 1 : options.length - 1)) % options.length;
+      options.forEach((option, i) => option.classList.toggle('active', i === _landingResultIndex));
+      options[_landingResultIndex].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter' && _landingResultIndex >= 0 && options[_landingResultIndex]) {
+      e.preventDefault();
+      options[_landingResultIndex].click();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      submitLandingSearch();
+    } else if (e.key === 'Escape' && !results.classList.contains('hidden')) {
+      e.preventDefault(); e.stopPropagation(); results.classList.add('hidden'); _landingResultIndex = -1;
+    }
+  };
+  document.getElementById('landing-enter').onclick = () => closeLandingLayer();
+  document.getElementById('landing-unsorted').onclick = () => { closeLandingLayer({ immediate: true }); openInboxView(); };
+  document.getElementById('landing-reminders').onclick = () => { closeLandingLayer({ immediate: true }); openCalendar(); };
+  document.getElementById('landing-tools').onclick = () => {
+    closeLandingLayer({ immediate: true });
+    openToolsHub();
+    setTimeout(() => focusFirstIn(document.getElementById('tools-hub')), 0);
+  };
+  document.getElementById('landing-menu').onclick = e => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    closeLandingLayer({ immediate: true });
+    openAppMenu({ getBoundingClientRect: () => rect });
+  };
+  layer.addEventListener('wheel', e => { if (e.deltaY > 28) closeLandingLayer(); }, { passive: true });
+}
+
+function toggleFavorite(it) {
+  if (!it || it.type !== 'tab') return;
+  State.snapshot(it.favorite ? 'Remove favorite' : 'Add favorite');
+  it.favorite = !it.favorite;
+  State.persist();
+  renderBoard();
+  updateNavChrome();
+  toast(it.favorite ? 'Added to Favorites' : 'Removed from Favorites');
+}
+
+// Read Later is additive metadata on the existing tab item. Keeping the item in
+// its original group preserves every legacy import and lets this surface act as
+// a cross-space queue rather than another storage silo.
+function toggleReadLater(it) {
+  if (!it || it.type !== 'tab') return;
+  const removing = !!it.readLaterAt;
+  State.snapshot(removing ? 'Remove from Read Later' : 'Save to Read Later');
+  if (removing) {
+    delete it.readLaterAt;
+    delete it.readAt;
+  } else {
+    it.readLaterAt = Date.now();
+    delete it.readAt;
+  }
+  State.persist();
+  renderBoard();
+  updateNavChrome();
+  toast(removing ? 'Removed from Read Later' : 'Saved to Read Later');
+}
+
+function toggleReadStatus(it) {
+  if (!it || !it.readLaterAt) return;
+  State.snapshot(it.readAt ? 'Mark unread' : 'Mark read');
+  if (it.readAt) delete it.readAt;
+  else it.readAt = Date.now();
+  State.persist();
+  renderBoard();
+  updateNavChrome();
+  toast(it.readAt ? 'Marked as read' : 'Marked as unread');
+}
+
+function openLibrarySurface(mode) {
+  activeLibraryMode = ['all', 'favorites', 'read-later', 'archive', 'trash'].includes(mode) ? mode : 'all';
+  activeHome = false;
+  activeGroupPage = null;
+  activeCalendar = null;
+  boardDetailItemId = null;
+  renderBoard();
+  renderSpaceNav();
+  Router.sync();
+}
+
+function renderLibrarySurface() {
+  const ws = activeWs();
+  if (!ws || !activeLibraryMode) return false;
+  if (activeLibraryMode === 'archive') return renderArchiveSurface();
+  if (activeLibraryMode === 'trash') return renderTrashSurface();
+  if (activeLibraryMode === 'read-later') return renderReadLaterSurface();
+  hideBreadcrumb();
+  const board = document.getElementById('board');
+  board.classList.remove('group-page-mode', 'list-mode', 'canvas-mode', 'explorer-mode', 'timeline-mode', 'gallery-mode', 'graph-mode', 'calendar-mode', 'home-mode');
+  board.classList.add('library-mode');
+  board.innerHTML = '';
+
+  let rows = collectWorkspaceTabs(ws);
+  if (activeLibraryMode === 'favorites') rows = rows.filter(row => row.item.favorite);
+  rows.sort((a, b) => (b.item.createdAt || 0) - (a.item.createdAt || 0));
+
+  const shell = document.createElement('section');
+  shell.className = 'library-shell';
+  shell.innerHTML = `
+    <header class="library-head">
+      <div>
+        <h1>${activeLibraryMode === 'favorites' ? 'Favorites' : 'All Links'}</h1>
+        <p>${rows.length} ${rows.length === 1 ? 'link' : 'links'} across this workspace</p>
+      </div>
+      <label class="library-search">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <input type="search" placeholder="Filter links…" aria-label="Filter links">
+      </label>
+    </header>
+    <div class="library-toolbar">
+      <span class="library-filter active">All</span>
+      <span class="library-location">Workspace: ${esc(ws.name)}</span>
+    </div>
+    <div class="library-list" role="list"></div>`;
+  board.appendChild(shell);
+  const list = shell.querySelector('.library-list');
+
+  const paint = query => {
+    const needle = String(query || '').trim().toLowerCase();
+    list.innerHTML = '';
+    const visible = rows.filter(({ item, cat, group }) => !needle || [item.title, item.url, cat.name, group.name].join(' ').toLowerCase().includes(needle));
+    if (!visible.length) {
+      const empty = document.createElement('div');
+      empty.className = 'library-empty';
+      empty.innerHTML = `<div class="library-empty-icon">${activeLibraryMode === 'favorites' ? '☆' : '↗'}</div><h2>${needle ? 'No matching links' : activeLibraryMode === 'favorites' ? 'No favorites yet' : 'No saved links yet'}</h2><p>${needle ? 'Try a different search.' : activeLibraryMode === 'favorites' ? 'Use the star on any saved link to keep it here.' : 'Save a tab or drag one into a space to get started.'}</p>`;
+      list.appendChild(empty);
+      return;
+    }
+    visible.forEach(({ item, cat, group }) => {
+      const row = document.createElement('article');
+      row.className = 'library-row';
+      row.setAttribute('role', 'listitem');
+      row.dataset.id = item.id;
+      row.innerHTML = `
+        <img class="library-fav" src="${esc(item.fav || favUrl(item.url))}" alt="" loading="lazy" decoding="async" onerror="this.src='${BLANK_FAV}'">
+        <button class="library-primary" type="button">
+          <span class="library-title">${esc(item.title || 'Untitled')}</span>
+          <span class="library-url">${esc(dispUrl(item.url))}</span>
+        </button>
+        <span class="library-space">${esc(cat.name)} / ${esc(group.name)}</span>
+        <button class="library-star${item.favorite ? ' active' : ''}" type="button" title="${item.favorite ? 'Remove from Favorites' : 'Add to Favorites'}" aria-label="${item.favorite ? 'Remove from Favorites' : 'Add to Favorites'}">${item.favorite ? '★' : '☆'}</button>
+        <button class="library-more" type="button" title="More actions" aria-label="More actions">•••</button>`;
+      row.querySelector('.library-primary').onclick = () => openTabMaybeHibernated(item.url, { focus: true });
+      row.querySelector('.library-star').onclick = () => toggleFavorite(item);
+      row.querySelector('.library-more').onclick = e => showContextMenu(e.pageX, e.pageY, [
+        { text: 'Open', icon: cmIcons.open, action: () => openTabMaybeHibernated(item.url, { focus: true }) },
+        { text: item.favorite ? 'Remove from Favorites' : 'Add to Favorites', icon: cmIcons.favorite, action: () => toggleFavorite(item) },
+        { text: item.readLaterAt ? 'Remove from Read Later' : 'Save to Read Later', icon: cmIcons.readLater, action: () => toggleReadLater(item) },
+        { text: 'Details', icon: cmIcons.detail, action: () => { boardDetailItemId = item.id; renderItemDetail(); } },
+        { sep: true },
+        { text: 'Archive', icon: cmIcons.archive, action: () => archiveItem(item.id) }
+      ]);
+      list.appendChild(row);
+    });
+  };
+  paint('');
+  shell.querySelector('.library-search input').oninput = e => paint(e.target.value);
+  updateNavChrome();
+  return true;
+}
+
+function renderReadLaterSurface() {
+  const ws = activeWs();
+  if (!ws) return false;
+  hideBreadcrumb();
+  const board = document.getElementById('board');
+  board.classList.remove('group-page-mode', 'list-mode', 'canvas-mode', 'explorer-mode', 'timeline-mode', 'gallery-mode', 'graph-mode', 'calendar-mode', 'home-mode');
+  board.classList.add('library-mode', 'read-later-mode');
+  board.innerHTML = '';
+
+  const rows = collectWorkspaceTabs(ws)
+    .filter(row => row.item.readLaterAt)
+    .sort((a, b) => (a.item.readLaterAt || 0) - (b.item.readLaterAt || 0));
+  const unread = rows.filter(row => !row.item.readAt);
+  const read = rows.filter(row => row.item.readAt);
+  const shell = document.createElement('section');
+  shell.className = 'library-shell read-later-shell';
+  shell.innerHTML = `
+    <header class="library-head read-later-head">
+      <div>
+        <h1>Read Later</h1>
+        <p>A calm queue for links you want to return to.</p>
+      </div>
+      <label class="library-search">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <input type="search" placeholder="Search reading list" aria-label="Search reading list">
+      </label>
+    </header>
+    <div class="read-later-summary" aria-label="Reading list summary">
+      <div><strong>${rows.length}</strong><span>Saved</span></div>
+      <div><strong>${unread.length}</strong><span>Unread</span></div>
+      <div><strong>${read.length}</strong><span>Read</span></div>
+      <div class="read-later-local"><strong>Stored locally</strong><span>Your queue never leaves this browser</span></div>
+    </div>
+    <section class="read-later-next" aria-labelledby="read-later-next-title">
+      <div class="read-later-section-head"><div><h2 id="read-later-next-title">Up next</h2><p>Oldest unread saves, ready when you are</p></div></div>
+      <div class="read-later-cards"></div>
+    </section>
+    <section class="read-later-all" aria-labelledby="read-later-all-title">
+      <div class="read-later-section-head"><div><h2 id="read-later-all-title">All saved items</h2><p>Keep, finish, or remove links without changing their spaces</p></div></div>
+      <div class="read-later-toolbar">
+        <div class="read-later-filters" role="group" aria-label="Reading status">
+          <button type="button" data-status="unread" class="active" aria-pressed="true">Unread</button>
+          <button type="button" data-status="read" aria-pressed="false">Read</button>
+          <button type="button" data-status="all" aria-pressed="false">All</button>
+        </div>
+        <label class="read-later-sort">Sort
+          <select aria-label="Sort reading list">
+            <option value="oldest">Oldest saved</option>
+            <option value="newest">Newest saved</option>
+            <option value="title">Title</option>
+          </select>
+        </label>
+      </div>
+      <div class="read-later-list" role="list"></div>
+    </section>`;
+  board.appendChild(shell);
+
+  const next = shell.querySelector('.read-later-cards');
+  if (!unread.length) {
+    next.innerHTML = `<div class="read-later-next-empty"><span>✓</span><strong>You're caught up</strong><small>Save any link for later from its action menu.</small></div>`;
+  } else {
+    unread.slice(0, 4).forEach(({ item, cat }) => {
+      const card = document.createElement('article');
+      card.className = 'read-later-card';
+      card.innerHTML = `
+        <div class="read-later-card-top"><img src="${esc(item.fav || favUrl(item.url))}" alt="" loading="lazy" onerror="this.src='${BLANK_FAV}'"><span>${esc(cat.name)}</span></div>
+        <button type="button" class="read-later-card-title">${esc(item.title || 'Untitled')}</button>
+        <div class="read-later-card-foot"><span>${esc(dispUrl(item.url))}</span><button type="button" aria-label="Mark ${esc(item.title || 'link')} as read" title="Mark as read">✓</button></div>`;
+      card.querySelector('.read-later-card-title').onclick = () => openTabMaybeHibernated(item.url, { focus: true });
+      card.querySelector('.read-later-card-foot button').onclick = () => toggleReadStatus(item);
+      next.appendChild(card);
+    });
+  }
+
+  const list = shell.querySelector('.read-later-list');
+  const search = shell.querySelector('.library-search input');
+  const sort = shell.querySelector('.read-later-sort select');
+  let status = 'unread';
+  const paint = () => {
+    const needle = search.value.trim().toLowerCase();
+    let visible = rows.filter(({ item, cat, group }) => {
+      const statusMatch = status === 'all' || (status === 'read' ? !!item.readAt : !item.readAt);
+      const queryMatch = !needle || [item.title, item.url, cat.name, group.name].join(' ').toLowerCase().includes(needle);
+      return statusMatch && queryMatch;
+    });
+    visible = [...visible].sort((a, b) => {
+      if (sort.value === 'newest') return (b.item.readLaterAt || 0) - (a.item.readLaterAt || 0);
+      if (sort.value === 'title') return String(a.item.title || '').localeCompare(String(b.item.title || ''));
+      return (a.item.readLaterAt || 0) - (b.item.readLaterAt || 0);
+    });
+    list.innerHTML = '';
+    if (!visible.length) {
+      list.innerHTML = `<div class="library-empty read-later-empty"><div class="library-empty-icon">${needle ? '?' : status === 'read' ? '✓' : '⌑'}</div><h2>${needle ? 'No matching links' : status === 'read' ? 'Nothing finished yet' : 'Your reading queue is clear'}</h2><p>${needle ? 'Try a different search.' : status === 'read' ? 'Mark an item as read and it will stay available here.' : 'Use a saved link’s action menu and choose Save to Read Later.'}</p></div>`;
+      return;
+    }
+    visible.forEach(({ item, cat, group }) => {
+      const row = document.createElement('article');
+      row.className = 'read-later-row' + (item.readAt ? ' is-read' : '');
+      row.setAttribute('role', 'listitem');
+      row.dataset.id = item.id;
+      row.innerHTML = `
+        <img class="library-fav" src="${esc(item.fav || favUrl(item.url))}" alt="" loading="lazy" onerror="this.src='${BLANK_FAV}'">
+        <button class="library-primary" type="button"><span class="library-title">${esc(item.title || 'Untitled')}</span><span class="library-url">${esc(dispUrl(item.url))}</span></button>
+        <span class="library-space">${esc(cat.name)} / ${esc(group.name)}</span>
+        <time datetime="${new Date(item.readLaterAt).toISOString()}">${esc(fmtTimeRelative(item.readLaterAt))}</time>
+        <button class="read-later-status" type="button" aria-pressed="${!!item.readAt}" title="${item.readAt ? 'Mark unread' : 'Mark read'}">${item.readAt ? '↶ Unread' : '✓ Read'}</button>
+        <button class="library-more" type="button" title="More actions" aria-label="More actions">•••</button>`;
+      row.querySelector('.library-primary').onclick = () => openTabMaybeHibernated(item.url, { focus: true });
+      row.querySelector('.read-later-status').onclick = () => toggleReadStatus(item);
+      row.querySelector('.library-more').onclick = e => showContextMenu(e.pageX, e.pageY, [
+        { text: 'Open', icon: cmIcons.open, action: () => openTabMaybeHibernated(item.url, { focus: true }) },
+        { text: item.readAt ? 'Mark unread' : 'Mark read', icon: cmIcons.readLater, action: () => toggleReadStatus(item) },
+        { text: 'Remove from Read Later', icon: cmIcons.delete, action: () => toggleReadLater(item) },
+        { sep: true },
+        { text: 'Details', icon: cmIcons.detail, action: () => { boardDetailItemId = item.id; renderItemDetail(); } },
+        { text: 'Archive', icon: cmIcons.archive, action: () => archiveItem(item.id) }
+      ]);
+      list.appendChild(row);
+    });
+  };
+  shell.querySelectorAll('.read-later-filters button').forEach(button => button.onclick = () => {
+    status = button.dataset.status;
+    shell.querySelectorAll('.read-later-filters button').forEach(other => {
+      const active = other === button;
+      other.classList.toggle('active', active);
+      other.setAttribute('aria-pressed', String(active));
+    });
+    paint();
+  });
+  search.oninput = paint;
+  search.onkeydown = e => { if (e.key === 'Escape') { search.value = ''; paint(); search.blur(); } };
+  sort.onchange = paint;
+  paint();
+  updateNavChrome();
+  return true;
+}
+
+function archiveEntryTitle(entry) {
+  if (!entry || !entry.data) return 'Untitled';
+  if (entry.kind === 'group') return entry.data.name || 'Untitled group';
+  const it = entry.data;
+  if (it.type === 'note') return String(it.html || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() || 'Note';
+  if (it.type === 'todo') return it.text || it.title || 'To-do';
+  if (it.type === 'stack') return it.name || 'Stack';
+  return it.title || dispUrl(it.url) || 'Untitled link';
+}
+
+function archiveEntryType(entry) {
+  if (entry.kind === 'group') return 'groups';
+  const type = entry.data?.type;
+  if (type === 'note') return 'notes';
+  if (type === 'todo') return 'todos';
+  if (type === 'stack') return 'groups';
+  return 'links';
+}
+
+function archiveEntryIcon(entry) {
+  if (entry.kind === 'group') return entry.data?.symbol || '📁';
+  if (entry.data?.type === 'note') return '✎';
+  if (entry.data?.type === 'todo') return entry.data.done ? '✓' : '○';
+  if (entry.data?.type === 'stack') return '▱';
+  return '↗';
+}
+
+function archiveEntryCount(entry) {
+  if (entry.kind !== 'group') return 1;
+  let count = 0;
+  const walk = items => (items || []).forEach(it => { count++; if (it.type === 'stack') walk(it.items); });
+  walk(entry.data?.items);
+  return count;
+}
+
+function archiveEntryTimestamp(entry) {
+  const value = Number(entry?.at);
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+function archiveDateBucket(at) {
+  const value = Number(at) || 0;
+  const day = new Date(value); day.setHours(0, 0, 0, 0);
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const delta = Math.round((today - day) / 86400000);
+  if (delta <= 0) return 'Today';
+  if (delta === 1) return 'Yesterday';
+  if (delta < 7) return 'This week';
+  return 'Earlier';
+}
+
+// Dedicated desktop archive: the old Settings list remains as a compact
+// secondary view, while this primary surface supports finding and restoring
+// whole archived sessions without changing the legacy archive schema.
+function renderArchiveSurface() {
+  hideBreadcrumb();
+  const board = document.getElementById('board');
+  board.classList.remove('group-page-mode', 'list-mode', 'canvas-mode', 'explorer-mode', 'timeline-mode', 'gallery-mode', 'graph-mode', 'calendar-mode', 'home-mode');
+  board.classList.add('library-mode', 'archive-mode');
+  board.innerHTML = '';
+
+  // Keep malformed legacy/import records in storage for lossless export, but
+  // do not let one incomplete record prevent the rest of the archive loading.
+  const allEntries = (State.get().archive || [])
+    .filter(entry => entry && entry.data)
+    .sort((a, b) => archiveEntryTimestamp(b) - archiveEntryTimestamp(a));
+  const itemTotal = allEntries.reduce((sum, entry) => sum + archiveEntryCount(entry), 0);
+  const groupTotal = allEntries.filter(entry => entry.kind === 'group').length;
+  const selected = new Set();
+  let query = '';
+  let type = 'all';
+
+  const shell = document.createElement('section');
+  shell.className = 'library-shell archive-shell';
+  shell.innerHTML = `
+    <header class="library-head archive-head">
+      <div>
+        <h1>Archive</h1>
+        <p>Hibernated and archived content stays on this device until you restore or delete it.</p>
+      </div>
+      <label class="library-search">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <input type="search" placeholder="Search archive" aria-label="Search archive">
+      </label>
+    </header>
+    <div class="archive-summary" aria-label="Archive summary">
+      <div><strong>${allEntries.length}</strong><span>Archived ${allEntries.length === 1 ? 'entry' : 'entries'}</span></div>
+      <div><strong>${itemTotal}</strong><span>Saved ${itemTotal === 1 ? 'item' : 'items'}</span></div>
+      <div><strong>${groupTotal}</strong><span>${groupTotal === 1 ? 'Group' : 'Groups'}</span></div>
+      <div class="archive-local"><strong>Local</strong><span>Stored only on this device</span></div>
+    </div>
+    <div class="archive-toolbar">
+      <div class="archive-filters" role="group" aria-label="Filter archive by type">
+        ${[['all','All'],['links','Links'],['notes','Notes'],['todos','To-dos'],['groups','Groups']].map(([value, label]) => `<button type="button" data-type="${value}" aria-pressed="${value === 'all'}" class="${value === 'all' ? 'active' : ''}">${label}</button>`).join('')}
+      </div>
+      <div class="archive-selection" aria-live="polite">
+        <span>0 selected</span>
+        <button type="button" class="btn-primary" disabled>Restore selected</button>
+        <button type="button" class="btn-secondary archive-trash-selected" disabled>${tr('archive.moveToTrash')}</button>
+      </div>
+    </div>
+    <div class="archive-results" aria-live="polite"></div>`;
+  board.appendChild(shell);
+
+  const results = shell.querySelector('.archive-results');
+  const selectionText = shell.querySelector('.archive-selection span');
+  const restoreSelected = shell.querySelector('.archive-selection button');
+  const trashSelected = shell.querySelector('.archive-trash-selected');
+  const syncSelection = () => {
+    selectionText.textContent = `${selected.size} selected`;
+    restoreSelected.disabled = selected.size === 0;
+    trashSelected.disabled = selected.size === 0;
+  };
+
+  const paint = () => {
+    const needle = query.trim().toLowerCase();
+    const visible = allEntries.filter(entry => {
+      if (type !== 'all' && archiveEntryType(entry) !== type) return false;
+      return !needle || archiveEntryText(entry).includes(needle);
+    });
+    results.innerHTML = '';
+    if (!visible.length) {
+      const empty = document.createElement('div');
+      empty.className = 'library-empty archive-empty';
+      empty.innerHTML = `<div class="library-empty-icon">${allEntries.length ? '⌕' : '✓'}</div><h2>${allEntries.length ? 'No archived items match' : 'Your archive is empty'}</h2><p>${allEntries.length ? 'Try another search or content type.' : 'Items and groups you archive will wait here until you need them again.'}</p>${allEntries.length ? '' : '<button type="button" class="btn-secondary">Return home</button>'}`;
+      const home = empty.querySelector('button');
+      if (home) home.onclick = goHome;
+      results.appendChild(empty);
+      return;
+    }
+
+    const buckets = new Map();
+    visible.forEach(entry => {
+      const bucket = archiveDateBucket(archiveEntryTimestamp(entry));
+      if (!buckets.has(bucket)) buckets.set(bucket, []);
+      buckets.get(bucket).push(entry);
+    });
+    buckets.forEach((entries, label) => {
+      const section = document.createElement('section');
+      section.className = 'archive-group';
+      section.innerHTML = `<h2>${label}<span>${entries.length}</span></h2><div class="archive-list" role="list"></div>`;
+      const list = section.querySelector('.archive-list');
+      entries.forEach(entry => {
+        const row = document.createElement('article');
+        const title = archiveEntryTitle(entry);
+        const origin = [entry.catName, entry.groupName].filter(Boolean).join(' / ') || 'Archive';
+        const timestamp = archiveEntryTimestamp(entry);
+        const date = timestamp ? new Intl.DateTimeFormat(undefined, { dateStyle:'medium', timeStyle:'short' }).format(new Date(timestamp)) : 'Date unavailable';
+        row.className = 'archive-row';
+        row.setAttribute('role', 'listitem');
+        row.innerHTML = `
+          <label class="archive-check"><input type="checkbox" aria-label="Select ${esc(title)}"><span aria-hidden="true"></span></label>
+          <span class="archive-icon" aria-hidden="true">${esc(archiveEntryIcon(entry))}</span>
+          <span class="archive-copy"><strong>${esc(title)}</strong><span>${esc(origin)} · ${entry.kind === 'group' ? `${archiveEntryCount(entry)} ${archiveEntryCount(entry) === 1 ? 'item' : 'items'}` : archiveEntryType(entry).replace(/s$/, '')}</span></span>
+          <time datetime="${timestamp ? new Date(timestamp).toISOString() : ''}" title="${esc(date)}">${timestamp ? esc(fmtTimeRelative(timestamp)) : 'Date unavailable'}</time>
+          <button type="button" class="archive-restore" aria-label="Restore ${esc(title)}">Restore</button>
+          <button type="button" class="archive-delete" aria-label="${esc(tr('archive.moveToTrash'))}: ${esc(title)}" title="${esc(tr('archive.moveToTrash'))}">×</button>`;
+        const checkbox = row.querySelector('input');
+        checkbox.checked = selected.has(entry);
+        checkbox.onchange = () => { checkbox.checked ? selected.add(entry) : selected.delete(entry); row.classList.toggle('selected', checkbox.checked); syncSelection(); };
+        row.classList.toggle('selected', checkbox.checked);
+        row.querySelector('.archive-restore').onclick = () => restoreArchiveEntries([entry]);
+        row.querySelector('.archive-delete').onclick = () => moveArchiveEntriesToTrash([entry]);
+        list.appendChild(row);
+      });
+      results.appendChild(section);
+    });
+  };
+
+  shell.querySelector('.library-search input').oninput = e => { query = e.target.value; paint(); };
+  shell.querySelectorAll('.archive-filters button').forEach(button => {
+    button.onclick = () => {
+      type = button.dataset.type;
+      shell.querySelectorAll('.archive-filters button').forEach(b => { const on = b === button; b.classList.toggle('active', on); b.setAttribute('aria-pressed', String(on)); });
+      paint();
+    };
+  });
+  restoreSelected.onclick = () => restoreArchiveEntries([...selected]);
+  trashSelected.onclick = () => moveArchiveEntriesToTrash([...selected]);
+  paint();
+  syncSelection();
+  updateNavChrome();
+  return true;
+}
+
+function trashDateBucket(at) {
+  const bucket = archiveDateBucket(at);
+  return tr({ Today:'trash.today', Yesterday:'trash.yesterday', 'This week':'trash.thisWeek', Earlier:'trash.earlier' }[bucket] || 'trash.earlier');
+}
+
+function trashDaysLeft(entry, now = Date.now()) {
+  return Math.max(0, Math.ceil((TRASH_RETENTION_MS - (now - trashTimestamp(entry))) / 86400000));
+}
+
+function renderTrashSurface() {
+  purgeExpiredTrash();
+  hideBreadcrumb();
+  const board = document.getElementById('board');
+  board.classList.remove('group-page-mode', 'list-mode', 'canvas-mode', 'explorer-mode', 'timeline-mode', 'gallery-mode', 'graph-mode', 'calendar-mode', 'home-mode', 'archive-mode');
+  board.classList.add('library-mode', 'trash-mode');
+  board.innerHTML = '';
+
+  const stored = State.get().trash || [];
+  const allEntries = stored
+    .filter(entry => entry && entry.data)
+    .sort((a, b) => trashTimestamp(b) - trashTimestamp(a));
+  const invalidCount = stored.length - allEntries.length;
+  const itemTotal = allEntries.reduce((sum, entry) => sum + archiveEntryCount(entry), 0);
+  const bytes = jsonSize(allEntries);
+  const selected = new Set();
+  let query = '';
+  let type = 'all';
+
+  const shell = document.createElement('section');
+  shell.className = 'library-shell archive-shell trash-shell';
+  shell.innerHTML = `
+    <header class="library-head archive-head">
+      <div>
+        <h1>${tr('trash.title')}</h1>
+        <p>${tr('trash.subtitle')}</p>
+      </div>
+      <label class="library-search">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <input type="search" placeholder="${esc(tr('trash.search'))}" aria-label="${esc(tr('trash.search'))}">
+      </label>
+    </header>
+    <div class="trash-retention" role="note">
+      <span class="trash-retention-icon" aria-hidden="true">⌫</span>
+      <strong>${tr('trash.retention')}</strong>
+      <span>${tr('trash.localOnly')}</span>
+    </div>
+    ${invalidCount ? `<div class="trash-error" role="status">${esc(tr('trash.invalid', { count: invalidCount }))}</div>` : ''}
+    <div class="archive-summary trash-summary" aria-label="${esc(tr('trash.title'))}">
+      <div><strong>${allEntries.length}</strong><span>${tr('trash.summary.entries', { count: allEntries.length })}</span></div>
+      <div><strong>${itemTotal}</strong><span>${tr('trash.summary.items', { count: itemTotal })}</span></div>
+      <div><strong>${_formatBytes(bytes)}</strong><span>${tr('trash.summary.space')}</span></div>
+      <div class="archive-local"><strong>30</strong><span>${tr('trash.summary.retention')}</span></div>
+    </div>
+    <div class="archive-toolbar">
+      <div class="archive-filters" role="group" aria-label="${esc(tr('trash.title'))}">
+        ${[['all','trash.all'],['links','trash.links'],['notes','trash.notes'],['todos','trash.todos'],['groups','trash.groups']].map(([value, key]) => `<button type="button" data-type="${value}" aria-pressed="${value === 'all'}" class="${value === 'all' ? 'active' : ''}">${tr(key)}</button>`).join('')}
+      </div>
+      <div class="archive-selection trash-selection" aria-live="polite">
+        <span>${tr('trash.selected', { count: 0 })}</span>
+        <button type="button" class="btn-primary trash-restore-selected" disabled>${tr('trash.restoreSelected')}</button>
+        <button type="button" class="btn-secondary trash-delete-selected" disabled>${tr('trash.deleteSelected')}</button>
+      </div>
+    </div>
+    <div class="archive-results" aria-live="polite"></div>`;
+  board.appendChild(shell);
+
+  const results = shell.querySelector('.archive-results');
+  const selectionText = shell.querySelector('.archive-selection span');
+  const restoreSelected = shell.querySelector('.trash-restore-selected');
+  const deleteSelected = shell.querySelector('.trash-delete-selected');
+  const syncSelection = () => {
+    selectionText.textContent = tr('trash.selected', { count: selected.size });
+    restoreSelected.disabled = selected.size === 0;
+    deleteSelected.disabled = selected.size === 0;
+  };
+
+  const paint = () => {
+    const needle = query.trim().toLowerCase();
+    const visible = allEntries.filter(entry => {
+      if (type !== 'all' && archiveEntryType(entry) !== type) return false;
+      return !needle || archiveEntryText(entry).includes(needle);
+    });
+    results.innerHTML = '';
+    if (!visible.length) {
+      const empty = document.createElement('div');
+      empty.className = 'library-empty archive-empty trash-empty';
+      const noMatch = allEntries.length > 0;
+      empty.innerHTML = `<div class="library-empty-icon">${noMatch ? '⌕' : '✓'}</div><h2>${tr(noMatch ? 'trash.noMatch' : 'trash.empty')}</h2><p>${tr(noMatch ? 'trash.noMatchBody' : 'trash.emptyBody')}</p>${noMatch ? '' : '<button type="button" class="btn-secondary">' + tr('nav.home') + '</button>'}`;
+      const home = empty.querySelector('button');
+      if (home) home.onclick = goHome;
+      results.appendChild(empty);
+      return;
+    }
+
+    const buckets = new Map();
+    visible.forEach(entry => {
+      const bucket = trashDateBucket(trashTimestamp(entry));
+      if (!buckets.has(bucket)) buckets.set(bucket, []);
+      buckets.get(bucket).push(entry);
+    });
+    buckets.forEach((entries, label) => {
+      const section = document.createElement('section');
+      section.className = 'archive-group';
+      section.innerHTML = `<h2>${esc(label)}<span>${entries.length}</span></h2><div class="archive-list" role="list"></div>`;
+      const list = section.querySelector('.archive-list');
+      entries.forEach(entry => {
+        const row = document.createElement('article');
+        const title = archiveEntryTitle(entry);
+        const origin = [entry.catName, entry.groupName].filter(Boolean).join(' / ') || tr('nav.archive');
+        const timestamp = trashTimestamp(entry);
+        const days = trashDaysLeft(entry);
+        const daysLabel = days === 0 ? tr('trash.expiresToday') : days === 1 ? tr('trash.dayLeft') : tr('trash.daysLeft', { count: days });
+        row.className = 'archive-row trash-row';
+        row.setAttribute('role', 'listitem');
+        row.innerHTML = `
+          <label class="archive-check"><input type="checkbox" aria-label="${esc(tr('trash.select', { title }))}"><span aria-hidden="true"></span></label>
+          <span class="archive-icon" aria-hidden="true">${esc(archiveEntryIcon(entry))}</span>
+          <span class="archive-copy"><strong>${esc(title)}</strong><span>${esc(origin)}</span></span>
+          <time class="trash-expiry" datetime="${new Date(timestamp).toISOString()}" title="${esc(new Intl.DateTimeFormat(undefined, { dateStyle:'medium', timeStyle:'short' }).format(new Date(timestamp)))}">${esc(daysLabel)}</time>
+          <button type="button" class="archive-restore" aria-label="${esc(tr('trash.restore'))}: ${esc(title)}">${tr('trash.restore')}</button>
+          <button type="button" class="archive-delete" aria-label="${esc(tr('trash.deleteForever'))}: ${esc(title)}" title="${esc(tr('trash.deleteForever'))}">×</button>`;
+        const checkbox = row.querySelector('input');
+        checkbox.checked = selected.has(entry);
+        checkbox.onchange = () => { checkbox.checked ? selected.add(entry) : selected.delete(entry); row.classList.toggle('selected', checkbox.checked); syncSelection(); };
+        row.classList.toggle('selected', checkbox.checked);
+        row.querySelector('.archive-restore').onclick = () => restoreTrashEntries([entry]);
+        row.querySelector('.archive-delete').onclick = () => permanentlyDeleteTrashEntries([entry]);
+        list.appendChild(row);
+      });
+      results.appendChild(section);
+    });
+  };
+
+  const search = shell.querySelector('.library-search input');
+  search.oninput = e => { query = e.target.value; paint(); };
+  search.onkeydown = e => {
+    if (e.key !== 'Escape') return;
+    e.stopPropagation();
+    if (search.value) { search.value = ''; query = ''; paint(); }
+    else search.blur();
+  };
+  shell.querySelectorAll('.archive-filters button').forEach(button => {
+    button.onclick = () => {
+      type = button.dataset.type;
+      shell.querySelectorAll('.archive-filters button').forEach(b => { const on = b === button; b.classList.toggle('active', on); b.setAttribute('aria-pressed', String(on)); });
+      paint();
+    };
+  });
+  restoreSelected.onclick = () => restoreTrashEntries([...selected]);
+  deleteSelected.onclick = () => permanentlyDeleteTrashEntries([...selected]);
+  paint();
+  syncSelection();
+  updateNavChrome();
+  return true;
 }
 
 // Save the currently dragged tab / multi-selection into a category's Inbox group.
@@ -2834,6 +4404,22 @@ function greetingWord() {
   if (h < 12) return tr('home.greeting.morning');
   if (h < 18) return tr('home.greeting.afternoon');
   return tr('home.greeting.evening');
+}
+
+// Banner subtitle. Picks a calm phrase once per page load (stable across the
+// many re-renders in a session so it never flickers). Falls back to the base
+// localized line for non-English locales, which don't ship the variant set.
+let _homeSubtitle = null;
+function homeSubtitle() {
+  if (_homeSubtitle) return _homeSubtitle;
+  const base = tr('home.subtitle');
+  const variants = (appLocale() === 'en')
+    ? [base, 'Pick up where you left off.', 'Everything in its place.',
+       'Your browser, organized.', 'Less noise, more focus.',
+       'A calm home for your tabs.', 'Right where you left it.']
+    : [base];
+  _homeSubtitle = variants[Math.floor(Math.random() * variants.length)];
+  return _homeSubtitle;
 }
 
 // A single preview row inside a category card (favicon+title for tabs, a glyph
@@ -2868,6 +4454,54 @@ function buildHomePreviewRow(it) {
   return row;
 }
 
+// Map a category to one of the bundled Locus icon assets (media/locus_icons_*).
+// by keyword-matching its name, so home cards show a meaningful themed icon
+// instead of the generic folder emoji. Returns the icon base name (set1-*) or
+// null when nothing sensible matches (then we keep the category's own emoji so
+// custom categories keep their identity).
+const HOME_ICON_MAP = [
+  [/research|stud(y|ies)|paper|academ|scholar/, 'research'],
+  [/inspir|mood|aesthet/, 'inspiration'],
+  [/read|queue|later|watch\s?list/, 'read-later'],
+  [/tool|utilit|gadget|plugin/, 'tools'],
+  [/project|portfolio/, 'projects'],
+  [/task|to-?do|checklist/, 'tasks'],
+  [/idea|brainstorm|concept/, 'ideas'],
+  [/note|journal|memo/, 'notes'],
+  [/design|figma|\bui\b|\bux\b/, 'design'],
+  [/cod(e|ing)|dev|program|engineer|repo|git/, 'code'],
+  [/\ba\.?i\.?\b|\bml\b|gpt|llm|machine\s?learn/, 'ai'],
+  [/archiv|storage/, 'archive'],
+  [/bookmark|favou?rite/, 'bookmarks'],
+  [/article|blog|news|essay/, 'articles'],
+  [/media|video|image|photo|music|film/, 'media'],
+  [/librar/, 'library'],
+  [/knowledge|wiki|docs?|documentation|reference|learn|course|tutorial/, 'knowledge'],
+  [/snippet/, 'snippets'],
+  [/source/, 'sources'],
+  [/explore|discover|browse/, 'explore'],
+  [/focus|deep\s?work/, 'focus'],
+  [/highlight|clip/, 'highlights'],
+  [/link|url|site|web|resource/, 'links'],
+  [/work|office|job|client/, 'projects'],
+];
+function homeCardIconName(cat) {
+  if (cat && cat.icon) return cat.icon; // explicit override (future-proof)
+  const name = (cat && cat.name || '').toLowerCase();
+  for (const [re, icon] of HOME_ICON_MAP) if (re.test(name)) return icon;
+  return null;
+}
+// Themed icon markup for a category header. Emits both light/dark badge tiles
+// tagged .ic-dark / .ic-light so the theme-aware CSS swaps them instantly on a
+// theme change (no re-render needed). Falls back to the emoji when unmatched.
+function homeCardIconHtml(cat) {
+  const name = homeCardIconName(cat);
+  if (!name) return `<span class="hcs-emoji">${esc(cat && cat.symbol || '🗂')}</span>`;
+  const base = `media/locus_icons_one_folder_badge_nobg/set1-${name}`;
+  return `<img class="hcs-img ic-dark" src="${base}-light.png" alt="" aria-hidden="true" decoding="async">` +
+         `<img class="hcs-img ic-light" src="${base}-dark.png" alt="" aria-hidden="true" decoding="async">`;
+}
+
 // Home surface renderer. Returns false (and drops the flag) if the workspace
 // vanished, so renderBoard() falls through to the category board.
 function renderHome() {
@@ -2879,22 +4513,28 @@ function renderHome() {
   $b.classList.add('home-mode');
   $b.innerHTML = '';
 
-  // Greeting hero with a time-of-day banner (morning / noon / night art).
+  // Greeting hero. The greeting WORD stays time-aware (morning/afternoon/evening).
+  // The banner art follows the theme's mode rather than the clock: light themes
+  // get the calm pastel morning scene (near-white band, matches the Waypoint
+  // target); dark themes get the night scene so the banner doesn't glow bright
+  // against a dark board. This is part of making a theme switch update the whole
+  // visual system, not just the background.
   const hr = new Date().getHours();
   const tod = hr < 12 ? 'morning' : hr < 18 ? 'noon' : 'night';
-  const heroSrc = {
-    morning: 'media/png/morning_transparent_corners.png',
-    noon: 'media/png/noon_transparent_corners.png',
-    night: 'media/png/night_transparent_corners.png',
-  }[tod];
+  const heroSrc = activeThemeMode() === 'dark'
+    ? 'media/png/night_transparent_corners.png'
+    : 'media/png/morning_transparent_corners.png';
   const hero = document.createElement('div');
   hero.className = 'home-hero';
   hero.dataset.tod = tod;
+  const greetingName = ((State.get().settings.profile && State.get().settings.profile.name) || '').trim();
   hero.innerHTML = `
     <img class="home-hero-bg" src="${heroSrc}" alt="" aria-hidden="true" decoding="async">
     <div class="home-hero-copy">
-      <h1 class="home-greeting">${esc(greetingWord())}, ${esc(ws.name)}.</h1>
-      <p class="home-subtitle">${esc(tr('home.subtitle'))}</p>
+      <h1 class="home-greeting">${esc(greetingName
+        ? tr('landing.greeting', { greeting: greetingWord(), name: greetingName })
+        : tr('landing.greetingNoName', { greeting: greetingWord() }))}</h1>
+      <p class="home-subtitle">${esc(homeSubtitle())}</p>
     </div>`;
   $b.appendChild(hero);
 
@@ -2927,7 +4567,7 @@ function renderHome() {
     const hd = document.createElement('div');
     hd.className = 'home-card-hd';
     hd.innerHTML = `
-      <span class="home-card-sym">${esc(cat.symbol || '🗂')}</span>
+      <span class="home-card-sym${homeCardIconName(cat) ? ' has-img' : ''}">${homeCardIconHtml(cat)}</span>
       <div class="home-card-titles">
         <div class="home-card-name">${esc(cat.name)}</div>
         <div class="home-card-count">${esc(tr('home.items', { n: items.length }))}</div>
@@ -3023,7 +4663,7 @@ function buildProjectsRow(cat, ws) {
   const hd = document.createElement('div');
   hd.className = 'home-card-hd';
   hd.innerHTML = `
-    <span class="home-card-sym">${esc(cat.symbol || '🗂')}</span>
+    <span class="home-card-sym${homeCardIconName(cat) ? ' has-img' : ''}">${homeCardIconHtml(cat)}</span>
     <div class="home-card-titles">
       <div class="home-card-name">${esc(cat.name)}</div>
       <div class="home-card-count">${linkCount} ${linkCount === 1 ? 'link' : 'links'} · ${cat.groups.length} ${cat.groups.length === 1 ? 'collection' : 'collections'}</div>
@@ -3063,7 +4703,7 @@ function renderSpaceNav() {
     ws.categories.forEach(cat => {
       const count = cat.groups.reduce((n, g) => n + g.items.length, 0);
       const el = document.createElement('button');
-      el.className = 'space-item' + (!activeHome && cat.id === ws.activeCatId ? ' active' : '');
+      el.className = 'space-item' + (!activeHome && !activeLibraryMode && cat.id === ws.activeCatId ? ' active' : '');
       el.dataset.catId = cat.id;
       el.innerHTML =
         `<span class="space-sym">${esc(cat.symbol || '🗂')}</span>` +
@@ -3093,15 +4733,48 @@ function renderSpaceNav() {
 function updateNavChrome() {
   const ws = activeWs();
   const s = State.get();
-  const linkCount = ws ? ws.categories.reduce((n, c) => n + c.groups.reduce((m, g) => m + g.items.filter(it => it.type === 'tab').length, 0), 0) : 0;
+  const linkCount = ws ? collectWorkspaceTabs(ws).length : 0;
   const inbox = (() => { const cat = activeCat(); return cat ? cat.groups.find(g => g.name === 'Inbox') : null; })();
   const setCount = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val > 0 ? String(val) : ''; };
   setCount('nav-all-count', linkCount);
+  const favoriteCount = ws ? collectWorkspaceTabs(ws).filter(row => row.item.favorite).length : 0;
+  setCount('nav-favorites-count', favoriteCount);
+  const readLaterCount = ws ? collectWorkspaceTabs(ws).filter(row => row.item.readLaterAt && !row.item.readAt).length : 0;
+  setCount('nav-read-later-count', readLaterCount);
   setCount('nav-inbox-count', inbox ? inbox.items.length : 0);
   setCount('nav-archive-count', (s.archive || []).length);
+  setCount('nav-trash-count', (s.trash || []).length);
   const home = document.getElementById('nav-home');
   if (home) home.classList.toggle('active', !!activeHome);
+  const all = document.getElementById('nav-all');
+  if (all) all.classList.toggle('active', activeLibraryMode === 'all');
+  const favorites = document.getElementById('nav-favorites');
+  if (favorites) favorites.classList.toggle('active', activeLibraryMode === 'favorites');
+  const readLater = document.getElementById('nav-read-later');
+  if (readLater) readLater.classList.toggle('active', activeLibraryMode === 'read-later');
+  const archive = document.getElementById('nav-archive');
+  if (archive) archive.classList.toggle('active', activeLibraryMode === 'archive');
+  const trash = document.getElementById('nav-trash');
+  if (trash) trash.classList.toggle('active', activeLibraryMode === 'trash');
+  const inboxNav = document.getElementById('nav-inbox');
+  if (inboxNav) inboxNav.classList.toggle('active', !!activeGroupPage && activeGroupPage.groupId === (inbox && inbox.id));
+  // Topbar app-menu chip: initial from the active workspace name + a pending
+  // reminder dot (the reminder signal moved here when the bell became Plugins;
+  // the menu itself exposes "Calendar & reminders" with the live count).
+  const face = document.getElementById('avatar-face');
+  if (face && ws) face.textContent = (ws.name || '?').trim().charAt(0).toUpperCase() || '?';
+  const menuBtn = document.getElementById('menu-btn');
+  if (menuBtn) {
+    let pending = 0;
+    try { pending = collectReminders({ scope: ws ? ws.id : undefined }).length; } catch {}
+    menuBtn.classList.toggle('has-notif', pending > 0);
+    menuBtn.title = pending > 0 ? `${tr('action.menu')} · ${pending} ${tr('action.reminders').toLowerCase()}` : tr('action.menu');
+    _pendingReminderCount = pending;
+  }
 }
+// Cached pending-reminder count so openAppMenu can label the Calendar entry
+// without recomputing on every open.
+let _pendingReminderCount = 0;
 
 // The bento-board layout itself (formerly the body of renderBoard).
 function renderBoardView() {
@@ -3443,6 +5116,8 @@ function buildItem(it, parentItems, group) {
 function commonActs(it, extra = []) {
   const acts = [
     { text:'Details…', icon: cmIcons.detail, action: () => openItemDetail(it.id) },
+    ...(it.type === 'tab' ? [{ text: it.favorite ? 'Remove from Favorites' : 'Add to Favorites', icon: cmIcons.favorite, action: () => toggleFavorite(it) }] : []),
+    ...(it.type === 'tab' ? [{ text: it.readLaterAt ? 'Remove from Read Later' : 'Save to Read Later', icon: cmIcons.readLater, action: () => toggleReadLater(it) }] : []),
     { text:'Edit color', icon: cmIcons.color, action: () => showColorMenu(null, it) },
     { text:'Set reminder…', icon: cmIcons.clock, action: () => openReminderPicker(it.id) },
     ...(it.reminder ? [{ text:'Clear reminder', icon: cmIcons.clock, action: () => clearReminder(it.id) }] : []),
@@ -4021,7 +5696,11 @@ function runBatchAction(act) {
       const info = findItem(id);
       if (info) {
         const [removed] = info.parent.splice(info.index, 1);
-        State.get().archive.unshift({ kind:'item', data: removed, groupName: info.group.name, at: Date.now() });
+        State.get().archive.unshift({
+          kind:'item', data: removed,
+          wsId: info.ws.id, catId: info.cat.id, groupId: info.group.id,
+          catName: info.cat.name, groupName: info.group.name, at: Date.now()
+        });
       }
     });
     if (State.get().archive.length > 200) State.get().archive.length = 200;
@@ -4378,6 +6057,48 @@ function itemNodeType(el) {
   if (c.contains('tab')) return 'tab';
   return '';
 }
+
+// Shared parser for board filtering and the launch layer's saved-link search.
+// Keeping the vocabulary in one place prevents the two search entry points
+// from drifting as operators are added.
+function parseSearchQuery(rawValue) {
+  const raw = String(rawValue || '').toLowerCase().trim();
+  const makeBucket = () => ({ color: [], type: [], state: [], domain: [], url: [], in: [], tag: [], text: [] });
+  const pos = makeBucket(), neg = makeBucket();
+  (raw.match(/-?"[^"]*"|\S+/g) || []).forEach(token => {
+    let tok = token;
+    let bucket = pos;
+    if (tok[0] === '-' && tok.length > 1) { bucket = neg; tok = tok.slice(1); }
+    if (tok.length > 1 && tok[0] === '"' && tok[tok.length - 1] === '"') {
+      const phrase = tok.slice(1, -1).trim();
+      if (phrase) bucket.text.push(phrase);
+      return;
+    }
+    let m;
+    if ((m = /^colou?r:(.+)$/.exec(tok))) {
+      m[1].split(',').forEach(c => { if (SEARCH_COLORS.includes(c)) bucket.color.push(c); });
+    } else if ((m = /^type:(.+)$/.exec(tok))) {
+      m[1].split(',').forEach(t => { const ct = SEARCH_TYPES[t]; if (ct && !bucket.type.includes(ct)) bucket.type.push(ct); });
+    } else if ((m = /^is:(.+)$/.exec(tok))) {
+      m[1].split(',').forEach(s => {
+        if (s === 'done' || s === 'checked' || s === 'complete') bucket.state.push('done');
+        else if (s === 'open' || s === 'undone' || s === 'todo' || s === 'incomplete') bucket.state.push('open');
+      });
+    } else if ((m = /^(?:domain|site|host):(.+)$/.exec(tok))) {
+      m[1].split(',').forEach(d => { const value = d.trim(); if (value) bucket.domain.push(value); });
+    } else if ((m = /^url:(.+)$/.exec(tok))) {
+      m[1].split(',').forEach(u => { const value = u.trim(); if (value) bucket.url.push(value); });
+    } else if ((m = /^in:(.+)$/.exec(tok))) {
+      m[1].split(',').forEach(g => { const value = g.trim(); if (value) bucket.in.push(value); });
+    } else if ((m = /^tag:(.+)$/.exec(tok))) {
+      m[1].split(',').forEach(t => { const value = t.trim(); if (value) bucket.tag.push(value); });
+    } else {
+      bucket.text.push(tok);
+    }
+  });
+  return { raw, pos, neg };
+}
+
 function applySearchFilter() {
   const raw = document.getElementById('search-input').value.toLowerCase().trim();
   // Clear any stack we force-opened on a previous keystroke; the reveal pass below
@@ -4399,40 +6120,7 @@ function applySearchFilter() {
   // appear as a substring; a quoted phrase is one needle so its spaces match verbatim.
   // Each token routes into a positive (must-match, AND across families) or a negative
   // (must-NOT-match, hide if ANY negative family matches) bucket with identical shape.
-  const pos = { color: [], type: [], state: [], domain: [], url: [], in: [], tag: [], text: [] };
-  const neg = { color: [], type: [], state: [], domain: [], url: [], in: [], tag: [], text: [] };
-  (raw.match(/-?"[^"]*"|\S+/g) || []).forEach(tok => {
-    // A leading '-' negates the rest of the token (operator or word). A bare "-" with
-    // nothing after it is treated as literal text.
-    let bucket = pos;
-    if (tok[0] === '-' && tok.length > 1) { bucket = neg; tok = tok.slice(1); }
-    if (tok.length > 1 && tok[0] === '"' && tok[tok.length - 1] === '"') {
-      const phrase = tok.slice(1, -1).trim();
-      if (phrase) bucket.text.push(phrase);
-      return;
-    }
-    let m;
-    if ((m = /^colou?r:(.+)$/.exec(tok))) {
-      m[1].split(',').forEach(c => { if (SEARCH_COLORS.includes(c)) bucket.color.push(c); });
-    } else if ((m = /^type:(.+)$/.exec(tok))) {
-      m[1].split(',').forEach(t => { const ct = SEARCH_TYPES[t]; if (ct && !bucket.type.includes(ct)) bucket.type.push(ct); });
-    } else if ((m = /^is:(.+)$/.exec(tok))) {
-      m[1].split(',').forEach(s => {
-        if (s === 'done' || s === 'checked' || s === 'complete') bucket.state.push('done');
-        else if (s === 'open' || s === 'undone' || s === 'todo' || s === 'incomplete') bucket.state.push('open');
-      });
-    } else if ((m = /^(?:domain|site|host):(.+)$/.exec(tok))) {
-      m[1].split(',').forEach(d => { const v = d.trim(); if (v) bucket.domain.push(v); });
-    } else if ((m = /^url:(.+)$/.exec(tok))) {
-      m[1].split(',').forEach(u => { const v = u.trim(); if (v) bucket.url.push(v); });
-    } else if ((m = /^in:(.+)$/.exec(tok))) {
-      m[1].split(',').forEach(g => { const v = g.trim(); if (v) bucket.in.push(v); });
-    } else if ((m = /^tag:(.+)$/.exec(tok))) {
-      m[1].split(',').forEach(t => { const v = t.trim(); if (v) bucket.tag.push(v); });
-    } else {
-      bucket.text.push(tok);
-    }
-  });
+  const { pos, neg } = parseSearchQuery(raw);
   // Positive filters keep their original names so the match logic below is unchanged.
   const colorFilters = pos.color, typeFilters = pos.type, stateFilters = pos.state,
         domainFilters = pos.domain, urlFilters = pos.url, inFilters = pos.in, tagFilters = pos.tag, textNeedles = pos.text;
@@ -4599,6 +6287,8 @@ function archiveEntryText(entry) {
   const cached = _archiveBlobCache.get(entry);
   if (cached !== undefined) return cached;
   const parts = [];
+  if (entry.catName) parts.push(entry.catName);
+  if (entry.groupName) parts.push(entry.groupName);
   const pushItem = it => {
     if (!it) return;
     if (it.title) parts.push(it.title);
@@ -4657,8 +6347,7 @@ function renderArchiveSearchResults(textNeedles, negTextNeedles) {
     };
     row.querySelector('.sar-view').onclick = () => {
       toggleSearchBar(false);
-      document.querySelector('#drawer-tabs .dt[data-tab="archive"]')?.click();
-      document.getElementById('settings-drawer')?.classList.remove('hidden');
+      openLibrarySurface('archive');
     };
   });
 }
@@ -4792,9 +6481,9 @@ function renderArchiveList() {
       <span class="ar-t">${esc(name)}</span>
       <span class="ar-d">${fmtTimeRelative(e.at)}</span>
       <button class="restore" title="Restore"><svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M3 5.5L5.5 3l2.5 2.5M5.5 3v6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      <button class="del" title="Delete permanently"><svg width="11" height="11" viewBox="0 0 11 11"><path d="M2 3h7M4.5 3V1.5h2V3M3 3v6.5a0.5 0.5 0 00.5.5h4a0.5 0.5 0 00.5-.5V3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></button>`;
+      <button class="del" title="${esc(tr('archive.moveToTrash'))}"><svg width="11" height="11" viewBox="0 0 11 11"><path d="M2 3h7M4.5 3V1.5h2V3M3 3v6.5a0.5 0.5 0 00.5.5h4a0.5 0.5 0 00.5-.5V3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></button>`;
     el.querySelector('.restore').onclick = () => restoreArchive(i);
-    el.querySelector('.del').onclick = () => { if (confirm('Permanently delete?')) permDelete(i); };
+    el.querySelector('.del').onclick = () => moveArchiveEntriesToTrash([e]);
     $l.appendChild(el);
   });
 }
@@ -4843,7 +6532,7 @@ function countState(s) {
       }
     }
   }
-  return { workspaces, categories, groups, items, archived: (s.archive || []).length };
+  return { workspaces, categories, groups, items, archived: (s.archive || []).length, trashed: (s.trash || []).length };
 }
 
 function pluralize(n, word) { return `${n} ${word}${n === 1 ? '' : 's'}`; }
@@ -4852,7 +6541,7 @@ function exportJSON() {
   const data = State.get();
   const counts = countState(data);
   const payload = {
-    app: 'folio',
+    app: 'locus',
     schema: CURRENT_SCHEMA,
     exportedAt: new Date().toISOString(),
     counts,
@@ -4863,7 +6552,7 @@ function exportJSON() {
   const a = document.createElement('a');
   const wsTag = counts.workspaces ? `-${counts.workspaces}ws` : '';
   a.href = url;
-  a.download = `folio${wsTag}-${new Date().toISOString().slice(0,10)}.json`;
+  a.download = `locus${wsTag}-${new Date().toISOString().slice(0,10)}.json`;
   a.click();
   URL.revokeObjectURL(url);
   toast(`Exported · ${pluralize(counts.workspaces, 'workspace')} · ${pluralize(counts.items, 'item')}`);
@@ -4883,7 +6572,7 @@ function importJSON(file) {
       return;
     }
     let data, schema, exportedAt;
-    if (parsed && (parsed.app === 'folio' || parsed.app === 'stow' || parsed.app === 'tabento' || parsed.app === 'tabnest' || parsed.app === 'tabextend') && parsed.data && typeof parsed.data === 'object') {
+    if (parsed && (parsed.app === 'locus' || parsed.app === 'folio' || parsed.app === 'stow' || parsed.app === 'tabento' || parsed.app === 'tabnest' || parsed.app === 'tabextend') && parsed.data && typeof parsed.data === 'object') {
       data = parsed.data;
       schema = parsed.schema;
       exportedAt = parsed.exportedAt;
@@ -4920,7 +6609,8 @@ function openImportPreview() {
     ['categories', 'Categories'],
     ['groups', 'Groups'],
     ['items', 'Items'],
-    ['archived', 'Archived']
+    ['archived', 'Archived'],
+    ['trashed', tr('nav.trash')]
   ];
   const c = document.getElementById('import-counts');
   c.textContent = '';
@@ -4959,7 +6649,9 @@ function applyImportReplace(data) {
   const mergedSettings = { ...s.settings, ...(data.settings || {}) };
   Object.assign(s, data);
   s.settings = mergedSettings;
+  s.trash = Array.isArray(data.trash) ? data.trash : [];
   migrate();
+  purgeExpiredTrash();
   State.persist();
   applySettings();
   renderAll();
@@ -4989,6 +6681,14 @@ function applyImportMerge(data) {
       existingArchiveIds.add(a.id);
     }
   }
+  s.trash = s.trash || [];
+  const existingTrashIds = new Set(s.trash.map(a => a && a.id).filter(Boolean));
+  for (const a of (data.trash || [])) {
+    if (!a || typeof a !== 'object') continue;
+    if (a.id && existingTrashIds.has(a.id)) continue;
+    s.trash.push(JSON.parse(JSON.stringify(a)));
+    if (a.id) existingTrashIds.add(a.id);
+  }
   if (Array.isArray(data.recentEmoji)) {
     s.recentEmoji = s.recentEmoji || [];
     const seen = new Set(s.recentEmoji);
@@ -4998,6 +6698,7 @@ function applyImportMerge(data) {
     s.columnWidths = { ...(s.columnWidths || {}), ...data.columnWidths };
   }
   migrate();
+  purgeExpiredTrash();
   State.persist();
   renderAll();
   const after = countState(s);
@@ -6862,7 +8563,7 @@ function buildLvStack(it, parentItems, group, depth) {
 // A macOS-Finder / column-browser over the hierarchy: categories → groups →
 // items → (a stack's children as a further column). Selecting an item opens the
 // §4.2 detail pane. Keyboard-first (arrows move/descend/ascend, Enter opens).
-// Each column reuses the bento `.gcol` framing so it reads as Folio, not Finder.
+// Each column reuses the bento `.gcol` framing so it reads as Locus, not Finder.
 const EX_CHEVRON = '<svg class="ex-row-chev" width="8" height="8" viewBox="0 0 8 8"><path d="M2.5 1.5L5.5 4l-3 2.5" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
 function renderExplorerView() {
@@ -7628,15 +9329,48 @@ function buildPastDueRail(entries) {
   return rail;
 }
 
-// A day's full reminder list as a context menu (from a cell's "+N more").
-function openCalDayList(dayStart, list, x, y) {
-  const items = [{ label: new Date(dayStart).toLocaleDateString(appLocale(), { weekday: 'long', month: 'long', day: 'numeric' }) }];
-  list.forEach(e => items.push({
-    text: e.title,
-    sub: new Date(e.at).toLocaleTimeString(appLocale(), { hour: 'numeric', minute: '2-digit' }),
-    action: () => openReminderTarget(e),
-  }));
-  showContextMenu(x, y, items);
+// A day's panel — opened by clicking any calendar cell (or a cell's "+N more").
+// Lets the user ADD a task on that date and VIEW/open the day's reminders;
+// existing reminders can be edited/rescheduled by right-clicking their dot or
+// by opening the item. Keyboard-openable from the focusable cell.
+const CAL_ADD_ICON = '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+function openCalDay(dayStart, list, x, y) {
+  const dLabel = new Date(dayStart).toLocaleDateString(appLocale(), { weekday: 'long', month: 'long', day: 'numeric' });
+  const items = [{ label: dLabel }];
+  items.push({ text: tr('cal.addTask'), icon: CAL_ADD_ICON, action: () => addCalendarTaskForDay(dayStart) });
+  if (list && list.length) {
+    items.push({ sep: true });
+    list.forEach(e => items.push({
+      text: e.title,
+      sub: new Date(e.at).toLocaleTimeString(appLocale(), { hour: 'numeric', minute: '2-digit' }),
+      action: () => openReminderTarget(e),
+    }));
+  }
+  showContextMenu(x, y, items, { focusFirst: true });
+}
+
+// Add a task on a given calendar day: creates a to-do in the workspace Inbox
+// with a reminder at 9:00 AM that day (a real, persisted item — not a fake
+// calendar-only event, staying within Locus's reminder-on-item model).
+function addCalendarTaskForDay(dayStart) {
+  const ws = activeWs();
+  if (!ws) return;
+  const dateLabel = new Date(dayStart).toLocaleDateString(appLocale(), { month: 'long', day: 'numeric' });
+  const text = (prompt(tr('cal.addPrompt', { date: dateLabel }), '') || '').trim();
+  if (!text) return;
+  const cat = activeCat() || ws.categories[0];
+  if (!cat) { toast(tr('cal.needSpace'), { danger: true }); return; }
+  let inbox = cat.groups.find(g => g.name === 'Inbox');
+  if (!inbox) { inbox = { id: uid(), name: 'Inbox', symbol: '📥', color: '#6366f1', collapsed: false, items: [] }; cat.groups.unshift(inbox); }
+  const when = new Date(dayStart); when.setHours(9, 0, 0, 0);
+  const ts = when.getTime();
+  State.snapshot('Add calendar task');
+  const todo = stampNew({ id: uid(), type: 'todo', text, done: false, reminder: { at: ts, notified: false } });
+  inbox.items.push(todo);
+  try { chrome.alarms.create('te-reminder-' + todo.id, { when: ts }); } catch {}
+  State.persist();
+  renderBoard();
+  toast(tr('cal.added', { date: dateLabel }));
 }
 
 // ── View builders ───────────────────────────────────────────────
@@ -7783,10 +9517,25 @@ function buildCalMonth(entries) {
       more.type = 'button';
       more.className = 'cal-more';
       more.textContent = `+${list.length - MAX_DOTS} more`;
-      more.onclick = ev => { ev.stopPropagation(); openCalDayList(dayStart, list, ev.clientX, ev.clientY); };
+      more.onclick = ev => { ev.stopPropagation(); openCalDay(dayStart, list, ev.clientX, ev.clientY); };
       dots.appendChild(more);
     }
     cell.appendChild(dots);
+    // Whole cell is an interactive day target: click / Enter / Space opens the
+    // day panel to view reminders and add a task on that date. Dots and the
+    // "+N more" button stopPropagation, so they act first.
+    cell.tabIndex = 0;
+    cell.setAttribute('role', 'button');
+    const dowLabel = new Date(dayStart).toLocaleDateString(appLocale(), { weekday: 'long', month: 'long', day: 'numeric' });
+    cell.setAttribute('aria-label', list.length
+      ? `${dowLabel}, ${list.length} ${list.length === 1 ? 'reminder' : 'reminders'}`
+      : `${dowLabel}, no reminders`);
+    const openThisDay = ev => {
+      const r = cell.getBoundingClientRect();
+      openCalDay(dayStart, list, ev && ev.clientX ? ev.clientX : r.left + 24, ev && ev.clientY ? ev.clientY : r.bottom - 8);
+    };
+    cell.addEventListener('click', openThisDay);
+    cell.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); openThisDay(ev); } });
     calMakeDropTarget(cell, dayStart);
     grid.appendChild(cell);
     cur.setDate(cur.getDate() + 1);
@@ -8012,13 +9761,17 @@ function openSearchBar(prefill) {
   setTimeout(() => inp.focus(), 40);
 }
 
-// Open the Settings drawer from anywhere (mirrors the settings button handler).
-function openSettingsDrawer() {
+// Open the Settings page from anywhere (mirrors the settings button handler).
+// Optional `tab` activates a specific section; legacy drawer names
+// ('behavior', 'archive') are mapped inside setSettingsSection so old
+// deep-links keep working.
+function openSettingsDrawer(tab) {
   const d = document.getElementById('settings-drawer');
   if (!d) return;
   rememberOpener(d);
   d.classList.remove('hidden');
-  try { renderArchiveList(); } catch {}
+  setSettingsSection(tab || document.querySelector('#drawer-tabs .dt.active')?.dataset.tab || 'general');
+  try { renderCaptureSettings(); } catch {}
   setTimeout(() => focusFirstIn(d), 50);
 }
 
@@ -8063,10 +9816,16 @@ function buildPaletteCommands() {
   });
 
   cmds.push({ cat: 'Action', label: 'Save all open tabs', run: saveAllTabs });
+  cmds.push({ cat: 'Navigate', label: 'Open Read Later', run: () => openLibrarySurface('read-later') });
   cmds.push({ cat: 'Action', label: 'New workspace', run: () => openModal('new-ws') });
   cmds.push({ cat: 'Action', label: 'New category', run: () => openModal('new-cat') });
   cmds.push({ cat: 'Action', label: 'Open tools', run: openToolsHub });
   cmds.push({ cat: 'Action', label: 'Open settings', run: openSettingsDrawer });
+  cmds.push({ cat: 'Action', label: 'Open capture settings', run: () => openSettingsDrawer('capture') });
+  cmds.push({ cat: 'Action', label: 'Open shortcut settings', run: () => openSettingsDrawer('shortcuts') });
+  cmds.push({ cat: 'Action', label: 'Open privacy settings', run: () => openSettingsDrawer('privacy') });
+  cmds.push({ cat: 'Action', label: 'Open storage settings', run: () => openSettingsDrawer('storage') });
+  cmds.push({ cat: 'Action', label: 'Import / export data', run: () => openSettingsDrawer('data') });
   cmds.push({ cat: 'Action', label: 'Keyboard shortcuts', run: openCheatsheet });
   cmds.push({ cat: 'Action', label: 'Next theme', run: cycleTheme });
   return cmds;
@@ -8238,6 +9997,88 @@ function openMoreMenu(btn) {
   showContextMenu(r.left, r.bottom + 6, items, { focusFirst: true });
 }
 
+// Icons for the top-bar app menu (openAppMenu). Kept local so the menu reads
+// consistently with the rest of the context-menu chrome across every theme.
+const APP_MENU_ICONS = {
+  settings: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6.9 2.2a.6.6 0 01.6-.5h1a.6.6 0 01.6.5l.16 1.05c.44.13.85.36 1.2.66l1-.4a.6.6 0 01.72.26l.5.86a.6.6 0 01-.12.75l-.83.67a4.3 4.3 0 010 1.38l.83.67a.6.6 0 01.12.75l-.5.86a.6.6 0 01-.72.26l-1-.4c-.35.3-.76.53-1.2.66L9.1 14.3a.6.6 0 01-.6.5h-1a.6.6 0 01-.6-.5l-.16-1.05a4.3 4.3 0 01-1.2-.66l-1 .4a.6.6 0 01-.72-.26l-.5-.86a.6.6 0 01.12-.75l.83-.67a4.3 4.3 0 010-1.38l-.83-.67a.6.6 0 01-.12-.75l.5-.86a.6.6 0 01.72-.26l1 .4c.35-.3.76-.53 1.2-.66L6.9 2.2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="8" cy="8" r="2.1" stroke="currentColor" stroke-width="1.3"/></svg>',
+  plugins: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M10 3.2a2 2 0 014 0V4a1 1 0 001 1h2.8a1 1 0 011 1V9a1 1 0 001 1h.2a2 2 0 010 4h-.2a1 1 0 00-1 1v2.8a1 1 0 01-1 1H15a1 1 0 01-1-1v-.2a2 2 0 00-4 0v.2a1 1 0 01-1 1H6.2a1 1 0 01-1-1V15a1 1 0 00-1-1H4a2 2 0 010-4h.2a1 1 0 001-1V6a1 1 0 011-1H9a1 1 0 001-1v-.8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
+  calendar: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2.5" y="3" width="11" height="10.5" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M2.5 6h11M5.5 2v2.2M10.5 2v2.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
+  theme: '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 2a6 6 0 000 12z" fill="currentColor"/></svg>',
+  workspaces: '<svg width="14" height="14" viewBox="0 0 13 13" fill="none"><rect x="1.5" y="1.5" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="7.5" y="1.5" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1.5" y="7.5" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="7.5" y="7.5" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>',
+  guide: '<svg width="14" height="14" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.3"/><path d="M5 5.5a1.5 1.5 0 113 0c0 .8-1.5 1-1.5 2M6.5 9.5v.01" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
+  about: '<svg width="14" height="14" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.3"/><path d="M6.5 5.6v3.4M6.5 3.9v.01" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
+  reset: '<svg width="14" height="14" viewBox="0 0 13 13" fill="none"><path d="M2.5 6.5a4 4 0 104-4M2.5 6.5V4M2.5 6.5H5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+};
+
+// The top-bar app menu (replaces the fake avatar button). Every entry routes to
+// an existing surface so nothing here is decorative: Settings, Plugins (tools
+// hub), Calendar/reminders, Theme, Workspaces, Guide, About, Reset onboarding.
+function openAppMenu(btn) {
+  const s = State.get();
+  const ws = activeWs();
+  const theme = THEMES.find(t => t.id === s.settings.theme);
+  const pending = _pendingReminderCount;
+  const items = [
+    { label: ws ? ws.name : 'Locus' },
+    { text: tr('menu.settings'), icon: APP_MENU_ICONS.settings, action: () => openSettingsDrawer() },
+    { text: tr('menu.plugins'), icon: APP_MENU_ICONS.plugins, action: () => openToolsHub() },
+    { text: tr('menu.calendar'), icon: APP_MENU_ICONS.calendar, sub: pending > 0 ? String(pending) : '', action: () => { if (!activeCalendar) openCalendar(); } },
+    { text: tr('menu.theme'), icon: APP_MENU_ICONS.theme, sub: theme ? theme.label : '', action: () => openSettingsDrawer('appearance') },
+    { sep: true },
+    { text: tr('menu.workspaces'), icon: APP_MENU_ICONS.workspaces, action: () => openWsGrid() },
+    { text: tr('menu.guide'), icon: APP_MENU_ICONS.guide, action: () => openWelcome() },
+    { text: tr('menu.about'), icon: APP_MENU_ICONS.about, action: () => openAbout() },
+    { sep: true },
+    { text: tr('menu.resetOnboarding'), icon: APP_MENU_ICONS.reset, action: () => resetOnboarding() },
+  ];
+  const r = btn.getBoundingClientRect();
+  // Anchor to the button's right edge so the menu hugs the corner (clamped to
+  // the viewport by showContextMenu).
+  showContextMenu(r.right - 236, r.bottom + 8, items, { focusFirst: true });
+}
+
+// ── About dialog ────────────────────────────────────────────────────
+// A small, real informational modal (version + local-first promises + a way
+// back into the guide). Reuses the overlay scrim + focus helpers so it behaves
+// like every other overlay across themes.
+function openAbout() {
+  const ov = document.getElementById('about-overlay');
+  if (!ov) return;
+  let ver = '3.1.0';
+  try { if (typeof chrome !== 'undefined' && chrome.runtime?.getManifest) ver = chrome.runtime.getManifest().version || ver; } catch {}
+  const vEl = document.getElementById('about-version');
+  if (vEl) vEl.textContent = 'v' + ver;
+  rememberOpener(ov);
+  ov.classList.remove('hidden');
+  lockBodyScroll();
+  focusFirstIn(ov);
+}
+function closeAbout() {
+  const ov = document.getElementById('about-overlay');
+  if (!ov) return;
+  ov.classList.add('hidden');
+  unlockBodyScroll();
+  restoreOpener(ov);
+}
+
+// Reset onboarding so a returning user can deliberately go through it again.
+// Clears the first-run gate + just-in-time hint flags, then relaunches the
+// welcome. Returning users are never auto-onboarded (welcomeSeen stays true
+// unless they trigger this), satisfying the "don't annoy" requirement.
+function resetOnboarding() {
+  if (!confirm(tr('menu.resetConfirm'))) return;
+  const s = State.get().settings;
+  const ob = ensureOnboarding(s);
+  ob.welcomeSeen = false;
+  ob.hintsSeen = {};
+  ob.disabled = false;
+  s.tourCompleted = false;
+  State.persist();
+  const d = document.getElementById('settings-drawer');
+  if (d) d.classList.add('hidden');
+  setTimeout(openWelcome, 250);
+}
+
 // ── Drag auto-scroll: when dragging near the top/bottom of any scrollable area, scroll it ──
 let autoScrollRaf = null;
 function setupDragAutoScroll() {
@@ -8308,7 +10149,7 @@ function setupOpenTabsDropToOpen() {
 function openToolsHub() { document.getElementById('tools-hub').classList.remove('hidden'); }
 function closeToolsHub() { document.getElementById('tools-hub').classList.add('hidden'); }
 function bindToolsHub() {
-  document.getElementById('tools-btn').onclick = openToolsHub;
+  document.getElementById('plugins-btn').onclick = openToolsHub;
   document.getElementById('hub-close').onclick = closeToolsHub;
   document.getElementById('tools-hub').addEventListener('click', e => { if (e.target.id === 'tools-hub') closeToolsHub(); });
   document.querySelectorAll('.hub-card').forEach(c => {
@@ -8419,9 +10260,9 @@ function renderPomo() {
 
   // Title indicator
   if (pomoState.running) {
-    document.title = `${m}:${String(s).padStart(2,'0')} · Folio`;
+    document.title = `${m}:${String(s).padStart(2,'0')} · Locus`;
   } else {
-    document.title = 'Folio';
+    document.title = 'Locus';
   }
 
   renderPomoTasks();
@@ -8462,7 +10303,7 @@ function tickPomo() {
   if (!_pomoTimeEl) _pomoTimeEl = document.getElementById('pomo-time');
   if (_pomoTimeEl) _pomoTimeEl.textContent = timeText;
   // document.title writes are surprisingly expensive — only change when needed.
-  const nextTitle = pomoState.running ? `${timeText} · Folio` : 'Folio';
+  const nextTitle = pomoState.running ? `${timeText} · Locus` : 'Locus';
   if (nextTitle !== _pomoLastTitle) { document.title = nextTitle; _pomoLastTitle = nextTitle; }
 }
 function startPomoTimer() {
@@ -8873,7 +10714,7 @@ function exportFinCSV() {
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = `folio-finance-${new Date().toISOString().slice(0,10)}.csv`; a.click();
+  a.href = url; a.download = `locus-finance-${new Date().toISOString().slice(0,10)}.csv`; a.click();
   URL.revokeObjectURL(url);
   toast('Exported CSV');
 }
@@ -9738,7 +11579,7 @@ function bindWorkout() {
 const TOUR_STEPS = [
   {
     center: true,
-    title: '👋 Welcome to Folio',
+    title: '👋 Welcome to Locus',
     body: 'A calmer home for your tabs. Save what matters, group it your way, and find it again in seconds.'
   },
   {
@@ -9765,6 +11606,147 @@ function ensureOnboarding(settings) {
   }
   if (!s.onboarding.hintsSeen || typeof s.onboarding.hintsSeen !== 'object') s.onboarding.hintsSeen = {};
   return s.onboarding;
+}
+
+// ── Welcome questionnaire (first-run onboarding) ────────────────────
+// A short, animated setup flow that asks name / purpose / workflow / plugins
+// and persists the answers to settings.profile + settings.plugins. Shown
+// automatically only on first launch (gated by onboarding.welcomeSeen) and
+// re-openable on demand from the app menu / Settings — returning users are
+// never auto-prompted again.
+const WELCOME_STEPS = 6;
+const WELCOME_PLUGIN_KEYS = ['pomodoro', 'finance', 'habits', 'books', 'goals', 'water'];
+let wcIndex = 0;
+let wcAnswers = { name: '', purpose: '', workflow: '', plugins: [] };
+
+function openWelcome() {
+  const ov = document.getElementById('welcome');
+  if (!ov) return;
+  wcIndex = 0;
+  const s = State.get().settings;
+  const prof = s.profile || {};
+  const ws = activeWs();
+  wcAnswers = {
+    name: prof.name || (ws && ws.name && ws.name !== 'My Workspace' ? ws.name : ''),
+    purpose: prof.purpose || '',
+    workflow: prof.workflow || '',
+    plugins: s.plugins ? WELCOME_PLUGIN_KEYS.filter(k => s.plugins[k]) : [],
+  };
+  const dots = document.getElementById('wc-dots');
+  dots.innerHTML = Array.from({ length: WELCOME_STEPS }, () => '<span class="wc-dot"></span>').join('');
+  rememberOpener(ov);
+  ov.classList.remove('hidden');
+  lockBodyScroll();
+  wcShow(0);
+}
+
+function closeWelcome() {
+  const ov = document.getElementById('welcome');
+  if (!ov) return;
+  ov.classList.add('hidden');
+  unlockBodyScroll();
+  restoreOpener(ov);
+  // Mark first-run onboarding as seen no matter how it's dismissed, so it never
+  // auto-reappears for a returning user.
+  const s = State.get().settings;
+  ensureOnboarding(s).welcomeSeen = true;
+  s.tourCompleted = true;
+  State.persist();
+  // First-run only: the landing was deferred while the questionnaire ran —
+  // reveal it now, greeting with whatever name was just entered.
+  if (_landingAfterWelcome) { _landingAfterWelcome = false; showLandingLayer(); }
+}
+
+function wcShow(i) {
+  wcIndex = Math.max(0, Math.min(WELCOME_STEPS - 1, i));
+  document.querySelectorAll('#welcome .wc-step').forEach(sec => {
+    const active = Number(sec.dataset.step) === wcIndex;
+    sec.classList.toggle('hidden', !active);
+    if (active) { sec.classList.remove('wc-in'); void sec.offsetWidth; sec.classList.add('wc-in'); }
+  });
+  const fill = document.getElementById('wc-progress-fill');
+  if (fill) fill.style.width = (wcIndex / (WELCOME_STEPS - 1)) * 100 + '%';
+  document.querySelectorAll('#wc-dots .wc-dot').forEach((d, idx) => d.classList.toggle('active', idx === wcIndex));
+  wcSyncSelections();
+  const next = document.getElementById('wc-next');
+  const skip = document.getElementById('wc-skip');
+  next.textContent = wcIndex === 0 ? "Let's go" : wcIndex === WELCOME_STEPS - 1 ? 'Start using Locus' : 'Continue';
+  skip.style.visibility = wcIndex === WELCOME_STEPS - 1 ? 'hidden' : 'visible';
+  if (wcIndex === 1) {
+    const n = document.getElementById('wc-name');
+    setTimeout(() => { n.value = wcAnswers.name; n.focus(); n.select(); }, 80);
+  } else {
+    setTimeout(() => next.focus(), 80);
+  }
+  if (wcIndex === WELCOME_STEPS - 1) {
+    document.getElementById('wc-done-name').textContent = wcAnswers.name ? ', ' + wcAnswers.name : '';
+  }
+}
+
+function wcSyncSelections() {
+  document.querySelectorAll('#welcome .wc-choices').forEach(group => {
+    const field = group.dataset.field;
+    const multi = group.dataset.multi === 'true';
+    group.querySelectorAll('.wc-chip').forEach(chip => {
+      const on = multi ? wcAnswers.plugins.includes(chip.dataset.val) : wcAnswers[field] === chip.dataset.val;
+      chip.classList.toggle('on', on);
+      chip.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  });
+}
+
+function wcNext() {
+  if (wcIndex === 1) { const n = document.getElementById('wc-name'); wcAnswers.name = (n.value || '').trim(); }
+  if (wcIndex >= WELCOME_STEPS - 1) { finishWelcome(); return; }
+  wcShow(wcIndex + 1);
+}
+
+function finishWelcome() {
+  const s = State.get().settings;
+  State.snapshot('Onboarding');
+  s.profile = { name: wcAnswers.name, purpose: wcAnswers.purpose, workflow: wcAnswers.workflow };
+  s.plugins = {};
+  WELCOME_PLUGIN_KEYS.forEach(k => { s.plugins[k] = wcAnswers.plugins.includes(k); });
+  // Real, visible effects: the profile name drives the greeting without
+  // renaming the workspace, and the workflow choice sets the default layout.
+  if (wcAnswers.workflow && typeof LAYOUTS !== 'undefined' && LAYOUTS[wcAnswers.workflow]) s.viewMode = wcAnswers.workflow;
+  closeWelcome();
+  try { renderAll(); } catch {}
+  toast(wcAnswers.name ? `You're all set, ${wcAnswers.name}` : "You're all set");
+}
+
+function bindWelcome() {
+  const ov = document.getElementById('welcome');
+  if (!ov) return;
+  document.getElementById('wc-next').onclick = wcNext;
+  document.getElementById('wc-skip').onclick = closeWelcome;
+  ov.querySelectorAll('.wc-choices').forEach(group => {
+    const multi = group.dataset.multi === 'true';
+    const field = group.dataset.field;
+    group.querySelectorAll('.wc-chip').forEach(chip => {
+      chip.onclick = () => {
+        const v = chip.dataset.val;
+        if (multi) {
+          const idx = wcAnswers.plugins.indexOf(v);
+          if (idx >= 0) wcAnswers.plugins.splice(idx, 1); else wcAnswers.plugins.push(v);
+          wcSyncSelections();
+        } else {
+          wcAnswers[field] = wcAnswers[field] === v ? '' : v;
+          wcSyncSelections();
+          // Single-select fields glide forward on their own so the flow feels
+          // quick, but never past the last question.
+          if (wcAnswers[field] && wcIndex < WELCOME_STEPS - 1) setTimeout(() => wcShow(wcIndex + 1), 230);
+        }
+      };
+    });
+  });
+  const nameInput = document.getElementById('wc-name');
+  if (nameInput) nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); wcNext(); } });
+  ov.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { e.preventDefault(); closeWelcome(); }
+    else if (e.key === 'ArrowRight' && wcIndex < WELCOME_STEPS - 1 && document.activeElement !== nameInput) { e.preventDefault(); wcShow(wcIndex + 1); }
+    else if (e.key === 'ArrowLeft' && wcIndex > 0 && document.activeElement !== nameInput) { e.preventDefault(); wcShow(wcIndex - 1); }
+  });
 }
 
 let tourIndex = 0;
@@ -9996,13 +11978,12 @@ function bindStatic() {
 
   // ── Sidebar smart views ──
   document.getElementById('nav-home').onclick = goHome;
-  document.getElementById('nav-all').onclick = () => { goHome(); openSearchBar(''); };
+  document.getElementById('nav-all').onclick = () => openLibrarySurface('all');
+  document.getElementById('nav-favorites').onclick = () => openLibrarySurface('favorites');
+  document.getElementById('nav-read-later').onclick = () => openLibrarySurface('read-later');
   document.getElementById('nav-inbox').onclick = openInboxView;
-  document.getElementById('nav-archive').onclick = () => {
-    document.querySelector('#drawer-tabs .dt[data-tab="archive"]')?.click();
-    const d = document.getElementById('settings-drawer');
-    rememberOpener(d); d.classList.remove('hidden'); renderArchiveList();
-  };
+  document.getElementById('nav-archive').onclick = () => openLibrarySurface('archive');
+  document.getElementById('nav-trash').onclick = () => openLibrarySurface('trash');
 
   // ── Opened-tabs rail ──
   const railToggle = document.getElementById('tabrail-toggle');
@@ -10028,12 +12009,20 @@ function bindStatic() {
     themeCycleBtn.classList.add('spin');
   };
   const _drawer = document.getElementById('settings-drawer');
-  const _openDrawer = () => { rememberOpener(_drawer); _drawer.classList.remove('hidden'); renderArchiveList(); setTimeout(() => focusFirstIn(_drawer), 50); };
+  const _openDrawer = () => { rememberOpener(_drawer); _drawer.classList.remove('hidden'); setSettingsSection(document.querySelector('#drawer-tabs .dt.active')?.dataset.tab || 'general'); renderCaptureSettings(); setTimeout(() => focusFirstIn(_drawer), 50); };
   const _closeDrawer = () => { _drawer.classList.add('hidden'); restoreOpener(_drawer); };
   document.getElementById('settings-btn').onclick = _openDrawer;
   document.getElementById('drawer-x').onclick = _closeDrawer;
   _drawer.onclick = e => { if (e.target.id === 'settings-drawer') _closeDrawer(); };
   _drawer.addEventListener('keydown', e => trapTabKey(e, _drawer));
+  // About dialog (opened from the app menu)
+  const _about = document.getElementById('about-overlay');
+  if (_about) {
+    document.getElementById('about-close').onclick = closeAbout;
+    _about.onclick = e => { if (e.target.id === 'about-overlay') closeAbout(); };
+    _about.addEventListener('keydown', e => trapTabKey(e, _about));
+    document.getElementById('about-replay').onclick = () => { closeAbout(); setTimeout(openWelcome, 200); };
+  }
   document.getElementById('modal-overlay').addEventListener('keydown', e => trapTabKey(e, document.getElementById('modal-overlay')));
   document.getElementById('search-btn').onclick = () => toggleSearchBar();
   const topSearch = document.getElementById('topbar-search');
@@ -10064,18 +12053,53 @@ function bindStatic() {
   // Emoji picker search
   document.getElementById('ep-search-input').oninput = e => renderEmojiGrid(null, e.target.value);
 
-  // Drawer tabs
-  document.querySelectorAll('.dt').forEach(b => {
-    b.onclick = () => {
-      document.querySelectorAll('.dt').forEach(x => x.classList.remove('active'));
-      b.classList.add('active');
-      ['appearance','behavior','archive','data'].forEach(t => {
-        document.getElementById('dp-' + t).classList.toggle('hidden', t !== b.dataset.tab);
-      });
-      if (b.dataset.tab === 'archive') renderArchiveList();
-      if (b.dataset.tab === 'data') refreshStorageUsage();
+  // Settings-page section nav (sidebar). Click switches the pane; Up/Down
+  // arrows move between sections without leaving the keyboard.
+  document.querySelectorAll('#drawer-tabs .dt').forEach((b, i, all) => {
+    b.onclick = () => setSettingsSection(b.dataset.tab);
+    b.onkeydown = e => {
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+      e.preventDefault();
+      const next = all[(i + (e.key === 'ArrowDown' ? 1 : all.length - 1)) % all.length];
+      next.focus();
+      setSettingsSection(next.dataset.tab);
     };
   });
+
+  // Settings-page controls that are new with the full-page surface.
+  const nameInput = document.getElementById('profile-name-input');
+  if (nameInput) {
+    nameInput.onchange = () => {
+      const s = State.get().settings;
+      s.profile = { ...(s.profile || {}), name: nameInput.value.trim() };
+      State.persist();
+      if (activeHome) renderBoard();
+    };
+    nameInput.onkeydown = e => { if (e.key === 'Enter') nameInput.blur(); };
+  }
+  const shortcutsFilter = document.getElementById('shortcuts-filter');
+  if (shortcutsFilter) {
+    shortcutsFilter.oninput = filterAppShortcuts;
+    shortcutsFilter.onkeydown = e => {
+      if (e.key === 'Escape' && shortcutsFilter.value) { e.stopPropagation(); shortcutsFilter.value = ''; filterAppShortcuts(); }
+    };
+  }
+  const shortcutsCustomize = document.getElementById('shortcuts-customize');
+  if (shortcutsCustomize) shortcutsCustomize.onclick = () => {
+    const url = /Edg\//.test(navigator.userAgent) ? 'edge://extensions/shortcuts' : 'chrome://extensions/shortcuts';
+    try { chrome.tabs.create({ url }); } catch { toast(`Open ${url} to customize browser shortcuts.`, { duration: 5000 }); }
+  };
+  const privacyExport = document.getElementById('privacy-export-btn');
+  if (privacyExport) privacyExport.onclick = exportJSON;
+  const privacyGotoData = document.getElementById('privacy-goto-data');
+  if (privacyGotoData) privacyGotoData.onclick = () => setSettingsSection('data');
+  const openArchiveBtn = document.getElementById('storage-open-archive');
+  if (openArchiveBtn) openArchiveBtn.onclick = () => {
+    const d = document.getElementById('settings-drawer');
+    d.classList.add('hidden');
+    restoreOpener(d);
+    openLibrarySurface('archive');
+  };
 
   // Settings controls
   document.querySelectorAll('#seg-language button').forEach(b => b.onclick = () => {
@@ -10088,13 +12112,47 @@ function bindStatic() {
   document.querySelectorAll('#seg-size button').forEach(b => b.onclick = () => { State.get().settings.size = b.dataset.val; applySettings(); State.persist(); });
   document.querySelectorAll('#seg-width button').forEach(b => b.onclick = () => { State.get().settings.width = b.dataset.val; applySettings(); State.persist(); });
   document.querySelectorAll('#seg-font button').forEach(b => b.onclick = () => { State.get().settings.font = b.dataset.val; applySettings(); State.persist(); });
-  document.getElementById('tog-close').onchange = e => { State.get().settings.closeTabOnSave = e.target.checked; State.persist(); };
   document.getElementById('tog-hibernate').onchange = e => { State.get().settings.hibernate = e.target.checked; State.persist(); };
   document.getElementById('tog-urls').onchange = e => { State.get().settings.showUrls = e.target.checked; applySettings(); State.persist(); };
   document.getElementById('tog-anim').onchange = e => { State.get().settings.animate = e.target.checked; applySettings(); State.persist(); };
   document.getElementById('tog-confirm').onchange = e => { State.get().settings.confirmDelete = e.target.checked; State.persist(); };
   document.getElementById('tog-blur').onchange = e => { State.get().settings.blurPrivacy = e.target.checked; applySettings(); State.persist(); };
   document.getElementById('tog-autoswitch').onchange = e => { State.get().settings.autoSwitchWorkspace = e.target.checked; State.persist(); renderHeader(); };
+  const landingToggle = document.getElementById('tog-landing');
+  if (landingToggle) landingToggle.onchange = e => {
+    State.get().settings.showLanding = e.target.checked;
+    State.persist();
+  };
+
+  const captureDestination = document.getElementById('capture-destination');
+  if (captureDestination) captureDestination.onchange = e => {
+    const settings = State.get().settings;
+    settings.captureDefaultCategoryId = e.target.value === 'active' ? '' : e.target.value;
+    // An explicit default choice should take effect immediately instead of
+    // being masked by an older remembered manual target.
+    delete settings.captureLastTarget;
+    State.persist();
+    renderCaptureSettings();
+    toast('Capture destination updated');
+  };
+  const bindCaptureToggle = (id, key, onChange) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.onchange = e => {
+      State.get().settings[key] = e.target.checked;
+      if (onChange) onChange(e.target.checked);
+      State.persist();
+      applySettings();
+    };
+  };
+  bindCaptureToggle('tog-capture-ask', 'captureAskEveryTime');
+  bindCaptureToggle('tog-capture-remember', 'captureRememberLast', checked => {
+    if (!checked) delete State.get().settings.captureLastTarget;
+  });
+  bindCaptureToggle('tog-capture-close', 'closeTabOnSave');
+  bindCaptureToggle('tog-capture-dedupe', 'captureDeduplicate');
+  bindCaptureToggle('tog-capture-title', 'captureIncludeTitle');
+  bindCaptureToggle('tog-capture-favicon', 'captureIncludeFavicon');
 
   document.getElementById('export-btn').onclick = exportJSON;
   document.getElementById('import-file').onchange = e => { if (e.target.files[0]) importJSON(e.target.files[0]); };
@@ -10116,10 +12174,18 @@ function bindStatic() {
     else if (e.key === 'Escape') {
       // A one-time coach-mark is the lightest layer — dismiss it first.
       if (_coachActive) { dismissCoach(); return; }
+      // The launch layer is the base overlay. Dismiss it only when nothing is
+      // open above it, so Escape from Welcome/Settings never pops two layers.
+      const landingLayer = document.getElementById('landing-layer');
+      const higherLayerIds = ['cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','tour-overlay','welcome','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub','about-overlay','context-menu'];
+      const higherLayerOpen = higherLayerIds.some(id => { const el = document.getElementById(id); return el && !el.classList.contains('hidden'); });
+      if (landingLayer && !landingLayer.classList.contains('hidden') && !higherLayerOpen) {
+        e.preventDefault(); closeLandingLayer(); return;
+      }
       // Snapshot which layered overlays were open *before* we start closing
       // them, so a single Escape only pops the topmost one — not the group page
       // sitting beneath a modal/menu/tool overlay.
-      const _escBlockers = ['cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','tour-overlay','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub'];
+      const _escBlockers = ['landing-layer','cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','tour-overlay','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub'];
       const _overlayWasOpen = _escBlockers.some(id => { const el = document.getElementById(id); return el && !el.classList.contains('hidden'); });
       closeCommandPalette();
       toggleSearchBar(false);
@@ -10140,7 +12206,8 @@ function bindStatic() {
         ['goals-overlay',   closeGoals],
         ['workout-overlay', closeWorkout],
         ['subs-overlay',    closeSubsTracker],
-        ['tools-hub',       closeToolsHub]
+        ['tools-hub',       closeToolsHub],
+        ['about-overlay',   closeAbout]
       ];
       for (const [id, fn] of _toolCloses) {
         const el = document.getElementById(id);
@@ -10154,6 +12221,8 @@ function bindStatic() {
       if (_qf && !_qf.classList.contains('hidden')) closeStorageFull();
       const tourEl = document.getElementById('tour-overlay');
       if (tourEl && !tourEl.classList.contains('hidden')) endTour(true);
+      const wcEl = document.getElementById('welcome');
+      if (wcEl && !wcEl.classList.contains('hidden')) closeWelcome();
       // The item detail pane sits above the board/group page: Escape pops it
       // first (when it's the topmost surface and the user isn't mid-edit),
       // leaving the surface beneath intact; a second Escape then leaves that.
@@ -10163,6 +12232,8 @@ function bindStatic() {
         closeGroupPage();
       } else if (activeCalendar && !inField && !_overlayWasOpen) {
         closeCalendar();
+      } else if (activeLibraryMode && !inField && !_overlayWasOpen) {
+        goHome();
       }
       if (selectedTabIds.size) { selectedTabIds.clear(); lastClickedTabId = null; updateSelectedBadge(); renderOpenTabs(); }
       // clearItemSelection() resets the selection, the sticky mode, the body
@@ -10181,6 +12252,7 @@ function bindStatic() {
   bindPasteImportUI();
   bindQuotaOverlay();
   bindCheatsheetOverlay();
+  bindLandingLayer();
   bindBoardArrowNav();
   bindCatScroll();
   bindSubs();
@@ -10197,6 +12269,10 @@ function bindStatic() {
   document.getElementById('view-mode-btn').onclick = (e) => openLayoutMenu(e.currentTarget);
   document.getElementById('calendar-btn').onclick = () => { if (activeCalendar) closeCalendar(); else openCalendar(); };
   document.getElementById('more-btn').onclick = (e) => openMoreMenu(e.currentTarget);
+  // Topbar app menu (replaces the fake avatar): Settings, Plugins, Theme,
+  // Guide, Workspaces, About, Reset onboarding. plugins-btn is wired in
+  // bindToolsHub() → openToolsHub.
+  document.getElementById('menu-btn').onclick = (e) => openAppMenu(e.currentTarget);
 
   // Apply saved view mode on boot
   setViewMode(getViewMode());
@@ -10205,14 +12281,18 @@ function bindStatic() {
   setupDragAutoScroll();
   setupOpenTabsDropToOpen();
 
-  // Onboarding — a short welcome up front, the rest taught just-in-time.
+  // Onboarding — an animated setup questionnaire on first run only, the rest
+  // taught just-in-time. bindTour() still wires the legacy spotlight tour (kept
+  // for the JIT coach-marks + any deep-links), but first-run now opens the
+  // welcome questionnaire.
   bindTour();
+  bindWelcome();
   if (!ensureOnboarding(State.get().settings).welcomeSeen) {
-    setTimeout(startTour, 600);
+    setTimeout(openWelcome, 500);
   }
   document.getElementById('show-tour-btn').onclick = () => {
     document.getElementById('settings-drawer').classList.add('hidden');
-    setTimeout(startTour, 200);
+    setTimeout(openWelcome, 200);
   };
   const resetHintsBtn = document.getElementById('reset-hints-btn');
   if (resetHintsBtn) resetHintsBtn.onclick = () => {

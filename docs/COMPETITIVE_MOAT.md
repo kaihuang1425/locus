@@ -1,4 +1,4 @@
-# Folio Competitive Moat Analysis
+# Locus Competitive Moat Analysis
 
 Status: strategy document. Created: 2026-07-04.
 Method: three parallel competitor research sweeps (direct tab managers; suspension
@@ -10,12 +10,12 @@ by a moat assessment. Companion docs: [DESIGN.md](../DESIGN.md) (visual differen
 
 ## 1. The honest verdict
 
-**Today Folio has strong differentiation, but not yet a moat.** Every visible feature —
+**Today Locus has strong differentiation, but not yet a moat.** Every visible feature —
 hibernation, notes-beside-tabs, search operators, board/canvas views — could be cloned by a
 competent developer in weeks. Features are never a moat.
 
 **But one real moat is available to us, and it is already built into the architecture:
-counter-positioning.** Folio's structural choice — *no account, no server, no host
+counter-positioning.** Locus's structural choice — *no account, no server, no host
 permissions, data in `chrome.storage.local`* — is something the funded competitors
 **cannot copy without destroying their own business model**, and the browser vendors
 **will not copy because it contradicts their strategy**. That asymmetry, compounded over
@@ -83,7 +83,7 @@ can't adopt without self-harm). Applying each:
 ### 3.1 Counter-positioning — our strongest, already real
 
 - **Workona / Toby / TabExtend / Partizion** monetize subscriptions gated on cloud
-  accounts. To match "no account, no Folio server, no host permissions," they
+  accounts. To match "no account, no Locus server, no host permissions," they
   would have to dismantle their revenue engine. Toby already moved the *opposite*
   direction (tightening the free tier) and paid for it in user backlash.
 - **Google / Microsoft** want signed-in, cloud-synced, AI-augmented browsers. A
@@ -91,11 +91,11 @@ can't adopt without self-harm). Applying each:
   they also will not ship todos/trackers/finance diaries inside the new-tab page.
 - **Free local rivals** (Session Buddy, OneTab, Tablerone, Tab Manager Plus) *could*
   copy features, but all are single-purpose, low-momentum or frozen, and none is
-  positioned as a full workspace. Matching Folio means rebuilding their product.
+  positioned as a full workspace. Matching Locus means rebuilding their product.
 
 The permission wall is visible at install time: competitors that need page access show
-the "read and change all your data on all websites" warning; Folio never does, because
-it requests no host permissions. (To be precise: Folio's `tabs` and `bookmarks`
+the "read and change all your data on all websites" warning; Locus never does, because
+it requests no host permissions. (To be precise: Locus's `tabs` and `bookmarks`
 permissions do surface their own install warnings — "read your browsing history",
 "read and change your bookmarks" — so the honest claim is "no host permissions / no
 automatic page reading," not "no permission prompts at all.") **The no-host-permissions claim
@@ -119,7 +119,7 @@ locally and switch favicons to a **truly local** source — MV3's `_favicon` ext
 or fetching the icon once at save time and storing the bytes locally. (Caching the
 `tab.favIconUrl` *string* is not enough: it is usually an `http(s)` URL on the site's own
 host, and rendering it as an `img src` still sends the request and leaks the domain.)
-Until then the claim must stay "no Folio server, no host permissions, no automatic
+Until then the claim must stay "no Locus server, no host permissions, no automatic
 page reading" (an
 absolute "never reads page content" is also off-limits: the save-selection context menu
 stores page text the user explicitly chooses to save).
@@ -127,7 +127,7 @@ stores page text the user explicitly chooses to save).
 ### 3.3 Switching costs / data gravity — the moat that grows with usage
 
 A tab list is trivially portable; a *workspace* is not. Once a user's context lives in
-Folio — workspaces bound to windows, stacks inside stacks, tags, custom fields,
+Locus — workspaces bound to windows, stacks inside stacks, tags, custom fields,
 checklists, reminders, tracker history, months of archived context — no competitor can
 import that structure. The deeper the mixed-content model, the higher the exit cost
 (while our own import/export keeps the door *in* open and honest).
@@ -158,9 +158,9 @@ Decomposed, each rival is missing at least one leg:
 | OneTab / Session Buddy / Tablerone | ❌ | partial | ✅ |
 | Chrome / Edge native | ❌ | reactive only | ❌ (cloud account) |
 | Bonjourr / Tabliss | ❌ (no tabs) | ❌ | ✅ |
-| **Folio** | ✅ | ✅ | ✅ |
+| **Locus** | ✅ | ✅ | ✅ |
 
-Folio is the only product in the field holding all three legs at once. That intersection
+Locus is the only product in the field holding all three legs at once. That intersection
 is the positioning; the moat (§3) is what keeps it defensible.
 
 ---
@@ -181,7 +181,7 @@ is the real bottleneck, not product**. Priorities:
    Toby collections, and Pocket export files. Every competitor stumble (Toby pricing,
    Pocket shutdown, abandoned suspenders) becomes our acquisition channel.
 4. **Deepen data gravity.** Timeline/archive of every saved context with local search
-   across months ("what was I working on in March?"). The longer Folio is used, the
+   across months ("what was I working on in March?"). The longer Locus is used, the
    more irreplaceable it becomes — this converts the head start into switching costs.
 5. **Keep commercial rights separate** (per DESIGN.md §4): the repository license permits
    only noncommercial research, contribution, and informal personal use. Any commercial
@@ -201,7 +201,7 @@ conventional objection — "a no-server product can't have network effects" — 
 by Obsidian: local-first Markdown files, no required account, and yet an uncatchable moat
 built from a portable open format plus a community ecosystem. A copycat can clone
 Obsidian's code in a quarter; nobody can clone its plugin gallery, its shared vault
-templates, or the fact that "my notes are in Markdown" became a standard. Folio can run
+templates, or the fact that "my notes are in Markdown" became a standard. Locus can run
 the same play on browser context.
 
 ### The seed we already hold — and what's still missing
@@ -219,9 +219,9 @@ list; Toby and Workona hold collections hostage inside accounts.
 ### What it could become, in three stages
 
 1. **Shareable workspace packs (viral loop).** "Export → send the file → recipient opens
-   it in Folio." A researcher shares a literature-review workspace; a teacher shares a
+   it in Locus." A researcher shares a literature-review workspace; a teacher shares a
    course pack; a friend shares a trip plan with links, notes, and a checklist. Every
-   shared pack is an advertisement, and opening one requires installing Folio — a
+   shared pack is an advertisement, and opening one requires installing Locus — a
    k-factor loop that attacks our real bottleneck (distribution) with zero server cost.
 2. **Community content as data, not code (ecosystem).** Trackers, themes, and workspace
    templates defined as importable JSON/CSS-variable sets — a gallery hosted as a static
@@ -243,7 +243,7 @@ list; Toby and Workona hold collections hostage inside accounts.
   circulation, and a format they didn't define. The two moats fail independently — that's
   what makes a portfolio.
 - **It compounds without us:** every user who shares a pack recruits; every community
-  template deepens the reason to choose Folio; neither requires us to ship anything.
+  template deepens the reason to choose Locus; neither requires us to ship anything.
 - **It converts our weakness into the growth engine:** moat #1 (no server, no accounts)
   blocks conventional viral mechanics like shared cloud workspaces. File-based sharing is
   the network effect that *survives* our own privacy constraints.
@@ -252,7 +252,7 @@ list; Toby and Workona hold collections hostage inside accounts.
 
 - Critical mass is the hard part; network effects are worthless at n≈0. The viral loop
   must be nearly frictionless (one-click export, drag-a-file-in import, an "open in
-  Folio" landing page for recipients who don't have it yet).
+  Locus" landing page for recipients who don't have it yet).
 - The format must stay open, versioned, and stable — a moat built on a format dies the
   first time an update breaks old packs (migration coverage is already on the roadmap).
 - Sharing must remain conspicuously safe: packs are data, reviewable before import

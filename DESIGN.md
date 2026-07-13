@@ -1,8 +1,8 @@
-# Folio Layout & Differentiation Brief
+# Locus Layout & Differentiation Brief
 
 Status: living document. Last updated: 2026-06-23.
 
-This brief captures the design direction for Folio's layout refresh and — importantly —
+This brief captures the design direction for Locus's layout refresh and — importantly —
 how we take *inspiration* from **Refern** and **TabExtend** while staying clearly distinct,
 so the product is defensible and independently owned.
 
@@ -31,8 +31,8 @@ A **tab manager / workspace**. Distinctive traits visible in their marketing sho
 - **Kanban columns** of cards that mix tabs + to-dos + notes; yellow sticky-note styling.
 - Tagline "Tab management made easy."
 
-### Where Folio already sits
-Folio is functionally close to TabExtend (sidebar + category tabs + kanban columns of mixed
+### Where Locus already sits
+Locus is functionally close to TabExtend (sidebar + category tabs + kanban columns of mixed
 tab/note/todo cards + a free-positioning canvas). That overlap is **fine on the merits** — these
 are generic category patterns — but it means our *visual* identity has to carry the
 differentiation. That is the core of this brief.
@@ -47,7 +47,7 @@ Four buckets matter. Get a real IP attorney before any paid launch; this is our 
 |---|---|---|
 | **Copyright** | Their *code*, icons, illustrations, marketing copy, exact gradients/art. | Independently written (vanilla JS, our own SVG icons). Never copy their CSS, assets, or taglines. |
 | **Trade dress** | The *distinctive, non-functional* total look-and-feel that identifies the source. | Differentiate the signature elements (palette, tab treatment, card styling, motifs). Keep only the *functional* patterns. |
-| **Trademark** | Their names/logos ("Refern", "TabExtend"). | Don't use their names/marks anywhere. "Tab" is descriptive in this category (Toby, Tabby, Workona, Tab Manager all coexist), so "Folio" is acceptably distinct — but never imitate their wordmark/logo. |
+| **Trademark** | Their names/logos ("Refern", "TabExtend"). | Don't use their names/marks anywhere. "Tab" is descriptive in this category (Toby, Tabby, Workona, Tab Manager all coexist), so "Locus" is acceptably distinct — but never imitate their wordmark/logo. |
 | **Patents** | Specific claimed inventions. | None known to read on basic kanban/canvas/tag UI. Re-check before launch. |
 
 ### The key distinction: functional vs. distinctive
@@ -71,17 +71,17 @@ What we must make our *own* (the non-functional, source-identifying signature):
 
 ---
 
-## 3. Our visual signature: "Folio"
+## 3. Our visual signature: "Locus"
 
 A distinct identity that is neither TabExtend's pastel-light favicon-rail nor Refern's dark
-image gallery. The name Folio evokes a curated collection of pages; the mark turns that
+image gallery. The name Locus evokes a curated collection of pages; the mark turns that
 into stacked, folded sheets, and the UI carries the same organized-space idea through
 compartmentalized boards and calm surfaces.
 
-- **Palette:** the default is a soft blue/violet Folio theme (`#eef1fb` base with
+- **Palette:** the default is a soft blue/violet Locus theme (`#eef1fb` base with
   `#5566f2` / `#8b5cf6` accents), rather than TabExtend's white or Refern's neutral
   gallery grey. The accent gradient (`--brand-grad`) replaces TabExtend's flat blue.
-  A deep Folio Dark variant ships alongside it.
+  A deep Locus Dark variant ships alongside it.
 - **Columns as bento compartments:** board columns are framed cells with a thin gradient top
   accent and a faint sheen (`.gcol` + `.gcol-hd::before`), unlike TabExtend's flat kanban
   columns. The treatment is structural CSS, so it holds across every theme.
@@ -92,7 +92,7 @@ compartmentalized boards and calm surfaces.
   reads with a single through-line.
 - **Sidebar:** workspaces plus a live open-tabs list, not a favicon bubble rail. Different from
   TabExtend by construction.
-- **Themes stay first-class:** Folio and Folio Dark are the new defaults. Rice Paper,
+- **Themes stay first-class:** Locus and Locus Dark are the new defaults. Rice Paper,
   Lacquer, Aurora, and the other themes remain, so users who want warm, light, Nord, or
   Dracula palettes keep them. The identity lives in structure (compartment columns, tab
   divider-tick, accent gradient), not only colors.
@@ -123,7 +123,7 @@ None of those *ideas* are protectable; our distinct execution is what matters.
 
 The repository license is intentionally narrow: source is available for noncommercial
 research, private study, informal personal experimentation, hobby use, and contributions
-back to Folio. Commercial use is not permitted in any kind or form unless the copyright
+back to Locus. Commercial use is not permitted in any kind or form unless the copyright
 holder grants a separate written license.
 
 If a separate commercial offering ever exists, it must use separate written terms and must
@@ -184,8 +184,8 @@ differentiator we can market honestly.
   note/todo). Negative structured operators suppress archive results like the positive ones;
   negative *text* needles instead just filter out matching archive entries. Still no host
   access — purely local metadata/structure.
-- **2026-06-30** — Renamed TabNest to Folio and replaced Aurora as the default signature
-  with the Folio stacked-page identity (§3). New default `[data-theme="folio"]`: a soft
+- **2026-06-30** — Renamed TabNest to Locus and replaced Aurora as the default signature
+  with the Locus stacked-page identity (§3). New default `[data-theme="folio"]`: a soft
   blue/violet base with a matching `folio-dark` variant. The previous rice-paper and
   lacquer palettes remain selectable as `tabento` and `tabento-dark`. Added the structural compartment treatment:
   framed board columns with a gradient top accent and a faint sheen (`.gcol` / `.gcol-hd::before`)
@@ -210,7 +210,7 @@ differentiator we can market honestly.
   (absent fields = today's behavior; older exports import unchanged).
 - **2026-07-03** — Reworked **first-run onboarding** ([IMPROVEMENTS §8](docs/IMPROVEMENTS.md)) toward a
   calmer, more intentional feel. The nine-step spotlight wall is now a **three-card welcome** (what
-  Folio is → save a tab → find your way around); everything else is taught **just-in-time** by a
+  Locus is → save a tab → find your way around); everything else is taught **just-in-time** by a
   small, non-modal **coach-mark** (`coachMark`) that fires at most once per surface — the first layout-menu
   reach and the first calendar open — reusing one reusable element, transform-positioned (composite-only)
   and reduced-motion aware. A structured `settings.onboarding` record (`welcomeSeen`, per-surface
@@ -224,3 +224,95 @@ differentiator we can market honestly.
   horizontally, so nothing wraps — the columns keep the user's chosen `--gw`. Each column footer now
   reads as one filled **Add tab** plus three ghost note/todo/stack affordances that tint only on hover,
   instead of a row of four bordered boxes. CSS-only; no data or behavior change.
+- **2026-07-12** — Settings grew from a right-side drawer into a **full-page surface**
+  (matching the `settings_*` previews): a left rail of eight sections — General, Appearance,
+  Capture, Shortcuts, Privacy & Security, Storage, Import & Export, About — with card panes on
+  the right. Same element id and control ids as the drawer, so every existing binding,
+  deep-link (`openSettingsDrawer('capture')`), and the Escape stack carried over unchanged.
+  New real-data panes: **Shortcuts** (live `chrome.commands.getAll()` values with manifest
+  fallback, plus a filterable in-app list), **Storage** (the existing quota bar plus a
+  per-kind breakdown — links/notes/todos/stacks/archive — computed from the serialized size of
+  the user's actual items), **Privacy** (the honest four-check "private by design" card and the
+  real blur toggle), **About** (version read from the manifest). General gains a **Your name**
+  field backing the home greeting (`settings.profile.name`, same field the welcome
+  questionnaire writes). The drawer's Archive tab was retired in favour of the archive
+  *surface*; its deep-links (quota overlay, search results) now route there. The duplicated
+  "Close tabs when saved" toggle collapsed into the Capture pane's single control. Sidebar
+  sections are Up/Down-arrow navigable; panes slide in only when animations are on and
+  `prefers-reduced-motion` is off; the rail folds into a top strip below 880px. Fully
+  localized (en + zh-TW).
+- **2026-07-12** — Shipped the **Zen new-tab landing layer** from
+  `design/previews/new_tab_landing_page.png` as a calm, full-viewport layer above
+  the existing Home. It opens by default with a time-aware Lora greeting backed by
+  `settings.profile.name`, the bundled morning/noon/night scene art, a local
+  clock/date/quote, and live active-Inbox ("Unsorted") plus reminder counts. The
+  search pill offers operator-aware results from the user's locally saved links
+  and sends unmatched web queries through `chrome.search.query()`, preserving the
+  browser's configured default engine without host access. Escape, the chevron,
+  and downward wheel motion reveal the already-rendered Home; focus stays within
+  the layer, motion honors both animation settings and reduced-motion, and the
+  responsive layout holds at 800px. Added schema 7 for the persisted
+  `settings.showLanding` opt-out, plus complete en/zh-TW strings and dark-theme
+  treatment. Premium/account/profile-photo/remote-content concepts in the visual
+  direction remain intentionally out of scope; the avatar stays a local initial.
+- **2026-07-12** — Completed the **toolbar popup fidelity pass** against
+  `design/previews/locus_extension_popup.png`. The 420×590 popup now carries the
+  preview's compact hierarchy: profile-initial header, ⌘/Ctrl+K tab search,
+  current-window count, paired Save window / Hibernate window actions, a
+  five-row expandable tab card, the real resolved destination, and focused Save
+  tab and Hibernate window subviews. All content comes from `chrome.tabs` and
+  the existing `te` state; capture still honors ask-every-time, last/default
+  destination, metadata, dedupe, and close-after-save settings. Hibernate scope
+  and pinned/audio exclusions persist across popup reloads under schema 8. Added loading,
+  empty, error, filtered-empty, keyboard/focus, Escape, dark-theme,
+  reduced-motion, and complete en/zh-TW treatment. The mock's screenshot/PDF,
+  account avatar, remote feedback, and premium-style More concepts remain out of
+  scope because Locus stays local-only and requests no host permissions.
+- **2026-07-12** — **Fidelity + first-run pass on the landing layer and popup.**
+  Landing: the greeting now uses only `settings.profile.name` (no more
+  "Good evening, My." from the workspace-name fallback; the Home hero shares the
+  same localized no-name form), first-run no longer stacks the landing under the
+  welcome questionnaire — the landing waits and greets with the name the user
+  just typed; added the preview's staggered entrance (greeting → search →
+  chrome, gated by animation settings and reduced motion), meridiem-free clock
+  and "Tue, 11 June"-style date, search resets on dismiss, and the reminders
+  chip hides at zero. Popup: "Save window" now opens the preview's save panel —
+  destination with Change, suggested/custom tags, save options (links only /
+  links + session group / reading queue via `readLaterAt`), close-after-saving,
+  and an optional note — while ask-every-time=off keeps one-click saving; the
+  main view's "Change" is now a true destination picker (it previously saved the
+  active tab), rows show PDF/Video chips derived from URLs, and the footer
+  carries the local-first line. Save mode persists as `popupSaveMode` under
+  schema 9. Full en/zh-TW coverage for every new string.
+- **2026-07-13** — Bundled the extension's full **font set locally**. New-tab and
+  popup now share `media/fonts/fonts.css` instead of render-blocking Google Fonts
+  requests, with all 41 WOFF2 unicode subsets for DM Sans, Inter, Geist, IBM Plex
+  Sans, Lora, JetBrains Mono, and Geist Mono plus their OFL notices. The existing
+  selector IDs, variable weight/style ranges, fallback stacks, theme behavior, and
+  persistence are unchanged, while first paint now honors the local-first/offline
+  product promise with no font-network dependency.
+- **2026-07-13** — Shipped the local **Trash recovery surface** from
+  `design/previews/trash_prototype.png`, giving deletion a different meaning from
+  deliberate Archive storage. Schema 10 adds `trash[]`; deleting an Archive entry
+  preserves its real workspace/category/group restore metadata and stamps
+  `trashedAt`, while the Trash view provides live counts and recoverable bytes,
+  search, type filters, single/batch restore, permanent deletion, empty and damaged
+  import states, and a 30-day on-load purge. Sidebar counts, storage reporting,
+  export plus replace/merge import, Escape, narrow windows, all themes, reduced
+  motion, and en/zh-TW stay connected to existing local state. The preview's
+  premium retention upgrades, remote help, detail scraper, auto-clean controls,
+  and fabricated quota/statistics were intentionally omitted.
+- **2026-07-13** — Completed the remaining local/free **toolbar popup** intent from
+  `design/previews/locus_extension_popup.png`. A focused More view now wires Save
+  current tab into the existing capture flow, imports real `chrome.bookmarks` into
+  the active Space, and opens Chrome's extension-shortcut manager. Open-tab rows
+  gained accessible live selection, feeding a persisted Selected hibernate scope.
+  Schema 11 adds that selection plus an opt-in "save links to Locus before
+  hibernating" safety setting: the exact eligible tabs are written to the resolved
+  capture destination first (with capture metadata, dedupe, and remember-last
+  semantics), and hibernation aborts if storage fails. Reload persistence,
+  loading/empty/error handling, Escape and focus containment, light/dark themes,
+  reduced motion, and en/zh-TW are covered. Screenshot/PDF capture,
+  account/profile-photo, and remote feedback remain excluded by the
+  no-host-access/account/network boundary; no fabricated local release-notes source
+  was added solely to populate the mock's What's new row.

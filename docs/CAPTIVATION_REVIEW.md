@@ -1,4 +1,4 @@
-# Folio Selling Points & Captivation Review
+# Locus Selling Points & Captivation Review
 
 Status: product positioning notes. Created: 2026-07-03. Updated: 2026-07-04 —
 message hierarchy and store/landing narrative realigned to the moat analysis in
@@ -6,18 +6,18 @@ message hierarchy and store/landing narrative realigned to the moat analysis in
 
 ## Core selling points
 
-1. **Keep browser context without keeping every tab alive.** Folio's strongest promise is that users can save sessions and reopen tabs through hibernated placeholders, preserving context while keeping RAM use low.
+1. **Keep browser context without keeping every tab alive.** Locus's strongest promise is that users can save sessions and reopen tabs through hibernated placeholders, preserving context while keeping RAM use low.
 2. **A private, local-first workspace.** The app stores workspace data in `chrome.storage.local`, has no account system, no server, no host permissions, and does not read page content on its own (the only page text it stores is a selection the user explicitly right-clicks to save). This is unusually clear and defensible for a browser productivity tool.
-3. **Tabs plus thinking space.** Saved tabs live beside notes, todos, reminders, stacks, tags, custom fields, checklists, and lightweight trackers, so Folio is not only a tab list; it is a small operating system for browser work.
+3. **Tabs plus thinking space.** Saved tabs live beside notes, todos, reminders, stacks, tags, custom fields, checklists, and lightweight trackers, so Locus is not only a tab list; it is a small operating system for browser work.
 4. **Multiple ways to view the same work.** Board, list, focused group pages, canvas, Explorer, Timeline, and Calendar surfaces let different workflows feel native instead of forcing everything into one layout.
 5. **Power search without cloud indexing.** Search operators such as `type:`, `color:`, `domain:`, `url:`, `in:`, `tag:`, `is:`, `has:reminder`, `reminder:`, quoted phrases, and negation make local data feel immediately retrievable.
 6. **Fast capture everywhere.** The extension can save the current tab, all open tabs, browser context-menu targets, selected text, images, links, and bookmarks, which makes capture feel low-friction.
-7. **Distinct premium identity.** The stacked-page mark, Folio blue/violet signature palette, gradient accents, and bento-style organization give the product a memorable identity beyond generic tab management.
+7. **Distinct premium identity.** The stacked-page mark, Locus blue/violet signature palette, gradient accents, and bento-style organization give the product a memorable identity beyond generic tab management.
 8. **No build-step simplicity.** Vanilla JavaScript, HTML, CSS, and Manifest V3 make the app easy to audit, package, and iterate without dependency or build complexity.
 
 ## Message hierarchy
 
-The moat analysis found that Folio is the only product in the field holding all three
+The moat analysis found that Locus is the only product in the field holding all three
 legs of one promise at once — full workspace (tabs+notes+todos+reminders), zero RAM cost
 (hibernation), zero privacy cost (no account, no server, no host permissions). Every
 competitor class is missing at least one leg, and the ones missing the privacy leg
@@ -29,7 +29,7 @@ Buddy already own with 1–2M installs each.
 
 **One click saves every tab in the window. Close it. Lose nothing. Leak nothing.**
 
-The leading clause is load-bearing twice over: Folio does not auto-capture sessions —
+The leading clause is load-bearing twice over: Locus does not auto-capture sessions —
 persistence happens through explicit saves (save tab, save all tabs, save window as
 workspace) — and the save-all paths are scoped to the *current window*
 (`chrome.tabs.query({ currentWindow: true })` in `newtab.js` and `background.js`), so
@@ -42,7 +42,7 @@ nothing. Leak nothing."
 
 ### One-line positioning (subline under the hero)
 
-**Folio is a private new-tab workspace that keeps every browsing context — tabs, notes,
+**Locus is a private new-tab workspace that keeps every browsing context — tabs, notes,
 todos, reminders — alive at zero RAM cost and zero privacy cost.**
 
 ### Three homepage/store bullets — one per moat leg
@@ -51,13 +51,13 @@ todos, reminders — alive at zero RAM cost and zero privacy cost.**
   tags, and trackers in calm workspaces — the browser work *around* the tabs comes too.
 - **Zero RAM cost.** Hibernation holds a 50-tab workspace at almost no memory until you
   click; keep your context without carrying the weight.
-- **Zero privacy cost.** No account, no server, no host permissions — Folio never reads
+- **Zero privacy cost.** No account, no server, no host permissions — Locus never reads
   your pages on its own; the only page text it ever stores is a selection you explicitly
   right-click to save. Verify the permissions on the store listing before you install.
 
 ### Emotional hook
 
-Most tab managers say, "close your tabs." Folio says, **"keep your context without
+Most tab managers say, "close your tabs." Locus says, **"keep your context without
 carrying the weight."** The trust corollary, for a category defined by extensions that
 got sold, went rogue, or shut down: **"nothing to sync, nothing to sell, nothing to shut
 down — your workspace can't be taken away."**
@@ -74,13 +74,13 @@ Two overclaims to avoid:
   context-menu feature stores `selectionText` — page text the user explicitly chose to
   save. The honest framing is "never reads your pages on its own; only text you
   right-click to save."
-- Never promise "lose nothing" without the save step: Folio has no automatic session
+- Never promise "lose nothing" without the save step: Locus has no automatic session
   capture — closing a window with unsaved tabs stores nothing. Copy must anchor the
   promise to the one-click save (see the hero line), or an auto-snapshot feature must
   ship first.
 
 An overclaim would cost exactly the trust the positioning depends on. Where space
-allows, disarm it proactively: "Folio never scans your pages — it stores only what
+allows, disarm it proactively: "Locus never scans your pages — it stores only what
 you explicitly save." (Not "only tab titles and URLs": the supported capture paths also
 store bookmarks you import, selections you right-click to save, and image/link URLs.)
 
@@ -88,7 +88,7 @@ store bookmarks you import, selections you right-click to save, and image/link U
 currently sends saved-tab hostnames to Google's favicon service and loads Google Fonts
 (see [COMPETITIVE_MOAT.md](COMPETITIVE_MOAT.md) §3.2 gaps). Ship local fonts and a local
 favicon source *before* the landing page goes live with this copy; until then the proof
-strip must say "no Folio server" rather than "no external calls."
+strip must say "no Locus server" rather than "no external calls."
 
 ## Landing page strategy (moat-aligned)
 
@@ -97,7 +97,7 @@ Structure the landing page (and long-form store description) in this order:
 1. **Hero:** the three-leg promise above, over one calm workspace screenshot. Primary CTA
    "Add to Chrome — free", secondary "See how hibernation works".
 2. **Proof strip (trust signals above the fold):** no host permissions · no account · no
-   Folio server · source-available under the Folio Research and Contribution License · your data exports anytime. Each verifiable, none
+   Locus server · source-available under the Locus Research and Contribution License · your data exports anytime. Each verifiable, none
    aspirational.
 3. **The hero demo — hibernation with a visible number.** Show the RAM trade concretely:
    "38 tabs held, ~0 MB" on a hibernated workspace, then one click loading a single page.
@@ -132,7 +132,7 @@ permission claim there, and with the RAM demo everywhere else.
 
 ### 1. Start every empty state with a guided story
 
-New users should immediately see what makes Folio different. Replace purely blank states with a polished demo workspace or onboarding path that shows:
+New users should immediately see what makes Locus different. Replace purely blank states with a polished demo workspace or onboarding path that shows:
 
 - a saved research group with hibernated tabs,
 - a note and todo beside those links,
@@ -193,14 +193,14 @@ The search syntax is powerful but hidden. Make it approachable:
 - autocomplete operators and recent domains/tags,
 - and include a "Why this matched" hint in results when advanced filters are active.
 
-This would make Folio feel smart while staying fully local-first.
+This would make Locus feel smart while staying fully local-first.
 
 ### 7. Sharpen the store-listing narrative
 
 The best external pitch should lead with the pain and proof:
 
 1. "Your browser is full because your work is unfinished."
-2. "Folio saves that context into private workspaces."
+2. "Locus saves that context into private workspaces."
 3. "Hibernation lets you reopen pages only when needed."
 4. "Notes, todos, reminders, tags, and search keep the context useful."
 5. "Everything stays local; no host permissions."
@@ -236,7 +236,7 @@ those pieces into an obvious first-run story.
 
 ### Phase 1 — Make value obvious on first launch
 
-**Goal:** a new user understands Folio in under 30 seconds.
+**Goal:** a new user understands Locus in under 30 seconds.
 
 - Add a first-run demo workspace option with realistic sample groups: Research, Planning,
   Reading, and Follow-up.

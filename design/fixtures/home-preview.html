@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Locus — home preview</title>
+
+<link rel="stylesheet" href="../../themes.css">
+<link rel="stylesheet" href="../../newtab.css">
+</head>
+<body data-theme="folio" data-theme-mode="light" data-size="normal" data-font="dm" data-width="normal" data-surface="home">
+<div id="app">
+
+  <!-- SIDEBAR -->
+  <aside id="sidebar">
+    <div class="brand-lockup" id="brand-lockup" title="Locus">
+      <img class="brand-wordmark-icon" src="../../icons/icon128.png" alt="" aria-hidden="true">
+      <span class="brand-name">Locus</span>
+    </div>
+    <div class="ws-bar">
+      <div id="ws-chips-stack">
+        <button class="ws-chip active live"><span class="ws-chip-sym">🏠</span><span class="ws-chip-name">My Workspace</span><span class="ws-chip-live-dot"></span></button>
+        <button class="ws-chip ws-chip-more"><span>+1</span></button>
+      </div>
+    </div>
+    <nav id="nav-views" aria-label="Views">
+      <button class="nav-item active" id="nav-home">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 6.5L7.5 2l5 4.5V12a1 1 0 01-1 1h-2.6V9.4H6.1V13H3.5a1 1 0 01-1-1V6.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        <span class="nav-lbl">Home</span>
+      </button>
+      <button class="nav-item" id="nav-all">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M6.2 8.8a2.4 2.4 0 003.4 0l2.5-2.5a2.4 2.4 0 10-3.4-3.4l-1 1M8.8 6.2a2.4 2.4 0 00-3.4 0L2.9 8.7a2.4 2.4 0 103.4 3.4l1-1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <span class="nav-lbl">All Links</span><span class="nav-count">2432</span>
+      </button>
+      <button class="nav-item" id="nav-inbox">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 8.5l1.4-5A1 1 0 014.4 2.7h6.2a1 1 0 011 .8l1.4 5v3a1 1 0 01-1 1H3a1 1 0 01-1-1v-3z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M2 8.5h3.4a2.1 2.1 0 004.2 0H13" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+        <span class="nav-lbl">Inbox</span><span class="nav-count">24</span>
+      </button>
+      <button class="nav-item" id="nav-archive">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2" y="2.5" width="11" height="3" rx="0.8" stroke="currentColor" stroke-width="1.4"/><path d="M3 5.5V12a1 1 0 001 1h7a1 1 0 001-1V5.5M6 8h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <span class="nav-lbl">Archive</span><span class="nav-count">98</span>
+      </button>
+    </nav>
+    <div class="side-sec-row">
+      <span class="side-sec-lbl">Spaces</span>
+      <button id="add-cat-btn" class="icon-btn sm" title="New category">
+        <svg width="13" height="13" viewBox="0 0 13 13"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div id="space-nav">
+      <button class="space-item"><span class="space-sym">🔬</span><span class="space-name">Research</span><span class="nav-count">698</span></button>
+      <button class="space-item"><span class="space-sym">🎨</span><span class="space-name">Inspiration</span><span class="nav-count">432</span></button>
+      <button class="space-item"><span class="space-sym">🛠</span><span class="space-name">Tools</span><span class="nav-count">256</span></button>
+      <button class="space-item"><span class="space-sym">📖</span><span class="space-name">Read Later</span><span class="nav-count">523</span></button>
+      <button class="space-item"><span class="space-sym">📦</span><span class="space-name">Projects</span><span class="nav-count">523</span></button>
+    </div>
+    <div class="side-footer">
+      <div class="side-storage" title="Local storage used by Locus">
+        <svg width="14" height="14" viewBox="0 0 15 15" fill="none"><rect x="2" y="2" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M2 9.5h11M4.5 11.5h.01M6.8 11.5h.01" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        <div class="side-storage-bd">
+          <div class="side-storage-text">2.4 GB used · of 10 GB</div>
+          <div class="storage-bar-track"><div class="storage-bar-fill" style="width:24%"></div></div>
+        </div>
+      </div>
+      <div class="priv-card">
+        <div class="priv-hd">
+          <svg width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.8l4.7 1.8v3.6c0 3-2 5.2-4.7 6-2.7-.8-4.7-3-4.7-6V3.6l4.7-1.8z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M5.5 7.4l1.4 1.4 2.6-2.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Private by design</span>
+        </div>
+        <div class="priv-row"><span class="priv-check">✓</span><span>No account</span></div>
+        <div class="priv-row"><span class="priv-check">✓</span><span>Local-only</span></div>
+        <div class="priv-row"><span class="priv-check">✓</span><span>No host permissions</span></div>
+        <div class="priv-row"><span class="priv-check">✓</span><span>Export anytime</span></div>
+      </div>
+      <button id="sidebar-toggle" class="side-collapse" title="Collapse sidebar">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M9 3.5L5 7.5l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main id="main">
+    <header id="topbar">
+      <div class="tb-left"><h1 id="ws-title"><span id="ws-title-sym">🏠</span><span id="ws-title-name">Workspace</span></h1></div>
+      <button id="topbar-search" class="topbar-search">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5L13 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <span class="topbar-search-ph">Search your links…</span>
+        <kbd>⌘K</kbd>
+      </button>
+      <div class="tb-right">
+        <button id="settings-btn" class="icon-btn" title="Settings">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.9 2.2a.6.6 0 01.6-.5h1a.6.6 0 01.6.5l.16 1.05c.44.13.85.36 1.2.66l1-.4a.6.6 0 01.72.26l.5.86a.6.6 0 01-.12.75l-.83.67a4.3 4.3 0 010 1.38l.83.67a.6.6 0 01.12.75l-.5.86a.6.6 0 01-.72.26l-1-.4c-.35.3-.76.53-1.2.66L9.1 14.3a.6.6 0 01-.6.5h-1a.6.6 0 01-.6-.5l-.16-1.05a4.3 4.3 0 01-1.2-.66l-1 .4a.6.6 0 01-.72-.26l-.5-.86a.6.6 0 01.12-.75l.83-.67a4.3 4.3 0 010-1.38l-.83-.67a.6.6 0 01-.12-.75l.5-.86a.6.6 0 01.72-.26l1 .4c.35-.3.76-.53 1.2-.66L6.9 2.2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="8" cy="8" r="2.1" stroke="currentColor" stroke-width="1.3"/></svg>
+        </button>
+        <button id="plugins-btn" class="icon-btn" title="Plugins">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M10 3.2a2 2 0 014 0V4a1 1 0 001 1h2.8a1 1 0 011 1V9a1 1 0 001 1h.2a2 2 0 010 4h-.2a1 1 0 00-1 1v2.8a1 1 0 01-1 1H15a1 1 0 01-1-1v-.2a2 2 0 00-4 0v.2a1 1 0 01-1 1H6.2a1 1 0 01-1-1V15a1 1 0 00-1-1H4a2 2 0 010-4h.2a1 1 0 001-1V6a1 1 0 011-1H9a1 1 0 001-1v-.8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </button>
+        <button id="menu-btn" class="avatar-btn notif-host has-notif" title="Menu">
+          <span id="avatar-face" class="avatar-face">M</span>
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5l3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="notif-dot"></span>
+        </button>
+      </div>
+    </header>
+
+    <div id="board" class="home-mode">
+      <div class="home-hero" data-tod="morning">
+        <img class="home-hero-bg" src="../../media/png/morning_transparent_corners.png" alt="" aria-hidden="true">
+        <div class="home-hero-copy">
+          <h1 class="home-greeting">Good evening, My Workspace.</h1>
+          <p class="home-subtitle">Everything in its place.</p>
+        </div>
+      </div>
+
+      <div class="home-grid">
+        <!-- Research -->
+        <div class="home-card has-accent" tabindex="0" role="button" style="--home-accent:#6366f1">
+          <div class="home-card-hd">
+            <span class="home-card-sym has-img"><img class="hcs-img ic-dark" src="../../media/locus_icons_one_folder_badge_nobg/set1-research-light.png" alt=""><img class="hcs-img ic-light" src="../../media/locus_icons_one_folder_badge_nobg/set1-research-dark.png" alt=""></span>
+            <div class="home-card-titles"><div class="home-card-name">Research</div><div class="home-card-count">698 items</div></div>
+            <button class="home-card-more"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="1.3" fill="currentColor"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="12" cy="8" r="1.3" fill="currentColor"/></svg></button>
+          </div>
+          <div class="home-card-main">
+            <div class="home-card-body">
+              <div class="home-prow"><img class="home-prow-fav" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='7' fill='%236366f1'/%3E%3C/svg%3E"><span class="home-prow-text"><span class="home-prow-title">Attention is All You Need</span><span class="home-prow-domain">arxiv.org</span></span></div>
+              <div class="home-prow"><img class="home-prow-fav" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='7' fill='%236366f1'/%3E%3C/svg%3E"><span class="home-prow-text"><span class="home-prow-title">The State of AI in 2024</span><span class="home-prow-domain">aindex.stanford.edu</span></span></div>
+              <div class="home-prow"><img class="home-prow-fav" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='7' fill='%236366f1'/%3E%3C/svg%3E"><span class="home-prow-text"><span class="home-prow-title">LLM Benchmark Leaderboard</span><span class="home-prow-domain">huggingface.co</span></span></div>
+              <div class="home-prow"><img class="home-prow-fav" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='7' fill='%236366f1'/%3E%3C/svg%3E"><span class="home-prow-text"><span class="home-prow-title">How vector search works</span><span class="home-prow-domain">blog.pinecone.io</span></span></div>
+            </div>
+            <div class="home-card-accent" aria-hidden="true"><span class="home-card-accent-glyph">🔬</span></div>
+          </div>
+          <button class="home-card-viewall"><span>View all</span><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h7M6 3l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+
+        <!-- Inspiration -->
+        <div class="home-card has-accent" tabindex="0" role="button" style="--home-accent:#a855f7">
+          <div class="home-card-hd">
+            <span class="home-card-sym has-img"><img class="hcs-img ic-dark" src="../../media/locus_icons_one_folder_badge_nobg/set1-inspiration-light.png" alt=""><img class="hcs-img ic-light" src="../../media/locus_icons_one_folder_badge_nobg/set1-inspiration-dark.png" alt=""></span>
+            <div class="home-card-titles"><div class="home-card-name">Inspiration</div><div class="home-card-count">432 items</div></div>
+            <button class="home-card-more"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="1.3" fill="currentColor"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="12" cy="8" r="1.3" fill="currentColor"/></svg></button>
+          </div>
+          <div class="home-card-main">
+            <div class="home-card-body">
+              <div class="home-prow"><img class="home-prow-fav" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='7' fill='%236366f1'/%3E%3C/svg%3E"><span class="home-prow-text"><span class="home-prow-title">Dashboard concepts 2024</span><span class="home-prow-domain">dribbble.com</span></span></div>
+              <div class="home-prow"><img class="home-prow-fav" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='7' fill='%236366f1'/%3E%3C/svg%3E"><span class="home-prow-text"><span class="home-prow-title">Brand systems collection</span><span class="home-prow-domain">behance.net</span></span></div>
+              <div class="home-prow"><img class="home-prow-fav" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='7' fill='%236366f1'/%3E%3C/svg%3E"><span class="home-prow-text"><span class="home-prow-title">Gradient mesh studies</span><span class="home-prow-domain">pinterest.com</span></span></div>
+              <div class="home-prow"><img class="home-prow-fav" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='7' fill='%236366f1'/%3E%3C/svg%3E"><span class="home-prow-text"><span class="home-prow-title">Sites of the week</span><span class="home-prow-domain">awwwards.com</span></span></div>
+            </div>
+            <div class="home-card-accent" aria-hidden="true"><span class="home-card-accent-glyph">🎨</span></div>
+          </div>
+          <button class="home-card-viewall"><span>View all</span><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h7M6 3l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+
+        <!-- Tools -->
+        <div class="home-card has-accent" tabindex="0" role="button" style="--home-accent:#06b6d4">
+          <div class="home-card-hd">
+            <span class="home-card-sym has-img"><img class="hcs-img ic-dark" src="../../media/locus_icons_one_folder_badge_nobg/set1-tools-light.png" alt=""><img class="hcs-img ic-light" src="../../media/locus_icons_one_folder_badge_nobg/set1-tools-dark.png" alt=""></span>
+            <div class="home-card-titles"><div class="home-card-name">Tools</div><div class="home-card-count">256 items</div></div>
+            <button class="home-card-more"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="1.3" fill="currentColor"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="12" cy="8" r="1.3" fill="currentColor"/></svg></button>
+          </div>
+          <div class="home-card-main">
+            <div class="home-card-body">
+              <div class="home-prow"><img class="home-prow-fav" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='7' fill='%236366f1'/%3E%3C/svg%3E"><span class="home-prow-text"><span class="home-prow-title">Linear — Issue Tracking</span><span class="home-prow-domain">linear.app</span></span></div>
+              <div class="home-prow"><img class="home-prow-fav" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='7' fill='%236366f1'/%3E%3C/svg%3E"><span class="home-prow-text"><span class="home-prow-title">Figma — Design</span><span class="home-prow-domain">figma.com</span></span></div>
+              <div class="home-prow"><img class="home-prow-fav" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='7' fill='%236366f1'/%3E%3C/svg%3E"><span class="home-prow-text"><span class="home-prow-title">Raycast — Productivity</span><span class="home-prow-domain">raycast.com</span></span></div>
+            </div>
+            <div class="home-card-accent" aria-hidden="true"><span class="home-card-accent-glyph">🛠</span></div>
+          </div>
+          <button class="home-card-viewall"><span>View all</span><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h7M6 3l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+
+        <!-- Read Later -->
+        <div class="home-card has-accent" tabindex="0" role="button" style="--home-accent:#10b981">
+          <div class="home-card-hd">
+            <span class="home-card-sym has-img"><img class="hcs-img ic-dark" src="../../media/locus_icons_one_folder_badge_nobg/set1-read-later-light.png" alt=""><img class="hcs-img ic-light" src="../../media/locus_icons_one_folder_badge_nobg/set1-read-later-dark.png" alt=""></span>
+            <div class="home-card-titles"><div class="home-card-name">Read Later</div><div class="home-card-count">523 items</div></div>
+            <button class="home-card-more"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="1.3" fill="currentColor"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="12" cy="8" r="1.3" fill="currentColor"/></svg></button>
+          </div>
+          <div class="home-card-main">
+            <div class="home-card-body">
+              <div class="home-prow"><img class="home-prow-fav" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='7' fill='%236366f1'/%3E%3C/svg%3E"><span class="home-prow-text"><span class="home-prow-title">Building a Second Brain</span><span class="home-prow-domain">nesslabs.com</span></span></div>
+              <div class="home-prow"><img class="home-prow-fav" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='7' fill='%236366f1'/%3E%3C/svg%3E"><span class="home-prow-text"><span class="home-prow-title">How to think clearly</span><span class="home-prow-domain">fs.blog</span></span></div>
+              <div class="home-prow"><img class="home-prow-fav" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='7' fill='%236366f1'/%3E%3C/svg%3E"><span class="home-prow-text"><span class="home-prow-title">The internet's own boy</span><span class="home-prow-domain">theatlantic.com</span></span></div>
+            </div>
+            <div class="home-card-accent" aria-hidden="true"><span class="home-card-accent-glyph">📖</span></div>
+          </div>
+          <button class="home-card-viewall"><span>View all</span><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h7M6 3l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+
+        <!-- Projects (full-width strip) -->
+        <div class="home-card home-card-wide" style="--home-accent:#3b82f6">
+          <div class="home-card-hd">
+            <span class="home-card-sym has-img"><img class="hcs-img ic-dark" src="../../media/locus_icons_one_folder_badge_nobg/set1-projects-light.png" alt=""><img class="hcs-img ic-light" src="../../media/locus_icons_one_folder_badge_nobg/set1-projects-dark.png" alt=""></span>
+            <div class="home-card-titles"><div class="home-card-name">Projects</div><div class="home-card-count">523 links · 6 collections</div></div>
+          </div>
+          <div class="home-proj-strip">
+            <button class="home-proj-tile" style="--proj-tint:#6366f1"><div class="home-proj-thumb"><span>🖥</span></div><div class="home-proj-meta"><div class="home-proj-name">Website Redesign</div><div class="home-proj-count">128 links</div></div></button>
+            <button class="home-proj-tile" style="--proj-tint:#a855f7"><div class="home-proj-thumb"><span>📱</span></div><div class="home-proj-meta"><div class="home-proj-name">Mobile App</div><div class="home-proj-count">96 links</div></div></button>
+            <button class="home-proj-tile" style="--proj-tint:#10b981"><div class="home-proj-thumb"><span>📣</span></div><div class="home-proj-meta"><div class="home-proj-name">Marketing Site</div><div class="home-proj-count">74 links</div></div></button>
+            <button class="home-proj-tile" style="--proj-tint:#f59e0b"><div class="home-proj-thumb"><span>🎛</span></div><div class="home-proj-meta"><div class="home-proj-name">Design System</div><div class="home-proj-count">61 links</div></div></button>
+            <button class="home-proj-tile" style="--proj-tint:#ec4899"><div class="home-proj-thumb"><span>🔎</span></div><div class="home-proj-meta"><div class="home-proj-name">User Research</div><div class="home-proj-count">84 links</div></div></button>
+            <button class="home-proj-tile" style="--proj-tint:#06b6d4"><div class="home-proj-thumb"><span>🚀</span></div><div class="home-proj-meta"><div class="home-proj-name">Launch Plan</div><div class="home-proj-count">80 links</div></div></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- OPENED TABS RAIL -->
+  <aside id="tabrail">
+    <button id="tabrail-toggle" class="rail-toggle icon-btn sm" title="Collapse opened tabs">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8.5 3L5 7l3.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="rail-hd">
+      <div class="rail-title-row"><span class="rail-title">Opened Tabs</span><span id="open-count" class="rail-count">14</span></div>
+      <div class="rail-sub">Drag into a space to save</div>
+    </div>
+    <div id="open-tabs">
+      <div class="otab"><span class="otab-handle"><svg width="8" height="14" viewBox="0 0 8 14"><circle cx="2" cy="3" r="1" fill="currentColor"/><circle cx="6" cy="3" r="1" fill="currentColor"/><circle cx="2" cy="7" r="1" fill="currentColor"/><circle cx="6" cy="7" r="1" fill="currentColor"/><circle cx="2" cy="11" r="1" fill="currentColor"/><circle cx="6" cy="11" r="1" fill="currentColor"/></svg></span><span class="otab-check"></span><img class="otab-fav" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='7' fill='%236366f1'/%3E%3C/svg%3E"><span class="otab-text"><span class="otab-title">GitHub Star History</span><span class="otab-domain">star-history.com</span></span><button class="otab-close"><svg width="12" height="12" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></div>
+      <div class="otab"><span class="otab-handle"><svg width="8" height="14" viewBox="0 0 8 14"><circle cx="2" cy="3" r="1" fill="currentColor"/><circle cx="6" cy="3" r="1" fill="currentColor"/><circle cx="2" cy="7" r="1" fill="currentColor"/><circle cx="6" cy="7" r="1" fill="currentColor"/><circle cx="2" cy="11" r="1" fill="currentColor"/><circle cx="6" cy="11" r="1" fill="currentColor"/></svg></span><span class="otab-check"></span><img class="otab-fav" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='7' fill='%236366f1'/%3E%3C/svg%3E"><span class="otab-text"><span class="otab-title">Pull requests · folio</span><span class="otab-domain">github.com</span></span><button class="otab-close"><svg width="12" height="12" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></div>
+      <div class="otab"><span class="otab-handle"><svg width="8" height="14" viewBox="0 0 8 14"><circle cx="2" cy="3" r="1" fill="currentColor"/><circle cx="6" cy="3" r="1" fill="currentColor"/><circle cx="2" cy="7" r="1" fill="currentColor"/><circle cx="6" cy="7" r="1" fill="currentColor"/><circle cx="2" cy="11" r="1" fill="currentColor"/><circle cx="6" cy="11" r="1" fill="currentColor"/></svg></span><span class="otab-check"></span><img class="otab-fav" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='7' fill='%236366f1'/%3E%3C/svg%3E"><span class="otab-text"><span class="otab-title">Project overview | Netlify</span><span class="otab-domain">app.netlify.com</span></span><button class="otab-close"><svg width="12" height="12" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></div>
+      <div class="otab"><span class="otab-handle"><svg width="8" height="14" viewBox="0 0 8 14"><circle cx="2" cy="3" r="1" fill="currentColor"/><circle cx="6" cy="3" r="1" fill="currentColor"/><circle cx="2" cy="7" r="1" fill="currentColor"/><circle cx="6" cy="7" r="1" fill="currentColor"/><circle cx="2" cy="11" r="1" fill="currentColor"/><circle cx="6" cy="11" r="1" fill="currentColor"/></svg></span><span class="otab-check"></span><img class="otab-fav" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='7' fill='%236366f1'/%3E%3C/svg%3E"><span class="otab-text"><span class="otab-title">creating readme badges — Google</span><span class="otab-domain">google.com</span></span><button class="otab-close"><svg width="12" height="12" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></div>
+      <div class="otab"><span class="otab-handle"><svg width="8" height="14" viewBox="0 0 8 14"><circle cx="2" cy="3" r="1" fill="currentColor"/><circle cx="6" cy="3" r="1" fill="currentColor"/><circle cx="2" cy="7" r="1" fill="currentColor"/><circle cx="6" cy="7" r="1" fill="currentColor"/><circle cx="2" cy="11" r="1" fill="currentColor"/><circle cx="6" cy="11" r="1" fill="currentColor"/></svg></span><span class="otab-check"></span><img class="otab-fav" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' rx='7' fill='%236366f1'/%3E%3C/svg%3E"><span class="otab-text"><span class="otab-title">Supaste — Awwwards</span><span class="otab-domain">awwwards.com</span></span><button class="otab-close"><svg width="12" height="12" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></div>
+    </div>
+    <div class="rail-footer">
+      <div class="filter-box">
+        <svg width="12" height="12" viewBox="0 0 16 16"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <input id="tab-filter" type="text" placeholder="Filter tabs" autocomplete="off">
+        <kbd>S</kbd>
+      </div>
+      <button id="rail-saveall" class="rail-saveall">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1.5v6m0 0l2.4-2.4M6.5 7.5L4.1 5.1M2 9v1.5a1 1 0 001 1h7a1 1 0 001-1V9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Save all tabs</span>
+      </button>
+      <div class="rail-tip">
+        <svg width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.6a4.4 4.4 0 00-2.6 7.9c.4.3.6.6.6 1v.5h4v-.5c0-.4.2-.7.6-1a4.4 4.4 0 00-2.6-7.9z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.8 13h3.4M6.3 11.5h2.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        <span>Drag a tab into any space to save it for later.</span>
+      </div>
+    </div>
+  </aside>
+</div>
+</body>
+</html>

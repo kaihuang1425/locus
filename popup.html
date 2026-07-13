@@ -2,111 +2,197 @@
 <html lang="en" data-theme="folio">
 <head>
   <meta charset="UTF-8">
-  <title>Folio</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Locus</title>
+  <link rel="stylesheet" href="media/fonts/fonts.css">
   <link rel="icon" type="image/png" sizes="32x32" href="icons/icon32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon16.png">
-  <link rel="icon" type="image/png" sizes="48x48" href="icons/icon48.png">
-  <link rel="icon" type="image/png" sizes="128x128" href="icons/icon128.png">
-  <link rel="icon" href="favicon.ico" sizes="any">
-  <link rel="shortcut icon" href="favicon.ico">
   <link rel="stylesheet" href="themes.css">
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <div id="popup">
-    <div class="ph">
+  <main id="popup" aria-busy="true">
+    <header class="ph">
       <div class="logo">
-        <img class="brand-mark" src="icons/icon128.png" width="22" height="22" alt="" aria-hidden="true">
-        <span class="logo-name">Folio</span>
+        <img class="brand-mark" src="icons/icon128.png" width="30" height="30" alt="">
+        <span class="logo-name">Locus</span>
       </div>
-      <button id="open-full" class="ph-btn" title="Open full workspace" aria-label="Open full workspace">
-        <svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M4 2.5H2a1 1 0 00-1 1v6.5A1 1 0 002 11h6.5a1 1 0 001-1V8M7 1h4m0 0v4M11 1L5.5 6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-    </div>
+      <div class="header-actions">
+        <button id="open-more" class="header-icon-btn" type="button" data-pop-title="more" aria-label="More">
+          <svg width="17" height="17" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 6.75A2.25 2.25 0 109 11.25 2.25 2.25 0 009 6.75z" stroke="currentColor" stroke-width="1.35"/><path d="M14.25 10.1a5.5 5.5 0 000-2.2l1.2-.95-1.35-2.35-1.44.56a5.7 5.7 0 00-1.9-1.1L10.53 2.5h-2.7L7.6 4.05a5.7 5.7 0 00-1.9 1.1l-1.44-.56-1.35 2.35 1.2.95a5.5 5.5 0 000 2.2l-1.2.95 1.35 2.35 1.44-.56a5.7 5.7 0 001.9 1.1l.23 1.55h2.7l.23-1.55a5.7 5.7 0 001.9-1.1l1.44.56 1.35-2.35-1.2-.95z" stroke="currentColor" stroke-width="1.15" stroke-linejoin="round"/></svg>
+        </button>
+        <button id="open-full" class="profile-btn" type="button" data-pop-title="openLocus" aria-label="Open Locus">
+          <span id="profile-initial" aria-hidden="true">L</span>
+          <svg width="13" height="13" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4 2.5H2a1 1 0 00-1 1v6.5A1 1 0 002 11h6.5a1 1 0 001-1V8M7 1h4m0 0v4M11 1L5.5 6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </header>
 
-    <!-- Primary quick actions -->
-    <div class="pa">
+    <section id="main-section" class="popup-view" aria-labelledby="window-heading-label">
+      <label class="popup-search" for="ps">
+        <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <input id="ps" type="search" data-pop-placeholder="searchTabs" placeholder="Search open tabs…" autocomplete="off">
+        <kbd>⌘ K</kbd>
+      </label>
+
+      <div class="window-heading">
+        <span id="window-heading-label" class="window-label">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.75" y="2.75" width="12.5" height="9" rx="1.4" stroke="currentColor" stroke-width="1.25"/><path d="M6 14h4M8 12v2" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>
+          <span data-pop-i18n="currentWindow">Current window</span>
+        </span>
+        <span><b id="window-count">0</b> <span data-pop-i18n="tabs">tabs</span></span>
+      </div>
+
       <div class="pa-row">
-        <button id="qs-current" class="pa-btn primary">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2.5h7l3 3v6H2v-9z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M4.5 2.5v3h4v-3M4.5 11.5V8h5v3.5" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
-          <span>Save current</span>
+        <button id="qs-all" class="pa-btn primary" type="button">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 2.5h8l2 2v9H3v-11z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5 2.5v4h5v-4M5 13.5V9h6v4.5" stroke="currentColor" stroke-width="1.2"/></svg>
+          <span data-pop-i18n="saveWindow">Save window</span>
         </button>
-        <button id="qs-all" class="pa-btn">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="3.5" width="8" height="8" rx="1.3" stroke="currentColor" stroke-width="1.2"/><path d="M4.5 3.5v-1a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1h-1" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
-          <span>Save all · <b id="qs-count">0</b></span>
+        <button id="hib-open" class="pa-btn" type="button">
+          <svg width="15" height="15" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M11.5 8.2A4.6 4.6 0 015.8 2.5a4.6 4.6 0 105.7 5.7z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></svg>
+          <span data-pop-i18n="hibernateWindow">Hibernate window</span>
+          <span class="pa-hint" id="hib-open-hint"></span>
         </button>
       </div>
-      <button id="hib-open" class="pa-btn pa-wide">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11.5 8.2A4.6 4.6 0 015.8 2.5a4.6 4.6 0 105.7 5.7z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></svg>
-        <span>Hibernate tabs…</span>
-        <span class="pa-hint" id="hib-open-hint"></span>
-      </button>
-    </div>
 
-    <!-- Save-to picker -->
-    <div id="save-to-section" class="hidden">
-      <div class="sect-hd">
-        <span>Save to</span>
-        <button id="stg-back" class="link-btn">← back</button>
+      <div id="load-state" class="state-card" role="status">
+        <span class="spinner" aria-hidden="true"></span>
+        <span data-pop-i18n="loadingTabs">Loading tabs…</span>
       </div>
-      <div id="stg-list"></div>
-    </div>
 
-    <!-- Hibernate options -->
-    <div id="hibernate-section" class="hidden">
-      <div class="sect-hd">
-        <span>Hibernate tabs</span>
-        <button id="hib-back" class="link-btn">← back</button>
+      <div id="tabs-region" class="hidden">
+        <div id="ptabs" role="list" aria-label="Open tabs"></div>
+        <button id="more-tabs" class="more-tabs hidden" type="button" aria-expanded="false"></button>
+        <div id="selection-status" class="selection-status hidden" role="status" aria-live="polite"></div>
       </div>
-      <p class="hib-note">Suspend tabs to free memory — they reload instantly the moment you open them. The tab you're viewing is kept awake.</p>
-      <div class="hib-opt">
-        <span class="hib-opt-lbl">Scope</span>
-        <div class="seg" id="hib-scope">
-          <button data-val="window" class="active">This window</button>
-          <button data-val="all">All windows</button>
-        </div>
-      </div>
-      <label class="hib-toggle">
-        <input type="checkbox" id="hib-keep-pinned" checked>
-        <span class="hib-tog-box"></span>
-        <span class="hib-tog-lbl">Keep pinned tabs</span>
-      </label>
-      <label class="hib-toggle">
-        <input type="checkbox" id="hib-keep-audio" checked>
-        <span class="hib-tog-box"></span>
-        <span class="hib-tog-lbl">Keep tabs playing audio</span>
-      </label>
-      <button id="hib-go" class="pa-btn primary hib-go">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M11.5 8.2A4.6 4.6 0 015.8 2.5a4.6 4.6 0 105.7 5.7z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></svg>
-        <span>Hibernate <b id="hib-count">0</b> tabs</span>
-      </button>
-    </div>
 
-    <!-- Open tabs -->
-    <div id="main-section">
-      <div class="search-wrap">
-        <svg width="12" height="12" viewBox="0 0 16 16">
-          <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
-          <path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-        <input id="ps" type="text" placeholder="Search open tabs…" autocomplete="off">
+      <div id="destination-card" class="destination-card hidden">
+        <span class="destination-icon" aria-hidden="true">
+          <svg width="17" height="17" viewBox="0 0 16 16" fill="none"><path d="M1.75 4.25h5l1.25 1.5h6.25v7.5H1.75v-9z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M1.75 5.75V2.8h4.5l1.2 1.45" stroke="currentColor" stroke-width="1.25"/></svg>
+        </span>
+        <span class="destination-copy">
+          <span class="destination-label" data-pop-i18n="destination">Destination</span>
+          <strong id="destination-name">Inbox</strong>
+        </span>
+        <button id="change-destination" class="text-action" type="button"><span data-pop-i18n="change">Change</span><span aria-hidden="true">›</span></button>
       </div>
-      <div class="sect-hd"><span>Open tabs</span></div>
-      <div id="ptabs"></div>
-    </div>
+    </section>
 
-    <!-- Proof strip — every claim here is true of this build -->
-    <div class="pfoot">
-      <div class="proof-strip">
-        <span class="proof-item">No account</span>
-        <span class="proof-item">No Folio server</span>
-        <span class="proof-item">No host permissions</span>
-        <span class="proof-item">Export anytime</span>
+    <section id="more-section" class="popup-view hidden" aria-labelledby="more-title">
+      <div class="view-titlebar more-titlebar">
+        <button id="more-back" class="icon-btn" type="button" data-pop-title="back" aria-label="Back">←</button>
+        <div><h1 id="more-title" data-pop-i18n="more">More</h1><p data-pop-i18n="moreSubtitle">Local tools and browser actions</p></div>
       </div>
-    </div>
-  </div>
+      <div class="more-list">
+        <button id="more-save-current" class="more-row" type="button">
+          <span class="more-row-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4 2.5h10v13l-5-3-5 3v-13z" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/></svg></span>
+          <span class="more-row-copy"><strong data-pop-i18n="saveCurrentTab">Save current tab</strong><span data-pop-i18n="saveCurrentTabDesc">Save only this tab</span></span>
+          <span class="more-row-arrow" aria-hidden="true">›</span>
+        </button>
+        <button id="more-import-bookmarks" class="more-row" type="button">
+          <span class="more-row-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4 2.5h10v13l-5-3-5 3v-13z" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/><path d="M9 5.2v4.2m-2-2.1h4" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg></span>
+          <span class="more-row-copy"><strong data-pop-i18n="importBookmarks">Import bookmarks</strong><span data-pop-i18n="importBookmarksDesc">Bring browser bookmarks into this Space</span></span>
+          <span class="more-row-arrow" aria-hidden="true">›</span>
+        </button>
+        <button id="more-shortcuts" class="more-row" type="button">
+          <span class="more-row-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2.5" y="4" width="13" height="10" rx="2" stroke="currentColor" stroke-width="1.35"/><path d="M5 7h1m2 0h1m2 0h1m-7 3h1m2 0h1m2 0h1m-6 2h6" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg></span>
+          <span class="more-row-copy"><strong data-pop-i18n="keyboardShortcuts">Keyboard shortcuts</strong><span data-pop-i18n="keyboardShortcutsDesc">Review or change extension shortcuts</span></span>
+          <span class="more-row-arrow" aria-hidden="true">›</span>
+        </button>
+      </div>
+      <div class="more-local-card">
+        <span class="privacy-check" aria-hidden="true">✓</span>
+        <span data-pop-i18n="moreLocalProof">These actions stay in Chrome and your local Locus data.</span>
+      </div>
+    </section>
+
+    <section id="save-window-section" class="popup-view hidden" aria-labelledby="sw-title">
+      <div class="view-titlebar">
+        <button id="sw-back" class="icon-btn" type="button" data-pop-title="back" aria-label="Back">←</button>
+        <div><h1 id="sw-title" data-pop-i18n="saveWindow">Save window</h1><p><b id="sw-count">0</b> <span data-pop-i18n="tabs">tabs</span></p></div>
+      </div>
+      <div class="destination-card sw-destination">
+        <span class="destination-icon" aria-hidden="true">
+          <svg width="17" height="17" viewBox="0 0 16 16" fill="none"><path d="M1.75 4.25h5l1.25 1.5h6.25v7.5H1.75v-9z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M1.75 5.75V2.8h4.5l1.2 1.45" stroke="currentColor" stroke-width="1.25"/></svg>
+        </span>
+        <span class="destination-copy">
+          <span class="destination-label" data-pop-i18n="destination">Destination</span>
+          <strong id="sw-destination-name">Inbox</strong>
+        </span>
+        <button id="sw-change" class="text-action" type="button"><span data-pop-i18n="change">Change</span><span aria-hidden="true">›</span></button>
+      </div>
+      <div class="subhead" data-pop-i18n="suggestedTags">Suggested tags</div>
+      <div class="sw-tags" id="sw-tags-row">
+        <span id="sw-tags"></span>
+        <input id="sw-tag-input" type="text" data-pop-placeholder="addTag" placeholder="+ Add tag" autocomplete="off">
+      </div>
+      <div class="subhead" data-pop-i18n="saveOptions">Save options</div>
+      <div id="sw-modes" class="sw-modes" role="radiogroup" aria-label="Save options">
+        <button type="button" class="sw-mode" role="radio" data-val="links" aria-checked="false">
+          <span class="sw-radio" aria-hidden="true"></span>
+          <span class="sw-mode-copy"><span class="sw-mode-title" data-pop-i18n="saveLinksOnly">Save links only</span><span class="sw-mode-desc" data-pop-i18n="saveLinksOnlyDesc">Lightweight and fast</span></span>
+        </button>
+        <button type="button" class="sw-mode" role="radio" data-val="group" aria-checked="false">
+          <span class="sw-radio" aria-hidden="true"></span>
+          <span class="sw-mode-copy"><span class="sw-mode-title" data-pop-i18n="saveLinksGroup">Save links + tab group</span><span class="sw-mode-desc" data-pop-i18n="saveLinksGroupDesc">Keep tabs organized as a group</span></span>
+        </button>
+        <button type="button" class="sw-mode" role="radio" data-val="queue" aria-checked="false">
+          <span class="sw-radio" aria-hidden="true"></span>
+          <span class="sw-mode-copy"><span class="sw-mode-title" data-pop-i18n="saveQueue">Save as reading queue</span><span class="sw-mode-desc" data-pop-i18n="saveQueueDesc">Review later in Read Later</span></span>
+        </button>
+      </div>
+      <label class="hib-toggle"><input type="checkbox" id="sw-close"><span class="hib-tog-box"></span><span data-pop-i18n="closeAfterSave">Close tabs after saving</span></label>
+      <label class="hib-toggle"><input type="checkbox" id="sw-note-toggle"><span class="hib-tog-box"></span><span data-pop-i18n="addNote">Add note</span></label>
+      <textarea id="sw-note" class="sw-note hidden" rows="2" data-pop-placeholder="notePlaceholder" placeholder="A note saved alongside these tabs…"></textarea>
+      <button id="sw-go" class="pa-btn primary hib-go" type="button"><span data-pop-i18n="save">Save</span> <b id="sw-go-count">0</b> <span data-pop-i18n="tabs">tabs</span></button>
+    </section>
+
+    <section id="save-to-section" class="popup-view hidden" aria-labelledby="save-title">
+      <div class="view-titlebar">
+        <button id="stg-back" class="icon-btn" type="button" data-pop-title="back" aria-label="Back">←</button>
+        <div><h1 id="save-title" data-pop-i18n="saveTab">Save tab</h1><p id="save-context"></p></div>
+      </div>
+      <div class="view-summary"><span class="destination-icon" aria-hidden="true">⌑</span><span id="save-tab-title"></span></div>
+      <div class="subhead" data-pop-i18n="chooseDestination">Choose destination</div>
+      <div id="stg-list" role="list"></div>
+    </section>
+
+    <section id="hibernate-section" class="popup-view hidden" aria-labelledby="hibernate-title">
+      <div class="view-titlebar">
+        <button id="hib-back" class="icon-btn" type="button" data-pop-title="back" aria-label="Back">←</button>
+        <div><h1 id="hibernate-title" data-pop-i18n="hibernateWindow">Hibernate window</h1><p><b id="hib-title-count">0</b> <span data-pop-i18n="tabs">tabs</span></p></div>
+      </div>
+      <div class="info-card">
+        <svg width="18" height="18" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M11.5 8.2A4.6 4.6 0 015.8 2.5a4.6 4.6 0 105.7 5.7z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></svg>
+        <span data-pop-i18n="hibernateExplainer">Hibernate pauses tabs to save memory. You can restore them anytime.</span>
+      </div>
+      <div class="subhead" data-pop-i18n="scope">Scope</div>
+      <div class="seg seg-three" id="hib-scope" role="radiogroup" aria-label="Hibernate scope">
+        <button data-val="window" class="active" type="button" role="radio" aria-checked="true" data-pop-i18n="thisWindow">This window</button>
+        <button data-val="selected" type="button" role="radio" aria-checked="false"><span data-pop-i18n="selectedTabs">Selected</span> <span id="hib-selected-count">(0)</span></button>
+        <button data-val="all" type="button" role="radio" aria-checked="false" data-pop-i18n="allWindows">All windows</button>
+      </div>
+      <div class="subhead" data-pop-i18n="options">Options</div>
+      <label class="hib-toggle"><input type="checkbox" id="hib-save-before"><span class="hib-tog-box"></span><span data-pop-i18n="saveBeforeHibernate">Save links to Locus before hibernating</span></label>
+      <div id="hib-destination-card" class="destination-card hib-destination hidden">
+        <span class="destination-icon" aria-hidden="true">
+          <svg width="17" height="17" viewBox="0 0 16 16" fill="none"><path d="M1.75 4.25h5l1.25 1.5h6.25v7.5H1.75v-9z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M1.75 5.75V2.8h4.5l1.2 1.45" stroke="currentColor" stroke-width="1.25"/></svg>
+        </span>
+        <span class="destination-copy"><span class="destination-label" data-pop-i18n="destination">Destination</span><strong id="hib-destination-name">Inbox</strong></span>
+        <button id="hib-change" class="text-action" type="button"><span data-pop-i18n="change">Change</span><span aria-hidden="true">›</span></button>
+      </div>
+      <label class="hib-toggle"><input type="checkbox" id="hib-keep-pinned" checked><span class="hib-tog-box"></span><span data-pop-i18n="keepPinned">Keep pinned tabs awake</span></label>
+      <label class="hib-toggle"><input type="checkbox" id="hib-keep-audio" checked><span class="hib-tog-box"></span><span data-pop-i18n="keepAudio">Keep tabs playing audio awake</span></label>
+      <button id="hib-go" class="pa-btn primary hib-go" type="button"><span data-pop-i18n="hibernate">Hibernate</span> <b id="hib-count">0</b> <span data-pop-i18n="tabs">tabs</span></button>
+    </section>
+
+    <footer class="pfoot">
+      <span data-pop-i18n="localFirst">Local-first. Private by design.</span>
+      <span class="pfoot-dot" aria-hidden="true">·</span>
+      <span class="privacy-check" aria-hidden="true">✓</span>
+      <span data-pop-i18n="privacyProof">Everything stays on your device.</span>
+    </footer>
+    <div id="pop-toast" role="status" aria-live="polite"></div>
+  </main>
   <script src="popup.js"></script>
 </body>
 </html>
