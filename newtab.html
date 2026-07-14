@@ -1247,6 +1247,21 @@
   <!-- First-run only (gated by settings.onboarding.welcomeSeen); re-openable
        from the app menu / Settings. Answers persist to settings.profile +
        settings.plugins. -->
+  <!-- ══════ FIRST-RUN WELCOME (single task) ══════ -->
+  <div id="first-run" class="hidden" role="dialog" aria-modal="true" aria-labelledby="fr-title">
+    <div class="fr-card">
+      <div class="fr-logo"><img class="brand-img" src="icons/icon128.png" alt="" decoding="async"></div>
+      <h2 id="fr-title" class="fr-h" data-i18n="firstRun.title">Welcome to Locus</h2>
+      <p id="fr-sub" class="fr-sub" data-i18n="firstRun.sub">A calm, private home for the tabs and links you want to keep. Everything stays on your device. Start by saving one tab — you can explore the rest later.</p>
+      <div id="fr-body" class="fr-body">
+        <div class="fr-actions">
+          <button type="button" id="fr-save" class="fr-primary" data-i18n="firstRun.save">Save your first tab</button>
+          <button type="button" id="fr-explore" class="fr-secondary" data-i18n="firstRun.explore">Explore on my own</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="welcome" class="hidden" role="dialog" aria-modal="true" aria-labelledby="wc-title">
     <div class="wc-card">
       <div class="wc-progress"><span id="wc-progress-fill" class="wc-progress-fill"></span></div>

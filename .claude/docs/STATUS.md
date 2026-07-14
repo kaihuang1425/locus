@@ -7,11 +7,15 @@ Last updated: 2026-07-13.
 
 ## Queue (highest impact first)
 
-1. **First-use and shell simplification** (`docs/UX_SIMPLIFICATION.md`) — stop
-   adding default-visible capability and implement the corrective sequence in
-   order: one-task welcome, no chained landing handoff, five-entry core navigation,
-   one-action top bar, collapsed opened-tabs rail, and a three-zone Home. Validate
-   the save-and-find loop before promoting Calendar or alternate Space views.
+1. **Shell + Home simplification** (`docs/UX_SIMPLIFICATION.md` §5–6, Phases 2–3) —
+   first-session work (Phase 1) shipped; the corrective sequence continues with the
+   shell and Home. Do in order: five-entry core navigation (Home, Inbox, All Links,
+   Spaces, More — move Archive/Trash/Calendar/Tools/Settings under More until
+   relevant/pinned), a one-action top bar (context title + one search entry + one
+   Save/Add + overflow, no duplicate search fields), the collapsed-by-default
+   opened-tabs rail, and a three-zone Home (welcome/context line, one capture+Inbox
+   card, up to three recent/pinned Spaces + View all). Validate the save-and-find
+   loop before promoting Calendar or alternate Space views.
 2. **Space layout fidelity triage** (`spaces_*` previews) — Canvas, Explorer,
    Gallery, Graph, Timeline, and details are functional, but fidelity and user-flow
    quality vary. Audit the highest-friction layout first, then re-rank the rest from
@@ -20,6 +24,23 @@ Last updated: 2026-07-13.
 
 ## Done (newest first)
 
+- **2026-07-13 — First-use simplification, Phase 1 (first session)** — replaced the
+  six-step name/purpose/workflow/plugins questionnaire on first launch with one
+  single-task welcome card (`#first-run`): one sentence on what Locus is, a primary
+  **Save your first tab**, and a quiet **Explore on my own** (`docs/UX_SIMPLIFICATION.md`
+  §3, §12). Removed the welcome→landing→Home chain — the calm landing layer no longer
+  stacks behind onboarding (`_landingAfterWelcome` deleted) and greets only returning
+  users. **Save your first tab** captures the most recently used real open tab (not the
+  new-tab page) into the active Space's Inbox via the existing capture fields, shows the
+  saved item in place with an inline confirmation + one continuation into its Inbox
+  destination, and Undo removes just that copy (welcomeSeen persisted before the snapshot
+  so undo never re-arms onboarding). No open page → honest empty state naming the two real
+  save paths, never a fabricated save. Dismissal is permanent; reload resumes the product.
+  The questionnaire (`openWelcome`) stays reachable on demand from the menu/Settings.
+  Escape stack, focus trap, en/zh-TW, dark theme, reduced-motion gate, and 800px layout
+  covered. Runtime-verified with headless Chromium + storage shim (34 checks: save/empty/
+  explore/Escape paths, Inbox persistence across reload, no duplicate IDs, zero console
+  errors). No schema bump or permission change.
 - **2026-07-13 — System empty-state fidelity review** — replaced the scattered
   zero/no-match placeholders with one responsive, localized contract modeled on
   `locus_system_empty_state_each_page.png`. Home, empty Spaces and Inbox/groups,

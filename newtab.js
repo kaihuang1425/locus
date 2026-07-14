@@ -162,6 +162,19 @@ const I18N = {
     'settings.proof.export': 'Export anytime',
     'settings.showLanding': 'Show calm new-tab welcome',
     'settings.showLandingHint': 'Dismiss it to reveal your Home workspace',
+    'firstRun.title': 'Welcome to Locus',
+    'firstRun.sub': 'A calm, private home for the tabs and links you want to keep. Everything stays on your device. Start by saving one tab — you can explore the rest later.',
+    'firstRun.save': 'Save your first tab',
+    'firstRun.saving': 'Saving…',
+    'firstRun.explore': 'Explore on my own',
+    'firstRun.savedTitle': 'Saved to your Inbox',
+    'firstRun.savedSub': "That's the whole idea — one place for the things you want back. Open your Inbox to see it, or undo if it was a mistake.",
+    'firstRun.savedDest': 'In Inbox',
+    'firstRun.openInbox': 'Open your Inbox',
+    'firstRun.undo': 'Undo',
+    'firstRun.emptyTitle': 'Nothing open to save yet',
+    'firstRun.emptySub': 'Open a page in another tab, then use the Locus popup or press Ctrl+Shift+S to save it here. For now, take a look around.',
+    'firstRun.emptyGo': 'Go to Home',
     'landing.ariaLabel': 'New tab welcome',
     'landing.greeting': '{greeting}, {name}.',
     'landing.greetingNoName': '{greeting}.',
@@ -526,6 +539,19 @@ const I18N = {
     'settings.proof.export': '隨時匯出',
     'settings.showLanding': '顯示寧靜的新分頁歡迎畫面',
     'settings.showLandingHint': '關閉後即可查看首頁工作區',
+    'firstRun.title': '歡迎使用 Locus',
+    'firstRun.sub': '一個寧靜、私密的空間，收納你想留住的分頁與連結。所有資料都留在你的裝置上。先儲存一個分頁開始吧——其餘功能之後再慢慢探索。',
+    'firstRun.save': '儲存你的第一個分頁',
+    'firstRun.saving': '儲存中…',
+    'firstRun.explore': '我自己逛逛',
+    'firstRun.savedTitle': '已儲存到收件匣',
+    'firstRun.savedSub': '這就是重點——把你想找回的東西放在同一個地方。打開收件匣就能看到它，若是誤按也可以復原。',
+    'firstRun.savedDest': '在收件匣中',
+    'firstRun.openInbox': '打開收件匣',
+    'firstRun.undo': '復原',
+    'firstRun.emptyTitle': '目前沒有可儲存的分頁',
+    'firstRun.emptySub': '先在其他分頁開啟一個網頁，然後透過 Locus 彈出視窗或按 Ctrl+Shift+S 就能存到這裡。現在先四處看看吧。',
+    'firstRun.emptyGo': '前往首頁',
     'landing.ariaLabel': '新分頁歡迎畫面',
     'landing.greeting': '{greeting}，{name}。',
     'landing.greetingNoName': '{greeting}。',
@@ -1377,11 +1403,10 @@ function initAfterLoad() {
   bindStatic();
 
   renderAll();
-  // First run: the welcome questionnaire owns the screen. The landing layer
-  // waits until it closes, so the first greeting uses the name the user just
-  // typed instead of stacking two full-screen layers.
+  // First run shows the single-task welcome card (openFirstRun in init), never a
+  // chained welcome→landing→Home handoff. The calm landing layer therefore
+  // greets only returning users, and only when they've kept that preference (§3).
   if (ensureOnboarding(State.get().settings).welcomeSeen) showLandingLayer();
-  else _landingAfterWelcome = true;
 
   // Reveal the app once the first frame paints (avoids any layout flash).
   requestAnimationFrame(() => {
@@ -3919,7 +3944,6 @@ function collectWorkspaceItems(ws = activeWs()) {
 // ── Zen launch layer ──────────────────────────────────────────────────────
 let _landingClockTimer = null;
 let _landingResultIndex = -1;
-let _landingAfterWelcome = false;
 
 function landingInbox(ws = activeWs()) {
   if (!ws) return null;
@@ -12811,12 +12835,153 @@ function ensureOnboarding(settings) {
   return s.onboarding;
 }
 
-// ── Welcome questionnaire (first-run onboarding) ────────────────────
+// ── First-run welcome (single task) ─────────────────────────────────
+// UX_SIMPLIFICATION §3: first use is ONE task — save your first tab — not a
+// preferences interview or a chained welcome→landing→Home handoff. This card
+// owns the first launch (gated by onboarding.welcomeSeen); the older
+// name/purpose/workflow questionnaire (openWelcome) stays reachable on demand
+// from the menu/Settings for anyone who still wants it. Dismissal is permanent
+// and reloading resumes the product, never the onboarding sequence.
+
+function openFirstRun() {
+  const ov = document.getElementById('first-run');
+  if (!ov) return;
+  frResetIntro();
+  rememberOpener(ov);
+  ov.classList.remove('hidden');
+  lockBodyScroll();
+  setTimeout(() => document.getElementById('fr-save')?.focus(), 80);
+}
+
+// Marking first-run as seen is deliberately separate from the undoable save
+// snapshot: it is persisted before any snapshot so a later Undo of the saved
+// tab never re-arms onboarding.
+function markWelcomeSeen() {
+  const s = State.get().settings;
+  ensureOnboarding(s).welcomeSeen = true;
+  s.tourCompleted = true;
+  State.persist();
+}
+
+function frHide() {
+  const ov = document.getElementById('first-run');
+  if (!ov || ov.classList.contains('hidden')) return;
+  ov.classList.add('hidden');
+  unlockBodyScroll();
+  restoreOpener(ov);
+}
+
+// Explore / Escape / undo path → resume the product on Home. No landing layer,
+// no coach mark — §3.3 sends the user directly to the simplified Home surface.
+function closeFirstRun() {
+  const wasOpen = !document.getElementById('first-run')?.classList.contains('hidden');
+  frHide();
+  markWelcomeSeen();
+  if (wasOpen) goHome();
+}
+
+function frResetIntro() {
+  const title = document.getElementById('fr-title');
+  const sub = document.getElementById('fr-sub');
+  title.dataset.i18n = 'firstRun.title'; title.textContent = tr('firstRun.title');
+  sub.dataset.i18n = 'firstRun.sub'; sub.textContent = tr('firstRun.sub');
+  const body = document.getElementById('fr-body');
+  body.innerHTML =
+    '<div class="fr-actions">' +
+      '<button type="button" id="fr-save" class="fr-primary" data-i18n="firstRun.save">' + esc(tr('firstRun.save')) + '</button>' +
+      '<button type="button" id="fr-explore" class="fr-secondary" data-i18n="firstRun.explore">' + esc(tr('firstRun.explore')) + '</button>' +
+    '</div>';
+  document.getElementById('fr-save').onclick = frSaveFirstTab;
+  document.getElementById('fr-explore').onclick = closeFirstRun;
+}
+
+// Primary action. Saves one real open tab into the active Space's Inbox, then
+// shows it in place with a single continuation. On the new-tab page the active
+// tab is the new tab itself, so we pick the most recently used real page.
+async function frSaveFirstTab() {
+  const btn = document.getElementById('fr-save');
+  if (btn) { btn.disabled = true; btn.textContent = tr('firstRun.saving'); }
+  let tab = null;
+  try {
+    const tabs = await chrome.tabs.query({ currentWindow: true });
+    const savable = (tabs || []).filter(t => t && !isProto(t.url));
+    if (savable.length) {
+      tab = savable.find(t => t.active && !isProto(t.url)) ||
+            savable.slice().sort((a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0))[0];
+    }
+  } catch {}
+  if (!tab) { frShowEmpty(); return; }
+
+  const cat = activeCat();
+  if (!cat) { frShowEmpty(); return; }
+  let inbox = cat.groups.find(g => g.name === 'Inbox');
+  if (!inbox) { inbox = { id: uid(), name: 'Inbox', symbol: '📥', color: '#6366f1', collapsed: false, items: [] }; cat.groups.unshift(inbox); }
+  // Persist welcomeSeen first (outside the snapshot) so Undo only removes the item.
+  markWelcomeSeen();
+  State.snapshot('Save first tab');
+  const meta = captureTabFields(tab);
+  const item = stampNew({ id: uid(), type: 'tab', title: meta.title, url: tab.url, fav: meta.fav });
+  inbox.items.push(item);
+  State.persist();
+  frShowSaved(item, inbox);
+}
+
+// Success state (§3.5): the saved item, an inline confirmation, and one
+// continuation into its real destination. Undo restores the pre-save state.
+function frShowSaved(item, inbox) {
+  const title = document.getElementById('fr-title');
+  const sub = document.getElementById('fr-sub');
+  title.dataset.i18n = 'firstRun.savedTitle'; title.textContent = tr('firstRun.savedTitle');
+  sub.dataset.i18n = 'firstRun.savedSub'; sub.textContent = tr('firstRun.savedSub');
+  const fav = item.fav || favUrl(item.url);
+  const body = document.getElementById('fr-body');
+  body.innerHTML =
+    '<div class="fr-saved-item">' +
+      '<img class="fr-saved-fav" src="' + esc(fav) + '" alt="" onerror="this.src=\'' + BLANK_FAV + '\'">' +
+      '<span class="fr-saved-text">' +
+        '<span class="fr-saved-title">' + esc(item.title || item.url) + '</span>' +
+        '<span class="fr-saved-dest" data-i18n="firstRun.savedDest">' + esc(tr('firstRun.savedDest')) + '</span>' +
+      '</span>' +
+    '</div>' +
+    '<div class="fr-actions">' +
+      '<button type="button" id="fr-open-inbox" class="fr-primary" data-i18n="firstRun.openInbox">' + esc(tr('firstRun.openInbox')) + '</button>' +
+      '<button type="button" id="fr-undo" class="fr-secondary" data-i18n="firstRun.undo">' + esc(tr('firstRun.undo')) + '</button>' +
+    '</div>';
+  document.getElementById('fr-open-inbox').onclick = () => { frHide(); openGroupPage(inbox.id); };
+  document.getElementById('fr-undo').onclick = () => { performUndo(); closeFirstRun(); };
+  setTimeout(() => document.getElementById('fr-open-inbox')?.focus(), 30);
+}
+
+// Honest empty state: no open page to capture (e.g. only the new tab is open).
+// We don't fabricate a save — we explain the two real capture paths.
+function frShowEmpty() {
+  const title = document.getElementById('fr-title');
+  const sub = document.getElementById('fr-sub');
+  title.dataset.i18n = 'firstRun.emptyTitle'; title.textContent = tr('firstRun.emptyTitle');
+  sub.dataset.i18n = 'firstRun.emptySub'; sub.textContent = tr('firstRun.emptySub');
+  const body = document.getElementById('fr-body');
+  body.innerHTML =
+    '<div class="fr-actions">' +
+      '<button type="button" id="fr-empty-go" class="fr-primary" data-i18n="firstRun.emptyGo">' + esc(tr('firstRun.emptyGo')) + '</button>' +
+    '</div>';
+  document.getElementById('fr-empty-go').onclick = closeFirstRun;
+  setTimeout(() => document.getElementById('fr-empty-go')?.focus(), 30);
+}
+
+function bindFirstRun() {
+  const ov = document.getElementById('first-run');
+  if (!ov) return;
+  ov.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { e.preventDefault(); closeFirstRun(); }
+    else trapTabKey(e, ov);
+  });
+}
+
+// ── Welcome questionnaire (optional, re-openable) ───────────────────
 // A short, animated setup flow that asks name / purpose / workflow / plugins
-// and persists the answers to settings.profile + settings.plugins. Shown
-// automatically only on first launch (gated by onboarding.welcomeSeen) and
-// re-openable on demand from the app menu / Settings — returning users are
-// never auto-prompted again.
+// and persists the answers to settings.profile + settings.plugins. No longer
+// shown on first launch — it is re-openable on demand from the app menu /
+// Settings for users who want the guided setup.
 const WELCOME_STEPS = 6;
 const WELCOME_PLUGIN_KEYS = ['pomodoro', 'finance', 'habits', 'books', 'goals', 'water'];
 let wcIndex = 0;
@@ -12855,9 +13020,6 @@ function closeWelcome() {
   ensureOnboarding(s).welcomeSeen = true;
   s.tourCompleted = true;
   State.persist();
-  // First-run only: the landing was deferred while the questionnaire ran —
-  // reveal it now, greeting with whatever name was just entered.
-  if (_landingAfterWelcome) { _landingAfterWelcome = false; showLandingLayer(); }
 }
 
 function wcShow(i) {
@@ -13381,7 +13543,7 @@ function bindStatic() {
       // The launch layer is the base overlay. Dismiss it only when nothing is
       // open above it, so Escape from Welcome/Settings never pops two layers.
       const landingLayer = document.getElementById('landing-layer');
-      const higherLayerIds = ['cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','tour-overlay','welcome','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub','about-overlay','context-menu'];
+      const higherLayerIds = ['cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','tour-overlay','welcome','first-run','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub','about-overlay','context-menu'];
       const higherLayerOpen = higherLayerIds.some(id => { const el = document.getElementById(id); return el && !el.classList.contains('hidden'); });
       if (landingLayer && !landingLayer.classList.contains('hidden') && !higherLayerOpen) {
         e.preventDefault(); closeLandingLayer(); return;
@@ -13389,7 +13551,7 @@ function bindStatic() {
       // Snapshot which layered overlays were open *before* we start closing
       // them, so a single Escape only pops the topmost one — not the group page
       // sitting beneath a modal/menu/tool overlay.
-      const _escBlockers = ['landing-layer','cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','tour-overlay','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub'];
+      const _escBlockers = ['landing-layer','cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','tour-overlay','first-run','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub'];
       const _overlayWasOpen = _escBlockers.some(id => { const el = document.getElementById(id); return el && !el.classList.contains('hidden'); });
       closeCommandPalette();
       toggleSearchBar(false);
@@ -13427,6 +13589,8 @@ function bindStatic() {
       if (tourEl && !tourEl.classList.contains('hidden')) endTour(true);
       const wcEl = document.getElementById('welcome');
       if (wcEl && !wcEl.classList.contains('hidden')) closeWelcome();
+      const frEl = document.getElementById('first-run');
+      if (frEl && !frEl.classList.contains('hidden')) closeFirstRun();
       // The item detail pane sits above the board/group page: Escape pops it
       // first (when it's the topmost surface and the user isn't mid-edit),
       // leaving the surface beneath intact; a second Escape then leaves that.
@@ -13487,14 +13651,15 @@ function bindStatic() {
   setupDragAutoScroll();
   setupOpenTabsDropToOpen();
 
-  // Onboarding — an animated setup questionnaire on first run only, the rest
+  // Onboarding — first run shows a single-task welcome card (§3), the rest
   // taught just-in-time. bindTour() still wires the legacy spotlight tour (kept
-  // for the JIT coach-marks + any deep-links), but first-run now opens the
-  // welcome questionnaire.
+  // for the JIT coach-marks + any deep-links); the multi-step questionnaire
+  // (bindWelcome/openWelcome) is now opt-in from the menu/Settings.
   bindTour();
   bindWelcome();
+  bindFirstRun();
   if (!ensureOnboarding(State.get().settings).welcomeSeen) {
-    setTimeout(openWelcome, 500);
+    setTimeout(openFirstRun, 500);
   }
   document.getElementById('show-tour-btn').onclick = () => {
     document.getElementById('settings-drawer').classList.add('hidden');

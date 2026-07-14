@@ -366,3 +366,21 @@ differentiator we can market honestly.
   Rendered verification covered light/dark, reduced motion, en/zh-TW, zero/no-match
   states, real note creation, and Archive-to-Trash recovery. No new schema field,
   permission, remote dependency, or fabricated data source was added.
+- **2026-07-13** — Shipped **Phase 1 of the first-use simplification**
+  (`docs/UX_SIMPLIFICATION.md` §3, §12). First launch now opens a single-task
+  welcome card — one sentence about what Locus is, a primary **Save your first
+  tab**, and a quiet **Explore on my own** — instead of the six-step
+  name/purpose/workflow/plugins questionnaire. The welcome→landing→Home chain is
+  gone: the calm landing layer no longer stacks behind onboarding and greets only
+  returning users who keep that preference. **Save your first tab** captures the
+  most recently used real open tab (not the new-tab page) into the active Space's
+  Inbox, then shows the saved item in place with an inline confirmation and one
+  continuation into its Inbox destination; Undo removes just that copy without
+  re-arming onboarding. When no page is open to capture, an honest empty state
+  explains the two real save paths rather than fabricating a save. Dismissal is
+  permanent and reloading resumes the product, never the onboarding sequence. The
+  six-step questionnaire stays reachable on demand from the menu/Settings. Runtime
+  verification (headless Chromium + storage shim) covered the save, empty, explore,
+  and Escape paths, Inbox persistence across reload, focus containment, dark theme,
+  en/zh-TW, an 800px viewport, no duplicate IDs, and zero console errors. No schema
+  bump or permission change.

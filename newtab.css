@@ -4070,6 +4070,62 @@ kbd {
    A first-run setup flow with tasteful, restrained motion: the card springs in,
    each step glides, the logo pops, and the finish check draws itself. All motion
    is disabled under prefers-reduced-motion. */
+/* ── First-run welcome (single task) ── */
+#first-run {
+  position: fixed; inset: 0; z-index: 10000;
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+  background: rgba(10,12,24,0.5);
+  backdrop-filter: blur(10px) saturate(1.1); -webkit-backdrop-filter: blur(10px) saturate(1.1);
+  animation: fadeIn 0.22s var(--trans);
+}
+#first-run.hidden { display: none; }
+.fr-card {
+  position: relative;
+  width: 440px; max-width: 100%;
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 30px 30px 26px;
+  box-shadow: var(--shadow-3);
+  text-align: left;
+  animation: wcCardIn 0.4s cubic-bezier(0.22,1,0.36,1);
+}
+.fr-logo { width: 56px; height: 56px; margin: 2px 0 16px; }
+.fr-logo .brand-img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 3px 8px rgba(40,50,120,0.25)); animation: wcLogoPop 0.6s cubic-bezier(0.34,1.56,0.64,1); }
+.fr-h { font: 700 22px var(--font); letter-spacing: -0.02em; color: var(--text); margin-bottom: 8px; }
+.fr-sub { font: 500 13.5px var(--font); color: var(--text2); line-height: 1.55; max-width: 42ch; }
+.fr-body { margin-top: 22px; }
+.fr-actions { display: flex; flex-direction: column; gap: 10px; }
+.fr-primary {
+  padding: 12px 20px; border-radius: 12px; border: none;
+  background: var(--accent-bg); color: var(--accent-text); cursor: pointer;
+  font: 600 14px var(--font); transition: transform 0.14s var(--spring), filter var(--trans);
+}
+.fr-primary:hover { filter: brightness(1.06); transform: translateY(-1px); }
+.fr-primary:active { transform: translateY(0); }
+.fr-primary:disabled { opacity: 0.7; cursor: default; transform: none; filter: none; }
+.fr-primary:focus-visible, .fr-secondary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.fr-secondary {
+  padding: 11px 20px; border-radius: 12px;
+  background: none; border: 1.5px solid var(--border2); color: var(--text2); cursor: pointer;
+  font: 600 13.5px var(--font); transition: border-color var(--trans), color var(--trans), background var(--trans);
+}
+.fr-secondary:hover { border-color: var(--text3); color: var(--text); background: var(--bg2); }
+.fr-saved-item {
+  display: flex; align-items: center; gap: 11px;
+  padding: 12px 14px; margin-bottom: 16px; border-radius: 12px;
+  background: var(--bg2); border: 1px solid var(--border2);
+  animation: wcStepIn 0.34s cubic-bezier(0.22,1,0.36,1);
+}
+.fr-saved-fav { width: 26px; height: 26px; border-radius: 6px; object-fit: contain; flex-shrink: 0; background: var(--bg4); }
+.fr-saved-text { display: flex; flex-direction: column; min-width: 0; }
+.fr-saved-title { font: 600 13.5px var(--font); color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fr-saved-dest { font: 500 11.5px var(--font); color: var(--accent); margin-top: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  .fr-card, .fr-logo .brand-img, .fr-saved-item { animation: none; }
+}
+@media (max-width: 520px) { .fr-card { width: 100%; padding: 24px 20px 20px; } .fr-h { font-size: 20px; } }
+
 #welcome {
   position: fixed; inset: 0; z-index: 10000;
   display: flex; align-items: center; justify-content: center; padding: 24px;

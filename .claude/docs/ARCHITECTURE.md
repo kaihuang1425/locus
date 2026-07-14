@@ -80,7 +80,8 @@ pre-paint inline script in newtab.html (prevents theme flash). Keep both in sync
 | Search + operators | `renderSearchSurface`, `collectWorkspaceItems`, `searchItemMatches`, `applySearchFilter`, operators `type: is: domain: site: url: in: tag: color:` with `-` negation |
 | Command palette | `openCommandPalette`, `buildPaletteCommands`, `_palSavedLinkCommand` |
 | Shared empty states | `buildSystemEmptyState`, `buildEmptySpaceState`, `SYSTEM_EMPTY_ICONS` |
-| App menu / About / Welcome | `openAppMenu`, `openAbout`, `openWelcome`, `wcShow` |
+| First-run welcome (single task) | `openFirstRun`, `frSaveFirstTab`, `frShowSaved`, `frShowEmpty`, `markWelcomeSeen`, overlay `#first-run` |
+| App menu / About / Welcome (opt-in questionnaire) | `openAppMenu`, `openAbout`, `openWelcome`, `wcShow` |
 | Tools hub (plugins) | `openToolsHub`, overlays `pomo/fin/habit/water/books/goals/workout/subs` |
 | All bindings | `function init()` at the bottom — global Escape handler + `_escBlockers` list |
 
@@ -93,7 +94,15 @@ else the active category board. The settings
 page (`#settings-drawer`) and tools overlays sit above as fixed overlays. Router
 syncs hash routes so surfaces survive reload/back.
 
-`#landing-layer` is the default new-tab launch view when
+`#first-run` is the first-launch surface (gated by `onboarding.welcomeSeen`, opened
+from `init()` via `openFirstRun`). It is a single-task welcome card — Save your first
+tab / Explore on my own — that replaced the multi-step questionnaire on first run
+(UX_SIMPLIFICATION §3). It never chains into the landing layer: on first run the
+landing layer stays hidden, so `#landing-layer` greets only returning users. The
+questionnaire (`openWelcome`/`#welcome`) is now opt-in from the menu/Settings only.
+Dismissal (Explore / Escape / Undo) marks `welcomeSeen`, so reload resumes the product.
+
+`#landing-layer` is the default new-tab launch view for returning users when
 `settings.showLanding !== false`. It is a fixed layer above Home, not a router
 surface: Escape, the chevron, or downward wheel motion dismiss it for the current
 page and reveal the already-rendered Home. Its counts come from the active
