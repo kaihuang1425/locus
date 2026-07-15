@@ -499,3 +499,17 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   DOM-backed sanitizer transformations, quota/large-file limits, alarm outcomes,
   and installed round trips are open. No production UI, schema, permission,
   user-validation, or release status changed.
+- **2026-07-16** — Completed an **import byte-limit and quota-sized rollback
+  evidence cycle** against P0-05 and P0-08. The production-extracted suite now
+  allocates exact UTF-8 inputs from the live import limits: a valid 20,971,520-byte
+  backup reaches one preview without changing state, while the same valid JSON
+  plus one byte is rejected before FileReader with no preview or write. A valid
+  10,551,296-byte file whose parsed graph remains above the 10 MiB fallback quota
+  reaches preview in replace and merge; injected typed quota rejection then makes
+  one write attempt, rolls local state back, leaves authority unchanged, requires
+  recovery, skips reminder reconciliation, and reports no success. Replace alone
+  creates its safety backup. This remains exact-byte deterministic browser-API
+  model evidence: actual Chrome File/FileReader and rendered preview behavior,
+  real quota allocation, DOM-backed sanitizer transformations, alarm outcomes,
+  and installed round trips are open. No production UI, schema, permission,
+  user-validation, or release status changed.

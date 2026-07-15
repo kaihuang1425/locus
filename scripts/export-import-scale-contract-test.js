@@ -21,6 +21,19 @@ const compatibilityApps = ['locus', 'folio', 'stow', 'tabento', 'tabnest', 'tabe
 const semanticFuzzSeed = 0x51a7e5;
 const semanticFuzzRuns = 128;
 
+function extractNumericConstant(name) {
+  const match = source.match(new RegExp(`const ${name} = ([0-9 *]+);`));
+  assert.ok(match, `${name} must be extractable`);
+  return match[1].split('*').reduce((product, factor) => product * Number(factor.trim()), 1);
+}
+
+const maxImportBytes = extractNumericConstant('MAX_IMPORT_BYTES');
+const maxImportString = extractNumericConstant('MAX_IMPORT_STRING');
+const storageQuotaFallbackMatch = source.match(/const STORAGE_QUOTA = .*\|\| (\d+);/);
+assert.ok(storageQuotaFallbackMatch, 'STORAGE_QUOTA fallback must be extractable');
+const defaultStorageQuotaBytes = Number(storageQuotaFallbackMatch[1]);
+const quotaSizedImportBytes = defaultStorageQuotaBytes + (64 * 1024);
+
 assert.deepEqual(
   compatibilitySchemas,
   Array.from({ length: currentSchema + 1 }, (_, schema) => schema),
@@ -210,12 +223,60 @@ function portableState(state) {
   return portable;
 }
 
+function makeSizedImportFixture(label, targetBytes) {
+  const data = portableState(makeBaseState(label, 0));
+  data.settings.importBoundaryPadding = [];
+  const payload = {
+    app: 'locus',
+    schema: currentSchema,
+    exportedAt: new FixedDate().toISOString(),
+    data,
+  };
+  const emptyText = JSON.stringify(payload);
+  const emptyBytes = Buffer.byteLength(emptyText, 'utf8');
+  const delta = targetBytes - emptyBytes;
+  assert.ok(delta > 0, `${label} target must exceed its unpadded envelope`);
+
+  // Replacing [] with N JSON strings adds sum(lengths) + (3 * N) - 1 bytes.
+  const chunkCount = Math.ceil((delta + 1) / (maxImportString + 3));
+  const paddingBytes = delta - (3 * chunkCount) + 1;
+  assert.ok(paddingBytes >= 0, `${label} must have non-negative padding`);
+  assert.ok(
+    paddingBytes <= chunkCount * maxImportString,
+    `${label} padding must fit within the production per-string limit`,
+  );
+
+  const padding = [];
+  let remaining = paddingBytes;
+  for (let index = 0; index < chunkCount; index++) {
+    const length = Math.min(maxImportString, remaining);
+    padding.push('x'.repeat(length));
+    remaining -= length;
+  }
+  assert.equal(remaining, 0, `${label} must allocate every requested padding byte`);
+  assert.ok(
+    padding.every(chunk => chunk.length <= maxImportString),
+    `${label} must keep every padding string within the production validator limit`,
+  );
+
+  data.settings.importBoundaryPadding = padding;
+  const text = JSON.stringify(payload);
+  assert.equal(Buffer.byteLength(text, 'utf8'), targetBytes, `${label} must hit its exact UTF-8 byte target`);
+  return {
+    chunkLengths: padding.map(chunk => chunk.length),
+    paddingBytes,
+    targetBytes,
+    text,
+  };
+}
+
 function createHarness(initialState, initialWriteMode = 'success') {
   const hostSetTimeout = setTimeout;
   const hostClearTimeout = clearTimeout;
   const objectUrls = new Map();
   const metrics = {
     downloads: [],
+    fileReads: 0,
     previews: 0,
     writeAttempts: 0,
     reminderRequests: 0,
@@ -244,6 +305,7 @@ function createHarness(initialState, initialWriteMode = 'success') {
 
   class HarnessFileReader {
     readAsText(file) {
+      metrics.fileReads += 1;
       queueMicrotask(() => {
         if (typeof file?.contents !== 'string') {
           if (typeof this.onerror === 'function') this.onerror(new Error('Unreadable fixture'));
@@ -274,6 +336,13 @@ function createHarness(initialState, initialWriteMode = 'success') {
         const candidate = clone(message.state);
         const localRevision = Number(candidate._revision) || 0;
         const remoteRevision = Number(stored.te?._revision) || 0;
+        if (writeMode === 'quota') {
+          return {
+            ok: false,
+            code: 'LOCUS_STATE_WRITE_FAILED',
+            message: 'QUOTA_BYTES quota exceeded while storing imported data.',
+          };
+        }
         if (writeMode === 'failure') {
           return { ok: false, code: 'LOCUS_STATE_WRITE_FAILED', message: 'Injected import persistence failure.' };
         }
@@ -386,10 +455,15 @@ function createHarness(initialState, initialWriteMode = 'success') {
     });
   }
 
+  function importFile(file) {
+    context.__contract.importJSON(file);
+  }
+
   return {
     State: context.__state,
     contract: context.__contract,
     exportCurrent,
+    importFile,
     importSerialized,
     metrics,
     setWriteMode(mode) {
@@ -1291,6 +1365,122 @@ async function testMergeRoundTrip(scaleExport) {
   assert.equal(harness.metrics.downloads.length, 0, 'merge must not create a destructive-replace safety backup');
 }
 
+async function testExactImportLimitPreview(fixture) {
+  assert.equal(fixture.targetBytes, maxImportBytes);
+  const harness = createHarness(makeBaseState('exact-limit-target', 410));
+  await harness.State.load();
+  const beforeLocal = clone(harness.State.get());
+  const beforeStored = harness.storedState();
+  const importContext = await harness.importSerialized(fixture.text, 'exact-import-limit.json');
+  const padding = importContext.data.settings.importBoundaryPadding;
+
+  assert.equal(importContext.schema, currentSchema);
+  assert.equal(importContext.filename, 'exact-import-limit.json');
+  assert.deepEqual(
+    clone(padding.map(chunk => chunk.length)),
+    fixture.chunkLengths,
+    'the exact-limit reader must preserve every bounded padding string',
+  );
+  assert.equal(
+    padding.reduce((total, chunk) => total + Buffer.byteLength(chunk, 'utf8'), 0),
+    fixture.paddingBytes,
+    'the exact-limit reader must preserve every allocated payload byte',
+  );
+  assert.deepEqual(clone(harness.State.get()), beforeLocal, 'previewing the exact-limit file must not mutate State');
+  assert.deepEqual(harness.storedState(), beforeStored, 'previewing the exact-limit file must not mutate authority');
+  assert.equal(harness.State.isClean(), true);
+  assert.equal(harness.metrics.fileReads, 1, 'the exact-limit file must be read exactly once');
+  assert.equal(harness.metrics.previews, 1, 'the exact-limit file must reach exactly one preview');
+  assert.equal(harness.metrics.writeAttempts, 0);
+  assert.equal(harness.metrics.downloads.length, 0);
+  assert.equal(harness.metrics.reminderRequests, 0);
+  assert.deepEqual(harness.metrics.toasts, []);
+}
+
+async function testOversizedImportRejected(fixture) {
+  const harness = createHarness(makeBaseState('oversized-target', 420));
+  await harness.State.load();
+  const beforeLocal = clone(harness.State.get());
+  const beforeStored = harness.storedState();
+  const oversizedText = `${fixture.text} `;
+  const oversizedBytes = Buffer.byteLength(oversizedText, 'utf8');
+  assert.equal(oversizedBytes, maxImportBytes + 1, 'oversized fixture must exceed the limit by exactly one byte');
+
+  harness.importFile({
+    name: 'one-byte-over-import-limit.json',
+    size: oversizedBytes,
+    contents: oversizedText,
+  });
+  await Promise.resolve();
+
+  assert.equal(harness.metrics.fileReads, 0, 'an oversized file must be rejected before FileReader');
+  assert.equal(harness.metrics.previews, 0);
+  assert.equal(harness.metrics.writeAttempts, 0);
+  assert.equal(harness.metrics.downloads.length, 0);
+  assert.equal(harness.metrics.reminderRequests, 0);
+  assert.deepEqual(harness.metrics.toasts, ['Backup is too large to import safely']);
+  assert.equal(harness.contract.importContext(), null);
+  assert.deepEqual(clone(harness.State.get()), beforeLocal, 'oversized rejection must not mutate State');
+  assert.deepEqual(harness.storedState(), beforeStored, 'oversized rejection must not mutate authority');
+  assert.equal(harness.State.isClean(), true);
+}
+
+async function testQuotaSizedImportRollback(fixture, mode) {
+  assert.equal(fixture.targetBytes, quotaSizedImportBytes);
+  const harness = createHarness(makeBaseState(`quota-sized-${mode}-target`, 430), 'quota');
+  await harness.State.load();
+  const beforeLocal = clone(harness.State.get());
+  const beforeStored = harness.storedState();
+  const importContext = await harness.importSerialized(fixture.text, `quota-sized-${mode}.json`);
+  const parsedSnapshot = JSON.stringify(importContext.data);
+  const parsedBytes = Buffer.byteLength(parsedSnapshot, 'utf8');
+
+  assert.ok(
+    parsedBytes > defaultStorageQuotaBytes,
+    `${mode} quota-sized data must exceed the production fallback storage quota`,
+  );
+  assert.deepEqual(
+    clone(importContext.data.settings.importBoundaryPadding.map(chunk => chunk.length)),
+    fixture.chunkLengths,
+    `${mode} quota-sized import must preserve its bounded padding strings`,
+  );
+  assert.deepEqual(clone(harness.State.get()), beforeLocal, `${mode} preview must not mutate State`);
+  assert.equal(harness.metrics.fileReads, 1);
+  assert.equal(harness.metrics.previews, 1);
+  assert.equal(harness.metrics.writeAttempts, 0);
+
+  const applied = mode === 'replace'
+    ? await harness.contract.applyImportReplace(importContext.data)
+    : await harness.contract.applyImportMerge(importContext.data);
+  assert.equal(applied, false, `${mode} must not report success after a quota rejection`);
+  assert.deepEqual(clone(harness.State.get()), beforeLocal, `${mode} quota rejection must roll back the local graph`);
+  assert.deepEqual(harness.storedState(), beforeStored, `${mode} quota rejection must leave authority unchanged`);
+  assert.equal(harness.State.isRecoveryRequired(), true, `${mode} quota rejection must block further persistence`);
+  assert.equal(harness.metrics.writeAttempts, 1, `${mode} quota rejection must follow one write attempt`);
+  assert.ok(harness.metrics.storageErrors.some(message => /quota/i.test(message)), `${mode} must surface quota feedback`);
+  assert.ok(harness.metrics.recoveryMessages.length >= 1, `${mode} must surface recovery guidance`);
+  assert.equal(harness.metrics.toasts.some(message => /^(Imported|Merged)/.test(message)), false);
+  assert.equal(harness.metrics.downloads.length, mode === 'replace' ? 1 : 0);
+  assert.equal(harness.metrics.reminderRequests, 0, `${mode} rejection must not reconcile reminders`);
+  assert.equal(JSON.stringify(importContext.data), parsedSnapshot, `${mode} rejection must not mutate parsed input`);
+}
+
+async function testLargeFileBoundaries() {
+  let exactLimitFixture = makeSizedImportFixture('exact-limit-source', maxImportBytes);
+  await testExactImportLimitPreview(exactLimitFixture);
+  await testOversizedImportRejected(exactLimitFixture);
+  exactLimitFixture = null;
+
+  const quotaFixture = makeSizedImportFixture('quota-sized-source', quotaSizedImportBytes);
+  for (const mode of ['replace', 'merge']) await testQuotaSizedImportRollback(quotaFixture, mode);
+  return {
+    cases: 4,
+    importLimitBytes: maxImportBytes,
+    quotaFileBytes: quotaSizedImportBytes,
+    quotaRollbacks: 2,
+  };
+}
+
 async function testRejectedImportRollback(serializedImport, mode) {
   const harness = createHarness(makeBaseState(`${mode}-failure`, 90), 'failure');
   await harness.State.load();
@@ -1325,7 +1515,8 @@ async function testRejectedImportRollback(serializedImport, mode) {
   await testRejectedImportRollback(compatibility.rawImport, 'merge');
   await testRejectedImportRollback(semanticFuzz.representativeImport, 'replace');
   await testRejectedImportRollback(semanticFuzz.representativeImport, 'merge');
-  console.log(`Export/import contracts passed: activeTopLevel=${scale}, activeItems=${expectedCounts.items}, archive=${scale}, trash=${scale}, bytes=${scaleExport.serializedBytes}, schemas=0-${currentSchema}, envelopes=${compatibilityApps.length}+raw, compatibilityCases=${compatibility.cases}, semanticRuns=${semanticFuzzRuns}, semanticCases=${semanticFuzz.cases}, semanticSeed=0x${semanticFuzzSeed.toString(16)}, semanticEntities=${semanticFuzz.coverage.totalEntities}, modes=replace+merge, rejectedWrites=6`);
+  const largeFiles = await testLargeFileBoundaries();
+  console.log(`Export/import contracts passed: activeTopLevel=${scale}, activeItems=${expectedCounts.items}, archive=${scale}, trash=${scale}, bytes=${scaleExport.serializedBytes}, schemas=0-${currentSchema}, envelopes=${compatibilityApps.length}+raw, compatibilityCases=${compatibility.cases}, semanticRuns=${semanticFuzzRuns}, semanticCases=${semanticFuzz.cases}, semanticSeed=0x${semanticFuzzSeed.toString(16)}, semanticEntities=${semanticFuzz.coverage.totalEntities}, modes=replace+merge, importLimitBytes=${largeFiles.importLimitBytes}, quotaFileBytes=${largeFiles.quotaFileBytes}, largeFileCases=${largeFiles.cases}, quotaRollbacks=${largeFiles.quotaRollbacks}, rejectedWrites=8`);
 })().catch(error => {
   console.error(error);
   process.exitCode = 1;

@@ -16,10 +16,10 @@ Last updated: 2026-07-16.
    lost/timed-out acknowledgements, storage-change ordering, and service-worker
    termination/restart;
    add real-browser failure-path evidence for save-before-close; exercise real installed-browser
-   Archive/Trash quota persistence and installed-browser export/import round trips at scale; extend import
-   coverage through actual quota/large-file,
-   and real-browser round trips; and run an unpacked-extension CSP/favicon/network
-   audit. Extend reminder contracts to
+   Archive/Trash quota persistence and installed-browser export/import round trips at scale; verify actual
+   Chrome import quota allocation, File/FileReader and large-file preview behavior,
+   and installed legacy/current round trips; and run an unpacked-extension
+   CSP/favicon/network audit. Extend reminder contracts to
    overdue, restart/sleep, recurrence, and DST/timezone behavior.
 2. **Validate and finish the core first-use contract** (`docs/UX_SIMPLIFICATION.md`) — remove
    the hidden questionnaire/coach implementation debt, finish keyboard and narrow-layout checks,
@@ -35,6 +35,25 @@ Last updated: 2026-07-16.
    rendered and user-flow evidence.
 
 ## Done (newest first)
+
+- **2026-07-16 -- Import byte-limit and quota-sized rollback evidence / P0-05 +
+  P0-08** -- extended the production-extracted export/import suite with four
+  exact-byte large-file cases. A valid 20,971,520-byte backup, allocated from
+  per-string chunks within the production validator limit, crosses FileReader,
+  JSON parsing, normalization, and validation to reach one preview without
+  mutating local or authoritative state. The same valid JSON plus one trailing
+  byte is rejected before FileReader with visible size feedback and zero preview
+  or write. A valid 10,551,296-byte file whose parsed graph remains above the
+  10 MiB fallback storage quota reaches preview in replace and merge; one injected
+  typed quota rejection then causes exactly one write attempt, local rollback,
+  unchanged authority, recovery guidance, no reminder reconciliation, and no
+  false success. Replace alone creates its safety backup. The full suite now has
+  eight rejected-write cases, and the complete static/deterministic block passes.
+  **Implemented: yes. Verified: partial (exact-byte deterministic browser-API
+  model only). User-validated: no. Released: no.** No production, schema,
+  permission, or UI behavior changed. Actual Chrome File/FileReader and preview
+  behavior, real quota allocation, DOM-backed sanitization, alarm outcomes, and
+  installed-browser round trips remain open.
 
 - **2026-07-16 — Valid semantic import fuzz evidence / P0-05 + P0-08** —
   added a `0x51a7e5` fixed-seed corpus of 128 valid current-schema graphs spanning
@@ -361,6 +380,9 @@ Last updated: 2026-07-16.
   through 26 replace/merge cases with versioned defaults and exact counts,
   128 fixed-seed valid semantic graphs spanning 5,013 entities through 256
   replace/merge cases with enforced coverage families and exact semantic equality,
+  an exact 20,971,520-byte valid import reaching preview, a one-byte-over valid
+  import rejected before FileReader, and two 10,551,296-byte replace/merge imports
+  rolling back after injected typed quota rejection with no false success,
   post-import warning paths, alarm-map reconciliation, no-retry capture conflicts,
   and action-scoped Undo across pending capture, newer-edit interruption, restored
   history order, tab-open retry, persistence-failure recovery, central-writer conflict/failure
@@ -372,7 +394,8 @@ Last updated: 2026-07-16.
   browser-effect interruption, and 10,000 seeded lockless schedules.
   Remaining P0 gaps are installed
   cross-context/service-worker restart and unknown-ack lifecycle evidence,
-  actual-quota/large-file and installed-browser legacy/current import round trips, overdue/recurrence/
+  actual Chrome quota allocation, File/FileReader/preview behavior, and installed
+  browser legacy/current import round trips, overdue/recurrence/
   DST reminder semantics, installed-browser Archive/Trash quota and export/import
   recovery, and a complete
   unpacked-extension evidence bundle. Static and mocked contracts do not close

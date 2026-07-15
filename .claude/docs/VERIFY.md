@@ -60,10 +60,18 @@ identity-independent semantic content, references,
 settings boundaries, authoritative persistence, and input immutability must survive
 every case. Injected write rejection for current-scale, raw-legacy, and generated
 semantic inputs must roll both modes back locally, leave authoritative storage
-unchanged, surface recovery, and report no success. This is a fixed-seed
-deterministic browser-API model, not evidence for Chrome's DOM-backed rich-text
-sanitizer transformations, actual Blob/FileReader/download UI, quota/large-file
-boundary, reminder outcomes, service-worker lifecycle, or installed round trips.
+unchanged, surface recovery, and report no success. Four further large-file cases
+allocate exact UTF-8 inputs from the production limits: a valid 20,971,520-byte
+backup must reach one preview without mutation, while the same valid JSON plus one
+byte must be rejected before FileReader. A valid 10,551,296-byte file whose parsed
+graph remains above the 10 MiB fallback quota must reach preview in both modes;
+injected typed quota rejection must then make one write attempt, roll back locally,
+leave authority unchanged, require recovery, skip reminder reconciliation, and
+report no success. Replace alone creates the safety backup. This is fixed-seed
+deterministic browser-API model evidence, not evidence for Chrome's DOM-backed
+rich-text sanitizer transformations, actual File/FileReader/download or rendered
+preview behavior, real quota allocation, reminder outcomes, service-worker
+lifecycle, or installed round trips.
 
 The Undo suite includes a deferred tab-reopen interleaving: a newer edit must
 survive, remain first in history, and let a capture retry reuse any tab already
