@@ -13,6 +13,7 @@ node scripts/archive-scale-contract-test.js
 node scripts/export-import-scale-contract-test.js
 node scripts/background-contract-test.js
 node scripts/reminder-identity-contract-test.js
+node scripts/reminder-overdue-contract-test.js
 node scripts/undo-contract-test.js
 node scripts/state-sync-contract-test.js
 node scripts/concurrency-contract-test.js
@@ -80,6 +81,19 @@ removed alarm, skip notified reminders, and round-trip stable plus arbitrary leg
 alarm components without delimiter ambiguity. This remains a mocked-browser/state
 model, not evidence for installed notification rendering/timing, service-worker
 termination, installed mutation races, or DST/timezone transitions.
+
+The reminder-overdue suite extracts the production pending-reminder projection,
+item badge, editor, and Calendar-entry paths. Unnotified overdue one-shots and
+expired recurrences must retain their stored Past due time; delivered records and
+malformed timestamps must leave every pending surface; and future one-shots must
+retain their exact time. Missed daily, biweekly, and monthly recurrences must
+project to the same first future local-calendar occurrence as background
+reconciliation without mutating stored data. Projection must preserve entity
+indexes and stable reminder IDs, keep Calendar entries sorted, open item/entity
+editors on the projected occurrence, and wire the landing, app-menu, Calendar,
+and item-badge signals through one policy. This is deterministic DOM-free model
+evidence, not rendered UI, installed alarm delivery/restart, notification timing,
+or DST/timezone evidence.
 
 The export/import contract suite extracts the production export serializer, FileReader
 boundary, validator, replace/merge applications, migration, and page State client.

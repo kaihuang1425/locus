@@ -20,7 +20,8 @@ Last updated: 2026-07-16.
    Chrome import quota allocation, File/FileReader and large-file preview behavior,
    and installed legacy/current round trips; and run an unpacked-extension
    CSP/favicon/network audit. Extend reminder contracts to the installed
-   restart/sleep and delivery lifecycle, a complete one-shot overdue policy,
+   restart/sleep and delivery lifecycle, the rendered/installed one-shot Past Due
+   and reschedule/clear flow,
    installed group/category mutation delivery under schema-12 stable identities,
    and DST/timezone behavior.
 2. **Validate and finish the core first-use contract** (`docs/UX_SIMPLIFICATION.md`) — remove
@@ -37,6 +38,27 @@ Last updated: 2026-07-16.
    rendered and user-flow evidence.
 
 ## Done (newest first)
+
+- **2026-07-16 -- Pending-reminder and one-shot Past Due policy / P0-10** --
+  new-tab pending surfaces now exclude delivered (`notified`) records instead of
+  counting or rendering them as active. An unresolved overdue one-shot retains its
+  stored timestamp and remains in the Calendar Past due path with the existing
+  open, reschedule/drag, clear, and remove actions. Because background restart
+  recovery intentionally re-arms recurrence without writing state, a missed active
+  daily/weekly/monthly series is now projected in badges, counters, editors, and
+  Calendar at the same first future local-calendar occurrence used by the service
+  worker; an expired series remains Past due. Projection is read-only, re-sorts by
+  displayed occurrence, and preserves stable reminder IDs plus entity array indexes.
+  The production-extracted DOM-free contract covers six pending cases, two resolved
+  omissions, three recurrence-parity projections, two editor paths, Calendar
+  enrichment, item badges, and five production wiring points; adjacent background
+  and reminder-identity suites plus the complete static/deterministic gate are green.
+  **Implemented: yes. Verified: partial
+  (production-extracted deterministic state/display contracts only).
+  User-validated: no. Released: no.** No schema, permission, markup, style, or
+  localized copy changed. The managed-browser shim remains unavailable, so actual
+  rendered Past Due interactions, installed restart/sleep/notification timing,
+  mutation races, and DST/timezone behavior remain open.
 
 - **2026-07-16 -- Stable group/category reminder identity / P0-10 + P0-08** --
   schema 12 adds a persistent ID to every active category/group reminder and to
@@ -415,7 +437,7 @@ Last updated: 2026-07-16.
 
 ## Known issues / tensions
 
-- Fresh Chrome runtime verification is unavailable for the 2026-07-15 worktree:
+- Fresh Chrome runtime verification is unavailable for the current worktree:
   Chrome is installed, but this session has no configured Chrome-control/native-host
   path or accessible already-loaded Locus tab; the managed in-app browser also
   rejected the documented localhost shim. Installed MV3 behavior, the shimmed UI
@@ -425,8 +447,9 @@ Last updated: 2026-07-16.
 - The legacy multi-step welcome questionnaire, associated helpers, and coach-mark
   paths remain hidden/dead in the source. Remove them after confirming that no
   current binding or migration depends on them.
-- Deterministic import-recovery, archive-scale, export/import-scale, reminder-identity,
-  background, Undo, freshness, and concurrency contracts now cover legacy and
+- Deterministic import-recovery, archive-scale, export/import-scale,
+  reminder-identity, reminder-overdue, background, Undo, freshness, and concurrency
+  contracts now cover legacy and
   every-level ID collisions, idless Archive entries, replace rollback/normalization,
   production-extracted import validation across 33 malformed boundaries and 128
   fixed-seed structural mutations,
@@ -451,8 +474,12 @@ Last updated: 2026-07-16.
   recurring item/nested/group/category reminders without catch-up notifications,
   state writes, or mutation, and eight fired-delivery cases that persist item/nested/
   group/category recurrence plus stable-index and legacy-transition delivery, reject
-  five stale/malformed alarms, and exercise notification,
-  quota/generic storage, and post-write reconciliation failures, plus no-retry
+  five stale/malformed alarms, and exercise notification, quota/generic storage,
+  and post-write reconciliation failures,
+  and a pending-reminder projection that keeps unresolved one-shots and expired series
+  in Past due, excludes delivered records, and matches background daily/biweekly/
+  monthly recurrence projection without mutating identity-bearing source entries,
+  plus no-retry
   capture conflicts and action-scoped Undo across pending capture, newer-edit interruption, restored
   history order, tab-open retry, persistence-failure recovery, central-writer conflict/failure
   recovery, immutable client candidates, queued-successor invalidation, overlapping

@@ -3103,13 +3103,22 @@ async function openAllHibernated(urls, items) {
 let reminderCtx = null;
 function openReminderPicker(itemId) {
   const info = findItem(itemId);
-  openReminderOverlay({ kind: 'item', id: itemId }, info?.item?.reminder || null, { title: 'Set reminder' });
+  const existing = info?.item?.reminder || null;
+  const projectedAt = pendingReminderTime(existing);
+  const displayReminder = projectedAt != null && projectedAt !== Number(existing?.at)
+    ? Object.assign({}, existing, { at: projectedAt })
+    : existing;
+  openReminderOverlay({ kind: 'item', id: itemId }, displayReminder, { title: 'Set reminder' });
 }
 function openEntityReminderPicker(kind, entId, index) {
   const ent = findEntity(kind, entId);
   const existing = (index != null && Array.isArray(ent?.reminders)) ? ent.reminders[index] : null;
+  const projectedAt = pendingReminderTime(existing);
+  const displayReminder = projectedAt != null && projectedAt !== Number(existing?.at)
+    ? Object.assign({}, existing, { at: projectedAt })
+    : existing;
   const name = ent?.name || '';
-  openReminderOverlay({ kind, id: entId, index }, existing, {
+  openReminderOverlay({ kind, id: entId, index }, displayReminder, {
     title: existing ? 'Edit reminder' : 'Set reminder',
     showLabel: true,
     label: existing?.label || '',
@@ -3301,6 +3310,47 @@ function recurLabel(recur) {
   return `every ${n} ${recur.every}s`;
 }
 
+// Pending reminder surfaces share the service worker's recurrence projection.
+// Reconciliation deliberately does not mutate an overdue recurrence merely to
+// re-arm it, so the page projects that same first future occurrence for display.
+// An unnotified one-shot (or an expired recurrence) keeps its stored timestamp
+// and therefore remains recoverable through the Calendar's Past due path.
+function nextReminderOccurrenceForDisplay(at, recur, now = Date.now()) {
+  if (!recur || !recur.every) return null;
+  const interval = Math.max(1, recur.interval || 1);
+  const step = ts => {
+    const d = new Date(ts);
+    if (recur.every === 'day') d.setDate(d.getDate() + interval);
+    else if (recur.every === 'week') d.setDate(d.getDate() + 7 * interval);
+    else if (recur.every === 'month') d.setMonth(d.getMonth() + interval);
+    else return null;
+    return d.getTime();
+  };
+  let ts = step(at);
+  while (ts != null && ts <= now) ts = step(ts);
+  if (ts != null && recur.until && ts > recur.until) return null;
+  return ts;
+}
+
+function pendingReminderTime(reminder, now = Date.now()) {
+  if (!reminder || reminder.notified) return null;
+  const at = Number(reminder.at);
+  if (!Number.isFinite(at)) return null;
+  if (at > now) return at;
+  const next = nextReminderOccurrenceForDisplay(at, reminder.recur, now);
+  return Number.isFinite(next) && next > now ? next : at;
+}
+
+function projectPendingReminders(entries, now = Date.now()) {
+  const pending = [];
+  for (const entry of (Array.isArray(entries) ? entries : [])) {
+    const at = pendingReminderTime(entry, now);
+    if (at == null) continue;
+    pending.push(Object.assign({}, entry, { at, storedAt: entry.at }));
+  }
+  return pending.sort((a, b) => a.at - b.at);
+}
+
 // ════════════════════════════════════════════════════════════════
 // REMINDER AGGREGATION (§2.3)
 // ════════════════════════════════════════════════════════════════
@@ -3381,6 +3431,10 @@ function collectReminders({ scope = 'all', filter } = {}) {
 
   out.sort((a, b) => a.at - b.at);
   return typeof filter === 'function' ? out.filter(filter) : out;
+}
+
+function collectPendingReminders(options = {}, now = Date.now()) {
+  return projectPendingReminders(collectReminders(options), now);
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -4938,7 +4992,7 @@ function renderLandingLayer() {
   if (face) face.textContent = (name || ws.name || 'L').charAt(0).toUpperCase();
   const inbox = landingInbox(ws);
   const inboxCount = inbox ? (inbox.items || []).length : 0;
-  const reminders = collectReminders({ scope: ws.id }).filter(entry => !entry.notified).length;
+  const reminders = collectPendingReminders({ scope: ws.id }).length;
   document.getElementById('landing-unsorted-count').textContent = String(inboxCount);
   document.getElementById('landing-reminder-count').textContent = String(reminders);
   document.getElementById('landing-unsorted').setAttribute('aria-label', `${tr('landing.unsorted')}: ${inboxCount}`);
@@ -6305,7 +6359,7 @@ function updateNavChrome() {
   const menuBtn = document.getElementById('menu-btn');
   if (menuBtn) {
     let pending = 0;
-    try { pending = collectReminders({ scope: ws ? ws.id : undefined }).length; } catch {}
+    try { pending = collectPendingReminders({ scope: ws ? ws.id : undefined }).length; } catch {}
     menuBtn.classList.toggle('has-notif', pending > 0);
     menuBtn.title = pending > 0 ? `${tr('action.menu')} · ${pending} ${tr('action.reminders').toLowerCase()}` : tr('action.menu');
     _pendingReminderCount = pending;
@@ -6686,10 +6740,12 @@ function commonActs(it, extra = []) {
 }
 
 function renderReminderBadge(it) {
-  if (!it.reminder?.at) return '';
-  const past = it.reminder.at < Date.now();
-  const cls = past ? 'past' : (it.reminder.at - Date.now() < 86400000 ? '' : 'future');
-  return `<span class="rem-badge ${cls}"><svg width="8" height="8" viewBox="0 0 12 12"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M6 3v3l2 1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>${fmtTimeRelative(it.reminder.at)}</span>`;
+  const now = Date.now();
+  const at = pendingReminderTime(it.reminder, now);
+  if (at == null) return '';
+  const past = at < now;
+  const cls = past ? 'past' : (at - now < 86400000 ? '' : 'future');
+  return `<span class="rem-badge ${cls}"><svg width="8" height="8" viewBox="0 0 12 12"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.3" fill="none"/><path d="M6 3v3l2 1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>${fmtTimeRelative(at)}</span>`;
 }
 
 function attachItemSelection(el, it) {
@@ -11339,7 +11395,7 @@ function _calReduceMotion() {
 function openCalendar() {
   const ws = activeWs(); if (!ws) return;
   let reminderCount = 0;
-  try { reminderCount = collectReminders({ scope: ws.id }).length; } catch {}
+  try { reminderCount = collectPendingReminders({ scope: ws.id }).length; } catch {}
   const view = activeCalendar ? activeCalendar.view : (reminderCount < 5 ? 'agenda' : 'month');
   Router.navigate({ type: 'calendar', wsId: ws.id, query: view !== 'month' ? { cal: view } : {} });
 }
@@ -11386,7 +11442,7 @@ function buildCalendarEntries() {
     catName[c.id] = c.name;
     c.groups.forEach(g => { groupName[g.id] = g.name; });
   });
-  return collectReminders({ scope: ws.id }).map(e => Object.assign({}, e, {
+  return collectPendingReminders({ scope: ws.id }).map(e => Object.assign({}, e, {
     catName: catName[e.catId] || '',
     groupName: e.groupId ? (groupName[e.groupId] || '') : '',
   }));

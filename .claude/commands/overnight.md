@@ -58,6 +58,8 @@ Run the full static block from `VERIFY.md`:
 - `node scripts/archive-scale-contract-test.js`
 - `node scripts/export-import-scale-contract-test.js`
 - `node scripts/background-contract-test.js`
+- `node scripts/reminder-identity-contract-test.js`
+- `node scripts/reminder-overdue-contract-test.js`
 - `node scripts/undo-contract-test.js`
 - `node scripts/state-sync-contract-test.js`
 - `node scripts/concurrency-contract-test.js`

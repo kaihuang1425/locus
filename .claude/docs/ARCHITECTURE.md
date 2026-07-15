@@ -188,6 +188,14 @@ in newtab.css; rail folds to a top strip below 880px.
   and reminder IDs; delivery resolves exactly one matching reminder regardless of
   array index. Schema-11 index alarms remain a transition fallback only while older
   authority is stored, then reconciliation removes them after migration persists.
+  Pending new-tab surfaces use `collectPendingReminders()` and
+  `pendingReminderTime()` rather than treating every stored reminder as active.
+  Delivered (`notified`) records do not count or render as pending. A past active
+  recurrence is projected, without a state write, to the same first future local-
+  calendar occurrence used by `nextRecurTime()`; an overdue one-shot or expired
+  recurrence keeps its stored time and remains actionable through Calendar Past
+  due. The projection preserves entity reminder IDs and array indexes so existing
+  edit, drag, clear, and remove paths still target the stored record.
 - New-tab keeps a serialized confirmed-state baseline separate from its mutable
   graph. `storage.onChanged` may report the expected stored candidate before the
   service-worker response; matching that event is observation only and never a

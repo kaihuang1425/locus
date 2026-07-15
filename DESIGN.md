@@ -564,3 +564,18 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   notification rendering/timing, mutation races, one-shot Past Due policy, and
   DST/timezone behavior remain open. No permission, markup, style, user-validation,
   or release status changed.
+- **2026-07-16** -- Completed a **pending-reminder and one-shot Past Due policy
+  cycle** against P0-10. New-tab pending signals now exclude delivered records;
+  unresolved one-shots keep their stored time in Calendar Past due, while missed
+  active recurrences project to the same first future local-calendar occurrence as
+  service-worker reconciliation without changing stored state. Projection keeps
+  stable reminder identities and entity indexes attached to existing open, edit,
+  drag, clear, and remove actions; item badges and reminder editors use the same
+  policy. A production-extracted DOM-free contract covers six pending cases, two
+  resolved omissions, three recurrence-parity paths, Calendar enrichment, two
+  editor paths, badges, and five live wiring points. This is partial deterministic
+  state/display evidence only; the complete static/deterministic gate passes. The
+  managed-browser shim is unavailable, and
+  installed restart/sleep/notification behavior, rendered interactions, mutation
+  races, and DST/timezone semantics remain open. No schema, permission, markup,
+  style, localized copy, user-validation, or release status changed.
