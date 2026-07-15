@@ -1,6 +1,17 @@
 # Locus — Improvements Plan
 
-Status: proposal / living document. Created: 2026-07-02.
+Status: **historical implementation plan; superseded for product strategy and
+roadmap priority.** Created: 2026-07-02. Authority changed: 2026-07-15.
+
+> **Authority notice (2026-07-15).**
+> [`PRODUCT_SUCCESS_SYSTEM.md`](./PRODUCT_SUCCESS_SYSTEM.md) is the canonical source
+> for the product thesis, target user, claims, evidence gates, success measures, and
+> roadmap. [`UX_SIMPLIFICATION.md`](./UX_SIMPLIFICATION.md) remains the interaction
+> authority for first use, the application shell, Home, Calendar disclosure, Space
+> views, and motion. This document is retained as implementation history and detailed
+> feature rationale; an unshipped proposal here is not an approved queue item.
+> Present-tense implementation statements are historical unless the current status
+> and code confirm them.
 
 > **Corrective direction (2026-07-13).**
 > [`UX_SIMPLIFICATION.md`](./UX_SIMPLIFICATION.md) now governs first use, the

@@ -15,9 +15,9 @@ const I18N = {
     noMatches: 'No tabs match your search.', moreTabs: n => `+ ${n} more tabs`, fewerTabs: 'Show fewer tabs',
     destination: 'Destination', change: 'Change', saveTab: 'Save tab', chooseDestination: 'Choose destination',
     noWorkspaces: 'No workspaces yet. Open Locus to get started.', noGroups: 'No groups yet.',
-    hibernateExplainer: 'Hibernate pauses tabs to save memory. You can restore them anytime.', scope: 'Scope',
+    hibernateExplainer: 'Hibernate replaces eligible tabs with packaged placeholders that you can continue from later.', scope: 'Scope',
     thisWindow: 'This window', allWindows: 'All windows', options: 'Options', keepPinned: 'Keep pinned tabs awake',
-    keepAudio: 'Keep tabs playing audio awake', hibernate: 'Hibernate', privacyProof: 'Everything stays on your device.',
+    keepAudio: 'Keep tabs playing audio awake', hibernate: 'Hibernate', privacyProof: 'Profile-local; export before uninstalling or deleting the profile.',
     viewing: 'Viewing', save: 'Save', hibernateTab: 'Hibernate this tab', openTab: 'Open tab', idle: n => `${n} idle`,
     openFirst: 'Open the full workspace first', alreadySaved: 'Already saved', saved: 'Saved!',
     couldNotHibernate: 'Could not hibernate tab', tabHibernated: 'Tab hibernated',
@@ -28,12 +28,12 @@ const I18N = {
     saveLinksGroup: 'Save links + tab group', saveLinksGroupDesc: 'Keep tabs organized as a group',
     saveQueue: 'Save as reading queue', saveQueueDesc: 'Review later in Read Later',
     closeAfterSave: 'Close tabs after saving', addNote: 'Add note', notePlaceholder: 'A note saved alongside these tabs…',
-    suggestedTags: 'Suggested tags', addTag: '+ Add tag', localFirst: 'Local-first. Private by design.',
+    suggestedTags: 'Suggested tags', addTag: '+ Add tag', localFirst: 'No Locus account or host permissions.',
     video: 'Video', pdf: 'PDF', more: 'More', moreSubtitle: 'Local tools and browser actions',
     saveCurrentTab: 'Save current tab', saveCurrentTabDesc: 'Save only this tab',
     importBookmarks: 'Import bookmarks', importBookmarksDesc: 'Bring browser bookmarks into this Space',
     keyboardShortcuts: 'Keyboard shortcuts', keyboardShortcutsDesc: 'Review or change extension shortcuts',
-    moreLocalProof: 'These actions stay in Chrome and your local Locus data.',
+    moreLocalProof: "These actions use browser APIs and this profile's Locus data.",
     selectTab: title => `Select ${title}`, deselectTab: title => `Deselect ${title}`,
     selectedTabs: 'Selected', selectedCount: n => n === 1 ? '1 tab selected' : `${n} tabs selected`,
     saveBeforeHibernate: 'Save links to Locus before hibernating',
@@ -49,9 +49,9 @@ const I18N = {
     noMatches: '沒有符合搜尋的分頁。', moreTabs: n => `另有 ${n} 個分頁`, fewerTabs: '顯示較少分頁',
     destination: '儲存位置', change: '變更', saveTab: '儲存分頁', chooseDestination: '選擇儲存位置',
     noWorkspaces: '尚無工作區。請先開啟 Locus 開始使用。', noGroups: '尚無群組。',
-    hibernateExplainer: '休眠會暫停分頁以節省記憶體，之後可隨時還原。', scope: '範圍',
+    hibernateExplainer: '休眠會將符合條件的分頁換成封裝預留頁，之後可從預留頁繼續。', scope: '範圍',
     thisWindow: '這個視窗', allWindows: '所有視窗', options: '選項', keepPinned: '讓釘選分頁保持啟用',
-    keepAudio: '讓播放音訊的分頁保持啟用', hibernate: '休眠', privacyProof: '所有資料都留在你的裝置上。',
+    keepAudio: '讓播放音訊的分頁保持啟用', hibernate: '休眠', privacyProof: '設定檔本機資料；解除安裝或刪除設定檔前請先匯出。',
     viewing: '檢視中', save: '儲存', hibernateTab: '休眠此分頁', openTab: '開啟分頁', idle: n => `${n} 個閒置`,
     openFirst: '請先開啟完整工作區', alreadySaved: '已儲存', saved: '已儲存！',
     couldNotHibernate: '無法休眠分頁', tabHibernated: '分頁已休眠',
@@ -62,12 +62,12 @@ const I18N = {
     saveLinksGroup: '儲存連結＋分頁群組', saveLinksGroupDesc: '以群組保持分頁井然有序',
     saveQueue: '存為閱讀佇列', saveQueueDesc: '之後在「稍後閱讀」中檢閱',
     closeAfterSave: '儲存後關閉分頁', addNote: '加入備註', notePlaceholder: '隨這些分頁一併儲存的備註…',
-    suggestedTags: '建議標籤', addTag: '＋新增標籤', localFirst: '本機優先，隱私至上。',
+    suggestedTags: '建議標籤', addTag: '＋新增標籤', localFirst: '沒有 Locus 帳號或主機權限。',
     video: '影片', pdf: 'PDF', more: '更多', moreSubtitle: '本機工具與瀏覽器操作',
     saveCurrentTab: '儲存目前分頁', saveCurrentTabDesc: '只儲存這個分頁',
     importBookmarks: '匯入書籤', importBookmarksDesc: '將瀏覽器書籤匯入這個空間',
     keyboardShortcuts: '鍵盤快速鍵', keyboardShortcutsDesc: '查看或變更擴充功能快速鍵',
-    moreLocalProof: '這些操作只會使用 Chrome 與你的本機 Locus 資料。',
+    moreLocalProof: '這些操作使用瀏覽器 API 與此設定檔中的 Locus 資料。',
     selectTab: title => `選取「${title}」`, deselectTab: title => `取消選取「${title}」`,
     selectedTabs: '已選取', selectedCount: n => `已選取 ${n} 個分頁`,
     saveBeforeHibernate: '休眠前先將連結儲存到 Locus',
@@ -77,6 +77,17 @@ const I18N = {
     hibernatedAndSaved: (hibernated, saved) => `已新增儲存 ${saved} 個，並休眠 ${hibernated} 個分頁`
   }
 };
+
+Object.assign(I18N.en, {
+  captureConflict: 'Locus changed in another window. Your tabs were left untouched. Open Locus, then retry.',
+  captureFailed: 'Save failed. Your tabs were left untouched. Open Locus, then retry.',
+  captureBusy: 'Another save is still being confirmed. Your tabs were left untouched.'
+});
+Object.assign(I18N['zh-TW'], {
+  captureConflict: 'Locus 已在其他視窗變更。分頁完全未受影響。請開啟 Locus 後再試。',
+  captureFailed: '儲存失敗。分頁完全未受影響。請開啟 Locus 後再試。',
+  captureBusy: '另一項儲存仍在確認中。分頁完全未受影響。'
+});
 
 let all = [];
 let state = null;
@@ -97,6 +108,46 @@ let windowSaveTargetGroupId = null;
 let hibernateTargetGroupId = null;
 let swSelectedTags = new Set();
 let selectedTabIds = new Set();
+let popupStateWriteQueue = Promise.resolve();
+let popupStateWriteFailureEpoch = 0;
+let popupCapturePending = false;
+
+async function persistPopupState() {
+  if (!state) return;
+  // Capture the graph at call time. A queued write must never read a later
+  // rollback from the mutable popup state and mistake that graph for its own
+  // successful capture.
+  const candidate = clonePopupState();
+  const enqueuedFailureEpoch = popupStateWriteFailureEpoch;
+  const requestWrite = async () => {
+    if (enqueuedFailureEpoch !== popupStateWriteFailureEpoch) {
+      const error = new Error('An earlier Locus save failed, so this queued save was cancelled. Reopen the popup, then retry.');
+      error.code = 'LOCUS_STATE_QUEUE_INVALIDATED';
+      throw error;
+    }
+    const localRevision = Number(state?._revision) || 0;
+    candidate._revision = localRevision;
+    const response = await chrome.runtime.sendMessage({ type: 'locus-state-write', state: candidate });
+    if (!response?.ok) {
+      const error = new Error(response?.message || 'Locus could not confirm this save. Reopen the popup, then retry.');
+      error.code = response?.code || 'LOCUS_STATE_WRITE_FAILED';
+      throw error;
+    }
+    const nextRevision = Number(response.revision);
+    if (!Number.isSafeInteger(nextRevision) || nextRevision !== localRevision + 1) {
+      const error = new Error('Locus received an invalid save confirmation. Reopen the popup before retrying.');
+      error.code = 'LOCUS_STATE_PROTOCOL';
+      throw error;
+    }
+    state._revision = nextRevision;
+  };
+  const run = popupStateWriteQueue.then(requestWrite);
+  popupStateWriteQueue = run.then(
+    () => undefined,
+    () => { popupStateWriteFailureEpoch++; },
+  );
+  return run;
+}
 
 const appLocale = () => normalizeLanguage(state?.settings?.language || browserLanguage());
 const tr = (key, ...args) => {
@@ -104,6 +155,19 @@ const tr = (key, ...args) => {
   const value = dict[key] ?? I18N.en[key] ?? key;
   return typeof value === 'function' ? value(...args) : value;
 };
+
+function beginPopupCapture() {
+  if (popupCapturePending) {
+    toast(tr('captureBusy'));
+    return false;
+  }
+  popupCapturePending = true;
+  return true;
+}
+
+function finishPopupCapture() {
+  popupCapturePending = false;
+}
 
 const THEME_IDS = new Set(['folio', 'folio-dark', 'tabento', 'tabento-dark', 'dark', 'aurora', 'light', 'dracula', 'nord', 'rose-pine', 'tokyo-night', 'solarized-dark', 'solarized-light', 'gruvbox', 'catppuccin', 'sepia', 'mono']);
 const THEME_ALIASES = { stow: 'folio', 'stow-dark': 'folio-dark' };
@@ -130,6 +194,16 @@ function applyLocale() {
 }
 
 const SUSPEND_PREFIX = () => chrome.runtime.getURL('suspended.html');
+function localFaviconUrl(pageUrl, size = 32) {
+  try {
+    const page = new URL(pageUrl);
+    if (!/^https?:$/.test(page.protocol)) return '';
+    const endpoint = new URL(chrome.runtime.getURL('_favicon/'));
+    endpoint.searchParams.set('pageUrl', page.href);
+    endpoint.searchParams.set('size', String(size));
+    return endpoint.href;
+  } catch { return ''; }
+}
 function buildSuspendedUrl({ url, title, fav }) {
   const p = new URLSearchParams();
   if (url) p.set('url', url);
@@ -142,6 +216,63 @@ async function loadState() {
   const data = await chrome.storage.local.get('te');
   state = data.te || null;
   if (state && !state.settings) state.settings = {};
+}
+
+function clonePopupState() {
+  if (typeof structuredClone === 'function') return structuredClone(state);
+  return state == null ? state : JSON.parse(JSON.stringify(state));
+}
+
+function showCaptureFailure(error) {
+  const message = tr(error?.code === 'LOCUS_STATE_CONFLICT' ? 'captureConflict' : 'captureFailed');
+  toast(message, { persistent: true });
+  const host = $('pop-toast');
+  const copy = document.createElement('span');
+  copy.textContent = message;
+  copy.style.minWidth = '0';
+  const action = document.createElement('button');
+  action.type = 'button';
+  action.textContent = tr('openLocus');
+  action.style.cssText = 'flex:0 0 auto;border:0;border-radius:999px;padding:5px 9px;background:var(--bg2);color:var(--text);font:inherit;font-weight:700;cursor:pointer';
+  action.onclick = async () => {
+    try {
+      await chrome.tabs.create({ url: chrome.runtime.getURL('newtab.html') });
+      window.close();
+    } catch (openError) {
+      console.error('Could not open Locus after capture failure', openError);
+    }
+  };
+  host.textContent = '';
+  host.appendChild(copy);
+  host.appendChild(action);
+  host.style.display = 'flex';
+  host.style.alignItems = 'center';
+  host.style.gap = '8px';
+  host.style.pointerEvents = 'auto';
+}
+
+async function recoverCaptureWriteFailure(error, snapshot) {
+  console.error('Popup capture failed', error);
+  if (error && typeof error === 'object') {
+    try { error.locusCaptureHandled = true; } catch {}
+  }
+  if (snapshot !== undefined) state = snapshot;
+  try {
+    await loadState();
+  } catch (reloadError) {
+    console.error('Could not reload Locus after capture failure', reloadError);
+  }
+  try {
+    applyAppearance();
+    applyLocale();
+    updateDestination();
+    if (activeSection !== 'main-section') showSection('main-section');
+  } catch (renderError) {
+    console.error('Could not refresh the popup after capture failure', renderError);
+  }
+  try { showCaptureFailure(error); } catch (displayError) {
+    console.error('Could not display the capture failure', displayError);
+  }
 }
 
 function captureFields(tab) {
@@ -264,8 +395,9 @@ function buildTabRow(tab) {
   row.className = `pti${isActive ? ' active-tab' : ''}`;
   row.setAttribute('role', 'listitem');
   const initial = (tab.title || dispUrl(tab.url) || '?').trim()[0]?.toUpperCase() || '?';
-  const icon = tab.favIconUrl
-    ? `<img src="${esc(tab.favIconUrl)}" alt=""><span class="pti-fallback hidden" aria-hidden="true">${esc(initial)}</span>`
+  const localIcon = localFaviconUrl(tab.url);
+  const icon = localIcon
+    ? `<img src="${esc(localIcon)}" alt=""><span class="pti-fallback hidden" aria-hidden="true">${esc(initial)}</span>`
     : `<span class="pti-fallback" aria-hidden="true">${esc(initial)}</span>`;
   // Content-type chips like the popup preview (PDF / Video), derived from the
   // URL alone — no page access.
@@ -295,7 +427,7 @@ function persistSelectedTabs() {
   if (!state) return;
   state.settings = state.settings || {};
   state.settings.popupHibernateSelectedTabIds = [...selectedTabIds];
-  chrome.storage.local.set({ te: state }).catch(error => console.error('Could not persist selected tabs', error));
+  persistPopupState().catch(error => console.error('Could not persist selected tabs', error));
 }
 
 function reconcileSelectedTabs() {
@@ -419,7 +551,7 @@ function openSavePicker(tab, mode = 'tab') {
           destinationOverrideGroupId = group.id;
           if (state.settings?.captureRememberLast !== false) {
             state.settings.captureLastTarget = { workspaceId: ws.id, categoryId: cat.id, groupId: group.id };
-            chrome.storage.local.set({ te: state }).catch(() => {});
+            persistPopupState().catch(() => {});
           }
           updateDestination();
           showSection('main-section');
@@ -432,21 +564,33 @@ function openSavePicker(tab, mode = 'tab') {
 }
 
 async function doSave(ws, cat, group, tab) {
-  group.items = group.items || [];
-  if (state.settings?.captureDeduplicate !== false && group.items.find(item => item.type === 'tab' && item.url === tab.url)) {
-    toast(tr('alreadySaved'));
-    return false;
+  if (!beginPopupCapture()) return false;
+  try {
+    let snapshot;
+    try {
+      snapshot = clonePopupState();
+      group.items = group.items || [];
+      if (state.settings?.captureDeduplicate !== false && group.items.find(item => item.type === 'tab' && item.url === tab.url)) {
+        toast(tr('alreadySaved'));
+        return false;
+      }
+      const meta = captureFields(tab);
+      group.items.push({ id: uid(), type: 'tab', title: meta.title, url: tab.url, fav: meta.fav, createdAt: Date.now() });
+      if (state.settings?.captureRememberLast !== false) state.settings.captureLastTarget = { workspaceId: ws.id, categoryId: cat.id, groupId: group.id };
+      await persistPopupState();
+    } catch (error) {
+      await recoverCaptureWriteFailure(error, snapshot);
+      return false;
+    }
+    if (state.settings?.closeTabOnSave !== false) {
+      try { await chrome.tabs.remove(tab.id); } catch {}
+    }
+    toast(tr('saved'));
+    setTimeout(() => window.close(), 400);
+    return true;
+  } finally {
+    finishPopupCapture();
   }
-  const meta = captureFields(tab);
-  group.items.push({ id: uid(), type: 'tab', title: meta.title, url: tab.url, fav: meta.fav, createdAt: Date.now() });
-  if (state.settings?.captureRememberLast !== false) state.settings.captureLastTarget = { workspaceId: ws.id, categoryId: cat.id, groupId: group.id };
-  await chrome.storage.local.set({ te: state });
-  if (state.settings?.closeTabOnSave !== false) {
-    try { await chrome.tabs.remove(tab.id); } catch {}
-  }
-  toast(tr('saved'));
-  setTimeout(() => window.close(), 400);
-  return true;
 }
 
 function loadHibernatePrefs() {
@@ -468,7 +612,7 @@ function persistHibernatePrefs() {
   state.settings.popupHibernateSaveBefore = $('hib-save-before').checked;
   state.settings.popupHibernateSelectedTabIds = [...selectedTabIds];
   state.settings.popupHibernateScope = $('hib-scope').querySelector('.active')?.dataset.val || 'window';
-  chrome.storage.local.set({ te: state }).catch(error => console.error('Could not persist popup preferences', error));
+  persistPopupState().catch(error => console.error('Could not persist popup preferences', error));
 }
 
 function setHibernateScope(value, refresh = true, persist = true) {
@@ -516,56 +660,69 @@ async function refreshHibernateHint() {
 
 async function hibernateSingle(tab) {
   try {
-    await chrome.tabs.update(tab.id, { url: buildSuspendedUrl({ url: tab.url, title: tab.title, fav: tab.favIconUrl }) });
+    await chrome.tabs.update(tab.id, { url: buildSuspendedUrl({ url: tab.url, title: tab.title, fav: localFaviconUrl(tab.url, 64) }) });
     toast(tr('tabHibernated'));
     await load();
   } catch { toast(tr('couldNotHibernate')); }
 }
 
 async function hibernateSelectedScope() {
-  const targets = await getHibernateCandidates();
-  if (!targets.length) return;
-  $('hib-go').disabled = true;
-  let saved = null;
-  if ($('hib-save-before').checked) {
-    try {
-      saved = await saveTabsBeforeHibernate(targets);
-    } catch (error) {
-      console.error('Could not save tabs before hibernating', error);
-      toast(tr('saveBeforeFailed'));
-      $('hib-go').disabled = false;
-      return;
+  if (!beginPopupCapture()) return false;
+  try {
+    const targets = await getHibernateCandidates();
+    if (!targets.length) return false;
+    $('hib-go').disabled = true;
+    let saved = null;
+    if ($('hib-save-before').checked) {
+      try {
+        saved = await saveTabsBeforeHibernate(targets);
+      } catch (error) {
+        console.error('Could not save tabs before hibernating', error);
+        if (!error?.locusCaptureHandled) showCaptureFailure(error);
+        $('hib-go').disabled = false;
+        return false;
+      }
     }
+    let count = 0;
+    for (const tab of targets) {
+      try {
+        await chrome.tabs.update(tab.id, { url: buildSuspendedUrl({ url: tab.url, title: tab.title, fav: localFaviconUrl(tab.url, 64) }) });
+        count++;
+      } catch {}
+    }
+    toast(saved == null ? tr('hibernated', count) : tr('hibernatedAndSaved', count, saved));
+    await load();
+    showSection('main-section');
+    return true;
+  } finally {
+    finishPopupCapture();
   }
-  let count = 0;
-  for (const tab of targets) {
-    try {
-      await chrome.tabs.update(tab.id, { url: buildSuspendedUrl({ url: tab.url, title: tab.title, fav: tab.favIconUrl }) });
-      count++;
-    } catch {}
-  }
-  toast(saved == null ? tr('hibernated', count) : tr('hibernatedAndSaved', count, saved));
-  await load();
-  showSection('main-section');
 }
 
 async function saveTabsBeforeHibernate(tabs) {
-  const target = resolveGroupById(hibernateTargetGroupId) || findCaptureTarget();
-  if (!target?.group) throw new Error('No capture target');
-  target.group.items = target.group.items || [];
-  const existing = state.settings?.captureDeduplicate === false
-    ? null : new Set(target.group.items.filter(item => item.type === 'tab').map(item => item.url));
-  const createdAt = Date.now();
-  const items = tabs.filter(tab => !existing || !existing.has(tab.url)).map(tab => {
-    const meta = captureFields(tab);
-    return { id: uid(), type: 'tab', title: meta.title, url: tab.url, fav: meta.fav, createdAt };
-  });
-  target.group.items.push(...items);
-  if (state.settings?.captureRememberLast !== false) {
-    state.settings.captureLastTarget = { workspaceId: target.ws.id, categoryId: target.cat.id, groupId: target.group.id };
+  let snapshot;
+  try {
+    snapshot = clonePopupState();
+    const target = resolveGroupById(hibernateTargetGroupId) || findCaptureTarget();
+    if (!target?.group) throw new Error('No capture target');
+    target.group.items = target.group.items || [];
+    const existing = state.settings?.captureDeduplicate === false
+      ? null : new Set(target.group.items.filter(item => item.type === 'tab').map(item => item.url));
+    const createdAt = Date.now();
+    const items = tabs.filter(tab => !existing || !existing.has(tab.url)).map(tab => {
+      const meta = captureFields(tab);
+      return { id: uid(), type: 'tab', title: meta.title, url: tab.url, fav: meta.fav, createdAt };
+    });
+    target.group.items.push(...items);
+    if (state.settings?.captureRememberLast !== false) {
+      state.settings.captureLastTarget = { workspaceId: target.ws.id, categoryId: target.cat.id, groupId: target.group.id };
+    }
+    await persistPopupState();
+    return items.length;
+  } catch (error) {
+    await recoverCaptureWriteFailure(error, snapshot);
+    throw error;
   }
-  await chrome.storage.local.set({ te: state });
-  return items.length;
 }
 
 function collectTopTags(limit = 4) {
@@ -602,7 +759,7 @@ function setSaveMode(value, persist = true) {
   if (persist && state) {
     state.settings = state.settings || {};
     state.settings.popupSaveMode = value;
-    chrome.storage.local.set({ te: state }).catch(() => {});
+    persistPopupState().catch(() => {});
   }
 }
 
@@ -632,50 +789,68 @@ async function saveWindow({ mode, closeTabs, note, tags } = {}) {
   if (!state?.workspaces?.length) return toast(tr('openFirst'));
   const target = resolveGroupById(windowSaveTargetGroupId) || findCaptureTarget();
   if (!target?.cat) return toast(tr('openFirst'));
-  mode = ['links', 'group', 'queue'].includes(mode) ? mode
-    : (['links', 'group', 'queue'].includes(state.settings?.popupSaveMode) ? state.settings.popupSaveMode : 'group');
-  const close = closeTabs != null ? closeTabs : state.settings?.closeTabOnSave !== false;
-  const stampTab = tab => {
-    const meta = captureFields(tab);
-    const item = { id: uid(), type: 'tab', title: meta.title, url: tab.url, fav: meta.fav, createdAt: Date.now() };
-    if (tags?.length) item.tags = [...tags];
-    if (mode === 'queue') item.readLaterAt = Date.now();
-    return item;
-  };
-  let receiving;
-  if (mode === 'group') {
-    const now = new Date();
-    receiving = {
-      id: uid(), symbol: '◫', color: '#06b6d4', collapsed: false,
-      name: `${tr('session')} ${now.toLocaleDateString(appLocale(), { month: 'short', day: 'numeric' })} ${now.toLocaleTimeString(appLocale(), { hour: '2-digit', minute: '2-digit' })}`,
-      items: []
-    };
-    target.cat.groups = target.cat.groups || [];
-    target.cat.groups.push(receiving);
-  } else {
-    receiving = target.group;
-    receiving.items = receiving.items || [];
-  }
-  // A window save into an existing group honors the dedupe setting the same
-  // way single-tab capture does; a fresh session group can't have duplicates.
-  const dedupe = mode !== 'group' && state.settings?.captureDeduplicate !== false;
-  const existing = dedupe ? new Set(receiving.items.filter(item => item.type === 'tab').map(item => item.url)) : null;
-  const items = all.filter(tab => !existing || !existing.has(tab.url)).map(stampTab);
-  if (!items.length && !note) { toast(tr('alreadySaved')); return; }
-  if (note) receiving.items.push({ id: uid(), type: 'note', html: esc(note), createdAt: Date.now() });
-  receiving.items.push(...items);
-  if (mode !== 'group' && state.settings?.captureRememberLast !== false) {
-    state.settings.captureLastTarget = { workspaceId: target.ws.id, categoryId: target.cat.id, groupId: receiving.id };
-  }
-  await chrome.storage.local.set({ te: state });
-  if (close) {
-    for (const tab of all.filter(tab => tab.id !== activeTabId)) {
-      try { await chrome.tabs.remove(tab.id); } catch {}
+  if (!beginPopupCapture()) return false;
+  try {
+    mode = ['links', 'group', 'queue'].includes(mode) ? mode
+      : (['links', 'group', 'queue'].includes(state.settings?.popupSaveMode) ? state.settings.popupSaveMode : 'group');
+    const close = closeTabs != null ? closeTabs : state.settings?.closeTabOnSave !== false;
+    let snapshot;
+    let items = [];
+    try {
+      snapshot = clonePopupState();
+      const stampTab = tab => {
+        const meta = captureFields(tab);
+        const item = { id: uid(), type: 'tab', title: meta.title, url: tab.url, fav: meta.fav, createdAt: Date.now() };
+        if (tags?.length) item.tags = [...tags];
+        if (mode === 'queue') item.readLaterAt = Date.now();
+        return item;
+      };
+      let receiving;
+      if (mode === 'group') {
+        const now = new Date();
+        receiving = {
+          id: uid(), symbol: '◫', color: '#06b6d4', collapsed: false,
+          name: `${tr('session')} ${now.toLocaleDateString(appLocale(), { month: 'short', day: 'numeric' })} ${now.toLocaleTimeString(appLocale(), { hour: '2-digit', minute: '2-digit' })}`,
+          items: []
+        };
+        target.cat.groups = target.cat.groups || [];
+        target.cat.groups.push(receiving);
+      } else {
+        receiving = target.group;
+        receiving.items = receiving.items || [];
+      }
+      // A window save into an existing group honors the dedupe setting the same
+      // way single-tab capture does; a fresh session group can't have duplicates.
+      const dedupe = mode !== 'group' && state.settings?.captureDeduplicate !== false;
+      const existing = dedupe ? new Set(receiving.items.filter(item => item.type === 'tab').map(item => item.url)) : null;
+      items = all.filter(tab => !existing || !existing.has(tab.url)).map(stampTab);
+      if (!items.length && !note) {
+        state = snapshot;
+        toast(tr('alreadySaved'));
+        return false;
+      }
+      if (note) receiving.items.push({ id: uid(), type: 'note', html: esc(note), createdAt: Date.now() });
+      receiving.items.push(...items);
+      if (mode !== 'group' && state.settings?.captureRememberLast !== false) {
+        state.settings.captureLastTarget = { workspaceId: target.ws.id, categoryId: target.cat.id, groupId: receiving.id };
+      }
+      await persistPopupState();
+    } catch (error) {
+      await recoverCaptureWriteFailure(error, snapshot);
+      return false;
     }
+    if (close) {
+      for (const tab of all.filter(tab => tab.id !== activeTabId)) {
+        try { await chrome.tabs.remove(tab.id); } catch {}
+      }
+    }
+    const closed = close && all.length > 1;
+    toast(closed ? tr('savedTabsClosed', items.length) : tr('savedTabs', items.length));
+    setTimeout(() => window.close(), 900);
+    return true;
+  } finally {
+    finishPopupCapture();
   }
-  const closed = close && all.length > 1;
-  toast(closed ? tr('savedTabsClosed', items.length) : tr('savedTabs', items.length));
-  setTimeout(() => window.close(), 900);
 }
 
 async function importBookmarksFromPopup() {
@@ -709,7 +884,7 @@ async function importBookmarksFromPopup() {
       toast(tr('noBookmarks'));
       return;
     }
-    await chrome.storage.local.set({ te: state });
+    await persistPopupState();
     toast(tr('importedBookmarks', imported));
   } catch (error) {
     groups.splice(originalLength);
@@ -748,12 +923,19 @@ function backSection() {
   return 'main-section';
 }
 
-function toast(message) {
+function toast(message, { persistent = false } = {}) {
   const el = $('pop-toast');
   el.textContent = message;
+  el.style.display = '';
+  el.style.alignItems = '';
+  el.style.gap = '';
+  el.style.pointerEvents = 'none';
+  el.style.whiteSpace = persistent ? 'normal' : '';
+  el.style.textAlign = persistent ? 'left' : '';
+  el.setAttribute('role', persistent ? 'alert' : 'status');
   requestAnimationFrame(() => el.classList.add('show'));
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 1600);
+  toastTimer = persistent ? null : setTimeout(() => el.classList.remove('show'), 1600);
 }
 
 function bind() {

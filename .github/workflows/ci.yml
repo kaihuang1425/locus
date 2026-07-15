@@ -14,7 +14,7 @@ jobs:
       - name: Syntax-check JS
         run: |
           set -e
-          for f in newtab.js background.js popup.js suspended.js emoji-data.js; do
+          for f in newtab.js background.js popup.js suspended.js emoji-data.js prepaint.js import-utils.js scripts/quality-gates.js scripts/import-recovery-test.js scripts/background-contract-test.js scripts/undo-contract-test.js scripts/concurrency-contract-test.js scripts/state-sync-contract-test.js; do
             echo "node --check $f"
             node --check "$f"
           done
@@ -32,3 +32,15 @@ jobs:
             if (!m.background.service_worker) throw new Error('background.service_worker missing');
             if (!Array.isArray(m.permissions)) throw new Error('permissions must be an array');
           "
+      - name: Enforce extension quality gates
+        run: node scripts/quality-gates.js
+      - name: Test import recovery fixtures
+        run: node scripts/import-recovery-test.js
+      - name: Test background contracts
+        run: node scripts/background-contract-test.js
+      - name: Test Undo contracts
+        run: node scripts/undo-contract-test.js
+      - name: Test new-tab state freshness contracts
+        run: node scripts/state-sync-contract-test.js
+      - name: Test serialized state-write concurrency
+        run: node scripts/concurrency-contract-test.js

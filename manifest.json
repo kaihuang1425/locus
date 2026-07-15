@@ -2,8 +2,11 @@
   "manifest_version": 3,
   "name": "Locus",
   "version": "3.1.0",
-  "description": "Turn scattered tabs into organized spaces - save, group, and rediscover tabs, notes, stacks, and reminders. Local-first, no account.",
-  "permissions": ["tabs", "storage", "contextMenus", "bookmarks", "alarms", "notifications", "search"],
+  "description": "Turn scattered tabs into organized spaces - save, group, and rediscover tabs, notes, stacks, and reminders. No Locus account required.",
+  "permissions": ["tabs", "storage", "contextMenus", "bookmarks", "alarms", "notifications", "search", "favicon"],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; img-src 'self' data: blob:; connect-src 'none'"
+  },
   "chrome_url_overrides": {
     "newtab": "newtab.html"
   },

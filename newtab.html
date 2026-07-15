@@ -18,50 +18,7 @@
   <link rel="stylesheet" href="newtab.css">
 </head>
 <body>
-  <script>
-    // Pre-init: apply saved theme/size/font/width before any paint to
-    // eliminate the dark->light flash on launch. Reads a localStorage
-    // mirror written by applySettings(); falls back to Light on first launch.
-    // Also marks body as loading so it fades in once renderAll() finishes.
-    (function () {
-      var b = document.body, m = {};
-      try { m = JSON.parse(localStorage.getItem('te_settings_mirror') || '{}') || {}; } catch (e) {}
-      function supportedLang(value) {
-        var lang = String(value || 'en').trim();
-        return /^zh(?:[-_]|$)/i.test(lang) ? 'zh-TW' : 'en';
-      }
-      var lang = supportedLang(m.language || (navigator.languages && navigator.languages[0]) || navigator.language || 'en');
-      document.documentElement.lang = lang;
-      var theme = m.theme;
-      if (!theme) {
-        theme = 'folio';
-      } else if (theme === 'stow') {
-        theme = 'folio';
-      } else if (theme === 'stow-dark') {
-        theme = 'folio-dark';
-      } else if (theme === 'auto') {
-        theme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'folio-dark' : 'folio';
-      }
-      b.dataset.theme = theme;
-      // Light- vs dark-inclined classification (kept in sync with isDarkTheme()
-      // in newtab.js) so the logo variant, banner art, icon set, scrims, and
-      // contrast can respond generically to any theme — set pre-paint to avoid
-      // a mode flash on launch.
-      var DARK = {'folio-dark':1,'tabento-dark':1,'aurora':1,'dark':1,'dracula':1,'nord':1,'rose-pine':1,'tokyo-night':1,'solarized-dark':1,'gruvbox':1,'catppuccin':1,'mono':1};
-      b.dataset.themeMode = DARK[theme] ? 'dark' : 'light';
-      b.dataset.size  = m.size  || 'normal';
-      b.dataset.font  = m.font  || 'dm';
-      b.dataset.width = m.width || 'normal';
-      if (m.anim === 'off') b.dataset.anim = 'off';
-      // Skip fade-in for users who disabled animations or prefer reduced motion.
-      var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (m.anim !== 'off' && !reduced) {
-        b.classList.add('app-loading');
-        // Safety: if init never fires, reveal anyway after 1s.
-        setTimeout(function () { b.classList.remove('app-loading'); b.classList.add('app-ready'); }, 1000);
-      }
-    })();
-  </script>
+  <script src="prepaint.js"></script>
   <!-- Calm launch layer. It sits above (rather than replaces) the real Home
        surface, so dismissing it reveals the existing workspace immediately. -->
   <section id="landing-layer" class="hidden" aria-label="New tab welcome" data-i18n-aria-label="landing.ariaLabel">
@@ -142,43 +99,47 @@
       <div id="ws-list" class="hidden"></div>
 
       <nav id="nav-views" aria-label="Views">
-        <button class="nav-item" id="nav-home">
+        <button class="nav-item" id="nav-home" data-i18n-aria-label="nav.home" aria-label="Home">
           <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 6.5L7.5 2l5 4.5V12a1 1 0 01-1 1h-2.6V9.4H6.1V13H3.5a1 1 0 01-1-1V6.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
           <span class="nav-lbl" data-i18n="nav.home">Home</span>
         </button>
-        <button class="nav-item" id="nav-all">
+        <button class="nav-item" id="nav-all" data-i18n-aria-label="nav.allLinks" aria-label="All Links">
           <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M6.2 8.8a2.4 2.4 0 003.4 0l2.5-2.5a2.4 2.4 0 10-3.4-3.4l-1 1M8.8 6.2a2.4 2.4 0 00-3.4 0L2.9 8.7a2.4 2.4 0 103.4 3.4l1-1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
           <span class="nav-lbl" data-i18n="nav.allLinks">All Links</span>
           <span class="nav-count" id="nav-all-count"></span>
         </button>
-        <button class="nav-item" id="nav-favorites">
+        <button class="nav-item" id="nav-favorites" data-i18n-aria-label="nav.favorites" aria-label="Favorites">
           <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.8l1.7 3.45 3.8.55-2.75 2.68.65 3.78-3.4-1.79-3.4 1.79.65-3.78L2 5.8l3.8-.55L7.5 1.8z" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/></svg>
           <span class="nav-lbl" data-i18n="nav.favorites">Favorites</span>
           <span class="nav-count" id="nav-favorites-count"></span>
         </button>
-        <button class="nav-item" id="nav-read-later">
+        <button class="nav-item" id="nav-read-later" data-i18n-aria-label="nav.readLater" aria-label="Read Later">
           <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M4 2.2h7a1 1 0 011 1V13l-4.5-2.55L3 13V3.2a1 1 0 011-1z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M5.3 5.4h4.4M5.3 7.6h3.1" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>
           <span class="nav-lbl" data-i18n="nav.readLater">Read Later</span>
           <span class="nav-count" id="nav-read-later-count"></span>
         </button>
-        <button class="nav-item" id="nav-inbox">
+        <button class="nav-item" id="nav-inbox" data-i18n-aria-label="nav.inbox" aria-label="Inbox">
           <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 8.5l1.4-5A1 1 0 014.4 2.7h6.2a1 1 0 011 .8l1.4 5v3a1 1 0 01-1 1H3a1 1 0 01-1-1v-3z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M2 8.5h3.4a2.1 2.1 0 004.2 0H13" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
           <span class="nav-lbl" data-i18n="nav.inbox">Inbox</span>
           <span class="nav-count" id="nav-inbox-count"></span>
         </button>
-        <button class="nav-item" id="nav-search">
+        <button class="nav-item" id="nav-search" data-i18n-aria-label="search.nav" aria-label="Search">
           <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="6.6" cy="6.6" r="4.1" stroke="currentColor" stroke-width="1.4"/><path d="M9.8 9.8l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
           <span class="nav-lbl" data-i18n="search.nav">Search</span>
         </button>
-        <button class="nav-item" id="nav-archive">
+        <button class="nav-item" id="nav-archive" data-i18n-aria-label="nav.archive" aria-label="Archive">
           <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2" y="2.5" width="11" height="3" rx="0.8" stroke="currentColor" stroke-width="1.4"/><path d="M3 5.5V12a1 1 0 001 1h7a1 1 0 001-1V5.5M6 8h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
           <span class="nav-lbl" data-i18n="nav.archive">Archive</span>
           <span class="nav-count" id="nav-archive-count"></span>
         </button>
-        <button class="nav-item" id="nav-trash">
+        <button class="nav-item" id="nav-trash" data-i18n-aria-label="nav.trash" aria-label="Trash">
           <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 4h10M5.2 4V2.4h4.6V4M4 4l.6 8a1 1 0 001 .9h3.8a1 1 0 001-.9l.6-8M6.2 6.4v4M8.8 6.4v4" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span class="nav-lbl" data-i18n="nav.trash">Trash</span>
           <span class="nav-count" id="nav-trash-count"></span>
+        </button>
+        <button class="nav-item" id="nav-more" aria-haspopup="menu" data-i18n-aria-label="action.more" aria-label="More">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="3.5" cy="7.5" r="1.25" fill="currentColor"/><circle cx="7.5" cy="7.5" r="1.25" fill="currentColor"/><circle cx="11.5" cy="7.5" r="1.25" fill="currentColor"/></svg>
+          <span class="nav-lbl" data-i18n="action.more">More</span>
         </button>
       </nav>
 
@@ -191,7 +152,7 @@
       <div id="space-nav"></div>
 
       <div class="side-footer">
-        <div class="side-storage" title="Local storage used by Locus">
+        <div class="side-storage" title="Browser-profile storage; export before uninstalling or deleting the profile">
           <svg width="14" height="14" viewBox="0 0 15 15" fill="none"><rect x="2" y="2" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M2 9.5h11M4.5 11.5h.01M6.8 11.5h.01" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
           <div class="side-storage-bd">
             <div id="side-storage-text" class="side-storage-text" data-i18n="nav.storage">Local storage</div>
@@ -201,12 +162,12 @@
         <div class="priv-card">
           <div class="priv-hd">
             <svg width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.8l4.7 1.8v3.6c0 3-2 5.2-4.7 6-2.7-.8-4.7-3-4.7-6V3.6l4.7-1.8z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M5.5 7.4l1.4 1.4 2.6-2.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span data-i18n="priv.title">Private by design</span>
+            <span data-i18n="priv.title">Privacy boundaries</span>
           </div>
           <div class="priv-row"><span class="priv-check">✓</span><span data-i18n="priv.noAccount">No account</span></div>
-          <div class="priv-row"><span class="priv-check">✓</span><span data-i18n="priv.localOnly">Local-only</span></div>
+          <div class="priv-row"><span class="priv-check">✓</span><span data-i18n="priv.localOnly">Profile-local data</span></div>
           <div class="priv-row"><span class="priv-check">✓</span><span data-i18n="priv.noHost">No host permissions</span></div>
-          <div class="priv-row"><span class="priv-check">✓</span><span data-i18n="priv.export">Export anytime</span></div>
+          <div class="priv-row"><span class="priv-check">✓</span><span data-i18n="priv.export">Export before uninstalling</span></div>
         </div>
         <button id="sidebar-toggle" class="side-collapse" title="Collapse sidebar" data-i18n-title="action.collapseSidebar" aria-label="Collapse sidebar">
           <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M9 3.5L5 7.5l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -246,6 +207,10 @@
           </button>
           <button id="search-btn" class="icon-btn" title="Search (Ctrl/⌘ + K)" data-i18n-title="action.search">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5L13 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </button>
+          <button id="topbar-save" class="topbar-primary" type="button" data-i18n-title="action.saveTab" title="Save a recent tab to Inbox">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2.2 3A.8.8 0 013 2.2h6.1l2.7 2.7V11a.8.8 0 01-.8.8H3a.8.8 0 01-.8-.8V3z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M4.3 2.2v3h5v-3M4.5 11.8V8h5v3.8" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+            <span data-i18n="action.saveTab">Save tab</span>
           </button>
           <button id="more-btn" class="icon-btn" title="More" data-i18n-title="action.more" aria-haspopup="menu">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="1.35" fill="currentColor"/><circle cx="8" cy="8" r="1.35" fill="currentColor"/><circle cx="12" cy="8" r="1.35" fill="currentColor"/></svg>
@@ -307,7 +272,7 @@
         </div>
         <button id="rail-saveall" class="rail-saveall">
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1.5v6m0 0l2.4-2.4M6.5 7.5L4.1 5.1M2 9v1.5a1 1 0 001 1h7a1 1 0 001-1V9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span data-i18n="rail.saveAll">Save all tabs</span>
+          <span data-i18n="rail.saveAll">Save eligible tabs</span>
         </button>
         <div class="rail-tip">
           <svg width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.6a4.4 4.4 0 00-2.6 7.9c.4.3.6.6.6 1v.5h4v-.5c0-.4.2-.7.6-1a4.4 4.4 0 00-2.6-7.9z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.8 13h3.4M6.3 11.5h2.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
@@ -557,6 +522,22 @@
     </div>
   </div>
 
+  <!-- Fail-closed state recovery: no dismiss until the page reloads -->
+  <div id="state-recovery-overlay" class="hidden" role="alertdialog" aria-modal="true" aria-labelledby="state-recovery-title" aria-describedby="state-recovery-detail">
+    <div class="rm-panel">
+      <div class="modal-hd">
+        <h2 id="state-recovery-title" data-i18n="stateRecovery.title">Reload latest saved data</h2>
+      </div>
+      <div class="modal-bd">
+        <p data-i18n="stateRecovery.body">Locus paused editing because this page could not be safely reconciled with browser storage.</p>
+        <p id="state-recovery-detail" class="sub" data-i18n="stateRecovery.detail">Reload before making more changes. Locus will reopen from the latest state saved in this browser profile.</p>
+      </div>
+      <div class="modal-ft">
+        <button id="state-recovery-reload" class="btn-primary" data-i18n="stateRecovery.reload">Reload Locus</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Storage-quota overlay: persist failed with QuotaExceeded -->
   <div id="quota-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="quota-title">
     <div class="rm-panel">
@@ -663,7 +644,7 @@
             <svg width="14" height="14" viewBox="0 0 15 15" fill="none" aria-hidden="true"><path d="M7.5 1.8l4.7 1.8v3.6c0 3-2 5.2-4.7 6-2.7-.8-4.7-3-4.7-6V3.6l4.7-1.8z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.5 7.4l1.4 1.4 2.6-2.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
             <div>
               <strong data-i18n="settings.privacyFirst">Privacy first</strong>
-              <small data-i18n="settings.privacyFirstBody">Everything stays on your device. No servers, no tracking.</small>
+              <small data-i18n="settings.privacyFirstBody">Workspace data is stored in this browser profile; export before uninstalling or deleting it. Locus has no account, backend, or host permissions.</small>
             </div>
           </div>
         </div>
@@ -689,7 +670,7 @@
                 <span data-i18n="settings.yourName">Your name</span>
                 <input type="text" id="profile-name-input" maxlength="40" autocomplete="off" placeholder="—">
               </label>
-              <small data-i18n="settings.yourNameHint">Used for the home greeting. Stored only on this device.</small>
+              <small data-i18n="settings.yourNameHint">Used for the home greeting. Stored in this browser profile; export before uninstalling or deleting the profile.</small>
               <div class="field-lbl" style="margin-top:14px" data-i18n="settings.language">Language</div>
               <div class="seg" id="seg-language">
                 <button data-val="en" data-i18n="settings.language.en">English</button>
@@ -701,7 +682,7 @@
             <div class="drawer-sec">
               <div class="field-lbl" data-i18n="settings.behavior">Behavior</div>
               <label class="toggle-row">
-                <span><span data-i18n="settings.hibernate">Open saved tabs hibernated</span><br><small data-i18n="settings.hibernateHint">uses zero memory until clicked</small></span>
+                <span><span data-i18n="settings.hibernate">Open saved tabs hibernated</span><br><small data-i18n="settings.hibernateHint">opens a placeholder; the site loads only after you continue</small></span>
                 <input type="checkbox" id="tog-hibernate" checked>
                 <span class="tog"></span>
               </label>
@@ -858,14 +839,14 @@
                   <strong id="capture-preview-title">Page title</strong>
                   <small id="capture-preview-destination">Inbox in the active space</small>
                 </span>
-                <span class="capture-local-badge">Local only</span>
+                <span class="capture-local-badge" data-i18n="priv.localOnly">Profile-local data</span>
               </div>
             </div>
           </div>
 
           <div class="capture-proof">
             <svg width="14" height="14" viewBox="0 0 15 15" fill="none" aria-hidden="true"><path d="M7.5 1.8l4.7 1.8v3.6c0 3-2 5.2-4.7 6-2.7-.8-4.7-3-4.7-6V3.6l4.7-1.8z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M5.5 7.4l1.4 1.4 2.6-2.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Capture preferences and saved content stay in extension-local storage.
+            <span data-i18n="settings.captureStorageProof">Saved content and capture preferences use this browser profile; export before uninstalling or deleting the profile.</span>
           </div>
         </div>
 
@@ -900,13 +881,13 @@
               <svg width="30" height="30" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.8l4.7 1.8v3.6c0 3-2 5.2-4.7 6-2.7-.8-4.7-3-4.7-6V3.6l4.7-1.8z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/><path d="M5.5 7.4l1.4 1.4 2.6-2.6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
             <div class="sp-privacy-copy">
-              <strong data-i18n="settings.privateByDesign">Private by design</strong>
-              <p data-i18n="settings.privateByDesignBody">Locus runs entirely on your device. We never collect, read, or transmit your data.</p>
+              <strong data-i18n="settings.privateByDesign">Privacy boundaries</strong>
+              <p data-i18n="settings.privateByDesignBody">Locus runs in this browser profile and does not send your workspace data to a Locus server.</p>
               <ul class="sp-privacy-checks">
-                <li data-i18n="settings.check.local">100% local storage</li>
+                <li data-i18n="settings.check.local">Browser-profile local storage</li>
                 <li data-i18n="settings.check.tracking">No tracking or analytics</li>
                 <li data-i18n="settings.check.account">No account required</li>
-                <li data-i18n="settings.check.host">No host permissions — Locus can't read pages</li>
+                <li data-i18n="settings.check.host">No host permissions — no automatic page inspection</li>
               </ul>
             </div>
           </div>
@@ -922,7 +903,7 @@
             </div>
             <div class="drawer-sec">
               <div class="field-lbl" data-i18n="settings.yourData">Your data</div>
-              <p class="sp-body-copy" data-i18n="settings.yourDataBody">Everything lives in extension-local storage. Export a full backup anytime, or import it back on any device.</p>
+              <p class="sp-body-copy" data-i18n="settings.yourDataBody">Workspace data is stored in this browser profile on this desktop. Uninstalling the extension or losing the profile can erase it, so export backups regularly.</p>
               <div class="onboarding-actions">
                 <button id="privacy-export-btn" class="btn-secondary" data-i18n="settings.exportBackup">Export backup</button>
                 <button id="privacy-goto-data" class="btn-secondary" data-i18n="settings.openImportExport">Open Import &amp; Export</button>
@@ -940,7 +921,7 @@
                 <div id="storage-bar-text" class="storage-bar-text">Storage · —</div>
                 <div class="storage-bar-track"><div id="storage-bar-fill" class="storage-bar-fill"></div></div>
               </div>
-              <small data-i18n="settings.storageHint">All data is stored on this device in extension-local storage. Nothing leaves your browser.</small>
+              <small data-i18n="settings.storageHint">Workspace data uses this browser profile. Uninstalling the extension or deleting the profile removes it; opening links and searches uses the browser normally.</small>
             </div>
             <div class="drawer-sec">
               <div class="field-lbl" data-i18n="settings.manageStorage">Manage</div>
@@ -954,7 +935,7 @@
                 </span>
                 <button id="storage-open-archive" class="btn-secondary" data-i18n="settings.openArchive">Open archive</button>
               </div>
-              <small data-i18n="settings.manageHint">Export a backup before pruning old items — exports keep working forever.</small>
+              <small data-i18n="settings.manageHint">Export a backup before pruning old items, and keep the file somewhere safe.</small>
             </div>
           </div>
 
@@ -994,7 +975,7 @@
                 <span data-i18n="settings.exportJson">Export all data as JSON</span>
                 <small class="btn-side-hint" data-i18n="settings.exportJsonHint">A complete backup of every workspace</small>
               </button>
-              <small data-i18n="settings.exportHint">Exports are plain JSON — readable anywhere, re-importable anytime.</small>
+              <small data-i18n="settings.exportHint">Exports are plain JSON. Keep the file yourself; compatibility with future versions is verified per release.</small>
             </div>
           </div>
         </div>
@@ -1006,7 +987,7 @@
             <div class="sp-about-copy">
               <strong>Locus</strong>
               <small id="sp-about-version">Version 3.1.0</small>
-              <p class="sp-body-copy" data-i18n="settings.aboutBody">A local-first home for your tabs, notes, todos, and small trackers.</p>
+              <p class="sp-body-copy" data-i18n="settings.aboutBody">A desktop home for explicitly saved tabs, notes, tasks, and reminders.</p>
             </div>
           </div>
           <div class="drawer-sec">
@@ -1243,18 +1224,35 @@
     <button id="toast-undo" class="hidden">Undo</button>
   </div>
 
-  <!-- ══════ WELCOME / ONBOARDING QUESTIONNAIRE ══════ -->
-  <!-- First-run only (gated by settings.onboarding.welcomeSeen); re-openable
-       from the app menu / Settings. Answers persist to settings.profile +
-       settings.plugins. -->
-  <div id="welcome" class="hidden" role="dialog" aria-modal="true" aria-labelledby="wc-title">
+  <!-- ══════ WELCOME / FIRST-SAVE TASK ══════ -->
+  <!-- First-run only (gated by settings.onboarding.welcomeSeen). The old
+       questionnaire nodes below are hidden legacy residue retained temporarily
+       for migration-safe cleanup; they are not part of the active experience. -->
+  <div id="welcome" class="hidden" role="dialog" aria-modal="true" aria-labelledby="wc-task-title">
     <div class="wc-card">
+      <section class="wc-task" aria-describedby="wc-task-description">
+        <div class="wc-logo"><img class="brand-img" src="icons/icon128.png" alt="" decoding="async"></div>
+        <h2 id="wc-task-title" class="wc-h" data-i18n="welcome.taskTitle">Keep one tab without keeping it open</h2>
+        <p id="wc-task-description" class="wc-sub" data-i18n="welcome.taskDescription">Save a real tab to your Inbox, then Locus will show you exactly where it went.</p>
+        <div id="wc-candidate" class="wc-candidate" aria-live="polite">
+          <img id="wc-candidate-fav" src="icons/icon32.png" alt="">
+          <span class="wc-candidate-copy">
+            <strong id="wc-candidate-title" data-i18n="welcome.looking">Looking for an open tab…</strong>
+            <small id="wc-candidate-url"></small>
+          </span>
+        </div>
+        <p id="wc-empty" class="wc-empty hidden" data-i18n="welcome.empty">No saveable tab is open yet. Explore Locus, then use the toolbar popup from any page.</p>
+        <div class="wc-nav wc-nav-single">
+          <button type="button" id="wc-explore" class="wc-skip" data-i18n="welcome.explore">Explore on my own</button>
+          <button type="button" id="wc-save-first" class="wc-next" data-i18n="welcome.save" disabled>Save this tab</button>
+        </div>
+      </section>
       <div class="wc-progress"><span id="wc-progress-fill" class="wc-progress-fill"></span></div>
 
       <section class="wc-step" data-step="0">
         <div class="wc-logo"><img class="brand-img" src="icons/icon128.png" alt="" decoding="async"></div>
         <h2 id="wc-title" class="wc-h">Welcome to Locus</h2>
-        <p class="wc-sub">A calmer, local-first home for your tabs, notes, and small trackers. Let's tailor it to you — it takes about 20 seconds, and everything stays on your device.</p>
+        <p class="wc-sub">A calmer home for explicitly saved tabs, notes, tasks, and reminders.</p>
       </section>
 
       <section class="wc-step hidden" data-step="1">
@@ -1416,8 +1414,8 @@
           <div class="about-version" id="about-version">v3.1.0</div>
         </div>
       </div>
-      <p class="about-tagline" data-i18n="about.tagline">A calmer, local-first home for your tabs, notes, and small trackers.</p>
-      <div class="about-priv" data-i18n="about.private">Private by design — no account, local-only, no host permissions.</div>
+      <p class="about-tagline" data-i18n="about.tagline">A calmer home for explicitly saved tabs, notes, tasks, and reminders.</p>
+      <div class="about-priv" data-i18n="about.private">Privacy boundaries — browser-profile storage (export before uninstalling or deleting the profile), no Locus account or backend, and no host permissions.</div>
       <button id="about-replay" class="btn-secondary" data-i18n="about.replay">Replay welcome guide</button>
     </div>
   </div>
@@ -1909,6 +1907,7 @@
 
   <!-- Toast with undo button -->
   <!-- emoji-data.js is loaded lazily on first emoji-picker open (see loadEmojiData). -->
+  <script src="import-utils.js"></script>
   <script src="newtab.js"></script>
 </body>
 </html>

@@ -8,14 +8,79 @@ const browserLanguage = () => {
   return normalizeLanguage(lang);
 };
 const appLocale = s => normalizeLanguage(s?.settings?.language || browserLanguage());
+const STATE_LOCK_NAME = 'locus-state-write';
+const withStateLock = task => typeof navigator !== 'undefined' && typeof navigator.locks?.request === 'function'
+  ? navigator.locks.request(STATE_LOCK_NAME, { mode: 'exclusive' }, task)
+  : task();
+let stateWriteQueue = Promise.resolve();
+const stateRevision = state => {
+  const revision = Number(state?._revision ?? 0);
+  return Number.isSafeInteger(revision) && revision >= 0 && revision < Number.MAX_SAFE_INTEGER
+    ? revision
+    : null;
+};
+
+// The service worker is the only context allowed to write the whole `te` graph.
+// Its FIFO remains the serialization boundary when Web Locks are unavailable;
+// the optional shared lock also coordinates with an older page that may still
+// be alive during an extension update.
+function enqueueStateWrite(task) {
+  const run = stateWriteQueue.then(
+    () => withStateLock(task),
+    () => withStateLock(task),
+  );
+  stateWriteQueue = run.catch(() => undefined);
+  return run;
+}
+
+function serializeStateWriteError(error) {
+  return {
+    ok: false,
+    code: error?.code || 'LOCUS_STATE_WRITE_FAILED',
+    message: String(error?.message || error || 'Locus could not save this change.'),
+  };
+}
 
 async function getState() {
   const d = await chrome.storage.local.get('te');
   return d.te || null;
 }
 async function setState(s) {
+  if (!s || typeof s !== 'object' || Array.isArray(s)) {
+    const error = new Error('Locus rejected an invalid state write request.');
+    error.code = 'LOCUS_STATE_INVALID';
+    throw error;
+  }
   try {
-    await chrome.storage.local.set({ te: s });
+    return await enqueueStateWrite(async () => {
+      const stored = await chrome.storage.local.get('te');
+      const remoteRevision = stateRevision(stored.te);
+      const localRevision = stateRevision(s);
+      if (remoteRevision == null) {
+        const error = new Error('Locus found an invalid stored state revision.');
+        error.code = 'LOCUS_STATE_PROTOCOL';
+        throw error;
+      }
+      if (localRevision == null) {
+        const error = new Error('Locus rejected an invalid state revision.');
+        error.code = 'LOCUS_STATE_INVALID';
+        throw error;
+      }
+      if (remoteRevision !== localRevision) {
+        const error = new Error('Locus changed in another window. Retry the action.');
+        error.code = 'LOCUS_STATE_CONFLICT';
+        throw error;
+      }
+      const nextRevision = localRevision + 1;
+      s._revision = nextRevision;
+      try {
+        await chrome.storage.local.set({ te: s });
+        return nextRevision;
+      } catch (error) {
+        s._revision = localRevision;
+        throw error;
+      }
+    });
   } catch (err) {
     console.error('Locus storage write failed:', err);
     if (/quota/i.test(String(err?.message || err))) {
@@ -107,7 +172,13 @@ async function addToInbox(item) {
 
 async function closeCapturedTabIfEnabled(tabId) {
   if (tabId == null) return;
-  const s = await getState();
+  let s;
+  try {
+    s = await getState();
+  } catch (error) {
+    console.error('Could not confirm close-after-save setting; leaving the captured tab open.', error);
+    return;
+  }
   if (s?.settings?.closeTabOnSave === false) return;
   try { await chrome.tabs.remove(tabId); } catch {}
 }
@@ -116,6 +187,26 @@ function flash(text = '✓', color = '#22c55e') {
   chrome.action.setBadgeText({ text });
   chrome.action.setBadgeBackgroundColor({ color });
   setTimeout(() => chrome.action.setBadgeText({ text: '' }), 1400);
+}
+
+async function reportCaptureFailure(error, source) {
+  console.error(`Locus ${source} capture failed:`, error);
+  try { flash('!', '#ef4444'); } catch {}
+  const conflict = error?.code === 'LOCUS_STATE_CONFLICT';
+  const message = conflict
+    ? 'Locus changed in another window. Nothing was closed. Click to open Locus, then retry.'
+    : 'The capture was not saved and nothing was closed. Click to open Locus, check storage, then retry.';
+  try {
+    await chrome.notifications.create('te-capture-error-' + uid(), {
+      type: 'basic',
+      iconUrl: chrome.runtime.getURL('icons/icon128.png'),
+      title: 'Could not save to Locus',
+      message,
+      priority: 2
+    });
+  } catch (notificationError) {
+    console.error('Could not show the Locus capture failure notification:', notificationError);
+  }
 }
 
 // ─── Context Menus ────────────────────────────────────────────────────
@@ -129,7 +220,7 @@ const MENU_ITEMS = [
   { id: 'te-save-selection', title: '📝 Save selection as note',  contexts: ['selection'] },
   { id: 'te-save-image',     title: '🖼️ Save image',              contexts: ['image'] },
   { id: 'te-sep',            type: 'separator',                   contexts: ['page'] },
-  { id: 'te-save-all',       title: '📚 Save all tabs in window', contexts: ['page'] }
+  { id: 'te-save-all',       title: '📚 Save eligible tabs in window', contexts: ['page'] }
 ];
 
 function registerContextMenus() {
@@ -138,10 +229,17 @@ function registerContextMenus() {
   });
 }
 
-chrome.runtime.onInstalled.addListener(registerContextMenus);
-chrome.runtime.onStartup.addListener(registerContextMenus);
+chrome.runtime.onInstalled.addListener(() => {
+  registerContextMenus();
+  void requestReminderAlarmReconciliation('install');
+});
+chrome.runtime.onStartup.addListener(() => {
+  registerContextMenus();
+  void requestReminderAlarmReconciliation('browser-startup');
+});
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+  try {
   if (info.menuItemId === 'te-save-page' && tab) {
     const ok = await addToInbox({ id: uid(), type:'tab', title:tab.title||'Untitled', url:tab.url, fav:tab.favIconUrl||'' });
     if (ok) { flash(); await closeCapturedTabIfEnabled(tab.id); }
@@ -178,6 +276,9 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       }
     }
   }
+  } catch (error) {
+    await reportCaptureFailure(error, 'context-menu');
+  }
 });
 
 function escapeHtml(s) {
@@ -186,13 +287,17 @@ function escapeHtml(s) {
 
 // ─── Keyboard shortcut: save current tab ──────────────────────────────
 chrome.commands.onCommand.addListener(async (cmd) => {
-  if (cmd === 'save-current-tab') {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab?.url) return;
-    if (tab.url.startsWith('chrome') || tab.url.startsWith('edge') || tab.url.startsWith('about')) return;
-    const ok = await addToInbox({ id: uid(), type:'tab', title:tab.title||'Untitled', url:tab.url, fav:tab.favIconUrl||'' });
-    if (ok) { flash(); await closeCapturedTabIfEnabled(tab.id); }
-    else flash('dup', '#f97316');
+  try {
+    if (cmd === 'save-current-tab') {
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (!tab?.url) return;
+      if (tab.url.startsWith('chrome') || tab.url.startsWith('edge') || tab.url.startsWith('about')) return;
+      const ok = await addToInbox({ id: uid(), type:'tab', title:tab.title||'Untitled', url:tab.url, fav:tab.favIconUrl||'' });
+      if (ok) { flash(); await closeCapturedTabIfEnabled(tab.id); }
+      else flash('dup', '#f97316');
+    }
+  } catch (error) {
+    await reportCaptureFailure(error, 'shortcut');
   }
 });
 
@@ -237,6 +342,177 @@ function findCategoryById(state, id) {
       if (cat.id === id) return cat;
   return null;
 }
+
+const LOCUS_REMINDER_ALARM_PREFIXES = [
+  'te-reminder-',
+  'te-greminder-',
+  'te-creminder-',
+  'te-sub-'
+];
+
+function isLocusReminderAlarm(name) {
+  return typeof name === 'string' && LOCUS_REMINDER_ALARM_PREFIXES.some(prefix => name.startsWith(prefix));
+}
+
+function addFutureAlarm(expected, name, at, now) {
+  const when = Number(at);
+  if (Number.isFinite(when) && when > now) expected.set(name, when);
+}
+
+function subscriptionReminderTime(sub) {
+  if (!sub || sub.paused || sub.remind === false || typeof sub.nextBilling !== 'string') return null;
+  const nextBilling = sub.nextBilling.trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(nextBilling)) return null;
+  const when = new Date(nextBilling + 'T09:00');
+  when.setDate(when.getDate() - 3);
+  const timestamp = when.getTime();
+  return Number.isFinite(timestamp) ? timestamp : null;
+}
+
+// Derive the complete desired alarm set from persisted state. Reconciliation
+// never mutates state, so it cannot conflict with the guarded revision writer.
+function collectFutureReminderAlarms(state, now = Date.now()) {
+  const expected = new Map();
+  const validId = value => typeof value === 'string' && value.length > 0;
+
+  const visitItems = items => {
+    if (!Array.isArray(items)) return;
+    for (const item of items) {
+      if (!item || typeof item !== 'object') continue;
+      if (validId(item.id) && item.reminder) {
+        addFutureAlarm(expected, 'te-reminder-' + item.id, item.reminder.at, now);
+      }
+      if (item.type === 'stack') visitItems(item.items);
+    }
+  };
+
+  for (const ws of (Array.isArray(state?.workspaces) ? state.workspaces : [])) {
+    for (const cat of (Array.isArray(ws?.categories) ? ws.categories : [])) {
+      if (validId(cat?.id) && Array.isArray(cat.reminders)) {
+        cat.reminders.forEach((reminder, index) => {
+          if (reminder) addFutureAlarm(expected, `te-creminder-${cat.id}-${index}`, reminder.at, now);
+        });
+      }
+      for (const group of (Array.isArray(cat?.groups) ? cat.groups : [])) {
+        if (validId(group?.id) && Array.isArray(group.reminders)) {
+          group.reminders.forEach((reminder, index) => {
+            if (reminder) addFutureAlarm(expected, `te-greminder-${group.id}-${index}`, reminder.at, now);
+          });
+        }
+        visitItems(group?.items);
+      }
+    }
+  }
+
+  for (const sub of (Array.isArray(state?.subscriptions) ? state.subscriptions : [])) {
+    if (!validId(sub?.id)) continue;
+    addFutureAlarm(expected, 'te-sub-' + sub.id, subscriptionReminderTime(sub), now);
+  }
+
+  return expected;
+}
+
+function reconciliationError(operation, name, error) {
+  return {
+    operation,
+    ...(name ? { name } : {}),
+    message: String(error?.message || error || 'Unknown error')
+  };
+}
+
+async function reconcileReminderAlarms(reason = 'manual') {
+  const result = { ok: true, reason, expected: 0, scheduled: 0, staleCleared: 0, errors: [] };
+  let state;
+  let existing;
+
+  try {
+    state = await getState();
+  } catch (error) {
+    result.errors.push(reconciliationError('read-state', null, error));
+  }
+  if (!result.errors.length) {
+    try {
+      existing = await chrome.alarms.getAll();
+    } catch (error) {
+      result.errors.push(reconciliationError('list-alarms', null, error));
+    }
+  }
+
+  if (!result.errors.length) {
+    const expected = collectFutureReminderAlarms(state);
+    result.expected = expected.size;
+
+    const stale = existing.filter(alarm => isLocusReminderAlarm(alarm.name) && !expected.has(alarm.name));
+    for (const alarm of stale) {
+      try {
+        if (await chrome.alarms.clear(alarm.name)) result.staleCleared += 1;
+      } catch (error) {
+        result.errors.push(reconciliationError('clear-stale', alarm.name, error));
+      }
+    }
+
+    // create() replaces an alarm with the same name, making repeated runs
+    // idempotent while also correcting a changed scheduled time.
+    for (const [name, when] of expected) {
+      try {
+        await chrome.alarms.create(name, { when });
+        result.scheduled += 1;
+      } catch (error) {
+        result.errors.push(reconciliationError('schedule', name, error));
+      }
+    }
+  }
+
+  result.ok = result.errors.length === 0;
+  if (!result.ok) console.error('Locus reminder reconciliation failed:', result);
+  return result;
+}
+
+// Serialize startup/install/import requests so each run observes state after
+// the previous run and a post-import request cannot be lost behind startup work.
+let reminderReconcileQueue = Promise.resolve();
+function requestReminderAlarmReconciliation(reason) {
+  const run = reminderReconcileQueue
+    .then(() => reconcileReminderAlarms(reason))
+    .catch(error => {
+      const result = {
+        ok: false,
+        reason,
+        expected: 0,
+        scheduled: 0,
+        staleCleared: 0,
+        errors: [reconciliationError('unexpected', null, error)]
+      };
+      console.error('Locus reminder reconciliation failed:', result);
+      return result;
+    });
+  reminderReconcileQueue = run;
+  return run;
+}
+
+chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+  if (message?.type === 'locus-state-write') {
+    setState(message.state)
+      .then(revision => sendResponse({ ok: true, revision }))
+      .catch(error => sendResponse(serializeStateWriteError(error)));
+    return true;
+  }
+  if (message?.type === 'reconcile-reminders') {
+    requestReminderAlarmReconciliation('runtime-message')
+      .then(sendResponse)
+      .catch(error => sendResponse({
+        ok: false,
+        reason: 'runtime-message',
+        errors: [reconciliationError('unexpected', null, error)]
+      }));
+    return true;
+  }
+  return undefined;
+});
+
+// Script evaluation is the service-worker startup boundary. onInstalled and
+// onStartup request another serialized, idempotent pass for their event scope.
+void requestReminderAlarmReconciliation('service-worker-start');
 
 // Advance a recurring reminder to its next fire time strictly after now.
 // Returns null when the reminder doesn't recur or has passed its `until` bound.
@@ -343,9 +619,13 @@ function stripHtml(html) {
 
 // Click notification → open Locus. Subscription and storage-quota
 // notifications previously did nothing on click — now they all open newtab.
-const NOTIF_OPEN_PREFIXES = ['te-notif-', 'te-gnotif-', 'te-cnotif-', 'te-sub-notif-', 'te-storage-quota-'];
-chrome.notifications.onClicked.addListener((notifId) => {
+const NOTIF_OPEN_PREFIXES = ['te-notif-', 'te-gnotif-', 'te-cnotif-', 'te-sub-notif-', 'te-storage-quota-', 'te-capture-error-'];
+chrome.notifications.onClicked.addListener(async (notifId) => {
   if (!NOTIF_OPEN_PREFIXES.some(p => notifId.startsWith(p))) return;
-  chrome.tabs.create({ url: chrome.runtime.getURL('newtab.html') });
-  chrome.notifications.clear(notifId);
+  try {
+    await chrome.tabs.create({ url: chrome.runtime.getURL('newtab.html') });
+    await chrome.notifications.clear(notifId);
+  } catch (error) {
+    console.error('Could not open Locus from notification:', error);
+  }
 });

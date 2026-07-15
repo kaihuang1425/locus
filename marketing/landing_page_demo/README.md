@@ -1,5 +1,13 @@
 # Locus landing page
 
+> **Concept prototype only.** This standalone Cloudflare marketing mockup is not the
+> extension, current product, or approved source of public claims. Its accounts, cloud,
+> pricing, plugins, quotas, releases, legal copy, and platform support are fictional
+> placeholders. Every public HTML page is intentionally marked `noindex,nofollow`. Use
+> [`../../docs/PRODUCT_SUCCESS_SYSTEM.md`](../../docs/PRODUCT_SUCCESS_SYSTEM.md) for the
+> canonical evidence-gated product plan and [`../../docs/index.html`](../../docs/index.html)
+> for the maintained public landing page.
+
 A dependency-light, responsive marketing site for the Locus browser extension. It includes a redesigned Locus logo, coded product mockup, feature and use-case sections, changelog, FAQ, legal-page starters, and a production-oriented feedback pipeline.
 
 ## Stack

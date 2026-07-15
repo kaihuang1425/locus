@@ -1,6 +1,12 @@
 # Landing page strategy
 
-Status: positioning + implementation record for `docs/index.html`. Created 2026-07-04.
+> **Historical record — superseded 2026-07-15.** This document preserves the reasoning
+> behind an earlier landing-page implementation. Its performance numbers, permission count,
+> roadmap ideas, and absolute privacy wording are not approved product claims. Use
+> [PRODUCT_SUCCESS_SYSTEM.md](./PRODUCT_SUCCESS_SYSTEM.md) as the canonical evidence-gated
+> strategy and verify any public statement against the current manifest and worktree.
+
+Status: superseded positioning + implementation record for `docs/index.html`. Created 2026-07-04.
 Audience: future contributors and future model sessions editing the landing page. Every claim
 on the page must trace back to a row in the claims inventory below. If you cannot add a row,
 do not add the claim.

@@ -1,8 +1,17 @@
 # Locus Selling Points & Captivation Review
 
-Status: product positioning notes. Created: 2026-07-03. Updated: 2026-07-04 —
-message hierarchy and store/landing narrative realigned to the moat analysis in
-[COMPETITIVE_MOAT.md](COMPETITIVE_MOAT.md).
+Status: **historical positioning exploration; superseded for public claims and
+launch messaging.** Created: 2026-07-03. Last historical update: 2026-07-04.
+
+> **Authority notice (2026-07-15).**
+> [`PRODUCT_SUCCESS_SYSTEM.md`](PRODUCT_SUCCESS_SYSTEM.md) is now canonical for
+> positioning, audience, approved claims, evidence gates, and roadmap decisions.
+> The copy below is retained as a record of hypotheses, not approved public copy.
+> Its absolutes, memory claims, market comparisons, and commercial calls to action
+> require the evidence and owner decisions defined in the canonical claims ledger.
+> [`COMPETITIVE_MOAT.md`](COMPETITIVE_MOAT.md) is likewise a historical snapshot.
+> Present-tense implementation statements below describe the 2026-07-04 snapshot
+> and may no longer match the worktree.
 
 ## Core selling points
 

@@ -737,6 +737,18 @@ textarea:focus-visible {
   width: 3px; border-radius: 0 3px 3px 0; background: var(--brand-grad);
 }
 
+/* Core navigation stays task-shaped. Secondary libraries remain available
+   from More and the command palette without competing with the core loop. */
+#nav-home { order: 1; }
+#nav-inbox { order: 2; }
+#nav-all { order: 3; }
+#nav-more { order: 4; }
+#nav-favorites,
+#nav-read-later,
+#nav-search,
+#nav-archive,
+#nav-trash { display: none; }
+
 .side-sec-row {
   display: flex; align-items: center; justify-content: space-between;
   padding: 10px 12px 4px; flex-shrink: 0;
@@ -1069,6 +1081,32 @@ textarea:focus-visible {
 }
 .side-collapse:hover { color: var(--text); border-color: var(--border2); background: var(--bg3); }
 #sidebar.collapsed .side-collapse svg { transform: rotate(180deg); }
+
+/* One search affordance, one primary save, contextual layout, one overflow. */
+#undo-btn,
+#calendar-btn,
+#search-btn,
+#settings-btn,
+#plugins-btn,
+#menu-btn,
+.topbar-divider { display: none; }
+body:not([data-surface="board"]) #view-mode-btn { display: none; }
+.topbar-primary {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--brand-grad);
+  color: #fff;
+  font: 600 12px var(--font);
+  cursor: pointer;
+  box-shadow: 0 7px 18px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.topbar-primary:hover { filter: brightness(1.04); transform: translateY(-1px); }
+.topbar-primary:active { transform: none; }
 
 /* Prominent top-bar search pill */
 .tb-left { flex: 0 0 0; } /* yield the leading edge to the search pill */
@@ -4066,10 +4104,10 @@ kbd {
 }
 .about-card .btn-secondary { width: 100%; justify-content: center; }
 
-/* ══ Welcome / onboarding questionnaire ══
-   A first-run setup flow with tasteful, restrained motion: the card springs in,
-   each step glides, the logo pops, and the finish check draws itself. All motion
-   is disabled under prefers-reduced-motion. */
+/* ══ Welcome first-save task + hidden legacy questionnaire residue ══
+   The active task uses the same card shell. Legacy step selectors remain only
+   while the hidden questionnaire markup is retained for migration-safe cleanup.
+   Motion is disabled under prefers-reduced-motion. */
 #welcome {
   position: fixed; inset: 0; z-index: 10000;
   display: flex; align-items: center; justify-content: center; padding: 24px;
@@ -4145,6 +4183,28 @@ kbd {
 .wc-nav { display: flex; align-items: center; justify-content: space-between; margin-top: 22px; }
 .wc-skip { background: none; border: none; color: var(--text3); font: 500 13px var(--font); cursor: pointer; padding: 8px; }
 .wc-skip:hover { color: var(--text2); }
+#welcome .wc-progress,
+#welcome .wc-step,
+#welcome .wc-nav:not(.wc-nav-single) { display: none; }
+.wc-task { text-align: center; }
+.wc-candidate {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0 4px;
+  padding: 13px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg3);
+  text-align: left;
+}
+.wc-candidate > img { width: 28px; height: 28px; border-radius: 6px; }
+.wc-candidate-copy { min-width: 0; display: grid; gap: 3px; }
+.wc-candidate-copy strong,
+.wc-candidate-copy small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wc-candidate-copy small { color: var(--text3); }
+.wc-empty { margin: 22px 0 4px; color: var(--text3); }
+.wc-nav-single { margin-top: 24px; }
 .wc-dots { display: flex; gap: 6px; }
 .wc-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--bg5); transition: all 0.3s var(--trans); }
 .wc-dot.active { background: var(--accent); width: 18px; border-radius: 3px; }
@@ -6093,18 +6153,19 @@ body.blur-privacy .otab-title:hover { filter: blur(0); }
 .storage-bar-fill.full { background: var(--red); }
 
 /* ── Schema-mismatch overlay ─────────────────────────────────────── */
-#schema-overlay, #quota-overlay, #cheatsheet-overlay {
+#schema-overlay, #state-recovery-overlay, #quota-overlay, #cheatsheet-overlay {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.55);
   display: flex; align-items: center; justify-content: center;
   z-index: 9000;
   padding: 16px;
 }
-#schema-overlay.hidden, #quota-overlay.hidden, #cheatsheet-overlay.hidden { display: none; }
-#schema-overlay .modal-bd p, #quota-overlay .modal-bd p {
+#schema-overlay.hidden, #state-recovery-overlay.hidden, #quota-overlay.hidden, #cheatsheet-overlay.hidden { display: none; }
+#state-recovery-overlay { z-index: 11000; }
+#schema-overlay .modal-bd p, #state-recovery-overlay .modal-bd p, #quota-overlay .modal-bd p {
   margin: 0 0 10px 0; font: 400 13px var(--font); color: var(--text); line-height: 1.5;
 }
-#schema-overlay .modal-bd p.sub, #quota-overlay .modal-bd p.sub {
+#schema-overlay .modal-bd p.sub, #state-recovery-overlay .modal-bd p.sub, #quota-overlay .modal-bd p.sub {
   color: var(--text2); font-size: 12px;
 }
 .schema-ack-row {
@@ -7476,3 +7537,42 @@ body[data-anim="off"] .cmdp-box { animation: none; }
 @media (prefers-reduced-motion: reduce) {
   [data-theme="folio"] .gcol:hover { transform: none; }
 }
+
+/* Core shell: storage and privacy detail live in Settings, not the primary
+   navigation path. Keeping the sidebar to destinations + Spaces makes the
+   save/see/find loop legible on first use. */
+.side-storage,
+.priv-card { display: none; }
+
+.home-loop-zone {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 0.9fr) auto;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 22px;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--panel);
+  box-shadow: var(--card-shadow);
+}
+.home-loop-head h2,
+.home-zone-heading { font: 650 15px var(--font); color: var(--text); letter-spacing: -0.01em; }
+.home-loop-head p { margin-top: 3px; font: 500 12.5px var(--font); color: var(--text3); }
+.home-loop-count { display: inline-block; margin-top: 7px; font: 600 11px var(--font); color: var(--accent); }
+.home-loop-preview { min-width: 0; }
+.home-loop-actions { display: flex; align-items: center; gap: 8px; }
+.home-zone-heading { margin: 0 0 10px 2px; }
+.home-card { cursor: default; }
+.home-card-more { opacity: 0.38; }
+.home-card-more:focus-visible { opacity: 1; outline: 2px solid var(--accent); outline-offset: 2px; }
+
+@media (max-width: 980px) {
+  .home-loop-zone { grid-template-columns: 1fr; }
+  .home-loop-actions { justify-content: flex-start; }
+}
+
+.otab:focus-within .otab-check,
+.otab:focus-within .otab-close { opacity: 1; }
+.otab-check:focus-visible,
+.otab-close:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

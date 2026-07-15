@@ -1,13 +1,15 @@
 # Locus architecture map
 
-Everything below was verified against the code on 2026-07-13. Line numbers drift —
-anchor by the function/const names given here (grep them).
+Everything below was code-inspected on 2026-07-15. Line numbers drift — anchor by
+the function/const names given here (grep them). This is an architecture map, not
+installed-extension runtime evidence; current limitations are in `STATUS.md`.
 
 ## Data model (chrome.storage.local, key `te`)
 
 ```
 {
   schema: 11,                   // CURRENT_SCHEMA in newtab.js; migrate() upgrades old data
+  _revision: 0,                 // absent legacy value means 0; service-worker-owned token
   activeWsId,
   workspaces: [{
     id, name, symbol?, windowId?,          // windowId ← auto-switch binding
@@ -32,8 +34,9 @@ Key `settings`: `theme size font width language showUrls animate confirmDelete
 blurPrivacy autoSwitchWorkspace hibernate closeTabOnSave sidebarCollapsed
 railCollapsed`, capture prefs (`captureAskEveryTime captureDefaultCategoryId
 captureRememberLast captureLastTarget captureDeduplicate captureIncludeTitle
-captureIncludeFavicon`), `profile {name purpose workflow}` (welcome questionnaire;
-`profile.name` drives the home greeting), `plugins {...}` (tools-hub toggles),
+captureIncludeFavicon`), legacy `profile {name purpose workflow}` fields
+(`profile.name` still drives the home greeting; the visible one-task welcome no
+longer asks the questionnaire), `plugins {...}` (research-build tools-hub toggles),
 `onboarding {welcomeSeen hintsSeen disabled}` (schema 6).
 `showLanding` controls the calm new-tab launch layer (schema 7; absent legacy
 values migrate to `true`).
@@ -44,8 +47,9 @@ behavior.
 `popupSaveMode` is a schema 9 setting; absent values migrate to the session-group
 save behavior.
 Schema 10 adds top-level `trash[]`. Existing archive entries stay archived; moving
-one to Trash preserves its restore metadata and adds `trashedAt`. `purgeExpiredTrash()`
-runs on load and removes valid entries after 30 days while preserving malformed
+one to Trash preserves its restore metadata and adds `trashedAt`.
+`normalizeExpiredTrash()` runs during boot and `purgeExpiredTrash()` rechecks the
+Trash surface; both remove valid entries after 30 days while preserving malformed
 imports for lossless export/error reporting.
 Schema 11 extends `popupHibernateScope` with `selected`, persists the live
 `popupHibernateSelectedTabIds[]` selection (stale ids are removed against
@@ -54,8 +58,8 @@ Schema 11 extends `popupHibernateScope` with `selected`, persists the live
 scope and do not save implicitly before hibernating.
 
 `localStorage.te_settings_mirror` mirrors theme/size/font/width/anim/language for the
-pre-paint inline script in newtab.html (prevents theme flash). Keep both in sync via
-`applySettings()` — never write it by hand.
+packaged `prepaint.js` script loaded by newtab.html (prevents theme flash). Keep both
+in sync via `applySettings()` — never write it by hand.
 
 ## newtab.js section index (grep anchors)
 
@@ -63,7 +67,7 @@ pre-paint inline script in newtab.html (prevents theme flash). Keep both in sync
 |---|---|
 | Schema + i18n | `CURRENT_SCHEMA`, `I18N`, `tr(`, `applyLocale` |
 | Router (hash routes) | `const Router`, `Router.sync` |
-| State store (load/persist/undo/redo) | `const State`, `State.snapshot`, `persistNow` |
+| State store (load/persist/undo/redo/freshness) | `const State`, `needsPersistence`, `observeStoredState`, `recoverAuthoritative`, `startStateStorageSync`, action IDs from `State.snapshot`, `capturePending`, `captureCommitPending`, `registerClosedTabs`, `mutationEpoch`, `persistNow`, `stateWriteFailureEpoch`, message type `locus-state-write`, `_revision` |
 | Migrations | `function migrate()` |
 | Storage quota UI | `refreshStorageUsage`, `showStorageFull`, `STORAGE_QUOTA` |
 | Settings page (full-page surface) | `SETTINGS_SECTIONS`, `setSettingsSection`, `renderShortcutsSettings`, `renderStorageSettings`, `renderAboutSettings`, `openSettingsDrawer` |
@@ -73,14 +77,15 @@ pre-paint inline script in newtab.html (prevents theme flash). Keep both in sync
 | Home surface | `renderHome`, `buildProjectsRow`, `homeAccentColor`, `homeCardIconHtml` |
 | Zen launch layer | `showLandingLayer`, `renderLandingLayer`, `paintLandingResults`, `bindLandingLayer` |
 | Library surfaces | `openLibrarySurface`, `renderLibrarySurface`, `renderReadLaterSurface`, `renderArchiveSurface`, `renderTrashSurface`, `collectWorkspaceTabs`, `toggleFavorite`, `toggleReadLater` |
-| Archive + Trash lifecycle | `archiveItem`, `archiveGroup`, `moveArchiveEntriesToTrash`, `restoreStoredEntries`, `permanentlyDeleteTrashEntries`, `purgeExpiredTrash` |
+| Archive + Trash lifecycle | `archiveItem`, `archiveGroup`, `moveArchiveEntriesToTrash`, `restoreStoredEntries`, `permanentlyDeleteTrashEntries`, `normalizeExpiredTrash`, `purgeExpiredTrash` |
 | Board layouts | `renderBoard`, `renderListView`, `renderCanvasView`, `renderExplorerView`, `renderTimelineView`, `renderGalleryView`, `renderGraphView` |
 | Group pages + item detail | `openGroupPage`, `renderItemDetail` (route `?item=<id>`) |
 | Calendar | `openCalendar`, `renderCalendar` |
 | Search + operators | `renderSearchSurface`, `collectWorkspaceItems`, `searchItemMatches`, `applySearchFilter`, operators `type: is: domain: site: url: in: tag: color:` with `-` negation |
 | Command palette | `openCommandPalette`, `buildPaletteCommands`, `_palSavedLinkCommand` |
 | Shared empty states | `buildSystemEmptyState`, `buildEmptySpaceState`, `SYSTEM_EMPTY_ICONS` |
-| App menu / About / Welcome | `openAppMenu`, `openAbout`, `openWelcome`, `wcShow` |
+| App menu / About / Welcome | `openAppMenu`, `openAbout`, `openWelcome`; `wcShow` and `WELCOME_STEPS` are hidden legacy questionnaire residue |
+| Import validation/recovery | `validateImportData`, `applyImportReplace`, `applyImportMerge`; pure graph helpers in `import-utils.js` |
 | Tools hub (plugins) | `openToolsHub`, overlays `pomo/fin/habit/water/books/goals/workout/subs` |
 | All bindings | `function init()` at the bottom — global Escape handler + `_escBlockers` list |
 
@@ -93,9 +98,10 @@ else the active category board. The settings
 page (`#settings-drawer`) and tools overlays sit above as fixed overlays. Router
 syncs hash routes so surfaces survive reload/back.
 
-`#landing-layer` is the default new-tab launch view when
-`settings.showLanding !== false`. It is a fixed layer above Home, not a router
-surface: Escape, the chevron, or downward wheel motion dismiss it for the current
+`#landing-layer` is an optional established-user new-tab launch view when
+`settings.showLanding !== false` and onboarding has already been completed. It is
+a fixed layer above Home, not a router surface: Escape, the chevron, or downward
+wheel motion dismiss it for the current
 page and reveal the already-rendered Home. Its counts come from the active
 category's Inbox and `collectReminders()`. Saved-link typeahead reads
 `collectWorkspaceTabs()` and the shared `parseSearchQuery()` operator parser;
@@ -141,8 +147,52 @@ in newtab.css; rail folds to a top strip below 880px.
 - `media/fonts/fonts.css` is the shared, local-only font source for `newtab.html`
   and `popup.html`. Its WOFF2 files and OFL notices live beside it; keep the
   selectable family names and weight/style ranges aligned with `newtab.css`.
-- `isDarkTheme()` (newtab.js) and the inline `DARK` map in newtab.html head must list
+- `isDarkTheme()` (newtab.js) and the `DARK` map in packaged `prepaint.js` must list
   the same dark theme ids; both feed `body[data-theme-mode]`.
+- `background.js` owns the only whole-state `chrome.storage.local.set({ te: ... })`.
+  New-tab and popup writes freeze an immutable candidate when persistence is
+  requested, assign its current `_revision` only when its turn begins, and accept
+  only the next revision receipt. If one request fails, a failure epoch cancels
+  every candidate already queued behind it so a rollback graph cannot be sent as
+  another mutation. The service worker runs every background and message write
+  through one FIFO, performs the revision comparison inside that queue, and also
+  takes the `locus-state-write` Web Lock when available. The FIFO is the modeled
+  lock-unavailable boundary for one service-worker lifetime; termination/restart
+  remains an installed-runtime gate. Preserve typed conflict replies, visible
+  recovery, and the rule that source tabs close only after an accepted receipt.
+  Never add a second direct whole-state writer.
+- New-tab keeps a serialized confirmed-state baseline separate from its mutable
+  graph. `storage.onChanged` may report the expected stored candidate before the
+  service-worker response; matching that event is observation only and never a
+  persistence receipt. A clean, idle page may adopt a strictly newer revision.
+  A dirty page never merges, rebases, or auto-replaces the incoming graph: it
+  invalidates unsent writes and leaves the local view behind the inert,
+  non-dismissible `#state-recovery-overlay` until reload. Unknown, failed, or
+  timed-out receipts centrally require recovery and interrupt async browser-effect
+  loops. Explicit failure recovery drains queued successors and prefers a newer
+  `storage.onChanged` graph observed while its read was pending or already remembered.
+  Capture recovery re-reads `te` only when `dataMutationToken()` proves no later
+  edit would be erased, and revalidates that token immediately before adoption;
+  otherwise the local graph remains behind the interlock.
+  A bounded accepted-self map distinguishes delayed
+  exact events from genuine revision rollback. Both the new-tab client and central
+  worker reject fractional or negative revision tokens before sending/writing.
+  `initAfterLoad()` persists only when migration, Trash/default, settings, or real
+  deep-link normalization differs from the confirmed baseline, so clean boots do
+  not advance `_revision`.
+- Popup `doSave`, `hibernateSelectedScope`, and `saveWindow` share
+  `popupCapturePending` from before mutation through their browser-side effects.
+  New-tab `commitCapturedTabs` uses `captureCommitPending` and rolls back a second
+  optimistic capture before it can enqueue or close a source. `dataMutationEpoch`
+  prevents capture failure or failed Redo from restoring an older graph over a
+  later ordinary edit.
+- Capture Undo is action-scoped. Keep it blocked while `capturePending`, preserve
+  `restoredTabId` across retries, and use `mutationEpoch` checks around asynchronous
+  tab reopening so Undo cannot replace a newer in-page mutation or reorder history.
+- Render favicons through Chromium's local `_favicon` endpoint. Stored legacy
+  `fav` metadata may be preserved for portability but must never be inserted as a
+  remote image source; extension CSP keeps `img-src` local/data/blob and
+  `connect-src 'none'`.
 - background.js and popup.js each re-implement `captureFields` /
   `resolveCaptureTarget` (no shared modules — plain scripts). Changing capture
   semantics means touching all three copies (newtab.js has `captureTabFields`).

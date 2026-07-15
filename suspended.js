@@ -23,9 +23,17 @@
     link.href = href;
     document.head.appendChild(link);
   }
-  var favHref = fav;
-  if (!favHref && url) {
-    try { favHref = 'https://www.google.com/s2/favicons?domain=' + new URL(url).hostname + '&sz=64'; } catch (e) {}
+  var favHref = '';
+  if (url) {
+    try {
+      var page = new URL(url);
+      if (/^https?:$/.test(page.protocol)) {
+        var endpoint = new URL(chrome.runtime.getURL('_favicon/'));
+        endpoint.searchParams.set('pageUrl', page.href);
+        endpoint.searchParams.set('size', '64');
+        favHref = endpoint.href;
+      }
+    } catch (e) {}
   }
   var favEl = document.getElementById('fav');
   if (favHref) {

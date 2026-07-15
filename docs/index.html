@@ -4,18 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Locus · Local-first new tab workspace</title>
-  <meta name="description" content="Free, source-available Chrome and Edge extension that replaces the new tab with a private workspace for saved tabs, notes, todos, and reminders. Hibernated tabs keep memory low. No account, no server, no host permissions.">
-  <link rel="canonical" href="https://erichuang1425.github.io/locus/">
+  <meta name="description" content="Noindex research-alpha candidate: explicitly save tabs with notes, todos, and reminders, then find and reopen them later in one desktop Chromium browser profile.">
+  <meta name="robots" content="noindex, nofollow, noarchive">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Locus · Local-first new tab workspace">
-  <meta property="og:description" content="Save tabs next to notes, todos, and reminders. Hibernated placeholders keep memory low. No account, nothing leaves your machine.">
-  <meta property="og:url" content="https://erichuang1425.github.io/locus/">
-  <meta property="og:image" content="https://erichuang1425.github.io/locus/images/tabento-workspace-demo.png">
-  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:description" content="Explicitly save tabs next to notes, todos, and reminders, then recover them later in one desktop Chromium browser profile.">
+  <meta name="twitter:card" content="summary">
   <link rel="icon" type="image/png" href="images/icon128.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400..700&display=swap" rel="stylesheet">
   <script>
     /* Pre-paint init: apply saved theme + language before first render. */
     (function () {
@@ -62,7 +57,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
     body {
-      font-family: "DM Sans", "Inter", -apple-system, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
       background: var(--bg); color: var(--text);
       font-size: 16.5px; line-height: 1.65;
       -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
@@ -283,7 +278,7 @@
       </a>
       <div class="nav-links">
         <a href="#workspace" data-i18n="nav.workspace">Workspace</a>
-        <a href="#tools" data-i18n="nav.tools">Tools</a>
+        <a href="#moments" data-i18n="nav.how">How it works</a>
         <a href="#privacy" data-i18n="nav.privacy">Privacy</a>
         <a href="#roadmap" data-i18n="nav.roadmap">Roadmap</a>
         <a href="https://github.com/erichuang1425/locus">GitHub</a>
@@ -305,14 +300,14 @@
     <!-- ── Hero ─────────────────────────────────────── -->
     <header class="hero" id="top">
       <div class="wrap">
-        <p class="eyebrow" data-i18n="hero.eyebrow">Free, source-available extension for Chrome and Edge</p>
+        <p class="eyebrow" data-i18n="hero.eyebrow">Noncommercial research alpha for Chrome and Edge</p>
         <h1 data-i18n="hero.h1">Your new tab, rebuilt as a local-first workspace.</h1>
-        <p class="sub" data-i18n="hero.sub">Save tabs next to notes, todos, and reminders. Reopen them through hibernated placeholders that load only when you click, so fifty saved tabs cost almost no memory. No account. Nothing leaves your machine.</p>
+        <p class="sub" data-i18n="hero.sub">Explicitly save tabs next to notes, todos, and reminders, then find and reopen them later. Workspace data is stored in this browser profile; export it before uninstalling Locus or deleting the profile. There is no Locus account, backend, or host permission. Opening a site or submitting a search still connects through your browser.</p>
         <div class="cta-row">
           <a class="btn btn-pri" href="https://github.com/erichuang1425/locus" data-i18n="hero.cta1">Get it on GitHub</a>
           <a class="btn btn-sec" href="#workspace" data-i18n="hero.cta2">See what's inside</a>
         </div>
-        <p class="store-note" data-i18n="hero.note">Not on the Chrome Web Store yet. Installs unpacked in about a minute.</p>
+        <p class="store-note" data-i18n="hero.note">Candidate research page — not approved for public launch or the Chrome Web Store. The evaluation build can be loaded unpacked from this repository.</p>
         <div class="chips">
           <span class="chip" data-i18n="chip.local">Local-first</span>
           <span class="chip" data-i18n="chip.perm">No host permissions</span>
@@ -336,16 +331,16 @@
     <section id="moments">
       <div class="wrap">
         <p class="kick rv" data-i18n="mo.kick">What it does</p>
-        <h2 class="rv" data-i18n="mo.h2">Keep your context without carrying the weight.</h2>
-        <p class="lede rv" data-i18n="mo.lede">Browser work piles up because it is unfinished. Locus gives that pile a place to live, and gives you your memory back.</p>
+        <h2 class="rv" data-i18n="mo.h2">Close a tab without losing its place.</h2>
+        <p class="lede rv" data-i18n="mo.lede">Browser work piles up because it is unfinished. Locus turns open tabs into saved references you can organize, find, and reopen deliberately.</p>
         <div class="grid3">
           <div class="card rv">
             <h3 data-i18n="mo.c1.h">Save the mess</h3>
-            <p data-i18n="mo.c1.p">One click saves the current tab or every tab in the window. Right-click saves pages, links, selected text, and images. Bookmarks import. Ctrl+Shift+S works from anywhere.</p>
+            <p data-i18n="mo.c1.p">Use the toolbar popup to save the current tab or a window after reviewing the destination and close behavior. Right-click capture and Ctrl+Shift+S are also available.</p>
           </div>
           <div class="card rv">
             <h3 data-i18n="mo.c2.h">Reopen only what matters</h3>
-            <p data-i18n="mo.c2.p">Saved pages open through a light placeholder and load the real site when you click it. Hibernation is on by default: a board of fifty saved tabs costs almost nothing until you need one.</p>
+            <p data-i18n="mo.c2.p">Saved pages can open through a packaged placeholder. The destination loads only after you choose to continue, so a saved reference does not have to remain a live tab.</p>
           </div>
           <div class="card rv">
             <h3 data-i18n="mo.c3.h">Find anything later</h3>
@@ -365,116 +360,66 @@
         <div class="rows">
           <div class="row rv">
             <h3 data-i18n="ws.r1.h">More than tabs</h3>
-            <p data-i18n="ws.r1.p">Notes sit beside the pages they refer to. Todos check off. Reminders fire, repeat on a schedule, and show up on a calendar. Stacks nest inside stacks when a project outgrows a card.</p>
+            <p data-i18n="ws.r1.p">Notes sit beside the pages they refer to. Todos check off. Reminders can be scheduled and projected onto a calendar; overdue, restart, and timezone behavior still require release-candidate validation. Stacks nest inside stacks when a project outgrows a card.</p>
           </div>
           <div class="row rv">
-            <h3 data-i18n="ws.r2.h">Five layouts</h3>
+            <h3 data-i18n="ws.r2.h">Core and advanced views</h3>
             <div>
-              <p data-i18n="ws.r2.p">Board, list, canvas, explorer, and timeline show the same items in different shapes. Focus a single group when a board is too much. Nothing moves; only the view changes.</p>
+              <p data-i18n="ws.r2.p">Board and list stay in the core path. Canvas, explorer, timeline, gallery, and graph remain available under Advanced when a project needs a different shape.</p>
               <div class="lay-chips">
                 <span data-i18n="ws.lay.board">Board</span>
                 <span data-i18n="ws.lay.list">List</span>
-                <span data-i18n="ws.lay.canvas">Canvas</span>
-                <span data-i18n="ws.lay.explorer">Explorer</span>
-                <span data-i18n="ws.lay.timeline">Timeline</span>
-                <span data-i18n="ws.lay.calendar">+ Calendar</span>
+                <span data-i18n="ws.lay.advanced">Advanced views</span>
               </div>
-            </div>
-          </div>
-          <div class="row rv">
-            <h3 data-i18n="ws.r3.h">Your look</h3>
-            <div>
-              <p data-i18n="ws.r3.p">Seventeen themes, seven typefaces, three densities, adjustable column widths. The most-visited page in your browser should look like yours.</p>
-              <div class="swatches" aria-hidden="true">
-                <span class="sw" style="--sw-bg:#eef1fb;--sw-ac:#5566f2" title="Locus"></span>
-                <span class="sw" style="--sw-bg:#0c0e1a;--sw-ac:#8b9bff" title="Locus Dark"></span>
-                <span class="sw" style="--sw-bg:#f0e4cb;--sw-ac:#c2761a" title="Rice Paper"></span>
-                <span class="sw" style="--sw-bg:#17120d;--sw-ac:#f5b841" title="Lacquer"></span>
-                <span class="sw" style="--sw-bg:#f4f4f7;--sw-ac:#4f46e5" title="Light"></span>
-                <span class="sw" style="--sw-bg:#0b0b10;--sw-ac:#818cf8" title="Dark"></span>
-                <span class="sw" style="--sw-bg:#0a0c14;--sw-ac:#5eead4" title="Aurora"></span>
-                <span class="sw" style="--sw-bg:#282a36;--sw-ac:#bd93f9" title="Dracula"></span>
-                <span class="sw" style="--sw-bg:#2e3440;--sw-ac:#88c0d0" title="Nord"></span>
-                <span class="sw" style="--sw-bg:#191724;--sw-ac:#c4a7e7" title="Rosé Pine"></span>
-                <span class="sw" style="--sw-bg:#1a1b26;--sw-ac:#7aa2f7" title="Tokyo Night"></span>
-                <span class="sw" style="--sw-bg:#002b36;--sw-ac:#268bd2" title="Solarized Dark"></span>
-                <span class="sw" style="--sw-bg:#fdf6e3;--sw-ac:#268bd2" title="Solarized Light"></span>
-                <span class="sw" style="--sw-bg:#282828;--sw-ac:#fabd2f" title="Gruvbox"></span>
-                <span class="sw" style="--sw-bg:#1e1e2e;--sw-ac:#cba6f7" title="Catppuccin"></span>
-                <span class="sw" style="--sw-bg:#f4ecd8;--sw-ac:#8b4513" title="Sepia"></span>
-                <span class="sw" style="--sw-bg:#0a0a0a;--sw-ac:#ffffff" title="Mono"></span>
-              </div>
-              <p class="sw-cap" data-i18n="ws.swcap">All seventeen, from rice paper and lacquer to Nord, Gruvbox, and Rosé Pine.</p>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ── Tools ────────────────────────────────────── -->
-    <div class="tools-bleed">
-      <section id="tools">
-        <div class="wrap">
-          <p class="kick rv" data-i18n="tl.kick">Built-in tools</p>
-          <h2 class="rv" data-i18n="tl.h2">Small tools, one workspace</h2>
-          <p class="lede rv" data-i18n="tl.lede">Eight trackers are built in and open from the Tools hub. Each pops out as a floating mini-window you can drag anywhere. Use two of them, or none; they stay out of the way until asked.</p>
-          <div class="grid4">
-            <div class="tool rv"><div class="tool-ico">🍅</div><h3 data-i18n="tl.t1.h">Pomodoro</h3><p data-i18n="tl.t1.p">Timed focus sessions, next to the tabs you're working through.</p></div>
-            <div class="tool rv"><div class="tool-ico">💰</div><h3 data-i18n="tl.t2.h">Finance diary</h3><p data-i18n="tl.t2.p">Note spending as it happens and see where the month went.</p></div>
-            <div class="tool rv"><div class="tool-ico">🔁</div><h3 data-i18n="tl.t3.h">Habits</h3><p data-i18n="tl.t3.p">Daily streaks you keep on a page you already open.</p></div>
-            <div class="tool rv"><div class="tool-ico">💧</div><h3 data-i18n="tl.t4.h">Water</h3><p data-i18n="tl.t4.p">One tap per glass. A small nudge that costs nothing.</p></div>
-            <div class="tool rv"><div class="tool-ico">🎯</div><h3 data-i18n="tl.t5.h">Goals</h3><p data-i18n="tl.t5.p">Long-term targets with progress you can see.</p></div>
-            <div class="tool rv"><div class="tool-ico">💳</div><h3 data-i18n="tl.t6.h">Subscriptions</h3><p data-i18n="tl.t6.p">Recurring charges in one list, with alerts before renewals.</p></div>
-            <div class="tool rv"><div class="tool-ico">📚</div><h3 data-i18n="tl.t7.h">Reading</h3><p data-i18n="tl.t7.p">A log for finished books and a wishlist for the pile.</p></div>
-            <div class="tool rv"><div class="tool-ico">💪</div><h3 data-i18n="tl.t8.h">Workouts</h3><p data-i18n="tl.t8.p">Session logs without installing another app.</p></div>
-          </div>
-          <p class="foot-note rv" data-i18n="tl.note">All eight ship with the extension today. Nothing here is a mockup.</p>
-        </div>
-      </section>
-    </div>
-
     <!-- ── Privacy ──────────────────────────────────── -->
     <section id="privacy">
       <div class="wrap">
         <p class="kick rv" data-i18n="pv.kick">Privacy</p>
-        <h2 class="rv" data-i18n="pv.h2">Nothing leaves your machine</h2>
-        <p class="lede rv" data-i18n="pv.lede">A tab manager sees what you work on. That is exactly why Locus is built so it cannot tell anyone.</p>
+        <h2 class="rv" data-i18n="pv.h2">Local workspace, no Locus cloud</h2>
+        <p class="lede rv" data-i18n="pv.lede">Workspace data lives in this browser profile's local extension storage. Export backups are user-managed; uninstalling the extension or deleting the profile removes that local data. Locus has no account, backend, or host permissions; opening a destination or submitting a search still connects through your browser.</p>
         <div class="grid3s">
-          <div class="pv rv"><h3 data-i18n="pv.i1.h">No account</h3><p data-i18n="pv.i1.p">Nothing to sign up for. Open a new tab and it works.</p></div>
-          <div class="pv rv"><h3 data-i18n="pv.i2.h">No server</h3><p data-i18n="pv.i2.p">Data lives in chrome.storage.local on your device. There is no backend to breach.</p></div>
-          <div class="pv rv"><h3 data-i18n="pv.i3.h">No host permissions</h3><p data-i18n="pv.i3.p">Locus cannot read or change the sites you visit. The manifest is one file; check it.</p></div>
-          <div class="pv rv"><h3 data-i18n="pv.i4.h">Portable data</h3><p data-i18n="pv.i4.p">Export everything as JSON. Imports show a preview before touching your data.</p></div>
+          <div class="pv rv"><h3 data-i18n="pv.i1.h">No Locus account</h3><p data-i18n="pv.i1.p">There is no sign-up flow. Load the extension and open a new tab.</p></div>
+          <div class="pv rv"><h3 data-i18n="pv.i2.h">No Locus backend</h3><p data-i18n="pv.i2.p">Workspace data lives in chrome.storage.local in this browser profile; Locus does not operate a backend for it.</p></div>
+          <div class="pv rv"><h3 data-i18n="pv.i3.h">No host permissions</h3><p data-i18n="pv.i3.p">Locus has no permission to inspect site content. Explicit capture stores the page, link, selection, or image URL you choose.</p></div>
+          <div class="pv rv"><h3 data-i18n="pv.i4.h">Portable data</h3><p data-i18n="pv.i4.p">Export the workspace as JSON and keep the backup yourself. Compatible imports show a preview before touching your data.</p></div>
           <div class="pv rv"><h3 data-i18n="pv.i5.h">Blur for screen shares</h3><p data-i18n="pv.i5.p">One setting blurs the whole board when someone else can see your screen.</p></div>
           <div class="pv rv"><h3 data-i18n="pv.i6.h">Source available</h3><p data-i18n="pv.i6.p">Research, contribution, and informal personal use only. No commercial use in any form.</p></div>
         </div>
-        <p class="foot-note rv"><span data-i18n="pv.note">Seven browser permissions, each explained in the</span> <a href="https://github.com/erichuang1425/locus#privacy">README</a><span data-i18n="pv.note2">.</span></p>
+        <p class="foot-note rv"><span data-i18n="pv.note">Eight browser permissions, each explained in the</span> <a href="https://github.com/erichuang1425/locus#privacy">README</a><span data-i18n="pv.note2">.</span></p>
       </div>
     </section>
 
     <!-- ── Roadmap ──────────────────────────────────── -->
     <section id="roadmap">
       <div class="wrap">
-        <span class="plan-pill rv" data-i18n="rm.pill">Planned, not shipped</span>
-        <h2 class="rv" data-i18n="rm.h2">Where Locus is headed</h2>
-        <p class="lede rv" data-i18n="rm.lede">Useful today, heading somewhere specific. None of this exists yet, and the page you are reading does not depend on it.</p>
+        <span class="plan-pill rv" data-i18n="rm.pill">Evidence gates, not promises</span>
+        <h2 class="rv" data-i18n="rm.h2">Prove the core before expanding it</h2>
+        <p class="lede rv" data-i18n="rm.lede">Near-term work is limited to outcomes that can be tested. Ideas do not become commitments until they pass the product, reliability, and distribution gates.</p>
         <div class="rm">
           <div class="rv">
-            <h3 data-i18n="rm.i1.h">A plugin library</h3>
-            <p data-i18n="rm.i1.p">The eight tools are built in today. The plan is to rebuild them as plugins, so the workspace grows tool by tool and you add only what earns space.</p>
+            <h3 data-i18n="rm.i1.h">Prove save → recover</h3>
+            <p data-i18n="rm.i1.p">Measure whether first-time users can save, close, find, and reopen a page without guidance or data loss.</p>
           </div>
           <div class="rv">
-            <h3 data-i18n="rm.i2.h">A desktop companion</h3>
-            <p data-i18n="rm.i2.p">A desktop app that shares the same local-first data as the extension.</p>
+            <h3 data-i18n="rm.i2.h">Make recovery boring</h3>
+            <p data-i18n="rm.i2.p">Stress-test concurrent writes, imports, exports, reminders, large archives, and rollback paths before calling them dependable.</p>
           </div>
           <div class="rv">
-            <h3 data-i18n="rm.i3.h">Automation you own</h3>
-            <p data-i18n="rm.i3.p">If Locus ever talks to outside services, you bring your own API keys. No cloud account to rent.</p>
+            <h3 data-i18n="rm.i3.h">Finish first-use UX</h3>
+            <p data-i18n="rm.i3.p">Validate the single-task welcome, simplify the everyday shell, and close keyboard, contrast, and screen-reader gaps.</p>
           </div>
           <div class="rv">
-            <h3 data-i18n="rm.i4.h">Optional encrypted sync</h3>
-            <p data-i18n="rm.i4.p">Across devices, without giving up local-first defaults.</p>
+            <h3 data-i18n="rm.i4.h">Earn distribution</h3>
+            <p data-i18n="rm.i4.p">Resolve licensing, naming, store scope, and public claims before asking a broad audience to install the extension.</p>
           </div>
         </div>
+        <p class="foot-note rv"><span data-i18n="rm.note">The gates, owners, measures, and stop conditions live in the</span> <a href="https://github.com/erichuang1425/locus/blob/main/docs/PRODUCT_SUCCESS_SYSTEM.md" data-i18n="rm.link">Product Success System</a><span data-i18n="rm.note2">.</span></p>
       </div>
     </section>
 
@@ -482,7 +427,7 @@
     <section id="install">
       <div class="wrap">
         <p class="kick rv" data-i18n="in.kick">Install</p>
-        <h2 class="rv" data-i18n="in.h2">Install in about a minute</h2>
+        <h2 class="rv" data-i18n="in.h2">Load the research alpha unpacked</h2>
         <p class="lede rv" data-i18n="in.lede">Locus is not on the Chrome Web Store yet. Until it is, it loads as an unpacked extension:</p>
         <ol class="steps rv">
           <li data-i18n="in.s1">Download or clone the repository from GitHub.</li>
@@ -493,7 +438,7 @@
         <div class="cta-row rv" style="justify-content:flex-start">
           <a class="btn btn-pri" href="https://github.com/erichuang1425/locus" data-i18n="in.cta">Get Locus on GitHub</a>
         </div>
-        <p class="store-note rv" style="margin-top:14px" data-i18n="in.note">Free for noncommercial research, contribution, and informal personal use. Chrome and Edge, Manifest V3.</p>
+        <p class="store-note rv" style="margin-top:14px" data-i18n="in.note">Noncommercial research alpha for Chrome and Edge (Manifest V3). See the research-use license before installing.</p>
       </div>
     </section>
   </main>
@@ -502,7 +447,7 @@
     <div class="wrap ft">
       <div>
         <div class="ft-brand"><img src="images/icon128.png" alt=""><span>Locus</span></div>
-        <p class="ft-line" data-i18n="ft.line">A local-first new tab workspace. Free for research, contribution, and informal personal use.</p>
+        <p class="ft-line" data-i18n="ft.line">A local-first save-and-recover workspace. Noncommercial research alpha.</p>
       </div>
       <div class="ft-links">
         <a href="https://github.com/erichuang1425/locus">GitHub</a>
@@ -522,33 +467,33 @@
         en: {
           'meta.title': 'Locus · Local-first new tab workspace',
           'skip': 'Skip to content',
-          'nav.workspace': 'Workspace', 'nav.tools': 'Tools', 'nav.privacy': 'Privacy', 'nav.roadmap': 'Roadmap',
-          'hero.eyebrow': 'Free, source-available extension for Chrome and Edge',
+          'nav.workspace': 'Workspace', 'nav.how': 'How it works', 'nav.privacy': 'Privacy', 'nav.roadmap': 'Roadmap',
+          'hero.eyebrow': 'Noncommercial research alpha for Chrome and Edge',
           'hero.h1': 'Your new tab, rebuilt as a local-first workspace.',
-          'hero.sub': "Save tabs next to notes, todos, and reminders. Reopen them through hibernated placeholders that load only when you click, so fifty saved tabs cost almost no memory. No account. Nothing leaves your machine.",
+          'hero.sub': 'Explicitly save tabs next to notes, todos, and reminders, then find and reopen them later. Workspace data is stored in this browser profile; export it before uninstalling Locus or deleting the profile. There is no Locus account, backend, or host permission. Opening a site or submitting a search still connects through your browser.',
           'hero.cta1': 'Get it on GitHub',
           'hero.cta2': "See what's inside",
-          'hero.note': 'Not on the Chrome Web Store yet. Installs unpacked in about a minute.',
+          'hero.note': 'Candidate research page — not approved for public launch or the Chrome Web Store. The evaluation build can be loaded unpacked from this repository.',
           'chip.local': 'Local-first', 'chip.perm': 'No host permissions', 'chip.acct': 'No account', 'chip.license': 'Research-use license',
           'hero.alt': 'Scattered browser links, favicons, and bookmark cards flowing together and settling into an organized bento of spaces',
           'hero.cap': 'Scattered links, settling into organized spaces.',
           'mo.kick': 'What it does',
-          'mo.h2': 'Keep your context without carrying the weight.',
-          'mo.lede': 'Browser work piles up because it is unfinished. Locus gives that pile a place to live, and gives you your memory back.',
+          'mo.h2': 'Close a tab without losing its place.',
+          'mo.lede': 'Browser work piles up because it is unfinished. Locus turns open tabs into saved references you can organize, find, and reopen deliberately.',
           'mo.c1.h': 'Save the mess',
-          'mo.c1.p': 'One click saves the current tab or every tab in the window. Right-click saves pages, links, selected text, and images. Bookmarks import. Ctrl+Shift+S works from anywhere.',
+          'mo.c1.p': 'Use the toolbar popup to save the current tab or a window after reviewing the destination and close behavior. Right-click capture and Ctrl+Shift+S are also available.',
           'mo.c2.h': 'Reopen only what matters',
-          'mo.c2.p': 'Saved pages open through a light placeholder and load the real site when you click it. Hibernation is on by default: a board of fifty saved tabs costs almost nothing until you need one.',
+          'mo.c2.p': 'Saved pages can open through a packaged placeholder. The destination loads only after you choose to continue, so a saved reference does not have to remain a live tab.',
           'mo.c3.h': 'Find anything later',
           'mo.c3.p': "Search by words, type, color, tag, domain, or todo state, and exclude what you don't want with a minus.",
           'ws.kick': 'The workspace',
           'ws.h2': 'One workspace, arranged your way',
           'ws.lede': 'Tabs are only half of browser work. The other half is what you meant to do with them.',
           'ws.r1.h': 'More than tabs',
-          'ws.r1.p': 'Notes sit beside the pages they refer to. Todos check off. Reminders fire, repeat on a schedule, and show up on a calendar. Stacks nest inside stacks when a project outgrows a card.',
-          'ws.r2.h': 'Five layouts',
-          'ws.r2.p': 'Board, list, canvas, explorer, and timeline show the same items in different shapes. Focus a single group when a board is too much. Nothing moves; only the view changes.',
-          'ws.lay.board': 'Board', 'ws.lay.list': 'List', 'ws.lay.canvas': 'Canvas',
+          'ws.r1.p': 'Notes sit beside the pages they refer to. Todos check off. Reminders can be scheduled and projected onto a calendar; overdue, restart, and timezone behavior still require release-candidate validation. Stacks nest inside stacks when a project outgrows a card.',
+          'ws.r2.h': 'Core and advanced views',
+          'ws.r2.p': 'Board and list stay in the core path. Canvas, explorer, timeline, gallery, and graph remain available under Advanced when a project needs a different shape.',
+          'ws.lay.board': 'Board', 'ws.lay.list': 'List', 'ws.lay.advanced': 'Advanced views', 'ws.lay.canvas': 'Canvas',
           'ws.lay.explorer': 'Explorer', 'ws.lay.timeline': 'Timeline', 'ws.lay.calendar': '+ Calendar',
           'ws.r3.h': 'Your look',
           'ws.r3.p': 'Seventeen themes, seven typefaces, three densities, adjustable column widths. The most-visited page in your browser should look like yours.',
@@ -566,68 +511,69 @@
           'tl.t8.h': 'Workouts', 'tl.t8.p': 'Session logs without installing another app.',
           'tl.note': 'All eight ship with the extension today. Nothing here is a mockup.',
           'pv.kick': 'Privacy',
-          'pv.h2': 'Nothing leaves your machine',
-          'pv.lede': 'A tab manager sees what you work on. That is exactly why Locus is built so it cannot tell anyone.',
-          'pv.i1.h': 'No account', 'pv.i1.p': 'Nothing to sign up for. Open a new tab and it works.',
-          'pv.i2.h': 'No server', 'pv.i2.p': 'Data lives in chrome.storage.local on your device. There is no backend to breach.',
-          'pv.i3.h': 'No host permissions', 'pv.i3.p': 'Locus cannot read or change the sites you visit. The manifest is one file; check it.',
-          'pv.i4.h': 'Portable data', 'pv.i4.p': 'Export everything as JSON. Imports show a preview before touching your data.',
+          'pv.h2': 'Local workspace, no Locus cloud',
+          'pv.lede': "Workspace data lives in this browser profile's local extension storage. Export backups are user-managed; uninstalling the extension or deleting the profile removes that local data. Locus has no account, backend, or host permissions; opening a destination or submitting a search still connects through your browser.",
+          'pv.i1.h': 'No Locus account', 'pv.i1.p': 'There is no sign-up flow. Load the extension and open a new tab.',
+          'pv.i2.h': 'No Locus backend', 'pv.i2.p': 'Workspace data lives in chrome.storage.local in this browser profile; Locus does not operate a backend for it.',
+          'pv.i3.h': 'No host permissions', 'pv.i3.p': 'Locus has no permission to inspect site content. Explicit capture stores the page, link, selection, or image URL you choose.',
+          'pv.i4.h': 'Portable data', 'pv.i4.p': 'Export the workspace as JSON and keep the backup yourself. Compatible imports show a preview before touching your data.',
           'pv.i5.h': 'Blur for screen shares', 'pv.i5.p': 'One setting blurs the whole board when someone else can see your screen.',
           'pv.i6.h': 'Source available', 'pv.i6.p': 'Research, contribution, and informal personal use only. No commercial use in any form.',
-          'pv.note': 'Seven browser permissions, each explained in the', 'pv.note2': '.',
-          'rm.pill': 'Planned, not shipped',
-          'rm.h2': 'Where Locus is headed',
-          'rm.lede': 'Useful today, heading somewhere specific. None of this exists yet, and the page you are reading does not depend on it.',
-          'rm.i1.h': 'A plugin library',
-          'rm.i1.p': 'The eight tools are built in today. The plan is to rebuild them as plugins, so the workspace grows tool by tool and you add only what earns space.',
-          'rm.i2.h': 'A desktop companion',
-          'rm.i2.p': 'A desktop app that shares the same local-first data as the extension.',
-          'rm.i3.h': 'Automation you own',
-          'rm.i3.p': 'If Locus ever talks to outside services, you bring your own API keys. No cloud account to rent.',
-          'rm.i4.h': 'Optional encrypted sync',
-          'rm.i4.p': 'Across devices, without giving up local-first defaults.',
+          'pv.note': 'Eight browser permissions, each explained in the', 'pv.note2': '.',
+          'rm.pill': 'Evidence gates, not promises',
+          'rm.h2': 'Prove the core before expanding it',
+          'rm.lede': 'Near-term work is limited to outcomes that can be tested. Ideas do not become commitments until they pass the product, reliability, and distribution gates.',
+          'rm.i1.h': 'Prove save → recover',
+          'rm.i1.p': 'Measure whether first-time users can save, close, find, and reopen a page without guidance or data loss.',
+          'rm.i2.h': 'Make recovery boring',
+          'rm.i2.p': 'Stress-test concurrent writes, imports, exports, reminders, large archives, and rollback paths before calling them dependable.',
+          'rm.i3.h': 'Finish first-use UX',
+          'rm.i3.p': 'Validate the single-task welcome, simplify the everyday shell, and close keyboard, contrast, and screen-reader gaps.',
+          'rm.i4.h': 'Earn distribution',
+          'rm.i4.p': 'Resolve licensing, naming, store scope, and public claims before asking a broad audience to install the extension.',
+          'rm.note': 'The gates, owners, measures, and stop conditions live in the', 'rm.link': 'Product Success System', 'rm.note2': '.',
           'in.kick': 'Install',
-          'in.h2': 'Install in about a minute',
+          'in.h2': 'Load the research alpha unpacked',
           'in.lede': 'Locus is not on the Chrome Web Store yet. Until it is, it loads as an unpacked extension:',
           'in.s1': 'Download or clone the repository from GitHub.',
           'in.s2': 'Open', 'in.s2b': '(or', 'in.s2c': ') and turn on Developer mode.',
           'in.s3': 'Click "Load unpacked" and choose the locus folder.',
           'in.s4': "Open a new tab. That's it.",
           'in.cta': 'Get Locus on GitHub',
-          'in.note': 'Free for noncommercial research, contribution, and informal personal use. Chrome and Edge, Manifest V3.',
-          'ft.line': 'A local-first new tab workspace. Free for research, contribution, and informal personal use.',
+          'in.note': 'Noncommercial research alpha for Chrome and Edge (Manifest V3). See the research-use license before installing.',
+          'ft.line': 'A local-first save-and-recover workspace. Noncommercial research alpha.',
           'ft.rel': 'Release notes', 'ft.lic': 'Research-use license'
         },
         zh: {
           'meta.title': 'Locus · 資料留在本機的新分頁工作區',
           'skip': '跳到主要內容',
-          'nav.workspace': '工作區', 'nav.tools': '工具', 'nav.privacy': '隱私', 'nav.roadmap': '未來規劃',
-          'hero.eyebrow': '免費、原始碼可查閱的 Chrome / Edge 擴充功能',
+          'nav.workspace': '工作區', 'nav.how': '運作方式', 'nav.privacy': '隱私', 'nav.roadmap': '未來規劃',
+          'hero.eyebrow': '非商業研究用途的 Chrome / Edge Alpha 測試版',
           'hero.h1': '把新分頁，變成真正屬於你的工作區。',
-          'hero.sub': '分頁和筆記、待辦、提醒放在一起。已儲存的分頁透過休眠佔位頁重新開啟，點下去才真正載入，存五十個分頁也幾乎不佔記憶體。不必註冊帳號，資料完全留在你的電腦裡。',
+          'hero.sub': '明確儲存分頁，與筆記、待辦和提醒放在一起，需要時再找回。工作區資料存在此瀏覽器設定檔；解除安裝 Locus 或刪除設定檔前請先匯出。沒有 Locus 帳號、後端或主機權限。開啟網站或送出搜尋時，瀏覽器仍會連線。',
           'hero.cta1': '到 GitHub 取得',
           'hero.cta2': '看看裡面有什麼',
-          'hero.note': '還沒上架 Chrome 線上應用程式商店。以未封裝方式安裝，大約一分鐘。',
+          'hero.note': '研究候選頁面 — 尚未核准公開發布或上架 Chrome 線上應用程式商店。評估版可從此儲存庫載入未封裝版本。',
           'chip.local': '資料留在本機', 'chip.perm': '不需主機權限', 'chip.acct': '免帳號', 'chip.license': '研究使用授權',
           'hero.alt': '散落的瀏覽器連結、網站圖示與書籤卡片匯聚起來，安放成井然有序的便當式空間',
           'hero.cap': '散落的連結，安放成井然有序的空間。',
           'mo.kick': '它做什麼',
-          'mo.h2': '保留脈絡，不用扛著重量。',
-          'mo.lede': '瀏覽器會塞滿，是因為事情還沒做完。Locus 給這堆未完成的事一個家，也把記憶體還給你。',
+          'mo.h2': '關掉分頁，不丟失脈絡。',
+          'mo.lede': '瀏覽器會塞滿，是因為事情還沒做完。Locus 把開著的分頁變成可整理、搜尋並在需要時重開的已儲存參照。',
           'mo.c1.h': '先把混亂存下來',
-          'mo.c1.p': '一鍵儲存目前分頁，或整個視窗的所有分頁。右鍵可以存網頁、連結、選取的文字和圖片。書籤可匯入，Ctrl+Shift+S 隨處可用。',
+          'mo.c1.p': '使用工具列彈出視窗，在確認儲存位置與關閉行為後儲存目前分頁或整個視窗；也可使用右鍵擷取與 Ctrl+Shift+S。',
           'mo.c2.h': '只重開真正需要的',
-          'mo.c2.p': '已儲存的網頁會先開成輕量的佔位頁，點了才載入真正的網站。休眠預設開啟：放著五十個分頁的看板，在你需要之前幾乎不佔資源。',
+          'mo.c2.p': '已儲存的網頁可以先開啟擴充功能內建的佔位頁。只有你選擇繼續時才會前往目的網站，已儲存的參照不必一直維持為開啟中的分頁。',
           'mo.c3.h': '之後找得回來',
           'mo.c3.p': '可以用文字、類型、顏色、標籤、網域或待辦狀態搜尋，前面加個減號就能排除。',
           'ws.kick': '工作區',
           'ws.h2': '一個工作區，照你的方式安排',
           'ws.lede': '分頁只是瀏覽器工作的一半，另一半是你打算拿它們做什麼。',
           'ws.r1.h': '不只是分頁',
-          'ws.r1.p': '筆記就放在相關網頁旁邊，待辦可以打勾，提醒會準時響、能設定週期、也會出現在行事曆上。專案變大時，堆疊還能再套堆疊。',
-          'ws.r2.h': '五種版面',
-          'ws.r2.p': '看板、清單、畫布、樹狀總管、時間軸，用不同的形狀呈現同一批項目。看板太滿的時候，可以聚焦在單一群組。資料不會動，改變的只有視角。',
-          'ws.lay.board': '看板', 'ws.lay.list': '清單', 'ws.lay.canvas': '畫布',
+          'ws.r1.p': '筆記就放在相關網頁旁邊，待辦可以打勾，提醒可以排程並顯示在行事曆上；逾期、重新啟動與時區行為仍需在發行候選版中驗證。專案變大時，堆疊還能再套堆疊。',
+          'ws.r2.h': '核心與進階檢視',
+          'ws.r2.p': '看板與清單留在核心流程中；需要不同工作形狀時，畫布、樹狀總管、時間軸、圖庫與關聯圖仍可從「進階」開啟。',
+          'ws.lay.board': '看板', 'ws.lay.list': '清單', 'ws.lay.advanced': '進階檢視', 'ws.lay.canvas': '畫布',
           'ws.lay.explorer': '樹狀總管', 'ws.lay.timeline': '時間軸', 'ws.lay.calendar': '+ 行事曆',
           'ws.r3.h': '外觀由你決定',
           'ws.r3.p': '十七種主題、七種字體、三種密度、欄寬可調。瀏覽器裡你最常看到的頁面，本來就該長得像你的。',
@@ -645,36 +591,37 @@
           'tl.t8.h': '健身', 'tl.t8.p': '記錄訓練，不用再多裝一個 App。',
           'tl.note': '這八個工具現在就隨擴充功能提供，沒有一個是示意圖。',
           'pv.kick': '隱私',
-          'pv.h2': '資料不離開你的電腦',
-          'pv.lede': '分頁管理工具看得到你在忙什麼。正因如此，Locus 的設計讓它根本無從告訴任何人。',
-          'pv.i1.h': '免帳號', 'pv.i1.p': '沒有東西要註冊。打開新分頁就能用。',
-          'pv.i2.h': '沒有伺服器', 'pv.i2.p': '資料存在你裝置上的 chrome.storage.local。沒有後端，也就沒有可以外洩的地方。',
-          'pv.i3.h': '不需主機權限', 'pv.i3.p': 'Locus 無法讀取或更動你瀏覽的網站。manifest 就一個檔案，歡迎自己看。',
-          'pv.i4.h': '資料帶得走', 'pv.i4.p': '所有資料可匯出成 JSON。匯入前會先顯示預覽，才會動到你的資料。',
+          'pv.h2': '本機工作區，沒有 Locus 雲端',
+          'pv.lede': '工作區資料存在此瀏覽器設定檔的擴充功能本機儲存空間。匯出備份由使用者自行保管；解除安裝擴充功能或刪除設定檔會移除這些本機資料。Locus 沒有帳號、後端或主機權限；開啟目的網站或送出搜尋時，瀏覽器仍會連線。',
+          'pv.i1.h': '沒有 Locus 帳號', 'pv.i1.p': '沒有註冊流程。載入擴充功能後，打開新分頁即可使用。',
+          'pv.i2.h': '沒有 Locus 後端', 'pv.i2.p': '工作區資料存在此瀏覽器設定檔的 chrome.storage.local；Locus 不為這些資料營運後端。',
+          'pv.i3.h': '不需主機權限', 'pv.i3.p': 'Locus 沒有檢查網站內容的權限。明確執行擷取時，才會儲存你選擇的網頁、連結、選取文字或圖片網址。',
+          'pv.i4.h': '資料帶得走', 'pv.i4.p': '工作區可匯出成 JSON，備份由你自行保管。相容的匯入會先顯示預覽，才會動到你的資料。',
           'pv.i5.h': '螢幕分享模糊', 'pv.i5.p': '一個設定就能把整個看板模糊掉，投影和開會時不心驚。',
           'pv.i6.h': '原始碼可查閱', 'pv.i6.p': '僅限研究、貢獻與非正式個人使用。不允許任何形式的商業使用。',
-          'pv.note': '總共七個瀏覽器權限，每一個都在', 'pv.note2': ' 裡說明。',
-          'rm.pill': '規劃中，尚未推出',
-          'rm.h2': 'Locus 要往哪裡去',
-          'rm.lede': '現在就好用，方向也很明確。以下這些都還不存在，而你正在看的這一頁，也不靠它們撐場。',
-          'rm.i1.h': '外掛程式庫',
-          'rm.i1.p': '這八個工具目前是內建的。計畫是把它們改寫成外掛，讓工作區一個工具一個工具長大，你只加真正值得佔位置的。',
-          'rm.i2.h': '桌面版搭檔',
-          'rm.i2.p': '一個桌面應用程式，與擴充功能共用同一份本機資料。',
-          'rm.i3.h': '由你掌握的自動化',
-          'rm.i3.p': '如果 Locus 未來要連外部服務，金鑰由你自己帶，不必租用任何雲端帳號。',
-          'rm.i4.h': '可選的加密同步',
-          'rm.i4.p': '跨裝置同步，但本機優先的預設不變。',
+          'pv.note': '總共八個瀏覽器權限，每一個都在', 'pv.note2': ' 裡說明。',
+          'rm.pill': '以證據為門檻，不先許諾',
+          'rm.h2': '先證明核心，再擴張產品',
+          'rm.lede': '近期工作只聚焦在能測試的結果。構想必須通過產品、可靠性與發布門檻，才會成為承諾。',
+          'rm.i1.h': '證明儲存 → 找回',
+          'rm.i1.p': '衡量初次使用者能否在沒有指導或資料遺失的情況下，儲存、關閉、找到並重開網頁。',
+          'rm.i2.h': '讓復原變得可靠平常',
+          'rm.i2.p': '在宣稱可靠之前，壓力測試並行寫入、匯入、匯出、提醒、大型封存與回復流程。',
+          'rm.i3.h': '完成首次使用體驗',
+          'rm.i3.p': '驗證單一任務歡迎流程、簡化日常介面，並補齊鍵盤、對比與螢幕閱讀器缺口。',
+          'rm.i4.h': '先取得發布資格',
+          'rm.i4.p': '在邀請大量使用者安裝之前，解決授權、命名、商店範圍與公開宣稱問題。',
+          'rm.note': '完整門檻、負責人、衡量方式與停止條件都記錄在', 'rm.link': '產品成功系統', 'rm.note2': '。',
           'in.kick': '安裝',
-          'in.h2': '安裝，大約一分鐘',
+          'in.h2': '載入未封裝的研究 Alpha 版',
           'in.lede': 'Locus 還沒上架 Chrome 線上應用程式商店。在那之前，以未封裝方式載入：',
           'in.s1': '從 GitHub 下載或 clone 這個儲存庫。',
           'in.s2': '打開', 'in.s2b': '（或', 'in.s2c': '），並開啟「開發人員模式」。',
           'in.s3': '點「載入未封裝項目」，選擇 locus 資料夾。',
           'in.s4': '開一個新分頁，完成。',
           'in.cta': '到 GitHub 取得 Locus',
-          'in.note': '免費供非商業研究、貢獻與非正式個人使用。支援 Chrome 與 Edge（Manifest V3）。',
-          'ft.line': '資料留在本機的新分頁工作區。免費供研究、貢獻與非正式個人使用。',
+          'in.note': 'Chrome 與 Edge（Manifest V3）的非商業研究 Alpha 測試版。安裝前請先閱讀研究使用授權。',
+          'ft.line': '資料留在本機的儲存與找回工作區。非商業研究 Alpha 測試版。',
           'ft.rel': '版本紀錄', 'ft.lic': '研究使用授權'
         }
       };

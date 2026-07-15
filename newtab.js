@@ -41,7 +41,17 @@ const I18N = {
     'action.reorderMode': 'Reorder mode',
     'action.search': 'Search ( / )',
     'action.cycleTheme': 'Cycle theme',
-    'action.saveAllTabs': 'Save all open tabs',
+    'action.saveAllTabs': 'Save eligible open tabs',
+    'action.saveTab': 'Save tab',
+    'action.saveCopy': 'Save a copy to Inbox',
+    'action.saveClose': 'Save to Inbox and close tab',
+    'action.saveCandidate': 'Choose what happens to this tab',
+    'welcome.taskTitle': 'Keep one tab without keeping it open',
+    'welcome.taskDescription': 'Save a real tab to your Inbox, then Locus will show you exactly where it went.',
+    'welcome.looking': 'Looking for an open tab…',
+    'welcome.empty': 'No saveable tab is open yet. Explore Locus, then use the toolbar popup from any page.',
+    'welcome.explore': 'Explore on my own',
+    'welcome.save': 'Save this tab',
     'action.more': 'More',
     'action.settings': 'Settings',
     'action.reminders': 'Reminders',
@@ -56,8 +66,8 @@ const I18N = {
     'menu.about': 'About Locus',
     'menu.resetOnboarding': 'Reset onboarding',
     'menu.resetConfirm': 'Show the first-run welcome again? Your saved data is not affected.',
-    'about.tagline': 'A calmer, local-first home for your tabs, notes, and small trackers.',
-    'about.private': 'Private by design — no account, local-only, no host permissions.',
+    'about.tagline': 'A calmer home for explicitly saved tabs, notes, tasks, and reminders.',
+    'about.private': 'Privacy boundaries — browser-profile storage (export before uninstalling or deleting the profile), no Locus account or backend, and no host permissions.',
     'about.replay': 'Replay welcome guide',
     'about.close': 'Close',
     'plugins.title': 'Plugins',
@@ -87,7 +97,7 @@ const I18N = {
     'settings.fontFamily': 'Font family',
     'settings.closeTabs': 'Close tabs when saved',
     'settings.hibernate': 'Open saved tabs hibernated',
-    'settings.hibernateHint': 'uses zero memory until clicked',
+    'settings.hibernateHint': 'opens a placeholder; the site loads only after you continue',
     'settings.showUrls': 'Show URLs on cards',
     'settings.animations': 'Animations',
     'settings.confirmDelete': 'Confirm before deleting groups',
@@ -108,19 +118,20 @@ const I18N = {
     'settings.appearanceSub': 'Theme, type, and board density.',
     'settings.capture': 'Capture',
     'settings.captureSub': 'Control how links, tabs, and notes enter Locus.',
+    'settings.captureStorageProof': 'Saved content and capture preferences use this browser profile; export before uninstalling or deleting the profile.',
     'settings.shortcutsSub': 'Speed up your workflow with keyboard shortcuts.',
     'settings.privacy': 'Privacy & Security',
-    'settings.privacySub': 'Your data is yours. Always.',
+    'settings.privacySub': 'Storage, permissions, export, and profile-loss limits.',
     'settings.storageSub': 'See what your library stores on this device.',
     'settings.dataSub': 'Bring your data in, or take it out. Anytime.',
     'settings.about': 'About Locus',
     'settings.aboutSub': 'Built with focus. Designed for your privacy.',
     'settings.profile': 'Profile',
     'settings.yourName': 'Your name',
-    'settings.yourNameHint': 'Used for the home greeting. Stored only on this device.',
+    'settings.yourNameHint': 'Used for the home greeting. Stored in this browser profile; export before uninstalling or deleting the profile.',
     'settings.tipsOnboarding': 'Tips & onboarding',
     'settings.privacyFirst': 'Privacy first',
-    'settings.privacyFirstBody': 'Everything stays on your device. No servers, no tracking.',
+    'settings.privacyFirstBody': 'Workspace data is stored in this browser profile; export before uninstalling or deleting it. Locus has no account, backend, or host permissions.',
     'settings.globalShortcuts': 'Browser shortcuts',
     'settings.customizeShortcuts': 'Customize',
     'settings.customizeShortcutsHint': "Opens the browser's extension-shortcuts page",
@@ -128,22 +139,22 @@ const I18N = {
     'settings.inAppShortcuts': 'Inside Locus',
     'settings.searchShortcuts': 'Search shortcuts…',
     'settings.noShortcuts': 'No shortcuts match your search.',
-    'settings.privateByDesign': 'Private by design',
-    'settings.privateByDesignBody': 'Locus runs entirely on your device. We never collect, read, or transmit your data.',
-    'settings.check.local': '100% local storage',
+    'settings.privateByDesign': 'Privacy boundaries',
+    'settings.privateByDesignBody': 'Locus runs in this browser profile and does not send your workspace data to a Locus server.',
+    'settings.check.local': 'Browser-profile local storage',
     'settings.check.tracking': 'No tracking or analytics',
     'settings.check.account': 'No account required',
-    'settings.check.host': "No host permissions — Locus can't read pages",
+    'settings.check.host': 'No host permissions — no automatic page inspection',
     'settings.onScreen': 'On-screen privacy',
     'settings.yourData': 'Your data',
-    'settings.yourDataBody': 'Everything lives in extension-local storage. Export a full backup anytime, or import it back on any device.',
+    'settings.yourDataBody': 'Workspace data is stored in this browser profile on this desktop. Uninstalling the extension or losing the profile can erase it, so export backups regularly.',
     'settings.exportBackup': 'Export backup',
     'settings.openImportExport': 'Open Import & Export',
     'settings.localStorage': 'Local storage',
-    'settings.storageHint': 'All data is stored on this device in extension-local storage. Nothing leaves your browser.',
+    'settings.storageHint': 'Workspace data uses this browser profile. Uninstalling the extension or deleting the profile removes it; opening links and searches uses the browser normally.',
     'settings.manageStorage': 'Manage',
     'settings.openArchive': 'Open archive',
-    'settings.manageHint': 'Export a backup before pruning old items — exports keep working forever.',
+    'settings.manageHint': 'Export a backup before pruning old items, and keep the file somewhere safe.',
     'settings.whatsUsingSpace': "What's using space",
     'settings.import': 'Import',
     'settings.export': 'Export',
@@ -154,12 +165,12 @@ const I18N = {
     'settings.pasteLinks': 'Paste links',
     'settings.pasteLinksHint': 'One URL per line, straight into a group',
     'settings.exportJsonHint': 'A complete backup of every workspace',
-    'settings.exportHint': 'Exports are plain JSON — readable anywhere, re-importable anytime.',
-    'settings.aboutBody': 'A local-first home for your tabs, notes, todos, and small trackers.',
+    'settings.exportHint': 'Exports are plain JSON. Keep the file yourself; compatibility with future versions is verified per release.',
+    'settings.aboutBody': 'A desktop home for explicitly saved tabs, notes, tasks, and reminders.',
     'settings.proof.account': 'No account',
     'settings.proof.server': 'No Locus server',
     'settings.proof.host': 'No host permissions',
-    'settings.proof.export': 'Export anytime',
+    'settings.proof.export': 'User-managed JSON export',
     'settings.showLanding': 'Show calm new-tab welcome',
     'settings.showLandingHint': 'Dismiss it to reveal your Home workspace',
     'landing.ariaLabel': 'New tab welcome',
@@ -224,6 +235,10 @@ const I18N = {
     'palette.noSpace': 'Create a space first',
     'toast.theme': 'Theme: {theme}',
     'toast.language': 'Language: {language}',
+    'stateRecovery.title': 'Reload latest saved data',
+    'stateRecovery.body': 'Locus paused editing because this page could not be safely reconciled with browser storage.',
+    'stateRecovery.detail': 'Reload before making more changes. Locus will reopen from the latest state saved in this browser profile.',
+    'stateRecovery.reload': 'Reload Locus',
     'nav.home': 'Home',
     'nav.allLinks': 'All Links',
     'nav.favorites': 'Favorites',
@@ -232,14 +247,14 @@ const I18N = {
     'nav.archive': 'Archive',
     'nav.trash': 'Trash',
     'trash.title': 'Trash',
-    'trash.subtitle': 'Deleted items stay recoverable on this device for 30 days.',
+    'trash.subtitle': 'Valid Trash entries are scheduled for deletion after 30 days; uninstalling or deleting this browser profile removes them sooner.',
     'trash.search': 'Search trash',
     'trash.summary.entries': 'Deleted {count}',
     'trash.summary.items': 'Recoverable {count}',
     'trash.summary.space': 'Recoverable space',
     'trash.summary.retention': 'Auto-delete window',
     'trash.retention': 'Items in trash are permanently deleted after 30 days.',
-    'trash.localOnly': 'Local only',
+    'trash.localOnly': 'Browser-profile local',
     'trash.all': 'All',
     'trash.links': 'Links',
     'trash.notes': 'Notes',
@@ -270,25 +285,25 @@ const I18N = {
     'trash.invalid': '{count} damaged trash entries could not be displayed. They remain in exports.',
     'archive.moveToTrash': 'Move to Trash',
     'archive.movedToTrash': 'Moved to Trash',
-    'archive.subtitle': 'Archived content stays on this device until you restore it or move it to Trash.',
+    'archive.subtitle': 'Archived content remains in this browser profile until restored or moved to Trash; uninstalling or deleting the profile removes it.',
     'archive.search': 'Search archive',
     'archive.summary.entries': 'Archived {count}',
     'archive.summary.items': 'Saved {count}',
     'archive.summary.groups': '{count} groups',
     'archive.summary.local': 'Local',
-    'archive.summary.localBody': 'Stored only on this device',
+    'archive.summary.localBody': 'Browser-profile storage; export before uninstalling',
     'archive.selected': '{count} selected',
     'archive.restoreSelected': 'Restore selected',
     'nav.spaces': 'Spaces',
     'nav.storage': 'Local storage',
-    'priv.title': 'Private by design',
+    'priv.title': 'Privacy boundaries',
     'priv.noAccount': 'No account',
-    'priv.localOnly': 'Local-only',
+    'priv.localOnly': 'Profile-local data',
     'priv.noHost': 'No host permissions',
-    'priv.export': 'Export anytime',
+    'priv.export': 'Export before uninstalling',
     'rail.openedTabs': 'Opened Tabs',
     'rail.dragHint': 'Drag into a space to save',
-    'rail.saveAll': 'Save all tabs',
+    'rail.saveAll': 'Save eligible tabs',
     'rail.tip': 'Drag a tab into any space to save it for later.',
     'home.greeting.morning': 'Good morning',
     'home.greeting.afternoon': 'Good afternoon',
@@ -299,6 +314,10 @@ const I18N = {
     'home.empty': 'Empty — drag a tab here to start',
     'home.emptyTitle': 'No spaces yet',
     'home.emptyBody': 'Create a category to start organizing your tabs.',
+    'home.inboxZone': 'Inbox',
+    'home.inboxHint': 'Capture one page, then recover it here.',
+    'home.openInbox': 'Open Inbox',
+    'home.recentSpaces': 'Your spaces',
     'empty.addSave': 'Add / Save',
     'empty.addNote': 'Add note',
     'empty.importBookmarks': 'Import bookmarks',
@@ -328,7 +347,7 @@ const I18N = {
     'empty.libraryBody': 'Add a link, import bookmarks, or start a note to build your local library.',
     'empty.noMatchTitle': 'Nothing matches these filters',
     'empty.noMatchBody': 'Clear the search or filters to see everything again.',
-    'empty.localNote': 'Everything stays on this device.',
+    'empty.localNote': 'Stored in this browser profile; export before uninstalling or deleting it.',
     'library.linksAcross': '{count} links across this workspace',
     'library.filterLinks': 'Filter links…',
     'library.workspace': 'Workspace: {name}',
@@ -405,7 +424,17 @@ const I18N = {
     'action.reorderMode': '重新排序模式',
     'action.search': '搜尋 ( / )',
     'action.cycleTheme': '切換主題',
-    'action.saveAllTabs': '儲存所有開啟分頁',
+    'action.saveAllTabs': '儲存符合條件的開啟分頁',
+    'action.saveTab': '儲存分頁',
+    'action.saveCopy': '儲存副本到收件匣',
+    'action.saveClose': '儲存到收件匣並關閉分頁',
+    'action.saveCandidate': '選擇如何處理此分頁',
+    'welcome.taskTitle': '保留一個分頁，不必一直開著',
+    'welcome.taskDescription': '將真實分頁儲存到收件匣，Locus 會清楚顯示它的位置。',
+    'welcome.looking': '正在尋找開啟的分頁…',
+    'welcome.empty': '目前沒有可儲存的分頁。先探索 Locus，之後可在任何頁面使用工具列彈出視窗。',
+    'welcome.explore': '自行探索',
+    'welcome.save': '儲存此分頁',
     'action.more': '更多',
     'action.settings': '設定',
     'action.reminders': '提醒',
@@ -420,8 +449,8 @@ const I18N = {
     'menu.about': '關於 Locus',
     'menu.resetOnboarding': '重設新手導覽',
     'menu.resetConfirm': '要再次顯示首次啟動的歡迎導覽嗎？您儲存的資料不受影響。',
-    'about.tagline': '為你的分頁、筆記與小工具打造更沉靜、以本機為先的家。',
-    'about.private': '隱私優先－無需帳號、僅存本機、無主機權限。',
+    'about.tagline': '讓明確儲存的分頁、筆記、任務與提醒有個更安靜的首頁。',
+    'about.private': '隱私界線－資料存在此瀏覽器設定檔（解除安裝或刪除設定檔前請先匯出），沒有 Locus 帳號、後端或主機權限。',
     'about.replay': '重播歡迎導覽',
     'about.close': '關閉',
     'plugins.title': '外掛',
@@ -451,7 +480,7 @@ const I18N = {
     'settings.fontFamily': '字體',
     'settings.closeTabs': '儲存後關閉分頁',
     'settings.hibernate': '以休眠模式開啟已儲存分頁',
-    'settings.hibernateHint': '點開前不占用記憶體',
+    'settings.hibernateHint': '先開啟預留頁；只有在你繼續時才載入網站',
     'settings.showUrls': '在卡片上顯示網址',
     'settings.animations': '動畫',
     'settings.confirmDelete': '刪除群組前先確認',
@@ -472,19 +501,20 @@ const I18N = {
     'settings.appearanceSub': '主題、字體與版面密度。',
     'settings.capture': '擷取',
     'settings.captureSub': '控制連結、分頁與筆記如何進入 Locus。',
+    'settings.captureStorageProof': '已儲存內容與擷取偏好使用此瀏覽器設定檔；解除安裝或刪除設定檔前請先匯出。',
     'settings.shortcutsSub': '用鍵盤快捷鍵加速你的工作流程。',
     'settings.privacy': '隱私與安全',
-    'settings.privacySub': '你的資料永遠屬於你。',
+    'settings.privacySub': '儲存、權限、匯出與設定檔遺失限制。',
     'settings.storageSub': '查看你的資料庫在此裝置上的使用情況。',
     'settings.dataSub': '隨時帶入或帶走你的資料。',
     'settings.about': '關於 Locus',
     'settings.aboutSub': '為專注而生，為隱私而設計。',
     'settings.profile': '個人資料',
     'settings.yourName': '你的名字',
-    'settings.yourNameHint': '用於首頁問候語，僅儲存在此裝置上。',
+    'settings.yourNameHint': '用於首頁問候語。資料存在此瀏覽器設定檔；解除安裝或刪除設定檔前請先匯出。',
     'settings.tipsOnboarding': '提示與新手導覽',
     'settings.privacyFirst': '隱私優先',
-    'settings.privacyFirstBody': '所有資料都留在你的裝置上。沒有伺服器，沒有追蹤。',
+    'settings.privacyFirstBody': '工作區資料存在此瀏覽器設定檔；解除安裝或刪除前請先匯出。Locus 沒有帳號、後端或主機權限。',
     'settings.globalShortcuts': '瀏覽器快捷鍵',
     'settings.customizeShortcuts': '自訂',
     'settings.customizeShortcutsHint': '開啟瀏覽器的擴充功能快捷鍵頁面',
@@ -492,22 +522,22 @@ const I18N = {
     'settings.inAppShortcuts': 'Locus 內',
     'settings.searchShortcuts': '搜尋快捷鍵…',
     'settings.noShortcuts': '沒有符合搜尋的快捷鍵。',
-    'settings.privateByDesign': '隱私優先設計',
-    'settings.privateByDesignBody': 'Locus 完全在你的裝置上執行。我們永遠不會收集、讀取或傳送你的資料。',
-    'settings.check.local': '100% 本機儲存',
+    'settings.privateByDesign': '隱私界線',
+    'settings.privateByDesignBody': 'Locus 在這個瀏覽器設定檔中執行，不會將你的工作區資料傳送到 Locus 伺服器。',
+    'settings.check.local': '瀏覽器設定檔本機儲存',
     'settings.check.tracking': '無追蹤、無分析',
     'settings.check.account': '無需帳號',
-    'settings.check.host': '無主機權限 — Locus 無法讀取網頁內容',
+    'settings.check.host': '無主機權限 — 不會自動檢查網頁內容',
     'settings.onScreen': '螢幕隱私',
     'settings.yourData': '你的資料',
-    'settings.yourDataBody': '所有內容都存在擴充功能的本機儲存空間。隨時匯出完整備份，也能在任何裝置匯入。',
+    'settings.yourDataBody': '工作區資料只儲存在這台電腦的瀏覽器設定檔中。解除安裝擴充功能或遺失設定檔可能會清除資料，請定期匯出備份。',
     'settings.exportBackup': '匯出備份',
     'settings.openImportExport': '開啟匯入與匯出',
     'settings.localStorage': '本機儲存',
-    'settings.storageHint': '所有資料都儲存在此裝置的擴充功能本機空間，不會離開你的瀏覽器。',
+    'settings.storageHint': '工作區資料存在此瀏覽器設定檔；解除安裝擴充功能或刪除設定檔會移除資料。開啟連結與搜尋仍由瀏覽器正常連線。',
     'settings.manageStorage': '管理',
     'settings.openArchive': '開啟封存',
-    'settings.manageHint': '清理舊項目前先匯出備份 — 匯出檔案永久可用。',
+    'settings.manageHint': '清理舊項目前先匯出備份，並將匯出檔案妥善保存在安全位置。',
     'settings.whatsUsingSpace': '空間使用情況',
     'settings.import': '匯入',
     'settings.export': '匯出',
@@ -518,12 +548,12 @@ const I18N = {
     'settings.pasteLinks': '貼上連結',
     'settings.pasteLinksHint': '每行一個網址，直接匯入群組',
     'settings.exportJsonHint': '所有工作區的完整備份',
-    'settings.exportHint': '匯出為純 JSON — 隨處可讀，隨時可再匯入。',
-    'settings.aboutBody': '為你的分頁、筆記、待辦與小工具打造的本機優先之家。',
+    'settings.exportHint': '匯出為純 JSON。檔案由你自行保管；未來版本的相容性會逐版驗證。',
+    'settings.aboutBody': '明確儲存分頁、筆記、任務與提醒的桌面首頁。',
     'settings.proof.account': '免帳號',
     'settings.proof.server': '無 Locus 伺服器',
     'settings.proof.host': '免主機權限',
-    'settings.proof.export': '隨時匯出',
+    'settings.proof.export': '使用者保管的 JSON 匯出',
     'settings.showLanding': '顯示寧靜的新分頁歡迎畫面',
     'settings.showLandingHint': '關閉後即可查看首頁工作區',
     'landing.ariaLabel': '新分頁歡迎畫面',
@@ -588,6 +618,10 @@ const I18N = {
     'palette.noSpace': '請先建立空間',
     'toast.theme': '主題：{theme}',
     'toast.language': '語言：{language}',
+    'stateRecovery.title': '重新載入最新儲存資料',
+    'stateRecovery.body': '此頁面無法安全地與瀏覽器儲存空間同步，因此 Locus 已暫停編輯。',
+    'stateRecovery.detail': '請先重新載入再繼續修改。Locus 會從此瀏覽器設定檔中最新儲存的狀態重新開啟。',
+    'stateRecovery.reload': '重新載入 Locus',
     'nav.home': '首頁',
     'nav.allLinks': '所有連結',
     'nav.favorites': '收藏',
@@ -596,14 +630,14 @@ const I18N = {
     'nav.archive': '封存',
     'nav.trash': '垃圾桶',
     'trash.title': '垃圾桶',
-    'trash.subtitle': '刪除的項目會在此裝置上保留 30 天，期間仍可復原。',
+    'trash.subtitle': '有效的垃圾桶項目預定於 30 天後刪除；解除安裝或刪除此瀏覽器設定檔會更早移除。',
     'trash.search': '搜尋垃圾桶',
     'trash.summary.entries': '已刪除 {count} 筆',
     'trash.summary.items': '可復原 {count} 個項目',
     'trash.summary.space': '可回收空間',
     'trash.summary.retention': '自動刪除期限',
     'trash.retention': '垃圾桶中的項目會在 30 天後永久刪除。',
-    'trash.localOnly': '僅存本機',
+    'trash.localOnly': '瀏覽器設定檔本機',
     'trash.all': '全部',
     'trash.links': '連結',
     'trash.notes': '筆記',
@@ -634,25 +668,25 @@ const I18N = {
     'trash.invalid': '有 {count} 筆損壞的垃圾桶資料無法顯示，但仍會保留在匯出檔中。',
     'archive.moveToTrash': '移至垃圾桶',
     'archive.movedToTrash': '已移至垃圾桶',
-    'archive.subtitle': '封存內容會留在此裝置，直到你將它復原或移至垃圾桶。',
+    'archive.subtitle': '封存內容會留在此瀏覽器設定檔，直到復原或移至垃圾桶；解除安裝或刪除設定檔會移除資料。',
     'archive.search': '搜尋封存',
     'archive.summary.entries': '已封存 {count} 筆',
     'archive.summary.items': '已儲存 {count} 個項目',
     'archive.summary.groups': '{count} 個群組',
     'archive.summary.local': '本機',
-    'archive.summary.localBody': '只儲存在這台裝置上',
+    'archive.summary.localBody': '瀏覽器設定檔儲存；解除安裝前請先匯出',
     'archive.selected': '已選取 {count} 筆',
     'archive.restoreSelected': '復原所選項目',
     'nav.spaces': '空間',
     'nav.storage': '本機儲存',
-    'priv.title': '隱私優先設計',
+    'priv.title': '隱私界線',
     'priv.noAccount': '免帳號',
-    'priv.localOnly': '僅存本機',
+    'priv.localOnly': '資料存於目前設定檔',
     'priv.noHost': '免主機權限',
-    'priv.export': '隨時匯出',
+    'priv.export': '解除安裝前先匯出',
     'rail.openedTabs': '開啟的分頁',
     'rail.dragHint': '拖入空間即可儲存',
-    'rail.saveAll': '儲存所有分頁',
+    'rail.saveAll': '儲存符合條件的分頁',
     'rail.tip': '將分頁拖入任一空間，即可留待稍後查看。',
     'home.greeting.morning': '早安',
     'home.greeting.afternoon': '午安',
@@ -663,6 +697,10 @@ const I18N = {
     'home.empty': '空的 — 拖一個分頁進來開始',
     'home.emptyTitle': '尚無空間',
     'home.emptyBody': '建立分類即可開始整理你的分頁。',
+    'home.inboxZone': '收件匣',
+    'home.inboxHint': '先儲存一個頁面，再從這裡找回它。',
+    'home.openInbox': '開啟收件匣',
+    'home.recentSpaces': '你的空間',
     'empty.addSave': '新增／儲存',
     'empty.addNote': '新增筆記',
     'empty.importBookmarks': '匯入書籤',
@@ -692,7 +730,7 @@ const I18N = {
     'empty.libraryBody': '新增連結、匯入書籤或建立筆記，開始打造你的本機資料庫。',
     'empty.noMatchTitle': '沒有符合這些篩選條件的內容',
     'empty.noMatchBody': '清除搜尋或篩選條件，即可重新查看所有內容。',
-    'empty.localNote': '所有內容都只留在這台裝置上。',
+    'empty.localNote': '資料存在此瀏覽器設定檔；解除安裝或刪除前請先匯出。',
     'library.linksAcross': '此工作區共有 {count} 個連結',
     'library.filterLinks': '篩選連結…',
     'library.workspace': '工作區：{name}',
@@ -790,7 +828,7 @@ function applyLocale() {
 // ════════════════════════════════════════════════════════════════
 let loadedSchema = 0;
 const State = (() => {
-  let state = {
+  const createInitialState = () => ({
     workspaces: [], activeWsId: null, archive: [], trash: [], recentEmoji: [],
     columnWidths: {},
     settings: {
@@ -807,46 +845,506 @@ const State = (() => {
       popupHibernateSelectedTabIds:[], popupSaveMode:'group',
       onboarding: { welcomeSeen:false, hintsSeen:{}, disabled:false }
     }
-  };
+  });
+  let state = createInitialState();
   let history = [], future = [];
+  let nextActionId = 1;
+  let mutationEpoch = 0;
+  let dataMutationEpoch = 0;
   let persistTimer = null;
+  let stateWriteQueue = Promise.resolve();
+  let stateWriteFailureEpoch = 0;
+  let pendingStateWrites = 0;
+  let asyncMutationCount = 0;
+  let confirmedRevision = 0;
+  let confirmedStateJson = '';
+  let inFlightExpectedStateJson = '';
+  let recoveryRequired = false;
+  let recoveryPromise = null;
+  let latestObservedState = null;
+  const acceptedSelfWrites = new Map();
   // structuredClone is ~3× faster than JSON round-tripping and handles
   // Dates/Maps/etc. Falls back to JSON for ancient browsers.
   const deepClone = typeof structuredClone === 'function'
     ? (o => structuredClone(o))
     : (o => JSON.parse(JSON.stringify(o)));
+  const stateJson = value => JSON.stringify(value);
+  const cancelPersistTimer = () => {
+    if (persistTimer != null) clearTimeout(persistTimer);
+    persistTimer = null;
+  };
+  const hydrateStoredState = stored => {
+    const base = createInitialState();
+    const incoming = deepClone(stored);
+    return {
+      ...base,
+      ...incoming,
+      settings: { ...base.settings, ...(incoming.settings || {}) },
+    };
+  };
+  const recoveryError = (message = 'Locus must reload the latest saved data before it can save more changes.') => {
+    const error = new Error(message);
+    error.code = 'LOCUS_STATE_RECOVERY_REQUIRED';
+    return error;
+  };
+  const markConfirmed = confirmed => {
+    confirmedRevision = Number(confirmed?._revision) || 0;
+    confirmedStateJson = stateJson(confirmed);
+  };
+  const storedRevision = stored => {
+    const revision = Number(stored?._revision ?? 0);
+    return Number.isSafeInteger(revision) && revision >= 0 && revision < Number.MAX_SAFE_INTEGER
+      ? revision
+      : null;
+  };
+  const rememberObservedState = stored => {
+    const revision = storedRevision(stored);
+    const latestRevision = storedRevision(latestObservedState);
+    if (revision != null && (latestRevision == null || revision >= latestRevision)) {
+      latestObservedState = deepClone(stored);
+    }
+  };
+  const rememberAcceptedSelfWrite = candidate => {
+    const revision = storedRevision(candidate);
+    if (revision == null) return;
+    acceptedSelfWrites.set(revision, stateJson(candidate));
+    while (acceptedSelfWrites.size > 8) acceptedSelfWrites.delete(acceptedSelfWrites.keys().next().value);
+  };
+  const adoptAuthoritative = stored => {
+    state = hydrateStoredState(stored);
+    loadedSchema = Number(state.schema) || 0;
+    // The stored graph is the concurrency authority. Record that exact hydrated
+    // baseline first, then normalize legacy/default/retention fields only in
+    // memory; the normal guarded persistence path can commit those differences.
+    markConfirmed(state);
+    if (typeof migrate === 'function') migrate();
+    if (typeof normalizeExpiredTrash === 'function') normalizeExpiredTrash();
+    if (typeof ensureDefault === 'function') ensureDefault();
+    if (typeof normalizeLoadedSettings === 'function') normalizeLoadedSettings();
+    history = [];
+    future = [];
+    mutationEpoch++;
+    recoveryRequired = false;
+  };
+  function requireRecovery() {
+    if (!recoveryRequired) {
+      recoveryRequired = true;
+      stateWriteFailureEpoch++;
+      // Stop async Undo/Redo or other browser-side mutation loops at their next
+      // guarded await boundary. Recovery never lets those effects continue on
+      // top of an unknown authoritative graph.
+      mutationEpoch++;
+    }
+    cancelPersistTimer();
+  }
+  async function requestStateWrite(candidate) {
+    const localRevision = storedRevision(state);
+    if (localRevision == null) {
+      const error = new Error('Locus found an invalid local state revision. Reload before making more changes.');
+      error.code = 'LOCUS_STATE_PROTOCOL';
+      requireRecovery();
+      throw error;
+    }
+    candidate._revision = localRevision;
+    const expectedStoredState = deepClone(candidate);
+    expectedStoredState._revision = localRevision + 1;
+    inFlightExpectedStateJson = stateJson(expectedStoredState);
+    let receiptTimer = null;
+    try {
+      const configuredTimeout = Number(globalThis.LOCUS_STATE_WRITE_TIMEOUT_MS);
+      const receiptTimeoutMs = Number.isFinite(configuredTimeout) && configuredTimeout > 0
+        ? configuredTimeout
+        : 10000;
+      const receiptTimeout = new Promise((_, reject) => {
+        receiptTimer = setTimeout(() => {
+          const error = new Error('Locus could not confirm this save in time. Reload the latest saved data before retrying.');
+          error.code = 'LOCUS_STATE_UNKNOWN_ACK';
+          reject(error);
+        }, receiptTimeoutMs);
+      });
+      const response = await Promise.race([
+        chrome.runtime.sendMessage({ type: 'locus-state-write', state: candidate }),
+        receiptTimeout,
+      ]);
+      if (!response?.ok) {
+        const error = new Error(response?.message || 'Locus could not confirm this save. Reload this page, then retry.');
+        error.code = response ? (response.code || 'LOCUS_STATE_WRITE_FAILED') : 'LOCUS_STATE_UNKNOWN_ACK';
+        throw error;
+      }
+      const nextRevision = Number(response.revision);
+      if (!Number.isSafeInteger(nextRevision) || nextRevision !== localRevision + 1) {
+        const error = new Error('Locus received an invalid save confirmation. Reload this page before making more changes.');
+        error.code = 'LOCUS_STATE_PROTOCOL';
+        throw error;
+      }
+      candidate._revision = nextRevision;
+      state._revision = nextRevision;
+      markConfirmed(candidate);
+      rememberAcceptedSelfWrite(candidate);
+      // A typed receipt confirms this candidate, but a different storage event
+      // may already have reported a still-newer graph. Keep the capture/source
+      // effects fail-closed until that authoritative graph is reloaded.
+      if (recoveryRequired) throw recoveryError();
+    } catch (error) {
+      // A transport failure, malformed/lost receipt, timeout, or writer
+      // conflict all leave the commit outcome unknown to this page. Block every
+      // queued successor centrally; callers may roll back their display, but
+      // only an authoritative reread or reload can resume persistence.
+      if (error && typeof error === 'object') error.locusExpectedStateJson = inFlightExpectedStateJson;
+      requireRecovery();
+      throw error;
+    } finally {
+      if (receiptTimer != null) clearTimeout(receiptTimer);
+      inFlightExpectedStateJson = '';
+    }
+  }
+  function writeState() {
+    if (recoveryRequired) return Promise.reject(recoveryError());
+    // Each call owns an immutable candidate. If any earlier queued write fails,
+    // every candidate already waiting behind it is invalid because its graph may
+    // include optimistic state that a capture failure is about to roll back.
+    const candidate = deepClone(state);
+    const enqueuedFailureEpoch = stateWriteFailureEpoch;
+    const requestWrite = () => {
+      if (recoveryRequired) throw recoveryError();
+      if (enqueuedFailureEpoch !== stateWriteFailureEpoch) {
+        const error = new Error('An earlier Locus save failed, so this queued save was cancelled. Reload Locus, then retry.');
+        error.code = 'LOCUS_STATE_QUEUE_INVALIDATED';
+        throw error;
+      }
+      return requestStateWrite(candidate);
+    };
+    pendingStateWrites++;
+    const run = stateWriteQueue.then(requestWrite);
+    const tracked = run.finally(() => { pendingStateWrites--; });
+    stateWriteQueue = tracked.then(
+      () => undefined,
+      () => { stateWriteFailureEpoch++; },
+    );
+    return tracked;
+  }
   return {
     get: () => state,
     async load() {
+      cancelPersistTimer();
+      state = createInitialState();
+      history = [];
+      future = [];
+      latestObservedState = null;
+      acceptedSelfWrites.clear();
+      recoveryRequired = false;
       const d = await chrome.storage.local.get('te');
       if (d.te) {
         loadedSchema = Number(d.te.schema) || 0;
-        state = { ...state, ...d.te, settings: { ...state.settings, ...(d.te.settings || {}) } };
+        state = hydrateStoredState(d.te);
+      }
+      if (storedRevision(state) == null) {
+        confirmedRevision = 0;
+        confirmedStateJson = stateJson(state);
+        requireRecovery();
+      } else {
+        markConfirmed(state);
+      }
+    },
+    needsPersistence: () => stateJson(state) !== confirmedStateJson,
+    hasActiveOperation: () => pendingStateWrites > 0
+      || asyncMutationCount > 0
+      || history.some(entry => entry.capturePending),
+    isClean: () => !recoveryRequired
+      && persistTimer == null
+      && pendingStateWrites === 0
+      && asyncMutationCount === 0
+      && !history.some(entry => entry.capturePending)
+      && stateJson(state) === confirmedStateJson,
+    observeStoredState(stored) {
+      if (!stored || typeof stored !== 'object' || Array.isArray(stored)) {
+        requireRecovery();
+        return 'recovery';
+      }
+      const incomingRevision = storedRevision(stored);
+      if (incomingRevision == null) {
+        requireRecovery();
+        return 'recovery';
+      }
+      rememberObservedState(stored);
+      const incomingJson = stateJson(hydrateStoredState(stored));
+      // storage.onChanged can precede the runtime receipt for our own write.
+      // It is only an observation, never authority to close source tabs.
+      if (inFlightExpectedStateJson && incomingJson === inFlightExpectedStateJson) return 'self';
+      if ((Number(stored.schema) || 0) > CURRENT_SCHEMA) {
+        requireRecovery();
+        return 'recovery';
+      }
+      if (incomingRevision < confirmedRevision
+        && acceptedSelfWrites.get(incomingRevision) === incomingJson) return 'ignored';
+      if (incomingRevision < confirmedRevision) {
+        requireRecovery();
+        return 'recovery';
+      }
+      if (incomingRevision === confirmedRevision) {
+        if (incomingJson === confirmedStateJson) return 'ignored';
+        requireRecovery();
+        return 'recovery';
+      }
+      if (this.isClean()) {
+        adoptAuthoritative(stored);
+        latestObservedState = null;
+        return 'adopted';
+      }
+      requireRecovery();
+      return 'recovery';
+    },
+    requireRecovery,
+    isRecoveryRequired: () => recoveryRequired,
+    matchesUnconfirmedWrite: error => !!error?.locusExpectedStateJson
+      && stateJson(state) === error.locusExpectedStateJson,
+    async recoverAuthoritative({ expectedDataMutationToken = null } = {}) {
+      if (recoveryPromise) return recoveryPromise;
+      requireRecovery();
+      recoveryPromise = (async () => {
+        // Let the in-flight request settle and cancel every already-queued
+        // successor before reading. Never merge a dirty whole graph.
+        await stateWriteQueue;
+        const d = await chrome.storage.local.get('te');
+        let authoritative = d.te;
+        if (!authoritative || typeof authoritative !== 'object' || Array.isArray(authoritative)) {
+          const error = new Error('Locus could not find a valid saved state. Reload this page before editing.');
+          error.code = 'LOCUS_STATE_RECOVERY_FAILED';
+          throw error;
+        }
+        const readRevision = storedRevision(authoritative);
+        if (readRevision == null) {
+          const error = new Error('Locus found an invalid saved-state revision. Reload this page before editing.');
+          error.code = 'LOCUS_STATE_PROTOCOL';
+          throw error;
+        }
+        // storage.local.get can resolve with a snapshot older than an onChanged
+        // event that arrived while the read was pending. Prefer the highest
+        // observed authoritative revision; equal-token graph disagreement is a
+        // protocol failure, never a graph to guess between.
+        if (latestObservedState) {
+          const observedRevision = storedRevision(latestObservedState);
+          if (observedRevision == null) {
+            const error = new Error('Locus observed an invalid saved-state revision. Reload this page before editing.');
+            error.code = 'LOCUS_STATE_PROTOCOL';
+            throw error;
+          }
+          if (observedRevision > readRevision) authoritative = latestObservedState;
+          else if (observedRevision === readRevision
+            && stateJson(hydrateStoredState(latestObservedState)) !== stateJson(hydrateStoredState(authoritative))) {
+            const error = new Error('Locus observed two different saved graphs with the same revision. Reload before editing.');
+            error.code = 'LOCUS_STATE_PROTOCOL';
+            throw error;
+          }
+        }
+        const authoritativeRevision = storedRevision(authoritative);
+        if (authoritativeRevision == null || authoritativeRevision < confirmedRevision) {
+          const error = new Error('Locus refused to recover to an older or invalid saved-state revision. Reload before editing.');
+          error.code = 'LOCUS_STATE_PROTOCOL';
+          throw error;
+        }
+        const schema = Number(authoritative.schema) || 0;
+        if (schema > CURRENT_SCHEMA) {
+          loadedSchema = schema;
+          const error = new Error(`Saved data uses newer schema ${schema}. Update Locus before continuing.`);
+          error.code = 'LOCUS_STATE_NEWER_SCHEMA';
+          throw error;
+        }
+        if (expectedDataMutationToken != null && dataMutationEpoch !== expectedDataMutationToken) {
+          const error = new Error('Authoritative recovery paused because a newer local edit was made. Reload before continuing.');
+          error.code = 'LOCUS_STATE_RECOVERY_INTERRUPTED';
+          throw error;
+        }
+        adoptAuthoritative(authoritative);
+        latestObservedState = null;
+        return state;
+      })();
+      try {
+        return await recoveryPromise;
+      } finally {
+        recoveryPromise = null;
       }
     },
     persist() {
-      clearTimeout(persistTimer);
+      mutationEpoch++;
+      dataMutationEpoch++;
+      if (recoveryRequired) {
+        const error = recoveryError();
+        if (typeof showStateRecoveryRequired === 'function') showStateRecoveryRequired(error);
+        else handleStorageError(error);
+        return;
+      }
+      cancelPersistTimer();
       persistTimer = setTimeout(() => {
-        chrome.storage.local.set({ te: state })
+        persistTimer = null;
+        writeState()
           .then(() => { try { refreshStorageUsage(); } catch {} })
-          .catch(err => handleStorageError(err));
+          .catch(err => recoverAfterOrdinaryWriteFailure(err));
       }, 180);
     },
-    persistNow() {
-      clearTimeout(persistTimer);
-      const p = chrome.storage.local.set({ te: state });
+    persistNow({ recordMutation = true } = {}) {
+      if (recordMutation) {
+        mutationEpoch++;
+        dataMutationEpoch++;
+      }
+      cancelPersistTimer();
+      const p = writeState();
       p.then(() => { try { refreshStorageUsage(); } catch {} })
-       .catch(err => handleStorageError(err));
+       .catch(err => {
+         handleStorageError(err);
+         if (recoveryRequired && typeof showStateRecoveryRequired === 'function') showStateRecoveryRequired(err);
+       });
       return p;
     },
     snapshot(label) {
-      history.push({ label, data: deepClone(state) });
+      mutationEpoch++;
+      dataMutationEpoch++;
+      const actionId = nextActionId++;
+      history.push({ actionId, label, data: deepClone(state), closedTabs: [], capturePending: false });
       if (history.length > 50) history.shift();
       future.length = 0;
+      return actionId;
     },
-    undo() { if (!history.length) return null; future.push({ data: deepClone(state) }); const p = history.pop(); state = p.data; this.persistNow(); return p.label; },
-    redo() { if (!future.length) return null; history.push({ label:'redo', data: deepClone(state) }); const n = future.pop(); state = n.data; this.persistNow(); return 'redo'; },
-    canUndo: () => history.length > 0,
+    latestActionId() {
+      return history[history.length - 1]?.actionId ?? null;
+    },
+    dataMutationToken: () => dataMutationEpoch,
+    beginCaptureAction(actionId) {
+      const entry = history.find(candidate => candidate.actionId === actionId);
+      if (!entry || entry.capturePending) return false;
+      entry.capturePending = true;
+      return true;
+    },
+    finishCaptureAction(actionId) {
+      const entry = history.find(candidate => candidate.actionId === actionId);
+      if (!entry || !entry.capturePending) return false;
+      entry.capturePending = false;
+      return true;
+    },
+    registerClosedTabs(actionId, tabs) {
+      let entry = null;
+      for (let index = history.length - 1; index >= 0; index--) {
+        if (history[index].actionId === actionId) { entry = history[index]; break; }
+      }
+      if (!entry || !Array.isArray(tabs) || !tabs.length) return false;
+      entry.closedTabs = tabs.map(tab => ({
+        url: tab.url,
+        pinned: !!tab.pinned,
+        restoredTabId: null,
+      })).filter(tab => typeof tab.url === 'string' && tab.url);
+      return entry.closedTabs.length > 0;
+    },
+    rollbackSnapshot(actionId = null) {
+      const latest = history[history.length - 1];
+      if (actionId != null && latest?.actionId !== actionId) return false;
+      cancelPersistTimer();
+      const previous = history.pop();
+      if (!previous) return false;
+      state = previous.data;
+      future.length = 0;
+      return true;
+    },
+    async undo(expectedActionId = null) {
+      if (!history.length) return null;
+      const latest = history[history.length - 1];
+      if (expectedActionId != null && latest.actionId !== expectedActionId) {
+        const error = new Error('Undo is no longer available because newer changes were made.');
+        error.code = 'LOCUS_UNDO_STALE';
+        throw error;
+      }
+      if (latest.capturePending) {
+        const error = new Error('This save is still finishing. Undo will be available when it completes.');
+        error.code = 'LOCUS_UNDO_PENDING';
+        throw error;
+      }
+      asyncMutationCount++;
+      const undoEpoch = mutationEpoch;
+      const previousIndex = history.length - 1;
+      const current = deepClone(state);
+      const previous = history.pop();
+      const closedTabs = Array.isArray(previous.closedTabs) ? previous.closedTabs : [];
+      const restoreHistoryEntry = () => {
+        if (history.some(entry => entry.actionId === previous.actionId)) return;
+        history.splice(Math.min(previousIndex, history.length), 0, previous);
+        if (history.length > 50) history.shift();
+      };
+      const interruptedError = () => {
+        const error = new Error('Undo paused because newer changes were made. Undo the newer change first, then retry.');
+        error.code = 'LOCUS_UNDO_INTERRUPTED';
+        return error;
+      };
+      const ensureUnchanged = () => {
+        if (recoveryRequired || mutationEpoch !== undoEpoch) throw interruptedError();
+      };
+      try {
+        // Browser-side capture effects are part of the same undo contract. Open
+        // the source pages before removing their saved records. Remember each
+        // created tab so a persistence retry does not open it a second time.
+        for (const tab of closedTabs) {
+          ensureUnchanged();
+          if (tab.restoredTabId != null) {
+            let stillOpen = false;
+            try {
+              await chrome.tabs.get(tab.restoredTabId);
+              stillOpen = true;
+            } catch {
+              tab.restoredTabId = null;
+            }
+            ensureUnchanged();
+            if (stillOpen) continue;
+          }
+          const restored = await chrome.tabs.create({ url: tab.url, pinned: tab.pinned, active: false });
+          tab.restoredTabId = restored?.id ?? null;
+          ensureUnchanged();
+        }
+        ensureUnchanged();
+        if (closedTabs.length) future.length = 0;
+        else future.push({ data: current });
+        state = previous.data;
+        // History captures user data, not authority to reuse an old concurrency
+        // token. Undo must advance from the currently persisted revision.
+        state._revision = current._revision;
+        await this.persistNow({ recordMutation: false });
+        return previous.label;
+      } catch (error) {
+        if (mutationEpoch !== undoEpoch) {
+          restoreHistoryEntry();
+          throw error?.code === 'LOCUS_UNDO_INTERRUPTED' ? error : interruptedError();
+        }
+        state = current;
+        if (!closedTabs.length) future.pop();
+        restoreHistoryEntry();
+        throw error;
+      } finally {
+        asyncMutationCount--;
+      }
+    },
+    async redo() {
+      if (!future.length) return null;
+      const current = deepClone(state);
+      const next = future.pop();
+      history.push({ actionId: nextActionId++, label:'redo', data: current, closedTabs: [], capturePending: false });
+      state = next.data;
+      state._revision = current._revision;
+      let writeDataToken = dataMutationEpoch;
+      try {
+        const persistence = this.persistNow();
+        writeDataToken = dataMutationEpoch;
+        await persistence;
+        return 'redo';
+      } catch (error) {
+        if (dataMutationEpoch !== writeDataToken) {
+          const interrupted = new Error('Redo paused because newer changes were made. Reload the latest saved data before continuing.');
+          interrupted.code = 'LOCUS_REDO_INTERRUPTED';
+          throw interrupted;
+        }
+        state = current;
+        history.pop();
+        future.push(next);
+        throw error;
+      }
+    },
+    canUndo: () => history.length > 0 && !history[history.length - 1].capturePending,
     canRedo: () => future.length > 0
   };
 })();
@@ -862,12 +1360,20 @@ const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 
 const stampNew = it => { if (it && it.createdAt == null) it.createdAt = Date.now(); return it; };
 const esc = s => !s ? '' : String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const _favCache = new Map();
-const favUrl = u => {
+const favUrl = (u, size = 32) => {
   if (!u) return '';
   try {
-    const host = new URL(u).hostname;
-    let v = _favCache.get(host);
-    if (v === undefined) { v = `https://www.google.com/s2/favicons?domain=${host}&sz=32`; _favCache.set(host, v); }
+    const page = new URL(u);
+    if (!/^https?:$/.test(page.protocol)) return '';
+    const key = `${page.origin}|${size}`;
+    let v = _favCache.get(key);
+    if (v === undefined) {
+      const endpoint = new URL(chrome.runtime.getURL('_favicon/'));
+      endpoint.searchParams.set('pageUrl', page.href);
+      endpoint.searchParams.set('size', String(size));
+      v = endpoint.href;
+      _favCache.set(key, v);
+    }
     return v;
   } catch { return ''; }
 };
@@ -886,10 +1392,10 @@ const INTENT_TYPE = ['project', 'study', 'research', 'admin', 'life', 'reference
 
 // Allowlist HTML sanitizer for note content. Notes render through innerHTML,
 // and their html can arrive from an imported file or a clipboard paste, so a
-// regex pass isn't safe — `<img src=x onerror=…>` (unquoted handler, no closing
+// regex pass isn't safe — an unquoted image error handler with no closing
 // tag) walks straight through one. Parse into an inert document instead, drop
 // disallowed elements, and strip every event handler and unsafe URL.
-const SANITIZE_KEEP = new Set(['A','ABBR','B','BLOCKQUOTE','BR','CODE','DEL','DIV','EM','FONT','H1','H2','H3','H4','H5','H6','HR','I','INS','LI','MARK','OL','P','PRE','S','SMALL','SPAN','STRONG','SUB','SUP','U','UL','IMG']);
+const SANITIZE_KEEP = new Set(['A','ABBR','B','BLOCKQUOTE','BR','CODE','DEL','DIV','EM','FONT','H1','H2','H3','H4','H5','H6','HR','I','INS','LI','MARK','OL','P','PRE','S','SMALL','SPAN','STRONG','SUB','SUP','U','UL']);
 const SANITIZE_DROP = new Set(['SCRIPT','STYLE','IFRAME','OBJECT','EMBED','LINK','META','BASE','FORM','INPUT','BUTTON','TEXTAREA','SELECT','OPTION','SVG','MATH','NOSCRIPT','TEMPLATE','FRAME','FRAMESET','APPLET','AUDIO','VIDEO','SOURCE']);
 const SANITIZE_URL_ATTRS = new Set(['href','src','xlink:href','action','formaction','background','poster','cite','data']);
 
@@ -926,7 +1432,11 @@ function sanitizeHtml(html) {
         if (/url\s*\(|expression\s*\(|javascript:|@import/i.test(attr.value)) el.removeAttribute(attr.name);
         continue;
       }
-      if (SANITIZE_URL_ATTRS.has(name)) {
+      if (SANITIZE_URL_ATTRS.has(name) && !(tag === 'A' && name === 'href')) {
+        el.removeAttribute(attr.name);
+        continue;
+      }
+      if (tag === 'A' && name === 'href') {
         const safe = safeUrlValue(attr.value);
         if (safe) el.setAttribute(attr.name, safe); else el.removeAttribute(attr.name);
       }
@@ -1137,6 +1647,7 @@ const Router = (() => {
     const wsId = decodeURIComponent(seg[1]);
     if (seg[2] === 'cat' && seg[3]) return { type: 'board', wsId, catId: decodeURIComponent(seg[3]), query };
     if (seg[2] === 'group' && seg[3]) return { type: 'group', wsId, groupId: decodeURIComponent(seg[3]), itemId: seg[4] === 'item' ? decodeURIComponent(seg[5] || '') : null, query };
+    if (seg[2] === 'library' && seg[3]) return { type: 'library', wsId, mode: decodeURIComponent(seg[3]), query };
     if (seg[2] === 'calendar') return { type: 'calendar', wsId, query };
     if (seg[2] === 'search') return { type: 'search', wsId, query };
     if (seg[2] === 'home') return { type: 'home', wsId, query };
@@ -1151,6 +1662,8 @@ const Router = (() => {
     if (route.type === 'group' && route.groupId) {
       path = `/ws/${ws}/group/${encodeURIComponent(route.groupId)}`;
       if (route.itemId) path += `/item/${encodeURIComponent(route.itemId)}`;
+    } else if (route.type === 'library' && ['all', 'favorites', 'read-later', 'archive', 'trash'].includes(route.mode)) {
+      path = `/ws/${ws}/library/${encodeURIComponent(route.mode)}`;
     } else if (route.type === 'calendar') {
       path = `/ws/${ws}/calendar`;
     } else if (route.type === 'search') {
@@ -1171,6 +1684,7 @@ const Router = (() => {
   function currentRoute() {
     const ws = activeWs();
     if (!ws) return null;
+    if (activeLibraryMode) return { type: 'library', wsId: ws.id, mode: activeLibraryMode, query: {} };
     if (activeSearch) return { type: 'search', wsId: ws.id, query: searchRouteQuery(activeSearch) };
     if (activeCalendar) {
       // Only the view is durable in the URL; a bare `…/calendar` means month.
@@ -1198,9 +1712,20 @@ const Router = (() => {
     if (!route) return false;
     const s = State.get();
     let changed = false;
-    if (activeLibraryMode) { activeLibraryMode = null; changed = true; }
     const ws = s.workspaces.find(w => w.id === route.wsId);
     if (ws && s.activeWsId !== ws.id) { s.activeWsId = ws.id; changed = true; }
+
+    if (route.type === 'library') {
+      const mode = ['all', 'favorites', 'read-later', 'archive', 'trash'].includes(route.mode) ? route.mode : 'all';
+      if (activeSearch) { activeSearch = null; changed = true; }
+      if (activeHome) { activeHome = false; changed = true; }
+      if (activeGroupPage) { activeGroupPage = null; changed = true; }
+      if (activeCalendar) { activeCalendar = null; changed = true; }
+      if (boardDetailItemId) { boardDetailItemId = null; changed = true; }
+      if (activeLibraryMode !== mode) { activeLibraryMode = mode; changed = true; }
+      return changed;
+    }
+    if (activeLibraryMode) { activeLibraryMode = null; changed = true; }
 
     if (route.type === 'search') {
       if (activeHome) { activeHome = false; changed = true; }
@@ -1360,28 +1885,50 @@ async function init() {
   initAfterLoad();
 }
 
-function initAfterLoad() {
+function normalizeLoadedSettings() {
+  const settings = State.get().settings;
+  let theme = normalizeThemeId(settings.theme || 'folio');
+  if (theme !== 'auto' && !THEMES.some(candidate => candidate.id === theme)) theme = 'folio';
+  settings.theme = theme;
+  settings.language = normalizeLanguage(settings.language || browserLanguage());
+  const onboarding = ensureOnboarding(settings);
+  if (typeof onboarding.welcomeSeen !== 'boolean') onboarding.welcomeSeen = !!settings.tourCompleted;
+  if (typeof onboarding.disabled !== 'boolean') onboarding.disabled = false;
+}
+
+function normalizeLoadedState() {
   migrate();
-  purgeExpiredTrash();
+  normalizeExpiredTrash();
   ensureDefault();
-  // Persist schema/default normalization even before the user's next edit so a
-  // reload cannot repeatedly run the same migration.
-  State.persist();
+  normalizeLoadedSettings();
   // Resolve any deep link into the active workspace/category/layout, then
   // normalize the URL — before the first render so we paint the right surface.
   Router.init();
+  // Persist only when migration/default/retention or a real deep-link
+  // navigation changed the hydrated graph. A clean boot must not manufacture
+  // a revision.
+  if (!State.needsPersistence()) return false;
+  State.persist();
+  return true;
+}
+
+function initAfterLoad() {
+  normalizeLoadedState();
 
   applySettings();
   buildThemeGrid();
   buildEmojiPicker();
+  bindStateRecoveryOverlay();
+  if (State.isRecoveryRequired()) {
+    showStateRecoveryRequired(new Error('Locus found an invalid saved-state revision. Reload before editing.'));
+  }
   bindStatic();
 
   renderAll();
-  // First run: the welcome questionnaire owns the screen. The landing layer
-  // waits until it closes, so the first greeting uses the name the user just
-  // typed instead of stacking two full-screen layers.
-  if (ensureOnboarding(State.get().settings).welcomeSeen) showLandingLayer();
-  else _landingAfterWelcome = true;
+  startStateStorageSync();
+  // Returning users may opt into the calm landing. First run owns one task and
+  // never hands off into a second full-screen layer.
+  if (ensureOnboarding(State.get().settings).welcomeSeen && activeHome) showLandingLayer();
 
   // Reveal the app once the first frame paints (avoids any layout flash).
   requestAnimationFrame(() => {
@@ -1419,6 +1966,115 @@ function initAfterLoad() {
       if (State.get().settings.theme === 'auto') applySettings();
     });
   });
+}
+
+let _stateStorageSyncStarted = false;
+let _authoritativeRefreshPromise = null;
+
+function setStateRecoveryInterlock(enabled) {
+  const overlay = document.getElementById('state-recovery-overlay');
+  for (const child of document.body.children) {
+    if (child === overlay) continue;
+    if (enabled) {
+      if (!child.inert) child.dataset.locusRecoveryInert = '1';
+      child.inert = true;
+    } else if (child.dataset.locusRecoveryInert === '1') {
+      child.inert = false;
+      delete child.dataset.locusRecoveryInert;
+    }
+  }
+}
+
+function refreshRenderedStateFromStorage() {
+  const recoveryOverlay = document.getElementById('state-recovery-overlay');
+  if (recoveryOverlay && !recoveryOverlay.classList.contains('hidden')) {
+    recoveryOverlay.classList.add('hidden');
+    setStateRecoveryInterlock(false);
+    restoreOpener(recoveryOverlay);
+  }
+  applySettings();
+  renderAll();
+  if (State.needsPersistence()) State.persist();
+  try { refreshStorageUsage(); } catch {}
+}
+
+async function restoreAuthoritativeState(options = {}) {
+  if (_authoritativeRefreshPromise) return _authoritativeRefreshPromise;
+  _authoritativeRefreshPromise = (async () => {
+    await State.recoverAuthoritative(options);
+    refreshRenderedStateFromStorage();
+    return true;
+  })();
+  try {
+    return await _authoritativeRefreshPromise;
+  } finally {
+    _authoritativeRefreshPromise = null;
+  }
+}
+
+function showStateRecoveryRequired(error) {
+  const overlay = document.getElementById('state-recovery-overlay');
+  if (!overlay) {
+    try { toast(error?.message || tr('stateRecovery.detail'), { danger: true, duration: 10000 }); } catch {}
+    return;
+  }
+  const detail = document.getElementById('state-recovery-detail');
+  if (detail) detail.textContent = error?.message || tr('stateRecovery.detail');
+  if (overlay.classList.contains('hidden')) rememberOpener(overlay);
+  setStateRecoveryInterlock(true);
+  overlay.classList.remove('hidden');
+  setTimeout(() => document.getElementById('state-recovery-reload')?.focus(), 50);
+}
+
+function bindStateRecoveryOverlay() {
+  const overlay = document.getElementById('state-recovery-overlay');
+  if (!overlay || overlay.dataset.bound === '1') return;
+  overlay.dataset.bound = '1';
+  overlay.addEventListener('keydown', event => {
+    if (event.key === 'Tab') {
+      trapTabKey(event, overlay);
+      return;
+    }
+    if ((event.key === 'Enter' || event.key === ' ')
+      && event.target === document.getElementById('state-recovery-reload')) return;
+    event.preventDefault();
+    event.stopPropagation();
+  });
+  document.getElementById('state-recovery-reload').onclick = () => location.reload();
+}
+
+async function recoverAfterOrdinaryWriteFailure(error) {
+  // The mutable graph may contain the user's only copy of an ordinary edit.
+  // Never replace it automatically after a conflict, quota failure, or unknown
+  // outcome; keep it visible behind the explicit reload interlock.
+  handleStorageError(error);
+  showStateRecoveryRequired(new Error('Locus could not safely confirm this edit. Your current view has not been replaced. Reload the latest saved data before continuing.'));
+}
+
+function handleObservedStoredState(stored) {
+  const disposition = State.observeStoredState(stored);
+  if (disposition === 'adopted') {
+    refreshRenderedStateFromStorage();
+    toast('Updated from another Locus window');
+  } else if (disposition === 'recovery') {
+    // Never replace a dirty local graph automatically. The only automatic
+    // cross-page path is clean adoption above; recovery is an explicit reload.
+    showStateRecoveryRequired(new Error('Locus changed in another window while this page was editing. Reload the latest saved data before continuing.'));
+  }
+}
+
+function startStateStorageSync() {
+  if (_stateStorageSyncStarted || !chrome.storage?.onChanged?.addListener) return;
+  _stateStorageSyncStarted = true;
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName !== 'local' || !Object.prototype.hasOwnProperty.call(changes, 'te')) return;
+    handleObservedStoredState(changes.te?.newValue);
+  });
+  // Close the load-to-listener race without manufacturing a write. Equal or
+  // older revisions are ignored by the State contract.
+  chrome.storage.local.get('te')
+    .then(result => { if (result?.te) handleObservedStoredState(result.te); })
+    .catch(error => { State.requireRecovery(); showStateRecoveryRequired(error); });
 }
 
 function migrate() {
@@ -1594,7 +2250,9 @@ async function refreshStorageUsage() {
 function handleStorageError(err) {
   const msg = String(err?.message || err || '');
   const quotaHit = /quota|QUOTA/i.test(msg);
-  if (quotaHit) {
+  if (err?.code === 'LOCUS_STATE_CONFLICT') {
+    try { toast(msg, { danger: true, duration: 7000 }); } catch {}
+  } else if (quotaHit) {
     showStorageFull(msg);
   } else {
     try { toast('Storage error: ' + msg, { danger: true, duration: 5000 }); } catch {}
@@ -1786,17 +2444,12 @@ function ensureDefault() {
   if (!Array.isArray(s.trash)) s.trash = [];
   s.settings.language = normalizeLanguage(s.settings.language || browserLanguage());
   if (!s.workspaces.length) {
-    const cat = { id: uid(), name:'Pinned', groups:[] };
+    s.settings.railCollapsed = true;
+    s.settings.showLanding = false;
+    const cat = { id: uid(), name:'Pinned', groups:[{
+      id: uid(), name:'Inbox', symbol:'📥', color:'#6366f1', collapsed:false, items:[]
+    }] };
     const cat2 = { id: uid(), name:'Later', groups:[] };
-    cat.groups.push({
-      id: uid(), name:'Getting started', symbol:'✨', color:'#6366f1', collapsed:false,
-      items: [
-        stampNew({ id: uid(), type:'note', html:'👋 <b>Welcome to Locus!</b><br><br>Drag tabs from the left sidebar into any group.<br>Select text for the rich-text toolbar.<br>Right-click anywhere for more options.' }),
-        stampNew({ id: uid(), type:'todo', text:'Try dragging a tab here', done:false }),
-        stampNew({ id: uid(), type:'todo', text:'Right-click a group for context menu', done:false }),
-        stampNew({ id: uid(), type:'todo', text:'Press Cmd/Ctrl + K to search', done:false })
-      ]
-    });
     s.workspaces = [{ id: uid(), name:'My Workspace', symbol:'🏠', categories:[cat, cat2], activeCatId: cat.id }];
     s.activeWsId = s.workspaces[0].id;
   }
@@ -2193,14 +2846,22 @@ function restoreOpener(el) {
   }
   _overlayOpeners.delete(el);
 }
+const FOCUSABLE_SELECTOR = 'a[href],area[href],input:not([disabled]),button:not([disabled]),select:not([disabled]),textarea:not([disabled]),[contenteditable="true"],[tabindex]:not([tabindex="-1"])';
+function visibleFocusableElements(container) {
+  if (!container) return [];
+  return [...container.querySelectorAll(FOCUSABLE_SELECTOR)].filter(element => {
+    if (element.hidden || element.closest('[aria-hidden="true"]')) return false;
+    const style = getComputedStyle(element);
+    return style.display !== 'none' && style.visibility !== 'hidden' && element.getClientRects().length > 0;
+  });
+}
 function focusFirstIn(el) {
-  if (!el) return;
-  const focusable = el.querySelector('input:not([disabled]),button:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])');
+  const focusable = visibleFocusableElements(el)[0];
   if (focusable) { try { focusable.focus(); } catch {} }
 }
 function trapTabKey(e, container) {
   if (e.key !== 'Tab' || !container || container.classList.contains('hidden')) return;
-  const items = container.querySelectorAll('input:not([disabled]),button:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])');
+  const items = visibleFocusableElements(container);
   if (!items.length) return;
   const first = items[0], last = items[items.length - 1];
   const active = document.activeElement;
@@ -2242,13 +2903,33 @@ function toast(msg, opts = {}) {
   m.textContent = msg;
   t.classList.remove('hidden', 'danger');
   if (opts.danger) t.classList.add('danger');
-  if (opts.undo) { u.classList.remove('hidden'); u.onclick = () => { performUndo(); t.classList.add('hidden'); }; }
+  const undoActionId = opts.undo === true ? State.latestActionId() : opts.undo;
+  if (undoActionId != null) {
+    u.classList.remove('hidden');
+    u.onclick = () => { performUndo(undoActionId); t.classList.add('hidden'); };
+  }
   else u.classList.add('hidden');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.add('hidden'), opts.duration || 3000);
 }
-function performUndo() { const l = State.undo(); if (l) { renderAll(); toast(`Undid: ${l}`); } }
-function performRedo() { const l = State.redo(); if (l) { renderAll(); toast(`Redid`); } }
+async function performUndo(expectedActionId = null) {
+  try {
+    const label = await State.undo(expectedActionId);
+    if (label) { renderAll(); toast(`Undid: ${label}`); }
+  } catch (error) {
+    renderAll();
+    toast(error?.message || 'Undo failed. Your saved data was left unchanged.', { danger: true, duration: 7000 });
+  }
+}
+async function performRedo() {
+  try {
+    const label = await State.redo();
+    if (label) { renderAll(); toast('Redid'); }
+  } catch (error) {
+    renderAll();
+    toast(error?.message || 'Redo failed. Your saved data was left unchanged.', { danger: true, duration: 7000 });
+  }
+}
 
 // ════════════════════════════════════════════════════════════════
 // TABS (hibernated opens via suspended.html)
@@ -2281,7 +2962,7 @@ async function openTabMaybeHibernated(url, { focus = true } = {}) {
 
 /**
  * Open a hibernated tab. Uses the extension's suspended.html page so the
- * tab shows the correct title + favicon using near-zero memory. Clicking
+ * tab shows the correct title and local favicon in a lightweight packaged page. Clicking
  * the tab (which activates it) loads the real URL via JavaScript redirect.
  */
 async function openTabSuspended({ url, title, fav }) {
@@ -2289,25 +2970,23 @@ async function openTabSuspended({ url, title, fav }) {
   if (!hibernate) {
     return chrome.tabs.create({ url, active: false });
   }
-  // Look up title/favicon from our saved item if not provided
-  if (!title || !fav) {
+  // Look up the title from our saved item if it was not provided.
+  if (!title) {
     for (const ws of State.get().workspaces) {
       for (const cat of ws.categories) {
         for (const g of cat.groups) {
           const found = findInItemsByUrl(g.items, url);
           if (found) {
             title = title || found.title;
-            fav = fav || found.fav;
             break;
           }
         }
       }
     }
   }
-  // Derive a fav fallback
-  if (!fav) {
-    try { fav = `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=64`; } catch {}
-  }
+  // Extension pages use Chromium's local favicon cache. Never pass a remote
+  // favicon URL into the suspended extension page.
+  fav = favUrl(url, 64);
   const suspendedUrl = buildSuspendedUrl({ url, title, fav });
   return chrome.tabs.create({ url: suspendedUrl, active: false });
 }
@@ -2798,13 +3477,18 @@ const cmIcons = {
 const TRASH_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 
 function trashTimestamp(entry) {
-  const value = Number(entry?.trashedAt);
+  // Imported backups receive a fresh retention window instead of losing old
+  // Trash entries during the recovery operation or on the next reload.
+  const value = Number(entry?.retentionStartedAt || entry?.trashedAt);
   return Number.isFinite(value) && value > 0 ? value : archiveEntryTimestamp(entry);
 }
 
-function purgeExpiredTrash(now = Date.now()) {
+function normalizeExpiredTrash(now = Date.now()) {
   const s = State.get();
-  if (!Array.isArray(s.trash)) s.trash = [];
+  if (!Array.isArray(s.trash)) {
+    s.trash = [];
+    return 1;
+  }
   const keep = s.trash.filter(entry => {
     // Preserve malformed imports for lossless export; the surface reports them
     // without trying to render or silently destroy them.
@@ -2815,8 +3499,13 @@ function purgeExpiredTrash(now = Date.now()) {
   if (keep.length === s.trash.length) return 0;
   const removed = s.trash.length - keep.length;
   s.trash = keep;
-  State.persist();
   return removed;
+}
+
+function purgeExpiredTrash(now = Date.now()) {
+  const changed = normalizeExpiredTrash(now);
+  if (changed) State.persist();
+  return changed;
 }
 
 function archiveItem(itemId) {
@@ -2829,7 +3518,6 @@ function archiveItem(itemId) {
     wsId: info.ws.id, catId: info.cat.id, groupId: info.group.id,
     catName: info.cat.name, groupName: info.group.name, at: Date.now()
   });
-  if (State.get().archive.length > 200) State.get().archive.pop();
   State.persist();
   renderBoard();
   renderArchiveList();
@@ -3265,7 +3953,7 @@ function renderOpenTabs() {
     if (selectedTabIds.has(t.id)) el.classList.add('selected');
     el.draggable = true;
     el.title = t.title || t.url;
-    const fav = t.favIconUrl || favUrl(t.url);
+    const fav = favUrl(t.url) || BLANK_FAV;
     // Chrome-discarded tabs keep their URL but are unloaded — flag them so the
     // sidebar reads like a workspace of live + resting tabs, not a flat list.
     const sleeping = t.discarded === true;
@@ -3275,8 +3963,8 @@ function renderOpenTabs() {
     const domain = (() => { try { return new URL(t.url).hostname.replace(/^www\./, ''); } catch { return ''; } })();
     el.innerHTML = `
       <span class="otab-handle" aria-hidden="true"><svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor"><circle cx="2" cy="2" r="1"/><circle cx="6" cy="2" r="1"/><circle cx="2" cy="6" r="1"/><circle cx="6" cy="6" r="1"/><circle cx="2" cy="10" r="1"/><circle cx="6" cy="10" r="1"/></svg></span>
-      <span class="otab-check" role="checkbox" aria-checked="${selectedTabIds.has(t.id)}" aria-label="Select tab"></span>
-      <img class="otab-fav" src="${esc(fav)}" alt="" loading="lazy" decoding="async" onerror="this.src='${BLANK_FAV}'">
+      <span class="otab-check" role="checkbox" tabindex="0" aria-checked="${selectedTabIds.has(t.id)}" aria-label="Select tab"></span>
+      <img class="otab-fav" src="${esc(fav)}" alt="" loading="lazy" decoding="async">
       <span class="otab-text">
         <span class="otab-title">${esc(t.title || t.url)}</span>
         <span class="otab-domain">${esc(domain)}</span>
@@ -3284,9 +3972,17 @@ function renderOpenTabs() {
       <button class="otab-close" title="Close tab" aria-label="Close tab"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M2 2l6 6M8 2l-6 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>`;
 
     // Checkbox area click — toggles selection without switching tab
-    el.querySelector('.otab-check').addEventListener('click', (e) => {
+    const tabCheck = el.querySelector('.otab-check');
+    tabCheck.addEventListener('click', (e) => {
       e.stopPropagation();
       toggleOpenTabSelection(t.id, { range: e.shiftKey });
+    });
+    tabCheck.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        e.stopPropagation();
+        toggleOpenTabSelection(t.id, { range: e.shiftKey });
+      }
     });
 
     // Close button — closes the browser tab without switching to it
@@ -3361,7 +4057,7 @@ function renderOpenTabs() {
           const ghost = document.createElement('div');
           ghost.className = 'single-drag-ghost';
           const favImg = document.createElement('img');
-          favImg.src = t.favIconUrl || favUrl(t.url);
+          favImg.src = favUrl(t.url) || BLANK_FAV;
           ghost.appendChild(favImg);
           const label = document.createElement('span');
           label.textContent = t.title || t.url;
@@ -3422,20 +4118,140 @@ async function saveSelectedToInbox() {
   const tabs = allOpenTabs.filter(t => selectedTabIds.has(t.id));
   if (!tabs.length) return;
   const cat = activeCat(); if (!cat) return;
+  const actionId = State.snapshot(`Save ${tabs.length} to inbox`);
   let inbox = cat.groups.find(g => g.name === 'Inbox');
   if (!inbox) { inbox = { id: uid(), name:'Inbox', symbol:'📥', color:'#6366f1', collapsed:false, items:[] }; cat.groups.unshift(inbox); }
-  State.snapshot(`Save ${tabs.length} to inbox`);
   let added = 0;
+  const savedTabs = [];
   for (const t of tabs) {
     if (captureDuplicateExists(inbox, t.url)) continue;
     const meta = captureTabFields(t);
     inbox.items.push(stampNew({ id: uid(), type:'tab', title: meta.title, url: t.url, fav: meta.fav }));
     added++;
+    savedTabs.push(t);
   }
-  if (State.get().settings.closeTabOnSave) { for (const t of tabs) { try { await chrome.tabs.remove(t.id); } catch {} } }
+  if (!added) {
+    State.rollbackSnapshot(actionId);
+    toast('Already saved', { danger: true });
+    return;
+  }
+  const result = await commitCapturedTabs(savedTabs, { actionId });
+  if (!result) return;
   selectedTabIds.clear();
-  State.persist(); renderBoard(); updateSelectedBadge();
-  toast(`Saved ${added} to Inbox`, { undo: true });
+  renderBoard(); updateSelectedBadge();
+  toastCaptureResult(`Saved ${added} to Inbox`, result);
+}
+
+let captureCommitPending = false;
+
+async function commitCapturedTabs(tabsToClose = [], options = {}) {
+  const actionId = options.actionId ?? State.latestActionId();
+  if (captureCommitPending) {
+    State.rollbackSnapshot(actionId);
+    renderAll();
+    toast('Another save is still being confirmed — your tabs were left open', { danger: true, duration: 5000 });
+    return false;
+  }
+  captureCommitPending = true;
+  if (!State.beginCaptureAction(actionId)) {
+    captureCommitPending = false;
+    toast('Save could not start safely — your tabs were left open', { danger: true, duration: 5000 });
+    return false;
+  }
+  try {
+    let captureWriteDataToken = State.dataMutationToken();
+    try {
+      // A captured tab is not considered saved until chrome.storage confirms the
+      // write. Closing first can destroy the only recoverable copy on quota or
+      // extension-shutdown failures.
+      const persistence = State.persistNow();
+      captureWriteDataToken = State.dataMutationToken();
+      await persistence;
+    } catch (error) {
+      let recovered = false;
+      let acceptedWithoutReceipt = false;
+      let laterEditsRemain = State.dataMutationToken() !== captureWriteDataToken;
+      if (laterEditsRemain) {
+        showStateRecoveryRequired(new Error('Save was not confirmed. Your tabs stayed open and later edits remain visible. Reload the latest saved data before continuing.'));
+      } else {
+        try {
+          await restoreAuthoritativeState({ expectedDataMutationToken: captureWriteDataToken });
+          recovered = true;
+          acceptedWithoutReceipt = State.matchesUnconfirmedWrite(error);
+        } catch (recoveryError) {
+          if (recoveryError?.code === 'LOCUS_STATE_RECOVERY_INTERRUPTED') {
+            laterEditsRemain = true;
+            showStateRecoveryRequired(recoveryError);
+          } else {
+            // Display-only fallback. Further persistence remains blocked, so even
+            // an interleaved newer action cannot overwrite authoritative storage.
+            State.rollbackSnapshot(actionId);
+            renderAll();
+            showStateRecoveryRequired(recoveryError);
+          }
+        }
+      }
+      toast(laterEditsRemain
+        ? 'Save was not confirmed — your tabs stayed open and later edits remain visible. Reload Locus before continuing.'
+        : acceptedWithoutReceipt
+        ? 'Save reached storage, but confirmation was lost — your tabs were left open. Review the saved item before retrying.'
+        : recovered
+        ? 'Save was not confirmed — latest saved data restored; your tabs were left open'
+        : 'Save failed — your tabs were left open. Reload Locus before continuing.',
+      { danger: true, duration: 8000 });
+      return false;
+    }
+    const closeSources = options.closeSources ?? State.get().settings.closeTabOnSave;
+    const closedTabs = [];
+    const failedTabs = [];
+    if (closeSources) {
+      for (let index = 0; index < tabsToClose.length; index++) {
+        const tab = tabsToClose[index];
+        if (State.isRecoveryRequired()) {
+          failedTabs.push(...tabsToClose.slice(index));
+          break;
+        }
+        if (tab?.id == null && tab?.tabId == null) { failedTabs.push(tab); continue; }
+        try {
+          await chrome.tabs.remove(tab.id ?? tab.tabId);
+          closedTabs.push(tab);
+        } catch { failedTabs.push(tab); }
+      }
+    }
+    // Register browser-side effects before the pending flag is cleared. There
+    // must be no event-loop turn in which Undo can pop this capture without the
+    // information needed to restore its source tabs.
+    State.registerClosedTabs(actionId, closedTabs);
+    return {
+      actionId,
+      closeSources,
+      requestedCloseCount: closeSources ? tabsToClose.length : 0,
+      closedCount: closedTabs.length,
+      failedCloseCount: failedTabs.length,
+    };
+  } finally {
+    State.finishCaptureAction(actionId);
+    captureCommitPending = false;
+  }
+}
+
+function captureResultMessage(base, result) {
+  const requested = Number(result?.requestedCloseCount) || 0;
+  if (!result?.closeSources || !requested) return base;
+  const closed = Number(result.closedCount) || 0;
+  if (closed === requested) {
+    return requested === 1 ? `${base} · closed the source tab` : `${base} · closed ${closed} source tabs`;
+  }
+  if (!closed) return requested === 1 ? `${base} · source tab stayed open` : `${base} · source tabs stayed open`;
+  return `${base} · closed ${closed} of ${requested} source tabs`;
+}
+
+function toastCaptureResult(base, result) {
+  const partialClose = Number(result?.failedCloseCount) > 0;
+  toast(captureResultMessage(base, result), {
+    undo: result?.actionId,
+    duration: partialClose ? 6000 : 3000,
+  });
 }
 function applyFilter() {
   const q = document.getElementById('tab-filter').value.toLowerCase().trim();
@@ -3450,22 +4266,28 @@ function applyFilter() {
   });
 }
 
-async function saveTabToInbox(t) {
+async function saveTabToInbox(t, options = {}) {
   const cat = activeCat();
+  if (!cat) return false;
+  const actionId = State.snapshot('Save to inbox');
   let inbox = cat.groups.find(g => g.name === 'Inbox');
   if (!inbox) { inbox = { id: uid(), name:'Inbox', symbol:'📥', color:'#6366f1', collapsed:false, items:[] }; cat.groups.unshift(inbox); }
-  if (captureDuplicateExists(inbox, t.url)) { toast('Already saved', { danger: true }); return; }
-  State.snapshot('Save to inbox');
+  if (captureDuplicateExists(inbox, t.url)) { State.rollbackSnapshot(actionId); toast('Already saved', { danger: true }); return false; }
   const meta = captureTabFields(t);
-  inbox.items.push(stampNew({ id: uid(), type:'tab', title: meta.title, url: t.url, fav: meta.fav }));
-  if (State.get().settings.closeTabOnSave) { try { await chrome.tabs.remove(t.id); } catch {} }
-  State.persist(); renderBoard(); toast('Saved to Inbox', { undo: true });
+  const savedItem = stampNew({ id: uid(), type:'tab', title: meta.title, url: t.url, fav: meta.fav });
+  inbox.items.push(savedItem);
+  const closeSources = options.closeSource ?? State.get().settings.closeTabOnSave;
+  const result = await commitCapturedTabs([t], { closeSources, actionId });
+  if (!result) return false;
+  renderBoard();
+  toastCaptureResult(closeSources ? 'Saved to Inbox' : 'Saved a copy to Inbox', result);
+  return savedItem;
 }
 async function saveSelectedAsGroup() {
   const tabs = allOpenTabs.filter(t => selectedTabIds.has(t.id));
   if (!tabs.length) return;
   const cat = activeCat();
-  State.snapshot(`Save ${tabs.length} tabs`);
+  const actionId = State.snapshot(`Save ${tabs.length} tabs`);
   const now = new Date();
   const g = {
     id: uid(), symbol:'📂', color:'#6366f1', collapsed:false,
@@ -3473,10 +4295,11 @@ async function saveSelectedAsGroup() {
     items: tabs.map(t => { const meta = captureTabFields(t); return stampNew({ id: uid(), type:'tab', title:meta.title, url:t.url, fav:meta.fav }); })
   };
   cat.groups.push(g);
-  if (State.get().settings.closeTabOnSave) { for (const t of tabs) { try { await chrome.tabs.remove(t.id); } catch {} } }
+  const result = await commitCapturedTabs(tabs, { actionId });
+  if (!result) return;
   selectedTabIds.clear();
-  State.persist(); renderBoard(); updateSelectedBadge();
-  toast(`Saved ${tabs.length} tabs`, { undo: true });
+  renderBoard(); updateSelectedBadge();
+  toastCaptureResult(`Saved ${tabs.length} tabs`, result);
 }
 
 async function addSidebarOrActiveTabToGroup(g) {
@@ -3484,22 +4307,18 @@ async function addSidebarOrActiveTabToGroup(g) {
   if (selectedTabs.length) {
     const addedTabs = selectedTabs.filter(t => !captureDuplicateExists(g, t.url));
     if (!addedTabs.length) return toast('Already saved', { danger: true });
-    State.snapshot(`Add ${addedTabs.length} tabs`);
+    const actionId = State.snapshot(`Add ${addedTabs.length} tabs`);
     addedTabs.forEach(t => {
       const meta = captureTabFields(t);
       g.items.push(stampNew({ id: uid(), type:'tab', title:meta.title, url:t.url, fav:meta.fav }));
     });
-    if (State.get().settings.closeTabOnSave) {
-      for (const t of addedTabs) {
-        try { await chrome.tabs.remove(t.id); } catch {}
-      }
-    }
+    const result = await commitCapturedTabs(addedTabs, { actionId });
+    if (!result) return;
     selectedTabIds.clear();
     lastClickedTabId = null;
-    State.persist();
     renderBoard();
     updateSelectedBadge();
-    toast(`Added ${addedTabs.length} ${addedTabs.length === 1 ? 'tab' : 'tabs'}`, { undo: true });
+    toastCaptureResult(`Added ${addedTabs.length} ${addedTabs.length === 1 ? 'tab' : 'tabs'}`, result);
     return;
   }
 
@@ -3509,15 +4328,13 @@ async function addSidebarOrActiveTabToGroup(g) {
     return;
   }
   if (captureDuplicateExists(g, t.url)) return toast('Already saved');
-  State.snapshot('Add tab');
+  const actionId = State.snapshot('Add tab');
   const meta = captureTabFields(t);
   g.items.push(stampNew({ id: uid(), type:'tab', title:meta.title, url:t.url, fav:meta.fav }));
-  if (State.get().settings.closeTabOnSave) {
-    try { await chrome.tabs.remove(t.id); } catch {}
-  }
-  State.persist();
+  const result = await commitCapturedTabs([t], { actionId });
+  if (!result) return;
   renderBoard();
-  toast('Tab added', { undo: true });
+  toastCaptureResult('Tab added', result);
 }
 
 async function saveAllTabs() {
@@ -3525,18 +4342,16 @@ async function saveAllTabs() {
   const tabs = await chrome.tabs.query({ currentWindow: true });
   const valid = tabs.filter(t => !isProto(t.url));
   if (!valid.length) return toast('No tabs to save');
-  State.snapshot('Save all tabs');
+  const actionId = State.snapshot('Save eligible tabs');
   const now = new Date();
   cat.groups.push({
     id: uid(), symbol:'💾', color:'#06b6d4', collapsed:false,
     name:`Session ${now.toLocaleDateString(appLocale(), { month:'short', day:'numeric' })} ${now.toLocaleTimeString(appLocale(), { hour:'2-digit', minute:'2-digit' })}`,
     items: valid.map(t => { const meta = captureTabFields(t); return stampNew({ id: uid(), type:'tab', title:meta.title, url:t.url, fav:meta.fav }); })
   });
-  if (State.get().settings.closeTabOnSave) {
-    const others = valid.slice(1);
-    for (const t of others) { try { await chrome.tabs.remove(t.id); } catch {} }
-  }
-  State.persist(); renderBoard(); toast(`Saved ${valid.length} tabs`, { undo: true });
+  const result = await commitCapturedTabs(valid.slice(1), { actionId });
+  if (!result) return;
+  renderBoard(); toastCaptureResult(`Saved ${valid.length} tabs`, result);
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -3919,7 +4734,6 @@ function collectWorkspaceItems(ws = activeWs()) {
 // ── Zen launch layer ──────────────────────────────────────────────────────
 let _landingClockTimer = null;
 let _landingResultIndex = -1;
-let _landingAfterWelcome = false;
 
 function landingInbox(ws = activeWs()) {
   if (!ws) return null;
@@ -3952,7 +4766,7 @@ function paintLandingResults(query) {
   }
   host.innerHTML = rows.map(({ item, cat, group }, index) => `
     <button class="landing-result" type="button" role="option" data-index="${index}" data-id="${esc(item.id)}">
-      <img src="${esc(item.fav || favUrl(item.url))}" alt="" loading="lazy" decoding="async" onerror="this.src='${BLANK_FAV}'">
+      <img src="${esc(favUrl(item.url) || BLANK_FAV)}" alt="" loading="lazy" decoding="async">
       <span class="landing-result-copy">
         <span class="landing-result-title">${esc(item.title || item.url || 'Untitled')}</span>
         <span class="landing-result-url">${esc(dispUrl(item.url))}</span>
@@ -4229,15 +5043,10 @@ function buildEmptySpaceState(cat) {
 }
 
 function openLibrarySurface(mode) {
-  activeSearch = null;
-  activeLibraryMode = ['all', 'favorites', 'read-later', 'archive', 'trash'].includes(mode) ? mode : 'all';
-  activeHome = false;
-  activeGroupPage = null;
-  activeCalendar = null;
-  boardDetailItemId = null;
-  renderBoard();
-  renderSpaceNav();
-  Router.sync();
+  const ws = activeWs();
+  if (!ws) return;
+  const normalized = ['all', 'favorites', 'read-later', 'archive', 'trash'].includes(mode) ? mode : 'all';
+  Router.navigate({ type: 'library', wsId: ws.id, mode: normalized, query: {} });
 }
 
 function renderLibrarySurface() {
@@ -4314,7 +5123,7 @@ function renderLibrarySurface() {
       row.setAttribute('role', 'listitem');
       row.dataset.id = item.id;
       row.innerHTML = `
-        <img class="library-fav" src="${esc(item.fav || favUrl(item.url))}" alt="" loading="lazy" decoding="async" onerror="this.src='${BLANK_FAV}'">
+        <img class="library-fav" src="${esc(favUrl(item.url) || BLANK_FAV)}" alt="" loading="lazy" decoding="async">
         <button class="library-primary" type="button">
           <span class="library-title">${esc(item.title || 'Untitled')}</span>
           <span class="library-url">${esc(dispUrl(item.url))}</span>
@@ -4372,7 +5181,7 @@ function renderReadLaterSurface() {
       <div><strong>${rows.length}</strong><span>Saved</span></div>
       <div><strong>${unread.length}</strong><span>Unread</span></div>
       <div><strong>${read.length}</strong><span>Read</span></div>
-      <div class="read-later-local"><strong>Stored locally</strong><span>Your queue never leaves this browser</span></div>
+      <div class="read-later-local"><strong>Browser-profile storage</strong><span>Export before uninstalling or deleting the profile</span></div>
     </div>
     <section class="read-later-next" aria-labelledby="read-later-next-title">
       <div class="read-later-section-head"><div><h2 id="read-later-next-title">Up next</h2><p>Oldest unread saves, ready when you are</p></div></div>
@@ -4426,7 +5235,7 @@ function renderReadLaterSurface() {
       const card = document.createElement('article');
       card.className = 'read-later-card';
       card.innerHTML = `
-        <div class="read-later-card-top"><img src="${esc(item.fav || favUrl(item.url))}" alt="" loading="lazy" onerror="this.src='${BLANK_FAV}'"><span>${esc(cat.name)}</span></div>
+        <div class="read-later-card-top"><img src="${esc(favUrl(item.url) || BLANK_FAV)}" alt="" loading="lazy"><span>${esc(cat.name)}</span></div>
         <button type="button" class="read-later-card-title">${esc(item.title || 'Untitled')}</button>
         <div class="read-later-card-foot"><span>${esc(dispUrl(item.url))}</span><button type="button" aria-label="Mark ${esc(item.title || 'link')} as read" title="Mark as read">✓</button></div>`;
       card.querySelector('.read-later-card-title').onclick = () => openTabMaybeHibernated(item.url, { focus: true });
@@ -4478,7 +5287,7 @@ function renderReadLaterSurface() {
       row.setAttribute('role', 'listitem');
       row.dataset.id = item.id;
       row.innerHTML = `
-        <img class="library-fav" src="${esc(item.fav || favUrl(item.url))}" alt="" loading="lazy" onerror="this.src='${BLANK_FAV}'">
+        <img class="library-fav" src="${esc(favUrl(item.url) || BLANK_FAV)}" alt="" loading="lazy">
         <button class="library-primary" type="button"><span class="library-title">${esc(item.title || 'Untitled')}</span><span class="library-url">${esc(dispUrl(item.url))}</span></button>
         <span class="library-space">${esc(cat.name)} / ${esc(group.name)}</span>
         <time datetime="${new Date(item.readLaterAt).toISOString()}">${esc(fmtTimeRelative(item.readLaterAt))}</time>
@@ -4896,20 +5705,38 @@ function renderTrashSurface() {
 // Save the currently dragged tab / multi-selection into a category's Inbox group.
 // Backs the "drag a tab into a space to save it" affordance on the SPACES list.
 async function dropTabsIntoCategory(cat) {
+  const draggedTabs = drag?.kind === 'tab' ? [drag.data]
+    : drag?.kind === 'tabs-multi' ? [...drag.data]
+    : [];
+  if (!draggedTabs.length) return;
+
+  const actionId = State.snapshot(draggedTabs.length === 1 ? 'Save tab' : 'Save tabs');
   let inbox = cat.groups.find(g => g.name === 'Inbox');
   if (!inbox) {
     inbox = { id: uid(), name: 'Inbox', symbol: '📥', color: '#6366f1', collapsed: false, items: [] };
     cat.groups.unshift(inbox);
   }
-  if (drag?.kind === 'tab') {
-    await handleTabDropIntoList(drag.data, inbox.items);
-  } else if (drag?.kind === 'tabs-multi') {
-    State.snapshot('Save tabs');
-    const dropped = [...drag.data];
-    for (const t of dropped) await handleTabDropIntoList(t, inbox.items, null, { snapshot: false });
-    State.persist(); renderBoard();
-    toast(`Saved ${dropped.length} tabs to ${cat.name}`, { undo: true });
+
+  const savedTabs = [];
+  for (const tab of draggedTabs) {
+    if (inbox.items.some(item => item.type === 'tab' && item.url === tab.url)) continue;
+    inbox.items.push(stampNew({
+      id: uid(), type: 'tab', title: tab.title || 'Untitled',
+      url: tab.url, fav: tab.fav || ''
+    }));
+    savedTabs.push(tab);
   }
+  if (!savedTabs.length) {
+    State.rollbackSnapshot(actionId);
+    toast('Already saved', { danger: true });
+    return;
+  }
+  const result = await commitCapturedTabs(savedTabs, { actionId });
+  if (!result) return;
+  selectedTabIds.clear();
+  renderBoard();
+  updateSelectedBadge();
+  toastCaptureResult(`Saved ${savedTabs.length} ${savedTabs.length === 1 ? 'tab' : 'tabs'} to ${cat.name}`, result);
   renderSpaceNav();
 }
 
@@ -4946,7 +5773,7 @@ function buildHomePreviewRow(it) {
   row.className = 'home-prow';
   let icon, label, sub = '';
   if (it.type === 'tab') {
-    icon = `<img class="home-prow-fav" src="${esc(it.fav || favUrl(it.url))}" alt="" loading="lazy" decoding="async" onerror="this.src='${BLANK_FAV}'">`;
+    icon = `<img class="home-prow-fav" src="${esc(favUrl(it.url) || BLANK_FAV)}" alt="" loading="lazy" decoding="async">`;
     label = it.title || it.url || 'Untitled';
     try { sub = new URL(it.url).hostname.replace(/^www\./, ''); } catch {}
   } else if (it.type === 'note') {
@@ -5017,6 +5844,65 @@ function homeCardIconHtml(cat) {
          `<img class="hcs-img ic-light" src="${base}-dark.png" alt="" aria-hidden="true" decoding="async">`;
 }
 
+function newestHomeItems(items, limit = 3) {
+  return (items || [])
+    .map((item, index) => ({ item, index, createdAt: Number(item?.createdAt) || 0 }))
+    .sort((a, b) => b.createdAt - a.createdAt || b.index - a.index)
+    .slice(0, limit)
+    .map(entry => entry.item);
+}
+
+function buildHomeInboxZone() {
+  const cat = activeCat();
+  const inbox = cat?.groups?.find(group => group.name === 'Inbox') || null;
+  const items = inbox?.items || [];
+  const section = document.createElement('section');
+  section.className = 'home-loop-zone';
+  section.setAttribute('aria-labelledby', 'home-loop-title');
+
+  const header = document.createElement('div');
+  header.className = 'home-loop-head';
+  header.innerHTML = `
+    <div>
+      <h2 id="home-loop-title">${esc(tr('home.inboxZone'))}</h2>
+      <p>${esc(tr('home.inboxHint'))}</p>
+    </div>
+    <span class="home-loop-count">${esc(tr('home.items', { n: items.length }))}</span>`;
+  section.appendChild(header);
+
+  const preview = document.createElement('div');
+  preview.className = 'home-loop-preview';
+  if (items.length) newestHomeItems(items).forEach(item => preview.appendChild(buildHomePreviewRow(item)));
+  else {
+    const empty = document.createElement('p');
+    empty.className = 'home-card-empty';
+    empty.textContent = tr('home.empty');
+    preview.appendChild(empty);
+  }
+  section.appendChild(preview);
+
+  const actions = document.createElement('div');
+  actions.className = 'home-loop-actions';
+  const save = document.createElement('button');
+  save.type = 'button';
+  save.className = 'btn-primary';
+  save.textContent = tr('action.saveTab');
+  save.addEventListener('click', saveMostRecentOpenTab);
+  const open = document.createElement('button');
+  open.type = 'button';
+  open.className = 'btn-secondary';
+  open.textContent = tr('home.openInbox');
+  open.disabled = !cat;
+  open.addEventListener('click', () => {
+    const target = cat.groups.find(group => group.name === 'Inbox');
+    if (target) openGroupPage(target.id);
+    else openCategory(cat.id);
+  });
+  actions.append(save, open);
+  section.appendChild(actions);
+  return section;
+}
+
 // Home surface renderer. Returns false (and drops the flag) if the workspace
 // vanished, so renderBoard() falls through to the category board.
 function renderHome() {
@@ -5053,7 +5939,17 @@ function renderHome() {
     </div>`;
   $b.appendChild(hero);
 
-  // Category cards.
+  // The core loop is the first actionable zone: capture into Inbox, then see
+  // the same saved item here. Capability-heavy views stay out of this path.
+  $b.appendChild(buildHomeInboxZone());
+
+  const spacesHeading = document.createElement('h2');
+  spacesHeading.className = 'home-zone-heading';
+  spacesHeading.textContent = tr('home.recentSpaces');
+  $b.appendChild(spacesHeading);
+
+  // Show at most three Spaces. Until recency is measured, the active Space is
+  // first and repository order is the deterministic fallback.
   const grid = document.createElement('div');
   grid.className = 'home-grid';
 
@@ -5065,19 +5961,14 @@ function renderHome() {
     }));
   }
 
-  // Auto-pick the "collections" category (most groups, ≥3) → promoted to a
-  // full-width strip at the bottom instead of a regular card.
-  let projCat = null;
-  ws.categories.forEach(c => { if (c.groups.length >= 3 && (!projCat || c.groups.length > projCat.groups.length)) projCat = c; });
-
-  ws.categories.forEach(cat => {
-    if (cat === projCat) return;
+  const activeCategory = activeCat();
+  const visibleCategories = [activeCategory, ...ws.categories.filter(cat => cat !== activeCategory)]
+    .filter(Boolean)
+    .slice(0, 3);
+  visibleCategories.forEach(cat => {
     const items = cat.groups.reduce((acc, g) => acc.concat(g.items), []);
-    const card = document.createElement('div');
+    const card = document.createElement('article');
     card.className = 'home-card';
-    card.tabIndex = 0;
-    card.setAttribute('role', 'button');
-    card.title = cat.name;
     card.style.setProperty('--home-accent', homeAccentColor(cat));
 
     const hd = document.createElement('div');
@@ -5111,7 +6002,7 @@ function renderHome() {
       em.textContent = tr('home.empty');
       body.appendChild(em);
     } else {
-      items.slice(0, 5).forEach(it => body.appendChild(buildHomePreviewRow(it)));
+      newestHomeItems(items).forEach(it => body.appendChild(buildHomePreviewRow(it)));
     }
     main.appendChild(body);
     // Derived accent panel: a category-tinted gradient with the category glyph —
@@ -5134,8 +6025,7 @@ function renderHome() {
     card.appendChild(ft);
 
     const go = () => openCategory(cat.id);
-    card.addEventListener('click', go);
-    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+    ft.addEventListener('click', go);
 
     // Drop a dragged tab onto a card to save it into that category's Inbox.
     card.addEventListener('dragover', e => {
@@ -5148,8 +6038,6 @@ function renderHome() {
 
     grid.appendChild(card);
   });
-
-  if (projCat) grid.appendChild(buildProjectsRow(projCat, ws));
 
   $b.appendChild(grid);
   return true;
@@ -5219,8 +6107,11 @@ function renderSpaceNav() {
     ws.categories.forEach(cat => {
       const count = cat.groups.reduce((n, g) => n + g.items.length, 0);
       const el = document.createElement('button');
-      el.className = 'space-item' + (!activeSearch && !activeHome && !activeLibraryMode && cat.id === ws.activeCatId ? ' active' : '');
+      const inbox = cat.groups.find(g => g.name === 'Inbox');
+      const showingInbox = !!activeGroupPage && activeGroupPage.groupId === inbox?.id;
+      el.className = 'space-item' + (!activeSearch && !activeHome && !activeLibraryMode && !activeCalendar && !showingInbox && cat.id === ws.activeCatId ? ' active' : '');
       el.dataset.catId = cat.id;
+      el.setAttribute('aria-label', cat.name);
       el.innerHTML =
         `<span class="space-sym">${esc(cat.symbol || '🗂')}</span>` +
         `<span class="space-name">${esc(cat.name)}</span>` +
@@ -5275,7 +6166,17 @@ function updateNavChrome() {
   const trash = document.getElementById('nav-trash');
   if (trash) trash.classList.toggle('active', activeLibraryMode === 'trash');
   const inboxNav = document.getElementById('nav-inbox');
-  if (inboxNav) inboxNav.classList.toggle('active', !!activeGroupPage && activeGroupPage.groupId === (inbox && inbox.id));
+  if (inboxNav) {
+    const catName = activeCat()?.name || '';
+    const scopedLabel = catName ? `${tr('nav.inbox')} · ${catName}` : tr('nav.inbox');
+    inboxNav.classList.toggle('active', !!activeGroupPage && activeGroupPage.groupId === (inbox && inbox.id));
+    inboxNav.setAttribute('aria-label', scopedLabel);
+    inboxNav.title = scopedLabel;
+    const label = inboxNav.querySelector('.nav-lbl');
+    if (label) label.textContent = scopedLabel;
+  }
+  const moreNav = document.getElementById('nav-more');
+  if (moreNav) moreNav.classList.toggle('active', !!activeSearch || !!activeCalendar || ['favorites', 'read-later', 'archive', 'trash'].includes(activeLibraryMode));
   // Topbar app-menu chip: initial from the active workspace name + a pending
   // reminder dot (the reminder signal moved here when the bell became Plugins;
   // the menu itself exposes "Calendar & reminders" with the live count).
@@ -5806,11 +6707,11 @@ function buildTab(it, parentItems, group) {
   }
   el.draggable = true;
 
-  const fav = it.fav || favUrl(it.url);
+  const fav = favUrl(it.url) || BLANK_FAV;
   el.innerHTML = `
     ${renderReminderBadge(it)}
     <div class="item-top">
-      <img class="item-fav" src="${esc(fav)}" alt="" loading="lazy" decoding="async" onerror="this.src='${BLANK_FAV}'">
+      <img class="item-fav" src="${esc(fav)}" alt="" loading="lazy" decoding="async">
       <span class="item-title">${esc(it.title)}</span>
       <div class="item-acts">
         <button class="item-btn" data-act="detail" title="Details">
@@ -6055,17 +6956,21 @@ function buildStack(it, parentItems, group) {
     it.expanded = true;
     if (drag.kind === 'tab') await handleTabDropIntoList(drag.data, it.items, it.items.length);
     else if (drag.kind === 'tabs-multi') {
-      State.snapshot(`Save ${drag.data.length} tabs`);
+      const actionId = State.snapshot(`Save ${drag.data.length} tabs`);
       let added = 0;
+      const savedTabs = [];
       for (const t of drag.data) {
         if (it.items.find(x => x.type === 'tab' && x.url === t.url)) continue;
         it.items.push(stampNew({ id: uid(), type:'tab', title: t.title||'Untitled', url: t.url, fav: t.fav||'' }));
         added++;
+        savedTabs.push(t);
       }
-      if (State.get().settings.closeTabOnSave) { for (const t of drag.data) { if (t.tabId) { try { await chrome.tabs.remove(t.tabId); } catch {} } } }
+      if (!added) { State.rollbackSnapshot(actionId); toast('Already saved', { danger: true }); return; }
+      const result = await commitCapturedTabs(savedTabs, { actionId });
+      if (!result) return;
       selectedTabIds.clear();
-      State.persist(); renderBoard(); updateSelectedBadge();
-      toast(`Saved ${added} tabs to stack`, { undo: true });
+      renderBoard(); updateSelectedBadge();
+      toastCaptureResult(`Saved ${added} tabs to stack`, result);
     } else if (drag.kind === 'item') {
       const info = findItem(drag.id);
       if (!info) return;
@@ -6231,7 +7136,6 @@ function runBatchAction(act) {
         });
       }
     });
-    if (State.get().archive.length > 200) State.get().archive.length = 200;
     State.persist();
     clearItemSelection();
     toast(`Archived ${infos.length} items`, { undo: true });
@@ -6446,20 +7350,23 @@ function makeGroupDropZone(cardsEl, colEl, g, targetList) {
     if (drag.kind === 'tab') {
       await handleTabDropIntoList(drag.data, targetList, insertIdx);
     } else if (drag.kind === 'tabs-multi') {
-      State.snapshot(`Save ${drag.data.length} tabs`);
+      const actionId = State.snapshot(`Save ${drag.data.length} tabs`);
       let idx = insertIdx;
       let added = 0;
+      const savedTabs = [];
       for (const t of drag.data) {
         if (targetList.find(it => it.type === 'tab' && it.url === t.url)) continue;
         const item = stampNew({ id: uid(), type:'tab', title: t.title||'Untitled', url: t.url, fav: t.fav||'' });
         if (idx >= targetList.length) targetList.push(item);
         else targetList.splice(idx, 0, item);
-        idx++; added++;
+        idx++; added++; savedTabs.push(t);
       }
-      if (State.get().settings.closeTabOnSave) { for (const t of drag.data) { if (t.tabId) { try { await chrome.tabs.remove(t.tabId); } catch {} } } }
+      if (!added) { State.rollbackSnapshot(actionId); toast('Already saved', { danger: true }); return; }
+      const result = await commitCapturedTabs(savedTabs, { actionId });
+      if (!result) return;
       selectedTabIds.clear();
-      State.persist(); renderBoard(); updateSelectedBadge();
-      toast(`Saved ${added} tabs`, { undo: true });
+      renderBoard(); updateSelectedBadge();
+      toastCaptureResult(`Saved ${added} tabs`, result);
     } else if (drag.kind === 'item') {
       const info = findItem(drag.id);
       if (!info) return;
@@ -6496,17 +7403,17 @@ function isDescendantOf(list, stackItem) {
 
 async function handleTabDropIntoList(tabObj, list, insertIdx, { snapshot = true } = {}) {
   if (list.find(it => it.type === 'tab' && it.url === tabObj.url)) {
-    if (State.get().settings.closeTabOnSave && tabObj.tabId) { try { await chrome.tabs.remove(tabObj.tabId); } catch {} }
     toast('Already saved', { danger: true });
     return;
   }
-  if (snapshot) State.snapshot('Save tab');
+  const actionId = snapshot ? State.snapshot('Save tab') : State.latestActionId();
   const item = stampNew({ id: uid(), type:'tab', title: tabObj.title||'Untitled', url: tabObj.url, fav: tabObj.fav||'' });
   if (insertIdx == null || insertIdx >= list.length) list.push(item);
   else list.splice(insertIdx, 0, item);
-  if (State.get().settings.closeTabOnSave && tabObj.tabId) { try { await chrome.tabs.remove(tabObj.tabId); } catch {} }
-  State.persist(); renderBoard();
-  if (snapshot) toast('Tab saved', { undo: true });
+  const result = await commitCapturedTabs([tabObj], { actionId });
+  if (!result) return;
+  renderBoard();
+  if (snapshot) toastCaptureResult('Tab saved', result);
 }
 async function handleTabDropIntoGroup(tabObj, group) {
   return handleTabDropIntoList(tabObj, group.items);
@@ -7391,8 +8298,8 @@ async function openWsGrid() {
         const isCur = w.id === currentWin.id;
         // Mini stack of favicons
         const favs = tabs.slice(0, 5).map(t => {
-          const f = t.favIconUrl || favUrl(t.url);
-          return `<img src="${esc(f)}" loading="lazy" decoding="async" onerror="this.style.visibility='hidden'">`;
+          const f = favUrl(t.url) || BLANK_FAV;
+          return `<img src="${esc(f)}" loading="lazy" decoding="async">`;
         }).join('');
         card.innerHTML = `
           <div class="wsg-win-label">
@@ -7515,8 +8422,11 @@ function countState(s) {
 
 function pluralize(n, word) { return `${n} ${word}${n === 1 ? '' : 's'}`; }
 
-function exportJSON() {
-  const data = State.get();
+function exportJSON(options = {}) {
+  const data = { ...State.get() };
+  // Revision is a live concurrency token for this browser profile, not
+  // portable user data. Importing it would create a false write conflict.
+  delete data._revision;
   const counts = countState(data);
   const payload = {
     app: 'locus',
@@ -7530,15 +8440,130 @@ function exportJSON() {
   const a = document.createElement('a');
   const wsTag = counts.workspaces ? `-${counts.workspaces}ws` : '';
   a.href = url;
-  a.download = `locus${wsTag}-${new Date().toISOString().slice(0,10)}.json`;
+  const prefix = typeof options.prefix === 'string' && options.prefix ? options.prefix : 'locus';
+  a.download = `${prefix}${wsTag}-${new Date().toISOString().slice(0,10)}.json`;
   a.click();
-  URL.revokeObjectURL(url);
-  toast(`Exported · ${pluralize(counts.workspaces, 'workspace')} · ${pluralize(counts.items, 'item')}`);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  if (!options.silent) toast(`Exported · ${pluralize(counts.workspaces, 'workspace')} · ${pluralize(counts.items, 'item')}`);
 }
 
 let importCtx = null;
+const MAX_IMPORT_BYTES = 20 * 1024 * 1024;
+const MAX_IMPORT_NODES = 120000;
+const MAX_IMPORT_DEPTH = 30;
+const MAX_IMPORT_STRING = 1024 * 1024;
+const IMPORT_ITEM_TYPES = new Set(['tab', 'note', 'todo', 'stack']);
+const IMPORT_DANGEROUS_KEYS = new Set(['__proto__', 'prototype', 'constructor']);
+
+function validateImportData(data, schema) {
+  if (Number.isFinite(Number(schema)) && Number(schema) > CURRENT_SCHEMA) {
+    throw new Error(`This backup uses newer schema ${schema}. Update Locus before importing it.`);
+  }
+  let nodes = 0;
+  const inspect = (value, depth, label) => {
+    if (depth > MAX_IMPORT_DEPTH) throw new Error(`${label} is nested too deeply`);
+    if (++nodes > MAX_IMPORT_NODES) throw new Error('Backup contains too many values');
+    if (typeof value === 'string' && value.length > MAX_IMPORT_STRING) {
+      throw new Error(`${label} contains an oversized text value`);
+    }
+    if (!value || typeof value !== 'object') return;
+    if (Array.isArray(value)) {
+      for (let i = 0; i < value.length; i++) inspect(value[i], depth + 1, `${label}[${i}]`);
+      return;
+    }
+    for (const [key, child] of Object.entries(value)) {
+      if (IMPORT_DANGEROUS_KEYS.has(key)) throw new Error(`${label} contains unsafe key "${key}"`);
+      inspect(child, depth + 1, `${label}.${key}`);
+    }
+  };
+  inspect(data, 0, 'data');
+
+  const isRecord = value => value && typeof value === 'object' && !Array.isArray(value);
+  if (!isRecord(data) || !Array.isArray(data.workspaces) || !data.workspaces.length) {
+    throw new Error('Backup must contain at least one workspace');
+  }
+  if (data.settings != null && !isRecord(data.settings)) throw new Error('settings must be an object');
+  if (data.archive != null && !Array.isArray(data.archive)) throw new Error('archive must be an array');
+  if (data.trash != null && !Array.isArray(data.trash)) throw new Error('trash must be an array');
+
+  const activeIds = new Set();
+  const registerId = (value, label, ids = activeIds) => {
+    if (typeof value !== 'string' || !value || value.length > 200) throw new Error(`${label} has an invalid id`);
+    if (ids.has(value)) throw new Error(`${label} reuses id "${value}"`);
+    ids.add(value);
+  };
+  const validateUrl = (value, label) => {
+    if (typeof value !== 'string' || !value) throw new Error(`${label} is missing its URL`);
+    if (/^data:image\/(?:png|jpe?g|gif|webp);/i.test(value)) return;
+    let parsed;
+    try { parsed = new URL(value); } catch { throw new Error(`${label} has an invalid URL`); }
+    if (!['http:', 'https:', 'ftp:', 'file:'].includes(parsed.protocol)) {
+      throw new Error(`${label} uses unsupported URL scheme ${parsed.protocol}`);
+    }
+  };
+  const validateItem = (item, label, ids, stackDepth = 0) => {
+    if (!isRecord(item)) throw new Error(`${label} must be an object`);
+    registerId(item.id, label, ids);
+    if (!IMPORT_ITEM_TYPES.has(item.type)) throw new Error(`${label} has unsupported type "${item.type}"`);
+    if (item.type === 'tab') validateUrl(item.url, label);
+    if (item.type === 'stack') {
+      if (stackDepth >= 12) throw new Error(`${label} contains stacks nested too deeply`);
+      if (!Array.isArray(item.items)) throw new Error(`${label}.items must be an array`);
+      item.items.forEach((child, index) => validateItem(child, `${label}.items[${index}]`, ids, stackDepth + 1));
+    }
+  };
+  const validateGroup = (group, label, ids) => {
+    if (!isRecord(group)) throw new Error(`${label} must be an object`);
+    registerId(group.id, label, ids);
+    if (!Array.isArray(group.items)) throw new Error(`${label}.items must be an array`);
+    group.items.forEach((item, index) => validateItem(item, `${label}.items[${index}]`, ids));
+  };
+
+  data.workspaces.forEach((workspace, wi) => {
+    const wp = `workspaces[${wi}]`;
+    if (!isRecord(workspace)) throw new Error(`${wp} must be an object`);
+    registerId(workspace.id, wp);
+    if (!Array.isArray(workspace.categories) || !workspace.categories.length) {
+      throw new Error(`${wp} must contain at least one category`);
+    }
+    workspace.categories.forEach((category, ci) => {
+      const cp = `${wp}.categories[${ci}]`;
+      if (!isRecord(category)) throw new Error(`${cp} must be an object`);
+      registerId(category.id, cp);
+      if (!Array.isArray(category.groups)) throw new Error(`${cp}.groups must be an array`);
+      category.groups.forEach((group, gi) => validateGroup(group, `${cp}.groups[${gi}]`, activeIds));
+    });
+  });
+
+  for (const [collectionName, collection] of [['archive', data.archive || []], ['trash', data.trash || []]]) {
+    collection.forEach((entry, index) => {
+      const label = `${collectionName}[${index}]`;
+      if (!isRecord(entry) || !['item', 'group'].includes(entry.kind) || !isRecord(entry.data)) {
+        throw new Error(`${label} is not a valid archived entry`);
+      }
+      const ids = new Set();
+      if (entry.kind === 'group') validateGroup(entry.data, `${label}.data`, ids);
+      else validateItem(entry.data, `${label}.data`, ids);
+    });
+  }
+}
+
+function sanitizeImportedRichText(value, depth = 0) {
+  if (!value || typeof value !== 'object' || depth > MAX_IMPORT_DEPTH) return;
+  for (const [key, child] of Object.entries(value)) {
+    if ((key === 'html' || key === 'readme' || key === 'annotation') && typeof child === 'string') {
+      value[key] = sanitizeHtml(child);
+    } else if (child && typeof child === 'object') {
+      sanitizeImportedRichText(child, depth + 1);
+    }
+  }
+}
 
 function importJSON(file) {
+  if (!file || file.size > MAX_IMPORT_BYTES) {
+    toast('Backup is too large to import safely', { danger: true, duration: 5000 });
+    return;
+  }
   const r = new FileReader();
   r.onload = () => {
     let parsed;
@@ -7563,6 +8588,14 @@ function importJSON(file) {
     }
     if (!Array.isArray(data.workspaces)) {
       toast('Invalid file: workspaces is not an array', { danger: true, duration: 5000 });
+      return;
+    }
+    try {
+      data = LocusImportUtils.normalizeLegacy(data, { makeId: uid, schema });
+      validateImportData(data, schema);
+      sanitizeImportedRichText(data);
+    } catch (error) {
+      toast(`Invalid backup: ${error.message}`, { danger: true, duration: 7000 });
       return;
     }
     const counts = countState(data);
@@ -7621,67 +8654,128 @@ function closeImportPreview() {
   if (inp) inp.value = '';
 }
 
-function applyImportReplace(data) {
+function resetSurfaceAfterImportReplace() {
+  activeHome = true;
+  activeSearch = null;
+  activeLibraryMode = null;
+  activeGroupPage = null;
+  activeCalendar = null;
+  boardDetailItemId = null;
+  explorerSel = { groupId: null, stackPath: [], itemId: null };
+  calendarFilter = '';
+  selectedItemIds.clear();
+  lastSelectedItemId = null;
+  itemSelMode = false;
+  explicitSelMode = false;
+  document.body.classList.remove('detail-open', 'reorder-mode');
+  document.getElementById('settings-drawer')?.classList.add('hidden');
+  document.getElementById('tools-hub')?.classList.add('hidden');
+  history.replaceState(null, '', '#' + Router.build({
+    type: 'home',
+    wsId: State.get().activeWsId,
+    query: {},
+  }));
+}
+
+async function applyImportReplace(data) {
+  // Replace is intentionally destructive, so first start a user-owned backup
+  // download of the exact current graph.
+  exportJSON({ prefix: 'locus-before-import', silent: true });
   State.snapshot('Import');
   const s = State.get();
-  const mergedSettings = { ...s.settings, ...(data.settings || {}) };
-  Object.assign(s, data);
-  s.settings = mergedSettings;
-  s.trash = Array.isArray(data.trash) ? data.trash : [];
-  migrate();
-  purgeExpiredTrash();
-  State.persist();
+  try {
+    const currentRevision = s._revision;
+    const currentSettings = s.settings || {};
+    const incoming = LocusImportUtils.normalizeForReplace(data, {
+      makeId: uid,
+      now: Date.now(),
+      retentionMs: TRASH_RETENTION_MS,
+    });
+    const mergedSettings = {
+      ...currentSettings,
+      ...(incoming.settings || {}),
+      onboarding: {
+        ...(currentSettings.onboarding || {}),
+        ...(incoming.settings?.onboarding || {}),
+      },
+    };
+    Object.keys(s).forEach(key => { if (key !== '_revision') delete s[key]; });
+    Object.assign(s, incoming);
+    s._revision = currentRevision;
+    s.settings = mergedSettings;
+    s.archive = Array.isArray(incoming.archive) ? incoming.archive : [];
+    s.trash = Array.isArray(incoming.trash) ? incoming.trash : [];
+    s.recentEmoji = Array.isArray(incoming.recentEmoji) ? incoming.recentEmoji : [];
+    s.columnWidths = incoming.columnWidths && typeof incoming.columnWidths === 'object' ? incoming.columnWidths : {};
+    migrate();
+    await State.persistNow();
+  } catch (error) {
+    State.rollbackSnapshot();
+    renderAll();
+    handleStorageError(error);
+    return false;
+  }
+  resetSurfaceAfterImportReplace();
   applySettings();
   renderAll();
   const c = countState(s);
   toast(`Imported · ${pluralize(c.workspaces, 'workspace')} · ${pluralize(c.items, 'item')}`, { undo: true });
+  chrome.runtime.sendMessage({ type: 'reconcile-reminders' })
+    .then(result => {
+      if (result?.ok === false) toast('Imported data, but some reminders could not be scheduled. Restart the browser, then review Calendar.', { danger: true, duration: 8000 });
+    })
+    .catch(() => {
+      toast('Imported data, but reminder scheduling needs a browser restart', { danger: true, duration: 8000 });
+    });
+  return true;
 }
 
-function applyImportMerge(data) {
+async function applyImportMerge(data) {
   const s = State.get();
   const before = countState(s);
   State.snapshot('Merge import');
-  const existingWsIds = new Set(s.workspaces.map(w => w.id));
   let addedWs = 0;
-  for (const ws of (data.workspaces || [])) {
-    const incoming = JSON.parse(JSON.stringify(ws));
-    if (existingWsIds.has(incoming.id)) incoming.id = uid();
-    delete incoming.windowId;
-    s.workspaces.push(incoming);
-    existingWsIds.add(incoming.id);
-    addedWs++;
-  }
-  s.archive = s.archive || [];
-  const existingArchiveIds = new Set(s.archive.map(a => a && a.id).filter(Boolean));
-  for (const a of (data.archive || [])) {
-    if (a && a.id && !existingArchiveIds.has(a.id)) {
-      s.archive.push(JSON.parse(JSON.stringify(a)));
-      existingArchiveIds.add(a.id);
+  try {
+    const prepared = LocusImportUtils.prepareMerge(data, s, {
+      makeId: uid,
+      now: Date.now(),
+      retentionMs: TRASH_RETENTION_MS,
+    });
+    addedWs = prepared.workspaces.length;
+    s.workspaces.push(...prepared.workspaces);
+    s.archive = s.archive || [];
+    s.archive.push(...prepared.archive);
+    s.trash = s.trash || [];
+    s.trash.push(...prepared.trash);
+    if (Array.isArray(data.recentEmoji)) {
+      s.recentEmoji = s.recentEmoji || [];
+      const seen = new Set(s.recentEmoji);
+      for (const e of data.recentEmoji) if (!seen.has(e)) { s.recentEmoji.push(e); seen.add(e); }
     }
+    s.columnWidths = { ...(s.columnWidths || {}), ...prepared.columnWidths };
+    if (Object.keys(prepared.columnSizes).length) {
+      s.columnSizes = { ...(s.columnSizes || {}), ...prepared.columnSizes };
+    }
+    migrate();
+    await State.persistNow();
+  } catch (error) {
+    State.rollbackSnapshot();
+    renderAll();
+    handleStorageError(error);
+    return false;
   }
-  s.trash = s.trash || [];
-  const existingTrashIds = new Set(s.trash.map(a => a && a.id).filter(Boolean));
-  for (const a of (data.trash || [])) {
-    if (!a || typeof a !== 'object') continue;
-    if (a.id && existingTrashIds.has(a.id)) continue;
-    s.trash.push(JSON.parse(JSON.stringify(a)));
-    if (a.id) existingTrashIds.add(a.id);
-  }
-  if (Array.isArray(data.recentEmoji)) {
-    s.recentEmoji = s.recentEmoji || [];
-    const seen = new Set(s.recentEmoji);
-    for (const e of data.recentEmoji) if (!seen.has(e)) { s.recentEmoji.push(e); seen.add(e); }
-  }
-  if (data.columnWidths && typeof data.columnWidths === 'object') {
-    s.columnWidths = { ...(s.columnWidths || {}), ...data.columnWidths };
-  }
-  migrate();
-  purgeExpiredTrash();
-  State.persist();
   renderAll();
   const after = countState(s);
   const addedItems = after.items - before.items;
   toast(`Merged · +${pluralize(addedWs, 'workspace')} · +${pluralize(addedItems, 'item')}`, { undo: true });
+  chrome.runtime.sendMessage({ type: 'reconcile-reminders' })
+    .then(result => {
+      if (result?.ok === false) toast('Merged data, but some reminders could not be scheduled. Restart the browser, then review Calendar.', { danger: true, duration: 8000 });
+    })
+    .catch(() => {
+      toast('Merged data, but reminder scheduling needs a browser restart', { danger: true, duration: 8000 });
+    });
+  return true;
 }
 
 function bindImportUI() {
@@ -7691,13 +8785,13 @@ function bindImportUI() {
   document.getElementById('import-cancel').onclick = closeImportPreview;
   overlay.addEventListener('click', e => { if (e.target === overlay) closeImportPreview(); });
   overlay.addEventListener('keydown', e => trapTabKey(e, overlay));
-  document.getElementById('import-confirm').onclick = () => {
+  document.getElementById('import-confirm').onclick = async () => {
     if (!importCtx) { closeImportPreview(); return; }
     const mode = document.querySelector('input[name="import-mode"]:checked')?.value || 'replace';
     const { data } = importCtx;
     closeImportPreview();
-    if (mode === 'merge') applyImportMerge(data);
-    else applyImportReplace(data);
+    if (mode === 'merge') await applyImportMerge(data);
+    else await applyImportReplace(data);
   };
 }
 
@@ -8297,14 +9391,14 @@ function renderGroupPage() {
   // works on selection); its own placeholder overrides the note default.
   const readme = document.createElement('div');
   readme.className = 'gp-readme';
-  readme.innerHTML = `<div class="gp-readme-editor note-text" contenteditable="true" spellcheck="false">${g.readme || ''}</div>`;
+  readme.innerHTML = `<div class="gp-readme-editor note-text" contenteditable="true" spellcheck="false">${sanitizeHtml(g.readme || '')}</div>`;
   const rmEd = readme.querySelector('.gp-readme-editor');
   let rmDirty = false;
   rmEd.addEventListener('input', () => { rmDirty = true; });
   rmEd.addEventListener('blur', () => {
     if (!rmDirty) return;
     rmDirty = false;
-    const html = rmEd.innerHTML.trim();
+    const html = sanitizeHtml(rmEd.innerHTML.trim());
     if (html !== (g.readme || '')) { State.snapshot('Edit group description'); g.readme = html; State.persist(); }
   });
   page.appendChild(readme);
@@ -9512,14 +10606,19 @@ function buildLvStack(it, parentItems, group, depth) {
     wrap.classList.add('expanded');
     if (drag.kind === 'tab') await handleTabDropIntoList(drag.data, it.items, it.items.length);
     else if (drag.kind === 'tabs-multi') {
-      State.snapshot(`Save ${drag.data.length} tabs`);
+      const actionId = State.snapshot(`Save ${drag.data.length} tabs`);
+      const savedTabs = [];
       for (const t of drag.data) {
         if (it.items.find(x => x.type === 'tab' && x.url === t.url)) continue;
         it.items.push(stampNew({ id: uid(), type:'tab', title: t.title||'Untitled', url: t.url, fav: t.fav||'' }));
+        savedTabs.push(t);
       }
-      if (State.get().settings.closeTabOnSave) for (const t of drag.data) if (t.tabId) { try { await chrome.tabs.remove(t.tabId); } catch {} }
+      if (!savedTabs.length) { State.rollbackSnapshot(actionId); toast('Already saved', { danger: true }); return; }
+      const result = await commitCapturedTabs(savedTabs, { actionId });
+      if (!result) return;
       selectedTabIds.clear();
-      State.persist(); renderBoard(); updateSelectedBadge();
+      renderBoard(); updateSelectedBadge();
+      toastCaptureResult(`Saved ${savedTabs.length} tabs to stack`, result);
     } else if (drag.kind === 'item') {
       const info = findItem(drag.id);
       if (!info) return;
@@ -10106,7 +11205,9 @@ function _calReduceMotion() {
 // ── Navigation ──────────────────────────────────────────────────
 function openCalendar() {
   const ws = activeWs(); if (!ws) return;
-  const view = activeCalendar ? activeCalendar.view : 'month';
+  let reminderCount = 0;
+  try { reminderCount = collectReminders({ scope: ws.id }).length; } catch {}
+  const view = activeCalendar ? activeCalendar.view : (reminderCount < 5 ? 'agenda' : 'month');
   Router.navigate({ type: 'calendar', wsId: ws.id, query: view !== 'month' ? { cal: view } : {} });
 }
 function closeCalendar() {
@@ -10701,7 +11802,7 @@ function updateViewModeButton(mode) {
   if (btn) { btn.title = `View: ${def.label} — click to switch`; btn.dataset.mode = mode; }
 }
 function cycleViewMode() {
-  const order = LAYOUT_ORDER.filter(m => LAYOUTS[m]);
+  const order = ['board', 'list'].filter(m => LAYOUTS[m]);
   const i = order.indexOf(getViewMode());
   setViewMode(order[(i + 1) % order.length] || 'board');
 }
@@ -10711,7 +11812,7 @@ function cycleViewMode() {
 function openLayoutMenu(btn) {
   const cur = getViewMode();
   const items = [{ label: 'View' }];
-  LAYOUT_ORDER.filter(m => LAYOUTS[m]).forEach(m => {
+  ['board', 'list'].filter(m => LAYOUTS[m]).forEach(m => {
     const def = LAYOUTS[m];
     items.push({
       text: def.label,
@@ -10720,6 +11821,33 @@ function openLayoutMenu(btn) {
       action: () => setViewMode(m),
     });
   });
+  const advanced = LAYOUT_ORDER.filter(m => !['board', 'list'].includes(m) && LAYOUTS[m]);
+  if (advanced.length) {
+    items.push({ sep: true });
+    items.push({
+      text: 'Advanced views…',
+      icon: LAYOUT_ICONS.canvas,
+      sub: advanced.includes(cur) ? LAYOUTS[cur].label : '',
+      action: () => openAdvancedLayoutMenu(btn),
+    });
+  }
+  const r = btn.getBoundingClientRect();
+  showContextMenu(r.left, r.bottom + 6, items, { focusFirst: true });
+}
+
+function openAdvancedLayoutMenu(btn) {
+  const cur = getViewMode();
+  const items = [{ label: 'Advanced views' }];
+  LAYOUT_ORDER.filter(m => !['board', 'list'].includes(m) && LAYOUTS[m]).forEach(m => {
+    const def = LAYOUTS[m];
+    items.push({
+      text: def.label,
+      icon: def.icon,
+      sub: m === cur ? '✓' : '',
+      action: () => setViewMode(m),
+    });
+  });
+  items.push({ sep: true }, { text: 'Back to core views', icon: LAYOUT_ICONS.board, action: () => openLayoutMenu(btn) });
   const r = btn.getBoundingClientRect();
   showContextMenu(r.left, r.bottom + 6, items, { focusFirst: true });
 }
@@ -11177,7 +12305,7 @@ function updateModeButtonState() {
 }
 
 // The top-bar overflow (⋯) menu — houses the less-frequent "organize" and
-// tab-management actions (item selection, reorder, save all open tabs) that used
+// tab-management actions (item selection, reorder, save eligible open tabs) that used
 // to be separate always-visible buttons. Relocating them keeps the default
 // toolbar calm while leaving everything one click away. Reuses the shared
 // context-menu chrome so it matches every theme.
@@ -11186,11 +12314,60 @@ const MORE_MENU_ICONS = {
   reorder: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="4" cy="2.5" r="0.9" fill="currentColor"/><circle cx="8" cy="2.5" r="0.9" fill="currentColor"/><circle cx="4" cy="6" r="0.9" fill="currentColor"/><circle cx="8" cy="6" r="0.9" fill="currentColor"/><circle cx="4" cy="9.5" r="0.9" fill="currentColor"/><circle cx="8" cy="9.5" r="0.9" fill="currentColor"/></svg>',
   save: '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2.7A0.8 0.8 0 012.8 2h5l2.2 2.2v5.1a0.8 0.8 0 01-.8.8H2.8a0.8 0.8 0 01-.8-.8V2.7z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M4 2v2.4h4V2M4 10V7h4v3" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/></svg>',
 };
+
+async function saveMostRecentOpenTab(event) {
+  let tabs = [];
+  try { tabs = await chrome.tabs.query({ currentWindow: true }); } catch {}
+  const candidate = tabs
+    .filter(tab => tab.url && !isProto(tab.url))
+    .sort((a, b) => Number(b.lastAccessed || 0) - Number(a.lastAccessed || 0))[0];
+  if (!candidate) {
+    toast('No saveable tab is open in this window', { danger: true });
+    return false;
+  }
+  let domain = candidate.url;
+  try { domain = new URL(candidate.url).hostname; } catch {}
+  const title = String(candidate.title || domain || candidate.url).trim();
+  const displayTitle = title.length > 56 ? title.slice(0, 53) + '…' : title;
+  const button = event?.currentTarget || document.getElementById('topbar-save');
+  const rect = button?.getBoundingClientRect();
+  if (!rect) return false;
+  showContextMenu(rect.left, rect.bottom + 6, [
+    { label: displayTitle },
+    { text: tr('action.saveCopy'), icon: MORE_MENU_ICONS.save, sub: domain, action: () => saveTabToInbox(candidate, { closeSource: false }) },
+    { text: tr('action.saveClose'), icon: cmIcons.archive, sub: tr('action.saveCandidate'), action: () => saveTabToInbox(candidate, { closeSource: true }) },
+  ], { focusFirst: true });
+  return true;
+}
+
+function secondaryNavigationItems() {
+  return [
+    { label: 'Find and review' },
+    { text: tr('search.nav'), icon: cmIcons.open, action: openSearchSurface },
+    { text: tr('nav.favorites'), icon: cmIcons.favorite, action: () => openLibrarySurface('favorites') },
+    { text: tr('nav.readLater'), icon: cmIcons.readLater, action: () => openLibrarySurface('read-later') },
+    { text: tr('nav.archive'), icon: cmIcons.archive, action: () => openLibrarySurface('archive') },
+    { text: tr('nav.trash'), icon: cmIcons.delete, action: () => openLibrarySurface('trash') },
+    { sep: true },
+    { text: tr('action.calendar'), icon: cmIcons.clock, action: openCalendar },
+    { text: tr('action.plugins'), icon: cmIcons.stack, action: openToolsHub },
+    { text: tr('action.settings'), icon: cmIcons.edit, action: () => openSettingsDrawer('general') },
+  ];
+}
+
+function openSidebarMoreMenu(btn) {
+  const r = btn.getBoundingClientRect();
+  showContextMenu(r.left + 8, r.bottom + 6, secondaryNavigationItems(), { focusFirst: true });
+}
+
 function openMoreMenu(btn) {
   const selOn = itemSelMode;
   const reOn = document.body.classList.contains('reorder-mode');
   const items = [
+    ...secondaryNavigationItems(),
+    { sep: true },
     { label: 'Organize' },
+    { text: tr('action.undo'), icon: cmIcons.edit, sub: State.canUndo() ? '' : '—', action: performUndo },
     { text: tr('action.selectionMode'), icon: MORE_MENU_ICONS.select, sub: selOn ? '✓' : '', action: toggleSelectMode },
     { text: tr('action.reorderMode'), icon: MORE_MENU_ICONS.reorder, sub: reOn ? '✓' : '', action: toggleReorderMode },
     { sep: true },
@@ -11241,7 +12418,7 @@ function openAppMenu(btn) {
 }
 
 // ── About dialog ────────────────────────────────────────────────────
-// A small, real informational modal (version + local-first promises + a way
+// A small, real informational modal (version + privacy boundaries + a way
 // back into the guide). Reuses the overlay scrim + focus helpers so it behaves
 // like every other overlay across themes.
 function openAbout() {
@@ -12811,41 +13988,55 @@ function ensureOnboarding(settings) {
   return s.onboarding;
 }
 
-// ── Welcome questionnaire (first-run onboarding) ────────────────────
-// A short, animated setup flow that asks name / purpose / workflow / plugins
-// and persists the answers to settings.profile + settings.plugins. Shown
-// automatically only on first launch (gated by onboarding.welcomeSeen) and
-// re-openable on demand from the app menu / Settings — returning users are
-// never auto-prompted again.
+// ── Hidden legacy questionnaire residue ─────────────────────────────
+// Kept temporarily for migration-safe cleanup. The active first-run experience
+// is the focused first-save task in openWelcome()/bindWelcome(); these helpers
+// are not invoked by the current onboarding path.
 const WELCOME_STEPS = 6;
 const WELCOME_PLUGIN_KEYS = ['pomodoro', 'finance', 'habits', 'books', 'goals', 'water'];
 let wcIndex = 0;
 let wcAnswers = { name: '', purpose: '', workflow: '', plugins: [] };
+let welcomeCandidate = null;
+let welcomeRequestId = 0;
 
-function openWelcome() {
+async function openWelcome() {
   const ov = document.getElementById('welcome');
   if (!ov) return;
-  wcIndex = 0;
-  const s = State.get().settings;
-  const prof = s.profile || {};
-  const ws = activeWs();
-  wcAnswers = {
-    name: prof.name || (ws && ws.name && ws.name !== 'My Workspace' ? ws.name : ''),
-    purpose: prof.purpose || '',
-    workflow: prof.workflow || '',
-    plugins: s.plugins ? WELCOME_PLUGIN_KEYS.filter(k => s.plugins[k]) : [],
-  };
-  const dots = document.getElementById('wc-dots');
-  dots.innerHTML = Array.from({ length: WELCOME_STEPS }, () => '<span class="wc-dot"></span>').join('');
+  const requestId = ++welcomeRequestId;
   rememberOpener(ov);
   ov.classList.remove('hidden');
   lockBodyScroll();
-  wcShow(0);
+  const saveButton = document.getElementById('wc-save-first');
+  const candidate = document.getElementById('wc-candidate');
+  const empty = document.getElementById('wc-empty');
+  saveButton.disabled = true;
+  welcomeCandidate = null;
+  try {
+    const tabs = (await chrome.tabs.query({ currentWindow: true }))
+      .filter(tab => tab.url && !isProto(tab.url))
+      .sort((a, b) => Number(b.lastAccessed || 0) - Number(a.lastAccessed || 0));
+    if (requestId !== welcomeRequestId || ov.classList.contains('hidden')) return;
+    welcomeCandidate = tabs[0] || null;
+  } catch {
+    if (requestId !== welcomeRequestId || ov.classList.contains('hidden')) return;
+  }
+  candidate.classList.toggle('hidden', !welcomeCandidate);
+  empty.classList.toggle('hidden', !!welcomeCandidate);
+  if (welcomeCandidate) {
+    document.getElementById('wc-candidate-title').textContent = welcomeCandidate.title || welcomeCandidate.url;
+    document.getElementById('wc-candidate-url').textContent = dispUrl(welcomeCandidate.url);
+    document.getElementById('wc-candidate-fav').src = favUrl(welcomeCandidate.url) || BLANK_FAV;
+    saveButton.disabled = false;
+    saveButton.focus();
+  } else {
+    document.getElementById('wc-explore').focus();
+  }
 }
 
 function closeWelcome() {
   const ov = document.getElementById('welcome');
   if (!ov) return;
+  welcomeRequestId++;
   ov.classList.add('hidden');
   unlockBodyScroll();
   restoreOpener(ov);
@@ -12855,9 +14046,6 @@ function closeWelcome() {
   ensureOnboarding(s).welcomeSeen = true;
   s.tourCompleted = true;
   State.persist();
-  // First-run only: the landing was deferred while the questionnaire ran —
-  // reveal it now, greeting with whatever name was just entered.
-  if (_landingAfterWelcome) { _landingAfterWelcome = false; showLandingLayer(); }
 }
 
 function wcShow(i) {
@@ -12921,34 +14109,18 @@ function finishWelcome() {
 function bindWelcome() {
   const ov = document.getElementById('welcome');
   if (!ov) return;
-  document.getElementById('wc-next').onclick = wcNext;
-  document.getElementById('wc-skip').onclick = closeWelcome;
-  ov.querySelectorAll('.wc-choices').forEach(group => {
-    const multi = group.dataset.multi === 'true';
-    const field = group.dataset.field;
-    group.querySelectorAll('.wc-chip').forEach(chip => {
-      chip.onclick = () => {
-        const v = chip.dataset.val;
-        if (multi) {
-          const idx = wcAnswers.plugins.indexOf(v);
-          if (idx >= 0) wcAnswers.plugins.splice(idx, 1); else wcAnswers.plugins.push(v);
-          wcSyncSelections();
-        } else {
-          wcAnswers[field] = wcAnswers[field] === v ? '' : v;
-          wcSyncSelections();
-          // Single-select fields glide forward on their own so the flow feels
-          // quick, but never past the last question.
-          if (wcAnswers[field] && wcIndex < WELCOME_STEPS - 1) setTimeout(() => wcShow(wcIndex + 1), 230);
-        }
-      };
-    });
-  });
-  const nameInput = document.getElementById('wc-name');
-  if (nameInput) nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); wcNext(); } });
+  document.getElementById('wc-explore').onclick = closeWelcome;
+  document.getElementById('wc-save-first').onclick = async () => {
+    if (!welcomeCandidate) return;
+    const saved = await saveTabToInbox(welcomeCandidate, { closeSource: true });
+    if (!saved) return;
+    closeWelcome();
+    document.getElementById('nav-inbox')?.click();
+    setTimeout(() => focusItem(saved.id), 80);
+  };
   ov.addEventListener('keydown', e => {
     if (e.key === 'Escape') { e.preventDefault(); closeWelcome(); }
-    else if (e.key === 'ArrowRight' && wcIndex < WELCOME_STEPS - 1 && document.activeElement !== nameInput) { e.preventDefault(); wcShow(wcIndex + 1); }
-    else if (e.key === 'ArrowLeft' && wcIndex > 0 && document.activeElement !== nameInput) { e.preventDefault(); wcShow(wcIndex - 1); }
+    else trapTabKey(e, ov);
   });
 }
 
@@ -13188,6 +14360,7 @@ function bindStatic() {
   document.getElementById('nav-inbox').onclick = openInboxView;
   document.getElementById('nav-archive').onclick = () => openLibrarySurface('archive');
   document.getElementById('nav-trash').onclick = () => openLibrarySurface('trash');
+  document.getElementById('nav-more').onclick = e => openSidebarMoreMenu(e.currentTarget);
 
   // ── Opened-tabs rail ──
   const railToggle = document.getElementById('tabrail-toggle');
@@ -13231,6 +14404,7 @@ function bindStatic() {
   document.getElementById('search-btn').onclick = () => openSearchSurface();
   const topSearch = document.getElementById('topbar-search');
   if (topSearch) topSearch.onclick = () => openCommandPalette();
+  document.getElementById('topbar-save').onclick = saveMostRecentOpenTab;
   document.getElementById('undo-btn').onclick = performUndo;
 
   document.getElementById('search-input').oninput = debounce(applySearchFilter, 90);
@@ -13364,6 +14538,12 @@ function bindStatic() {
 
   // Global keys
   document.addEventListener('keydown', e => {
+    const recoveryOverlay = document.getElementById('state-recovery-overlay');
+    if (recoveryOverlay && !recoveryOverlay.classList.contains('hidden') && !recoveryOverlay.contains(e.target)) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      return;
+    }
     const tag = document.activeElement?.tagName;
     const editable = document.activeElement?.isContentEditable;
     const inField = tag === 'INPUT' || tag === 'TEXTAREA' || editable;
@@ -13381,7 +14561,7 @@ function bindStatic() {
       // The launch layer is the base overlay. Dismiss it only when nothing is
       // open above it, so Escape from Welcome/Settings never pops two layers.
       const landingLayer = document.getElementById('landing-layer');
-      const higherLayerIds = ['cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','tour-overlay','welcome','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub','about-overlay','context-menu'];
+      const higherLayerIds = ['state-recovery-overlay','cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','tour-overlay','welcome','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub','about-overlay','context-menu'];
       const higherLayerOpen = higherLayerIds.some(id => { const el = document.getElementById(id); return el && !el.classList.contains('hidden'); });
       if (landingLayer && !landingLayer.classList.contains('hidden') && !higherLayerOpen) {
         e.preventDefault(); closeLandingLayer(); return;
@@ -13389,7 +14569,7 @@ function bindStatic() {
       // Snapshot which layered overlays were open *before* we start closing
       // them, so a single Escape only pops the topmost one — not the group page
       // sitting beneath a modal/menu/tool overlay.
-      const _escBlockers = ['landing-layer','cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','tour-overlay','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub'];
+      const _escBlockers = ['state-recovery-overlay','landing-layer','cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','tour-overlay','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub'];
       const _overlayWasOpen = _escBlockers.some(id => { const el = document.getElementById(id); return el && !el.classList.contains('hidden'); });
       closeCommandPalette();
       toggleSearchBar(false);
@@ -13487,10 +14667,9 @@ function bindStatic() {
   setupDragAutoScroll();
   setupOpenTabsDropToOpen();
 
-  // Onboarding — an animated setup questionnaire on first run only, the rest
-  // taught just-in-time. bindTour() still wires the legacy spotlight tour (kept
-  // for the JIT coach-marks + any deep-links), but first-run now opens the
-  // welcome questionnaire.
+  // Onboarding starts with the focused first-save task. The old questionnaire
+  // remains hidden legacy residue; bindTour() still wires the spotlight guide
+  // for coach marks and explicit replays.
   bindTour();
   bindWelcome();
   if (!ensureOnboarding(State.get().settings).welcomeSeen) {
@@ -13526,11 +14705,6 @@ function bindStatic() {
   // Restore any floating widgets from previous session
   renderFloatingWidgets();
 
-  // Once the board has settled, surface a one-time hint about the layout
-  // switcher — the JIT replacement for the old tour steps. Skipped while the
-  // welcome is still up (welcomeSeen gates it), so it never stacks.
-  setTimeout(() => coachMark('layout', '#view-mode-btn',
-    'More ways to look', 'Switch the same links between board, list, canvas, explorer, and timeline. Each category remembers its own layout.'), 1800);
 }
 
 // ════════════════════════════════════════════════════════════════

@@ -1,25 +1,103 @@
 # Locus status & slice queue
 
-**Living document — update it at the end of every cycle**: move the shipped slice to
+**Living document — update it at the end of every cycle**: move the implemented slice to
 "Done", re-rank the queue, add discoveries to "Known issues". Trust but verify: if
 this file and the code disagree, the code wins (then fix this file).
-Last updated: 2026-07-13.
+Product priorities and evidence language follow
+[`docs/PRODUCT_SUCCESS_SYSTEM.md`](../../docs/PRODUCT_SUCCESS_SYSTEM.md). A "Done"
+entry records a completed implementation cycle; it does not by itself mean verified,
+user-validated, or released.
+Last updated: 2026-07-16.
 
 ## Queue (highest impact first)
 
-1. **First-use and shell simplification** (`docs/UX_SIMPLIFICATION.md`) — stop
-   adding default-visible capability and implement the corrective sequence in
-   order: one-task welcome, no chained landing handoff, five-entry core navigation,
-   one-action top bar, collapsed opened-tabs rail, and a three-zone Home. Validate
-   the save-and-find loop before promoting Calendar or alternate Space views.
-2. **Space layout fidelity triage** (`spaces_*` previews) — Canvas, Explorer,
-   Gallery, Graph, Timeline, and details are functional, but fidelity and user-flow
-   quality vary. Audit the highest-friction layout first, then re-rank the rest from
-   rendered evidence rather than treating all six as one rewrite. Keep layouts
-   under Advanced views until each passes the core-ready gate.
+1. **Finish P0 durability and release evidence** — exercise the centralized
+   whole-state writer across real new-tab/popup/background contexts, installed
+   lost/timed-out acknowledgements, storage-change ordering, and service-worker
+   termination/restart;
+   add real-browser failure-path evidence for save-before-close; exercise archive,
+   quota, and export/import round trips at scale; expand the deterministic legacy
+   and every-level collision fixtures with malformed/fuzz and quota cases; and run
+   an unpacked-extension CSP/favicon/network audit. Extend reminder contracts to
+   overdue, restart/sleep, recurrence, and DST/timezone behavior.
+2. **Validate and finish the core first-use contract** (`docs/UX_SIMPLIFICATION.md`) — remove
+   the hidden questionnaire/coach implementation debt, finish keyboard and narrow-layout checks,
+   and run the representative-user activation protocol: save one real tab, see its
+   destination, navigate away or reload, then find and reopen it without coaching.
+3. **Resolve owner launch decisions** — decide the license/business model, investigate
+   the Locus name collision before store submission, choose the initial Store
+   single-purpose scope (including whether trackers are excluded), and approve only
+   claims that have passed the canonical evidence ledger.
+4. **Space layout fidelity triage, after the gates above** — Canvas, Explorer,
+   Gallery, Graph, Timeline, and details are functional but uneven. Keep them under
+   Advanced views until the core loop passes and each promoted view earns fresh
+   rendered and user-flow evidence.
 
 ## Done (newest first)
 
+- **2026-07-16 — New-tab state freshness and authoritative recovery / P0-04** —
+  added a confirmed-state baseline and dirty-aware `storage.onChanged` contract.
+  A clean, idle page adopts and renders a newer stored revision; a dirty page
+  never rebases or auto-replaces its whole graph and remains visible behind a
+  localized reload interlock, as does an active async/capture operation.
+  Expected self-write events are matched without treating them as the typed
+  persistence receipt. Every failed new-tab capture drains invalidated queued
+  writes and leaves source tabs open. With no later local mutation it re-reads
+  `te`; if an ordinary edit or queued successor intervened, that graph remains
+  visible behind the reload interlock until explicit recovery. Clean current-schema
+  boots send no write, while real
+  migration/default/Trash/deep-link normalization still coalesces into one.
+  Production-extracted freshness contracts cover clean adoption, self-event/
+  receipt ordering (including delayed earlier self-events), dirty and in-flight
+  ordinary-write preservation, a remembered newer graph beating a stale recovery
+  read, an edit arriving during capture recovery blocking adoption, lost and timed-out
+  receipts, malformed revision blocking, active-capture deferral, newer-schema
+  blocking, legacy-theme/onboarding normalization, and
+  idempotent boot normalization. The
+  Undo suite adds queued-successor invalidation, set-failure, conflict, lost-receipt,
+  mid-Undo external revision, and ordinary-edit interleavings. **Implemented: yes. Verified:
+  partial (static/deterministic model only). User-validated: no. Released: no.**
+  Installed multi-context event ordering, service-worker restart, quota, and
+  browser-side recovery UI remain open.
+- **2026-07-15 — Central serialized state writer / P0-04 lockless safety** —
+  moved the only whole-state `te` write into the service worker. New-tab and popup
+  mutations now use typed `locus-state-write` requests, immutable call-time
+  candidates, failure epochs that cancel already-queued successors, and revision
+  receipts; all background and message writes pass through one FIFO, with the
+  shared Web Lock retained when available. Popup capture flows hold one mutex
+  through persistence and browser-side effects; new-tab rejects and rolls back a
+  second modeled capture while the first is pending. Production-extracted client
+  contracts cover two queue order/failure cases and one first-write-failure plus
+  overlapping-capture/no-close flow. The writer contract covers 10 deterministic
+  lock/lockless/conflict/failure cases and 10,000 fixed-seed lockless schedules
+  (69,880 attempts; 19,947 accepted, 49,379 rejected, 554 injected failures) with
+  zero lost accepted mutation tokens; an alternate seed also passes. The Undo
+  contract covers new-tab overlap/no-second-write and an accepted write whose
+  receipt is lost. **Implemented: yes. Verified: partial (static/deterministic
+  model only). User-validated: no. Released: no.** Installed multi-context/service-
+  worker lifecycle and installed stale-open-page/recovery evidence remain open;
+  the later freshness cycle above closes the deterministic ordinary-edit case.
+- **2026-07-15 — Unreleased product-success, safety, and first-use remediation** —
+  added the canonical Product Success System and reconciled strategy authority;
+  moved prepaint code into a packaged script, tightened CSP, switched favicon
+  rendering to Chromium's local endpoint, and hardened rich-content/readme handling.
+  Capture paths now persist before closing source tabs; whole-state writes gained
+  a revision conflict guard (the newer central-writer cycle above now owns their
+  serialization); silent archive caps are removed; alarm
+  reconciliation runs at service-worker lifecycle and after import; and import has
+  recursive size, depth, type, ID, URL, and rich-text checks. The current worktree
+  also introduces the single-task save-first welcome, direct handoff, reduced core
+  navigation, one primary top-bar action, collapsed opened-tabs rail, and static
+  quality gates. This is **implemented but unreleased and only partially verified**:
+  deterministic import-recovery, background-service-worker, and Undo contract suites now
+  cover graph collisions, legacy normalization, alarm reconciliation, stale-alarm
+  cleanup, visible no-retry capture conflicts, stale/pending Undo actions,
+  newer-edit interruption, restored history order, and duplicate-free closed-tab
+  retries. The explicit Save choice, durable Library routes,
+  action-scoped Undo, truthful partial-close feedback, newest-Inbox Home preview,
+  and three-zone Home are implemented. Actual extension-runtime, scale/quota,
+  clock/DST, accessibility, and representative-user evidence remain open;
+  randomized writer evidence is recorded in the newer cycle above.
 - **2026-07-13 — System empty-state fidelity review** — replaced the scattered
   zero/no-match placeholders with one responsive, localized contract modeled on
   `locus_system_empty_state_each_page.png`. Home, empty Spaces and Inbox/groups,
@@ -54,7 +132,8 @@ Last updated: 2026-07-13.
   reload/back-forward persistence, 800px layout, light/dark themes, reduced
   motion, and en + zh-TW. Files/images/tweets, AI search/auto-sort, remote content
   previews, and premium upgrade concepts from the mock were intentionally omitted
-  because Locus stores no page/file content and remains local-only/free-tier.
+  because Locus stores no page/file content and remains within the local,
+  no-account research-alpha scope.
 - **2026-07-13 — Command palette fidelity review** — rebuilt the local command
   palette around `locus_command_popup.png`: a preview-aligned two-column home
   groups Quick actions, Go to, live recently saved links, and Shortcuts, while
@@ -145,24 +224,57 @@ Last updated: 2026-07-13.
 
 | Preview (design/previews/) | State |
 |---|---|
-| settings_* (9 files, Jul 8–11) | ✅ Done 2026-07-12 (free/local subset) |
+| settings_* (9 files, Jul 8–11) | ✅ Done 2026-07-12 (local/no-account subset) |
 | new_tab_landing_page.png (Jul 11) | ✅ Done 2026-07-12 |
 | dashboard.png | ✅ Home surface |
 | favorites / read_later / all_links / archive / inbox prototypes | ✅ Library surfaces |
-| search_prototype.png | ✅ Done 2026-07-13 (local/free fidelity pass) |
-| locus_system_empty_state_each_page.png | ✅ Done 2026-07-13 (shared local/free empty-state contract) |
-| locus_extension_popup.png | ✅ Done 2026-07-13 (local/free subset + remainder pass) |
-| locus_command_popup.png | ✅ Done 2026-07-13 (local/free fidelity pass) |
-| spaces_* layout pngs (canvas/explorer/gallery/graph/timeline/details) | ✅ Layouts shipped (fidelity varies) |
+| search_prototype.png | ✅ Done 2026-07-13 (local/no-account fidelity pass) |
+| locus_system_empty_state_each_page.png | ✅ Done 2026-07-13 (shared local/no-account empty-state contract) |
+| locus_extension_popup.png | ✅ Done 2026-07-13 (local/no-account subset + remainder pass) |
+| locus_command_popup.png | ✅ Done 2026-07-13 (local/no-account fidelity pass) |
+| spaces_* layout pngs (canvas/explorer/gallery/graph/timeline/details) | ✅ Layouts implemented (fidelity varies) |
 | calendar.png, calendar_dark_expand.png | ✅ Calendar |
-| locus_startup_1–5.png | ✅ Welcome questionnaire |
-| plugins_v1/v2 pngs | 🟡 Tools hub exists; marketplace concepts are future/premium |
-| trash_prototype.png | ✅ Done 2026-07-13 (local/free subset) |
-| bento_dashboard / collab_projects (premium), locus_on_mobile, mobile_extension_workflow | 🚫 Out of scope (premium/mobile) |
+| locus_startup_1–5.png | 🟡 Historical reference; current one-task welcome is implemented but not user-validated |
+| plugins_v1/v2 pngs | 🟡 Tools hub exists; marketplace concepts are deferred and outside the initial purpose |
+| trash_prototype.png | ✅ Done 2026-07-13 (local/no-account subset) |
+| bento_dashboard / collab_projects, locus_on_mobile, mobile_extension_workflow | 🚫 Out of scope (collaboration/mobile) |
 | locus_hover_universal_preview_popup.png | ❌ Needs page-content access → conflicts with no-host-permissions; do not build as-is |
 
 ## Known issues / tensions
 
+- Fresh Chrome runtime verification is unavailable for the 2026-07-15 worktree:
+  Chrome is installed, but this session has no configured Chrome-control/native-host
+  path or accessible already-loaded Locus tab; the managed in-app browser also
+  rejected the documented localhost shim. Installed MV3 behavior, the shimmed UI
+  pass, CSP, local favicon loading, service-worker/message lifecycle behavior,
+  actual UI flows, and network silence therefore still require an unpacked-extension
+  pass in an environment that can load the candidate.
+- The legacy multi-step welcome questionnaire, associated helpers, and coach-mark
+  paths remain hidden/dead in the source. Remove them after confirming that no
+  current binding or migration depends on them.
+- Deterministic import-recovery, background, Undo, freshness, and concurrency contracts now cover legacy and
+  every-level ID collisions, idless Archive entries, replace rollback/normalization,
+  post-import warning paths, alarm-map reconciliation, no-retry capture conflicts,
+  and action-scoped Undo across pending capture, newer-edit interruption, restored
+  history order, tab-open retry, persistence-failure recovery, central-writer conflict/failure
+  recovery, immutable client candidates, queued-successor invalidation, overlapping
+  popup/new-tab capture no-close behavior, clean/dirty external-state handling,
+  no-op boot suppression, legacy settings normalization, authoritative failed-capture
+  recovery, lost/timed-out receipt recovery, stale-read protection, delayed-event
+  handling, invalid-token rejection, dirty ordinary-write preservation,
+  browser-effect interruption, and 10,000 seeded lockless schedules.
+  Remaining P0 gaps are installed
+  cross-context/service-worker restart and unknown-ack lifecycle evidence, full legacy/fuzz/quota/large-file/browser import round trips, overdue/recurrence/
+  DST reminder semantics, 1,000-entry archive/quota recovery, and a complete
+  unpacked-extension evidence bundle. Static and mocked contracts do not close
+  those browser-runtime risks.
+- New-tab freshness and failed-capture recovery are production-extracted and
+  deterministic only. Installed Chrome must still establish actual
+  `storage.onChanged` versus runtime-receipt ordering, multi-page focus/overlay
+  behavior, source effects during an active recovery blocker, and convergence
+  across service-worker termination. A programmatic `hibernateSingle()`/popup
+  reload overlap is also outside the shared popup capture mutex and needs
+  installed-runtime disposition.
 - The managed in-app browser stayed at 1280×720 when asked for an 800px viewport
   during the corrective Search/palette and empty-state passes. The narrow
   media-query paths were inspected statically, but the next unpacked-extension pass
@@ -173,5 +285,3 @@ Last updated: 2026-07-13.
   function + call sites opportunistically when touching those paths.
 - `design/fixtures/home-preview.html` is a static fixture with hardcoded counts —
   fine (isolated), but never link it from the product.
-- Sample/first-run seed data: the default state ships a few starter todos/notes —
-  that's the intended first-run content, not demo debt.

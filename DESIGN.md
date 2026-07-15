@@ -1,6 +1,6 @@
 # Locus Layout & Differentiation Brief
 
-Status: living document. Last updated: 2026-06-23.
+Status: living document. Last updated: 2026-07-16.
 
 This brief captures the design direction for Locus's layout refresh and — importantly —
 how we take *inspiration* from **Refern** and **TabExtend** while staying clearly distinct,
@@ -47,7 +47,7 @@ Four buckets matter. Get a real IP attorney before any paid launch; this is our 
 |---|---|---|
 | **Copyright** | Their *code*, icons, illustrations, marketing copy, exact gradients/art. | Independently written (vanilla JS, our own SVG icons). Never copy their CSS, assets, or taglines. |
 | **Trade dress** | The *distinctive, non-functional* total look-and-feel that identifies the source. | Differentiate the signature elements (palette, tab treatment, card styling, motifs). Keep only the *functional* patterns. |
-| **Trademark** | Their names/logos ("Refern", "TabExtend"). | Don't use their names/marks anywhere. "Tab" is descriptive in this category (Toby, Tabby, Workona, Tab Manager all coexist), so "Locus" is acceptably distinct — but never imitate their wordmark/logo. |
+| **Trademark** | Their names/logos ("Refern", "TabExtend"). | Don't use their names/marks anywhere. “Locus” is only a working name: active Chrome Web Store collisions were found in the 2026-07-15 market refresh, so public use requires professional clearance or a rename. Never imitate another product's wordmark/logo. |
 | **Patents** | Specific claimed inventions. | None known to read on basic kanban/canvas/tag UI. Re-check before launch. |
 
 ### The key distinction: functional vs. distinctive
@@ -131,13 +131,15 @@ not imply commercial permission for this repository. Public copy should say:
 "Free for noncommercial research, contribution, and informal personal use. No commercial
 use in any form."
 
-Positioning that is ours: **"Your browser, organized — private by default, yours forever."**
-Local-first + privacy (no host permissions; we never read page content) is a genuine
-differentiator we can market honestly.
+Current evidence-gated positioning: **explicitly save browser context, see where it
+went, and recover it later in one desktop browser profile.** The factual boundary is
+no Locus account, no host permissions, local workspace storage, and user-managed
+JSON export. Do not use “private by default,” “nothing leaves,” “never reads,” or
+“yours forever” until the applicable claims ledger gate permits the exact wording.
 
 ---
 
-## 5. Pre-launch checklist (before charging money)
+## 5. Pre-launch checklist (before public distribution or any commercial offering)
 - [ ] IP counsel review of name, store listing, and UI screenshots vs. TabExtend/Refern.
 - [ ] Trademark search + (optionally) register the chosen name/logo.
 - [ ] Confirm no copied assets/copy; all icons and strings are original.
@@ -341,7 +343,8 @@ differentiator we can market honestly.
   Escape, back/forward and reload persistence, 800px layout, light/dark themes,
   reduced motion, and en/zh-TW are covered. The mock's file/image/tweet sources,
   AI search/auto-sort, scraped remote previews, and premium upgrade card remain
-  intentionally excluded by the local-only, no-host-permissions, free-tier scope.
+  intentionally excluded by the then-current local, no-host-permissions,
+  no-account scope.
 - **2026-07-13** — Ran a corrective **Search + command palette UX pass** after
   exercising both surfaces as user flows rather than treating visual resemblance
   as completion. Search now has one clear query owner, a stable result/detail
@@ -366,3 +369,61 @@ differentiator we can market honestly.
   Rendered verification covered light/dark, reduced motion, en/zh-TW, zero/no-match
   states, real note creation, and Archive-to-Trash recovery. No new schema field,
   permission, remote dependency, or fabricated data source was added.
+- **2026-07-15** — Completed an **unreleased product-success, safety, and first-use
+  remediation cycle**. Added `docs/PRODUCT_SUCCESS_SYSTEM.md` as the canonical
+  thesis, ICP, claims ledger, evidence-gate, and roadmap authority, while preserving
+  `docs/UX_SIMPLIFICATION.md` as the first-use and shell contract. In the current
+  worktree, prepaint moved to a packaged script; CSP, local favicon handling, rich
+  content, and group readmes were tightened; capture paths persist before closing
+  source tabs; whole-state writes gained a shared lock and revision guard; silent
+  archive caps were removed; reminders gained lifecycle/import reconciliation; and
+  import gained recursive size, depth, type, ID, URL, and rich-text checks. The
+  first session now starts with one real save task and direct handoff, with reduced
+  core navigation, one primary top-bar action, and a collapsed opened-tabs rail.
+  The explicit Save choice, durable Library routes, closed-tab-aware Undo, and
+  three-zone Home are also implemented. Static quality gates plus deterministic
+  import-recovery, background-service-worker, and action-scoped Undo contract
+  suites cover core graph, alarm, capture-conflict, pending capture, newer-edit
+  interruption/history order, and duplicate-free restoration-retry
+  invariants. This entry records implementation and
+  limited automated evidence only: the worktree is not released, and Chrome
+  runtime, randomized durability, scale/quota, full import compatibility/fuzz,
+  clock/DST, accessibility, and representative-user validation have not passed.
+- **2026-07-15** — Completed a **central serialized state-writer safety cycle**
+  against P0-04. New-tab and popup no longer write the whole `te` graph directly;
+  both send revisioned candidates to the service worker, which owns the only
+  whole-state storage write and serializes background plus message mutations in a
+  FIFO. The existing named Web Lock remains defense-in-depth when available, while
+  the FIFO is the modeled lockless boundary for one worker lifetime. Per-context
+  queues now freeze candidates at call time and invalidate queued successors after
+  failure; popup/new-tab capture mutexes reject modeled overlapping source effects.
+  Production-extracted contracts pass two client-queue cases, one popup failure/
+  overlap/no-close flow, 10 deterministic writer cases, and 10,000 fixed-seed
+  lockless schedules (69,880 attempted mutations) with zero lost accepted mutation
+  tokens; an alternate seed also passes. The Undo model separately covers an
+  overlapping new-tab capture and an accepted write whose receipt is lost. No
+  schema, permission, visual, or public-claim status changed. This is implemented
+  and partially verified by static/deterministic evidence only; it is not user-
+  validated or released. Installed multi-context/service-worker lifecycle,
+  stale-page recovery, and ordinary-edit/failing-capture interleavings remain open.
+- **2026-07-16** — Completed a **new-tab state freshness and authoritative-recovery
+  cycle** against P0-04. New-tab now tracks a confirmed-state baseline separately
+  from its mutable graph, so a clean current-schema boot sends no write and does
+  not advance `_revision`. A clean idle page can adopt and render a strictly newer
+  `storage.onChanged` graph; a dirty page never merges or auto-rebases it, and an
+  unsafe active capture/Undo/import reconciliation blocks behind a localized,
+  non-dismissible reload overlay. Failed capture persistence drains invalidated
+  queued successors and keeps source tabs open. It re-reads authoritative `te`
+  when no later edit exists; otherwise the later local graph stays visible behind
+  the reload interlock until explicit recovery. Production-extracted freshness and Undo
+  contracts cover clean adoption, self-event versus typed-receipt ordering, dirty
+  recovery, active-capture deferral, ordinary-edit interleaving, newer-schema
+  blocking, pre/during-read stale-snapshot protection, delayed self-event handling,
+  dirty in-flight ordinary-write preservation, adoption-point recovery guarding,
+  failed-Redo interruption, malformed-token rejection, bounded unknown-ack recovery, and idempotent
+  boot/settings normalization. This is
+  static/deterministic model evidence only:
+  installed multi-context event ordering, service-worker termination/restart,
+  unknown-ack lifecycle behavior, quota behavior, and browser-side recovery UI
+  remain unverified. No schema, permission, strategy, owner decision,
+  user-validation, or release status changed.

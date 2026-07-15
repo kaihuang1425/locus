@@ -42,6 +42,9 @@
     }
     .dot { width: 6px; height: 6px; border-radius: 50%; background: #8b9bff; box-shadow: 0 0 10px #8b9bff; animation: pulse 2s ease-in-out infinite; }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    @media (prefers-reduced-motion: reduce) {
+      .dot { animation: none; }
+    }
     .btn {
       margin-top: 8px; padding: 10px 22px;
       background: rgba(139,155,255,0.15); color: #b0bbff;

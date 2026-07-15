@@ -1,6 +1,9 @@
 # Locus interface simplification
 
-Status: corrective product direction and implementation contract. Created: 2026-07-13.
+Status: corrective interaction contract; the three-zone Home and core shell are
+implemented in the 2026-07-15 worktree but remain unvalidated. Created: 2026-07-13.
+Product strategy, claims, and evidence status are governed by
+[`PRODUCT_SUCCESS_SYSTEM.md`](./PRODUCT_SUCCESS_SYSTEM.md).
 
 This document governs first use, the application shell, Home, Calendar, view
 selection, microinteractions, and motion. Where it conflicts with the additive
@@ -37,14 +40,17 @@ This direction has four consequences:
 
 ## 2. What this does not mean
 
-- Do not delete user data, existing routes, layouts, Calendar, or power-user tools.
+- Do not delete user data or silently remove existing routes during this corrective
+  work. The eventual Store candidate may exclude unrelated generic tools under
+  canonical decision O-04; provide an explicit data/export transition if it does.
 - Do not solve overload by replacing text with unexplained icons.
 - Do not add another tour, tooltip queue, modal coach sequence, or animated demo.
 - Do not fabricate analytics, activity, recommendations, or calendar content to
   make a surface look populated.
 - Do not perform a restyle-only pass while the information hierarchy remains the
   same.
-- Do not expand scope beyond the existing desktop, local-only, free product.
+- Do not expand scope beyond the current desktop, single-profile, local
+  noncommercial research alpha while the license and business model remain open.
 
 ## 3. The intended first session
 
@@ -91,7 +97,7 @@ user intent or relevant data, never by elapsed time.
 |---|---|---|
 | Core | Always present | Home, Inbox, All Links, the user's Spaces, global Search, and one Save/Add action |
 | Contextual | Appears when relevant or explicitly opened | Favorites after the first favorite, Read Later after the first queued item, Calendar after the first reminder, item details after selection, and the opened-tabs rail after the user enables it |
-| Advanced | Reachable through More, View, command palette, or Settings | Archive and Trash when empty, Tools/plugins, alternate layouts, bulk actions, and advanced filters |
+| Advanced | Reachable through More, View, command palette, or Settings | Archive and Trash when empty, alternate layouts, bulk actions, and advanced filters. Generic Tools remain research-build-only pending O-04. |
 
 Rules:
 
@@ -370,8 +376,9 @@ The simplification program is successful when:
 - A new user can explain Locus's purpose and save one tab within 60 seconds without
   help.
 - That user can find the saved tab again within another 30 seconds.
-- At least four of five representative new users complete the save-and-find loop
-  without coaching.
+- A formative round has at least four of five representative new users complete
+  the save-and-find loop without coaching; the release validation gate remains at
+  least 12 of 15 under the canonical Product Success System.
 - First use shows at most five primary navigation destinations, one primary global
   action, and no stacked introductory surface.
 - Calendar and layout education do not appear before matching intent or data.

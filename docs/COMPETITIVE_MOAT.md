@@ -1,10 +1,20 @@
 # Locus Competitive Moat Analysis
 
-Status: strategy document. Created: 2026-07-04.
+Status: **historical market and strategy snapshot; superseded for current product
+decisions and claims.** Created: 2026-07-04. Authority changed: 2026-07-15.
 Method: three parallel competitor research sweeps (direct tab managers; suspension
 extensions + browser-native features; adjacent new-tab/read-later categories), followed
 by a moat assessment. Companion docs: [DESIGN.md](../DESIGN.md) (visual differentiation),
 [CAPTIVATION_REVIEW.md](CAPTIVATION_REVIEW.md) (positioning).
+
+> **Authority notice (2026-07-15).**
+> [`PRODUCT_SUCCESS_SYSTEM.md`](PRODUCT_SUCCESS_SYSTEM.md) now owns the product
+> thesis, ICP, market evidence standard, claims ledger, success measures, launch
+> gates, and roadmap. This document is preserved to explain earlier reasoning. Its
+> competitor counts, market assertions, moat conclusions, and recommended copy are
+> not current launch evidence and must not be promoted without the canonical review.
+> Present-tense implementation statements below describe the 2026-07-04 snapshot
+> and may no longer match the worktree.
 
 ---
 
