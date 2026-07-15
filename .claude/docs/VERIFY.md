@@ -47,8 +47,25 @@ must be idempotent. Injected alarm-create and stale-alarm-clear failures must re
 two structured operations with no false success or state mutation. Expired recurring
 reminders and overdue one-shots stay unscheduled. This is deterministic mocked-browser
 lifecycle evidence, not installed Chrome restart/sleep or delayed-delivery evidence;
-fired-series persistence, rendered Past Due behavior, notification delivery, and
-DST/timezone behavior remain runtime gates.
+rendered Past Due behavior, notification delivery, and DST/timezone behavior remain
+runtime gates.
+
+The same background suite invokes the production `alarms.onAlarm` listener for six
+accepted deliveries. Daily item, multi-day nested-item, biweekly group, and monthly
+category recurrences must each create exactly one awaited notification, advance only
+their own persisted reminder through one central revisioned write, and reconcile the
+same alarm name to its exact next occurrence. A one-shot and a recurrence at its
+`until` boundary must persist as notified without re-arming. Two alarms whose reminder
+was rescheduled or removed must produce zero notification, state write, or alarm
+reconciliation. Injected notification failure must leave state untouched; injected
+quota rejection must leave authority unchanged, avoid a blind write retry, rebuild
+the consumed recurring alarm from an authoritative read, and surface the storage
+warning. A generic write rejection must do the same and create a clickable update
+warning; injected post-write alarm-create failure must retain the accepted next
+occurrence and create a clickable scheduling warning. This remains a mocked-
+browser delivery model, not evidence for installed notification rendering/timing,
+service-worker termination, group/category identity during index mutation, or
+DST/timezone transitions.
 
 The export/import contract suite extracts the production export serializer, FileReader
 boundary, validator, replace/merge applications, migration, and page State client.

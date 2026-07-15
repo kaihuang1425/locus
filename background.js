@@ -550,6 +550,62 @@ function nextRecurTime(at, recur, now = Date.now()) {
   return ts;
 }
 
+// Alarm names can outlive a reminder edit or deletion. Accept the event only when
+// its scheduled occurrence still belongs to the current reminder. This also
+// accepts a future occurrence that startup reconciliation derived from an older
+// stored recurrence without mutating that recurrence ahead of delivery.
+function reminderMatchesAlarm(reminder, alarm) {
+  const at = Number(reminder?.at);
+  const scheduledTime = Number(alarm?.scheduledTime);
+  if (!Number.isFinite(at) || !Number.isFinite(scheduledTime)) return false;
+  if (at === scheduledTime) return true;
+  const occurrence = nextRecurTime(at, reminder?.recur, scheduledTime - 1);
+  return Number.isFinite(occurrence) && occurrence === scheduledTime;
+}
+
+async function showReminderAttention(alarmName, title, message) {
+  try {
+    await chrome.notifications.create('te-reminder-error-' + uid(), {
+      type: 'basic',
+      iconUrl: chrome.runtime.getURL('icons/icon128.png'),
+      title,
+      message,
+      priority: 2
+    });
+  } catch (error) {
+    console.error('Could not show the Locus reminder warning:', alarmName, error);
+  }
+}
+
+async function reconcileAfterReminderDelivery(alarmName) {
+  const result = await requestReminderAlarmReconciliation('reminder-delivered');
+  if (result.ok) return result;
+
+  await showReminderAttention(
+    alarmName,
+    'Reminder scheduling needs attention',
+    'Locus could not finish updating reminder alarms. Open Locus to review them.',
+  );
+  return result;
+}
+
+async function recoverAfterReminderWriteFailure(alarmName, error) {
+  // The failed candidate is never retried. Re-read authority and rebuild the alarm
+  // map from it so a consumed recurring alarm does not silently end the series.
+  const result = await requestReminderAlarmReconciliation('reminder-delivery-write-failed');
+  const quotaWarningAlreadyShown = /quota/i.test(String(error?.message || error));
+  if (!quotaWarningAlreadyShown || !result.ok) {
+    await showReminderAttention(
+      alarmName,
+      'Reminder update needs attention',
+      result.ok
+        ? 'The reminder was shown, but Locus could not save its status. Open Locus to review it.'
+        : 'The reminder was shown, but Locus could not save its status or restore its alarms. Open Locus to review them.',
+    );
+  }
+  return result;
+}
+
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   try {
     if (alarm.name.startsWith('te-reminder-')) {
@@ -559,9 +615,10 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
       const found = findItemById(s, itemId);
       if (!found) return;
       const { item: it } = found;
+      if (!reminderMatchesAlarm(it.reminder, alarm)) return;
       const title = it.type === 'tab' ? it.title : (it.type === 'todo' ? 'To-do reminder' : 'Note reminder');
       const msg = it.type === 'tab' ? (it.url || '') : (stripHtml(it.html || it.text || '').slice(0, 120));
-      chrome.notifications.create('te-notif-' + itemId, {
+      await chrome.notifications.create('te-notif-' + itemId, {
         type: 'basic',
         iconUrl: chrome.runtime.getURL('icons/icon128.png'),
         title: '⏰ ' + title,
@@ -570,14 +627,16 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
       });
       // Recurring reminders re-arm for their next occurrence; one-shots are
       // marked notified so they stop surfacing as pending.
-      let itNext = null;
-      if (it.reminder) {
-        itNext = nextRecurTime(it.reminder.at, it.reminder.recur);
-        if (itNext != null) { it.reminder.at = itNext; it.reminder.notified = false; }
-        else it.reminder.notified = true;
+      const itNext = nextRecurTime(it.reminder.at, it.reminder.recur);
+      if (itNext != null) { it.reminder.at = itNext; it.reminder.notified = false; }
+      else it.reminder.notified = true;
+      try {
+        await setState(s);
+      } catch (error) {
+        await recoverAfterReminderWriteFailure(alarm.name, error);
+        return;
       }
-      await setState(s);
-      if (itNext != null) { try { await chrome.alarms.create(alarm.name, { when: itNext }); } catch {} }
+      await reconcileAfterReminderDelivery(alarm.name);
     } else if (alarm.name.startsWith('te-greminder-') || alarm.name.startsWith('te-creminder-')) {
       // Group / category reminders (§6). The alarm name is
       // `te-greminder-<groupId>-<index>` (or `te-creminder-<catId>-<index>`);
@@ -595,8 +654,8 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
       const ent = isGroup ? findGroupById(s, entId) : findCategoryById(s, entId);
       if (!ent || !Array.isArray(ent.reminders)) return;
       const r = ent.reminders[idx];
-      if (!r) return;
-      chrome.notifications.create((isGroup ? 'te-gnotif-' : 'te-cnotif-') + entId + '-' + idx, {
+      if (!reminderMatchesAlarm(r, alarm)) return;
+      await chrome.notifications.create((isGroup ? 'te-gnotif-' : 'te-cnotif-') + entId + '-' + idx, {
         type: 'basic',
         iconUrl: chrome.runtime.getURL('icons/icon128.png'),
         title: '⏰ ' + (r.label || ent.name || (isGroup ? 'Group reminder' : 'Category reminder')),
@@ -605,8 +664,13 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
       });
       const next = nextRecurTime(r.at, r.recur);
       if (next != null) { r.at = next; r.notified = false; } else { r.notified = true; }
-      await setState(s);
-      if (next != null) { try { await chrome.alarms.create(alarm.name, { when: next }); } catch {} }
+      try {
+        await setState(s);
+      } catch (error) {
+        await recoverAfterReminderWriteFailure(alarm.name, error);
+        return;
+      }
+      await reconcileAfterReminderDelivery(alarm.name);
     } else if (alarm.name.startsWith('te-sub-')) {
       const subId = alarm.name.slice('te-sub-'.length);
       const s = await getState();
@@ -631,9 +695,8 @@ function stripHtml(html) {
   return String(html).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
 }
 
-// Click notification → open Locus. Subscription and storage-quota
-// notifications previously did nothing on click — now they all open newtab.
-const NOTIF_OPEN_PREFIXES = ['te-notif-', 'te-gnotif-', 'te-cnotif-', 'te-sub-notif-', 'te-storage-quota-', 'te-capture-error-'];
+// Delivery and actionable failure notifications all open the local new-tab app.
+const NOTIF_OPEN_PREFIXES = ['te-notif-', 'te-gnotif-', 'te-cnotif-', 'te-sub-notif-', 'te-storage-quota-', 'te-capture-error-', 'te-reminder-error-'];
 chrome.notifications.onClicked.addListener(async (notifId) => {
   if (!NOTIF_OPEN_PREFIXES.some(p => notifId.startsWith(p))) return;
   try {

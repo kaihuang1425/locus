@@ -143,6 +143,16 @@ const restartStaleNames = [
   'te-reminder-item',
   'te-reminder-nested',
 ].sort();
+const deliveryNextTimes = new Map([
+  ['te-creminder-category-1', (() => {
+    const next = new Date(restartAlarmTimes.get('te-creminder-category-1'));
+    next.setMonth(next.getMonth() + 1);
+    return next.getTime();
+  })()],
+  ['te-greminder-group-1', restartAlarmTimes.get('te-greminder-group-1') + (14 * dayMs)],
+  ['te-reminder-daily-recurring', restartAlarmTimes.get('te-reminder-daily-recurring') + dayMs],
+  ['te-reminder-nested-recurring', restartAlarmTimes.get('te-reminder-nested-recurring') + (2 * dayMs)],
+]);
 
 const alarmMap = new Map([
   ...staleReminderNames.map(name => [name, { name, scheduledTime: fixedNow + 1 }]),
@@ -156,6 +166,7 @@ let storageMode = 'normal';
 let conflictRead = 0;
 let randomSequence = 0;
 let alarmFailure = null;
+let notificationFailure = null;
 
 const event = name => ({
   addListener(listener) {
@@ -177,6 +188,7 @@ const chrome = {
       async set(value) {
         captureCalls.storageSets += 1;
         if (storageMode === 'quota') throw new Error('QUOTA_BYTES quota exceeded.');
+        if (storageMode === 'error') throw new Error('Injected state write failure.');
         persistedState = deepClone(value.te);
       },
     },
@@ -216,6 +228,7 @@ const chrome = {
   notifications: {
     onClicked: event('notificationClick'),
     async create(id, options) {
+      if (notificationFailure === id) throw new Error('Injected notification failure.');
       captureCalls.notifications.push({ id, options: deepClone(options) });
       return id;
     },
@@ -271,6 +284,53 @@ function assertAlarmTimes(expected, label) {
   for (const [name, scheduledTime] of expected) {
     assert.equal(alarmMap.get(name)?.scheduledTime, scheduledTime, `${label}: ${name} must use its exact next time`);
   }
+}
+
+function fixtureCategory(targetState = persistedState) {
+  return targetState.workspaces[0].categories[0];
+}
+
+function fixtureGroup(targetState = persistedState) {
+  return fixtureCategory(targetState).groups[0];
+}
+
+function fixtureItem(id, targetState = persistedState) {
+  const visit = items => {
+    for (const item of items || []) {
+      if (item.id === id) return item;
+      if (item.type === 'stack') {
+        const nested = visit(item.items);
+        if (nested) return nested;
+      }
+    }
+    return null;
+  };
+  return visit(fixtureGroup(targetState).items);
+}
+
+function resetReminderDeliveryScenario() {
+  currentNow = fixedNow;
+  persistedState = deepClone(state);
+  storageMode = 'normal';
+  conflictRead = 0;
+  alarmFailure = null;
+  notificationFailure = null;
+  alarmMap.clear();
+  alarmMap.set('other-alarm', { name: 'other-alarm', scheduledTime: fixedNow + 2 });
+  alarmMap.set('te-pomodoro', { name: 'te-pomodoro', scheduledTime: fixedNow + 3 });
+  alarmCalls.created.length = 0;
+  alarmCalls.cleared.length = 0;
+  captureCalls.storageSets = 0;
+  captureCalls.notifications.length = 0;
+  captureCalls.openedTabs.length = 0;
+  captureCalls.clearedNotifications.length = 0;
+}
+
+function assertNoReminderDelivery(before, label) {
+  assert.deepEqual(persistedState, before, `${label} must not mutate persisted state`);
+  assert.equal(captureCalls.storageSets, 0, `${label} must not write state`);
+  assert.deepEqual(captureCalls.notifications, [], `${label} must not notify`);
+  assert.deepEqual(alarmCalls.created, [], `${label} must not reconcile alarms`);
 }
 
 async function testReminderReconciliation() {
@@ -364,6 +424,160 @@ async function testReminderReconciliation() {
   assert.equal(captureCalls.notifications.length, notificationsBeforeRestart, 'alarm API failures must not emit catch-up notifications');
   alarmFailure = null;
   alarmMap.delete(failedClearName);
+}
+
+async function testReminderDeliveryPersistence() {
+  const recurringCases = [
+    {
+      name: 'te-reminder-daily-recurring',
+      notificationId: 'te-notif-daily-recurring',
+      getReminder: targetState => fixtureItem('daily-recurring', targetState).reminder,
+    },
+    {
+      name: 'te-reminder-nested-recurring',
+      notificationId: 'te-notif-nested-recurring',
+      getReminder: targetState => fixtureItem('nested-recurring', targetState).reminder,
+    },
+    {
+      name: 'te-greminder-group-1',
+      notificationId: 'te-gnotif-group-1',
+      getReminder: targetState => fixtureGroup(targetState).reminders[1],
+    },
+    {
+      name: 'te-creminder-category-1',
+      notificationId: 'te-cnotif-category-1',
+      getReminder: targetState => fixtureCategory(targetState).reminders[1],
+    },
+  ];
+
+  for (const delivery of recurringCases) {
+    resetReminderDeliveryScenario();
+    const scheduledTime = restartAlarmTimes.get(delivery.name);
+    const nextTime = deliveryNextTimes.get(delivery.name);
+    const before = deepClone(persistedState);
+    currentNow = scheduledTime;
+
+    await listeners.alarm({ name: delivery.name, scheduledTime });
+
+    const expected = deepClone(before);
+    expected._revision += 1;
+    const expectedReminder = delivery.getReminder(expected);
+    expectedReminder.at = nextTime;
+    expectedReminder.notified = false;
+    assert.deepEqual(persistedState, expected, `${delivery.name} must persist only its next occurrence`);
+    assert.equal(captureCalls.storageSets, 1, `${delivery.name} must use one central state write`);
+    assert.deepEqual(captureCalls.notifications.map(call => call.id), [delivery.notificationId]);
+    assert.equal(alarmMap.get(delivery.name)?.scheduledTime, nextTime, `${delivery.name} must keep its stable name at the exact next occurrence`);
+    assert.equal(alarmMap.has('other-alarm'), true, `${delivery.name} must preserve unrelated alarms`);
+    assert.equal(alarmMap.has('te-pomodoro'), true, `${delivery.name} must preserve other Locus alarms`);
+  }
+
+  resetReminderDeliveryScenario();
+  const oneShotName = 'te-reminder-item';
+  const oneShotTime = fixtureItem('item').reminder.at;
+  const oneShotBefore = deepClone(persistedState);
+  currentNow = oneShotTime;
+  await listeners.alarm({ name: oneShotName, scheduledTime: oneShotTime });
+  const oneShotExpected = deepClone(oneShotBefore);
+  oneShotExpected._revision += 1;
+  fixtureItem('item', oneShotExpected).reminder.notified = true;
+  assert.deepEqual(persistedState, oneShotExpected, 'a delivered one-shot must persist as notified');
+  assert.deepEqual(captureCalls.notifications.map(call => call.id), ['te-notif-item']);
+  assert.equal(alarmMap.has(oneShotName), false, 'a delivered one-shot must not be re-armed');
+
+  resetReminderDeliveryScenario();
+  const finalOccurrenceName = 'te-reminder-daily-recurring';
+  const finalOccurrenceTime = fixedNow + (5 * 60_000);
+  const finalReminder = fixtureItem('daily-recurring').reminder;
+  finalReminder.at = finalOccurrenceTime;
+  finalReminder.notified = false;
+  finalReminder.recur = { every: 'day', interval: 1, until: finalOccurrenceTime };
+  const finalOccurrenceBefore = deepClone(persistedState);
+  currentNow = finalOccurrenceTime;
+  await listeners.alarm({ name: finalOccurrenceName, scheduledTime: finalOccurrenceTime });
+  const finalOccurrenceExpected = deepClone(finalOccurrenceBefore);
+  finalOccurrenceExpected._revision += 1;
+  fixtureItem('daily-recurring', finalOccurrenceExpected).reminder.notified = true;
+  assert.deepEqual(persistedState, finalOccurrenceExpected, 'the last permitted recurrence must persist as notified');
+  assert.equal(alarmMap.has(finalOccurrenceName), false, 'a recurrence beyond its until bound must not be armed');
+
+  resetReminderDeliveryScenario();
+  const staleName = 'te-reminder-item';
+  const staleTime = fixtureItem('item').reminder.at;
+  fixtureItem('item').reminder.at = staleTime + (10 * 60_000);
+  let staleBefore = deepClone(persistedState);
+  currentNow = staleTime;
+  await listeners.alarm({ name: staleName, scheduledTime: staleTime });
+  assertNoReminderDelivery(staleBefore, 'a rescheduled stale alarm');
+
+  resetReminderDeliveryScenario();
+  const removedTime = fixtureItem('item').reminder.at;
+  delete fixtureItem('item').reminder;
+  staleBefore = deepClone(persistedState);
+  currentNow = removedTime;
+  await listeners.alarm({ name: staleName, scheduledTime: removedTime });
+  assertNoReminderDelivery(staleBefore, 'a removed reminder alarm');
+
+  resetReminderDeliveryScenario();
+  const failedNotificationTime = fixtureItem('item').reminder.at;
+  const failedNotificationBefore = deepClone(persistedState);
+  notificationFailure = 'te-notif-item';
+  currentNow = failedNotificationTime;
+  await listeners.alarm({ name: oneShotName, scheduledTime: failedNotificationTime });
+  assertNoReminderDelivery(failedNotificationBefore, 'a failed delivery notification');
+
+  resetReminderDeliveryScenario();
+  const failedWrite = recurringCases[0];
+  const failedWriteTime = restartAlarmTimes.get(failedWrite.name);
+  const failedWriteNext = deliveryNextTimes.get(failedWrite.name);
+  const failedWriteBefore = deepClone(persistedState);
+  storageMode = 'quota';
+  currentNow = failedWriteTime;
+  await listeners.alarm({ name: failedWrite.name, scheduledTime: failedWriteTime });
+  assert.deepEqual(persistedState, failedWriteBefore, 'a failed delivery write must leave authority unchanged');
+  assert.equal(captureCalls.storageSets, 1, 'a failed delivery write must not retry blindly');
+  assert.equal(alarmMap.get(failedWrite.name)?.scheduledTime, failedWriteNext, 'a failed delivery write must rebuild the consumed recurrence from authority');
+  assert.equal(captureCalls.notifications.some(call => call.id === failedWrite.notificationId), true, 'the delivered notification remains observable');
+  assert.equal(captureCalls.notifications.some(call => call.id.startsWith('te-storage-quota-')), true, 'a quota failure must remain visible');
+  assert.equal(captureCalls.notifications.some(call => call.id.startsWith('te-reminder-error-')), false, 'the existing quota warning must avoid a duplicate reminder warning after alarm recovery');
+
+  resetReminderDeliveryScenario();
+  const genericWriteBefore = deepClone(persistedState);
+  storageMode = 'error';
+  currentNow = failedWriteTime;
+  await listeners.alarm({ name: failedWrite.name, scheduledTime: failedWriteTime });
+  assert.deepEqual(persistedState, genericWriteBefore, 'a generic delivery write failure must leave authority unchanged');
+  assert.equal(captureCalls.storageSets, 1, 'a generic delivery write failure must not retry blindly');
+  assert.equal(alarmMap.get(failedWrite.name)?.scheduledTime, failedWriteNext, 'a generic write failure must rebuild the consumed recurrence from authority');
+  const updateWarning = captureCalls.notifications.find(call => call.id.startsWith('te-reminder-error-'));
+  assert.ok(updateWarning, 'a non-quota delivery write failure must surface an actionable warning');
+  assert.match(updateWarning.options.title, /update needs attention/i);
+  assert.match(updateWarning.options.message, /could not save its status/i);
+
+  resetReminderDeliveryScenario();
+  const failedRearm = recurringCases[0];
+  const failedRearmTime = restartAlarmTimes.get(failedRearm.name);
+  const failedRearmNext = deliveryNextTimes.get(failedRearm.name);
+  const failedRearmBefore = deepClone(persistedState);
+  alarmFailure = { create: failedRearm.name };
+  currentNow = failedRearmTime;
+  await listeners.alarm({ name: failedRearm.name, scheduledTime: failedRearmTime });
+  const failedRearmExpected = deepClone(failedRearmBefore);
+  failedRearmExpected._revision += 1;
+  const failedRearmReminder = failedRearm.getReminder(failedRearmExpected);
+  failedRearmReminder.at = failedRearmNext;
+  failedRearmReminder.notified = false;
+  assert.deepEqual(persistedState, failedRearmExpected, 'a re-arm failure must not roll back an accepted delivery write');
+  assert.equal(alarmMap.has(failedRearm.name), false, 'a failed alarm create must remain observable as missing');
+  const schedulingWarning = captureCalls.notifications.find(call => call.id.startsWith('te-reminder-error-'));
+  assert.ok(schedulingWarning, 'a failed post-delivery reconciliation must surface an actionable warning');
+  assert.match(schedulingWarning.options.title, /scheduling needs attention/i);
+  assert.match(schedulingWarning.options.message, /open Locus/i);
+  await listeners.notificationClick(schedulingWarning.id);
+  assert.deepEqual(captureCalls.openedTabs.at(-1), { url: 'chrome-extension://locus/newtab.html' });
+  assert.equal(captureCalls.clearedNotifications.includes(schedulingWarning.id), true);
+
+  resetReminderDeliveryScenario();
 }
 
 async function assertCaptureConflict(runCapture, source) {
@@ -476,9 +690,10 @@ async function testCaptureConflicts() {
 
 (async () => {
   await testReminderReconciliation();
+  await testReminderDeliveryPersistence();
   await testCentralStateWriteProtocol();
   await testCaptureConflicts();
-  console.log(`Background contracts passed: reminderInitial=${initialAlarmTimes.size}, reminderRestart=${restartAlarmTimes.size}, recurringRearmed=${restartAlarmTimes.size - 1}, restartStale=${restartStaleNames.length}, alarmFailureOps=2`);
+  console.log(`Background contracts passed: reminderInitial=${initialAlarmTimes.size}, reminderRestart=${restartAlarmTimes.size}, recurringRearmed=${restartAlarmTimes.size - 1}, restartStale=${restartStaleNames.length}, alarmFailureOps=2, firedDeliveries=6, staleIgnored=2, deliveryFailurePaths=4`);
 })().catch(error => {
   console.error(error);
   process.exitCode = 1;

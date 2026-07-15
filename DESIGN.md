@@ -528,3 +528,22 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   fired-series persistence, rendered Past Due behavior, and DST/timezone semantics
   remain open. No schema, permission, or UI behavior changed, and the work is not
   user-validated or released.
+- **2026-07-16** -- Completed a **fired reminder persistence and stale-alarm
+  rejection cycle** against P0-10. The production alarm handler now verifies that
+  an event's scheduled occurrence still belongs to the current reminder before any
+  side effect, preventing removed or rescheduled alarms from notifying or writing
+  stale data. Item, nested-item, group, and category delivery awaits notification
+  creation, persists the next occurrence through the central revisioned writer, and
+  reconciles the complete alarm map under the same name. One-shots and the last
+  occurrence allowed by `until` persist as notified without re-arming. Notification
+  failure leaves state untouched; rejected storage is not retried, leaves authority
+  unchanged, and rebuilds the consumed recurrence from an authoritative read, using
+  the existing quota warning or a clickable generic update warning. Failed post-write
+  reconciliation retains the accepted next occurrence and creates a clickable
+  scheduling warning. The production-extracted contract covers six deliveries, two
+  stale/removed alarms, and four failure paths. This is clock-controlled mocked-
+  browser delivery evidence only:
+  installed Chrome notification/delivery timing, service-worker termination,
+  rendered Past Due behavior, group/category index-mutation races, and DST/timezone
+  semantics remain open. No schema, permission, or extension-page UI changed, and
+  the work is not user-validated or released.

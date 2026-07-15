@@ -169,7 +169,16 @@ in newtab.css; rail folds to a top strip below 880px.
   Past one-shots and recurrences beyond `until` remain unscheduled, while stale
   managed reminder alarms are cleared and unrelated alarms are preserved. Keep alarm
   API failures structured so callers cannot mistake partial reconciliation for
-  success.
+  success. On delivery, `reminderMatchesAlarm()` rejects an alarm whose scheduled
+  occurrence no longer belongs to the stored reminder. The handler awaits notification
+  creation, advances accepted state through the central writer, then reconciles the
+  complete alarm map; notification failure leaves state untouched, writer failure
+  leaves authority unchanged and rebuilds alarms from a fresh authoritative read
+  without retrying the candidate, and post-write reconciliation failure creates a
+  clickable `te-reminder-error-` warning. Non-quota writer failures use the same
+  prefix for their update warning; quota retains the storage-full warning. Item
+  alarms retain the item ID; group/category alarms retain their current entity-ID/
+  index name across a recurrence.
 - New-tab keeps a serialized confirmed-state baseline separate from its mutable
   graph. `storage.onChanged` may report the expected stored candidate before the
   service-worker response; matching that event is observation only and never a

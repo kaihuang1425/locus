@@ -20,8 +20,8 @@ Last updated: 2026-07-16.
    Chrome import quota allocation, File/FileReader and large-file preview behavior,
    and installed legacy/current round trips; and run an unpacked-extension
    CSP/favicon/network audit. Extend reminder contracts to the installed
-   restart/sleep and delivery lifecycle, fired-series persistence, a complete
-   one-shot overdue policy, and DST/timezone behavior.
+   restart/sleep and delivery lifecycle, a complete one-shot overdue policy,
+   stable group/category identity across index mutations, and DST/timezone behavior.
 2. **Validate and finish the core first-use contract** (`docs/UX_SIMPLIFICATION.md`) — remove
    the hidden questionnaire/coach implementation debt, finish keyboard and narrow-layout checks,
    and run the representative-user activation protocol: save one real tab, see its
@@ -36,6 +36,27 @@ Last updated: 2026-07-16.
    rendered and user-flow evidence.
 
 ## Done (newest first)
+
+- **2026-07-16 -- Fired reminder persistence and stale-alarm rejection / P0-10** --
+  alarm delivery now verifies that `scheduledTime` still belongs to the current
+  reminder before any side effect, so removed or rescheduled alarms cannot notify,
+  write, or re-arm stale data. Item, nested-item, group, and category notifications
+  are awaited before mutation; accepted deliveries advance through the central
+  revisioned writer and then run full alarm reconciliation under the same stable
+  alarm name. One-shots and the last occurrence allowed by `until` persist as
+  notified without re-arming. If notification creation fails, state stays untouched;
+  a rejected state write is not retried, leaves authority unchanged, and rebuilds a
+  consumed recurring alarm from an authoritative read; quota uses the existing
+  warning and other write failures add an actionable update warning. A post-write
+  reconciliation failure keeps the accepted next occurrence and adds an actionable
+  scheduling warning that opens Locus. The production-extracted contract covers six
+  deliveries, two stale/removed alarms, and four failure paths,
+  and the complete static/deterministic block passes. **Implemented: yes. Verified:
+  partial (clock-controlled mocked-browser delivery only). User-validated: no.
+  Released: no.** No schema, permission, or extension-page UI changed. Installed
+  notification/delivery timing, service-worker termination, rendered one-shot Past
+  Due behavior, group/category index-mutation races, and DST/timezone behavior remain
+  open.
 
 - **2026-07-16 -- Recurring reminder restart recovery / P0-10** -- reminder
   reconciliation now re-arms an overdue recurring item, nested item, group, or
@@ -401,11 +422,13 @@ Last updated: 2026-07-16.
   an exact 20,971,520-byte valid import reaching preview, a one-byte-over valid
   import rejected before FileReader, and two 10,551,296-byte replace/merge imports
   rolling back after injected typed quota rejection with no false success,
-  post-import warning paths, an exact nine-alarm initial map, and an advanced-clock
+  post-import warning paths, an exact nine-alarm initial map, an advanced-clock
   startup reconciliation that clears four newly overdue one-shots and re-arms four
   recurring item/nested/group/category reminders without catch-up notifications,
-  state writes, or mutation, plus no-retry capture conflicts,
-  and action-scoped Undo across pending capture, newer-edit interruption, restored
+  state writes, or mutation, and six fired-delivery cases that persist item/nested/
+  group/category recurrence, reject two stale alarms, and exercise notification,
+  quota/generic storage, and post-write reconciliation failures, plus no-retry
+  capture conflicts and action-scoped Undo across pending capture, newer-edit interruption, restored
   history order, tab-open retry, persistence-failure recovery, central-writer conflict/failure
   recovery, immutable client candidates, queued-successor invalidation, overlapping
   popup/new-tab capture no-close behavior, clean/dirty external-state handling,
@@ -417,8 +440,9 @@ Last updated: 2026-07-16.
   cross-context/service-worker restart and unknown-ack lifecycle evidence,
   actual Chrome quota allocation, File/FileReader/preview behavior, and installed
   browser legacy/current import round trips, installed reminder restart/sleep and
-  delivery behavior, fired-series persistence, rendered one-shot Past Due behavior,
-  and DST/timezone semantics, installed-browser Archive/Trash quota and export/import
+  delivery behavior, rendered one-shot Past Due behavior, stable group/category
+  identity across index mutations, and DST/timezone semantics, installed-browser
+  Archive/Trash quota and export/import
   recovery, and a complete
   unpacked-extension evidence bundle. Static and mocked contracts do not close
   those browser-runtime risks.
