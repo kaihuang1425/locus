@@ -75,7 +75,7 @@ function shuffle(values, random) {
 function makeState(revision = 0, baseTokens = []) {
   return {
     _revision: revision,
-    schema: 11,
+    schema: 12,
     activeWsId: 'workspace',
     settings: {},
     archive: [],

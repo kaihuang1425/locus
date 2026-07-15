@@ -8,15 +8,15 @@ installed-extension runtime evidence; current limitations are in `STATUS.md`.
 
 ```
 {
-  schema: 11,                   // CURRENT_SCHEMA in newtab.js; migrate() upgrades old data
+  schema: 12,                   // CURRENT_SCHEMA in newtab.js; migrate() upgrades old data
   _revision: 0,                 // absent legacy value means 0; service-worker-owned token
   activeWsId,
   workspaces: [{
     id, name, symbol?, windowId?,          // windowId ← auto-switch binding
     activeCatId,
     categories: [{                          // "Spaces" in the UI
-      id, name, symbol,
-      groups: [{ id, name, symbol, color, collapsed, items: [Item] }]
+      id, name, symbol, reminders?: [EntityReminder],
+      groups: [{ id, name, symbol, color, collapsed, reminders?: [EntityReminder], items: [Item] }]
     }]
   }],
   archive: [ArchiveEntry],       // deliberately hidden groups/items; durable until restored/deleted
@@ -29,6 +29,12 @@ installed-extension runtime evidence; current limitations are in `STATUS.md`.
 fields (schema 5+): `favorite`, `readLaterAt`/`readAt`, `tags[]`, `notes` (rich text),
 `customFields[]`, `checklist[]`, `cover {color|emoji}`, `color`, reminder fields,
 `createdAt`. Tabs carry `url`, `fav` (favicon URL), `title`.
+
+`EntityReminder` is `{ id, at, notified, label?, color?, recur? }`. Schema 12 adds
+the persistent `id` to active category/group reminders and to group payloads held
+in Archive or Trash. IDs are unique within their owning reminder list; edits,
+reschedules, reorderings, and neighboring removals preserve them. Replace migration
+and merge-import normalization repair absent or duplicate pre-schema-12 IDs.
 
 Key `settings`: `theme size font width language showUrls animate confirmDelete
 blurPrivacy autoSwitchWorkspace hibernate closeTabOnSave sidebarCollapsed
@@ -177,8 +183,11 @@ in newtab.css; rail folds to a top strip below 880px.
   without retrying the candidate, and post-write reconciliation failure creates a
   clickable `te-reminder-error-` warning. Non-quota writer failures use the same
   prefix for their update warning; quota retains the storage-full warning. Item
-  alarms retain the item ID; group/category alarms retain their current entity-ID/
-  index name across a recurrence.
+  alarms retain the item ID. Schema-12 group/category alarms use distinct
+  `te-greminder2-` / `te-creminder2-` namespaces with delimiter-safe encoded entity
+  and reminder IDs; delivery resolves exactly one matching reminder regardless of
+  array index. Schema-11 index alarms remain a transition fallback only while older
+  authority is stored, then reconciliation removes them after migration persists.
 - New-tab keeps a serialized confirmed-state baseline separate from its mutable
   graph. `storage.onChanged` may report the expected stored candidate before the
   service-worker response; matching that event is observation only and never a

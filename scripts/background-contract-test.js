@@ -30,6 +30,7 @@ const recurringTimes = {
 };
 
 const state = {
+  schema: 12,
   _revision: 2,
   activeWsId: 'workspace',
   settings: { closeTabOnSave: true },
@@ -40,15 +41,15 @@ const state = {
       id: 'category',
       name: 'Category',
       reminders: [
-        { at: fixedNow + 60_000, notified: false },
-        { at: recurringTimes.category, notified: false, recur: { every: 'month', interval: 1 } },
+        { id: 'category-once', at: fixedNow + 60_000, notified: false },
+        { id: 'category-monthly', at: recurringTimes.category, notified: false, recur: { every: 'month', interval: 1 } },
       ],
       groups: [{
         id: 'group',
         name: 'Inbox',
         reminders: [
-          { at: fixedNow + 120_000, notified: false },
-          { at: recurringTimes.group, notified: false, recur: { every: 'week', interval: 2 } },
+          { id: 'group-once', at: fixedNow + 120_000, notified: false },
+          { id: 'group-biweekly', at: recurringTimes.group, notified: false, recur: { every: 'week', interval: 2 } },
         ],
         items: [
           { id: 'item', type: 'tab', title: 'Item', url: 'https://item.test', reminder: { at: fixedNow + 180_000, notified: false } },
@@ -95,10 +96,10 @@ const state = {
 const staleState = { ...deepClone(state), _revision: 1 };
 let persistedState = deepClone(state);
 const expectedReminderNames = [
-  'te-creminder-category-0',
-  'te-creminder-category-1',
-  'te-greminder-group-0',
-  'te-greminder-group-1',
+  'te-creminder2-category|category-once',
+  'te-creminder2-category|category-monthly',
+  'te-greminder2-group|group-once',
+  'te-greminder2-group|group-biweekly',
   'te-reminder-daily-recurring',
   'te-reminder-item',
   'te-reminder-nested',
@@ -106,7 +107,11 @@ const expectedReminderNames = [
   'te-sub-subscription',
 ].sort();
 const staleReminderNames = [
+  'te-creminder-category-0',
+  'te-creminder-category-1',
   'te-creminder-missing-0',
+  'te-greminder-group-0',
+  'te-greminder-group-1',
   'te-greminder-missing-0',
   'te-reminder-expired-recurring',
   'te-reminder-missing',
@@ -119,10 +124,10 @@ const subscriptionReminderAt = (() => {
   return when.getTime();
 })();
 const initialAlarmTimes = new Map([
-  ['te-creminder-category-0', fixedNow + 60_000],
-  ['te-creminder-category-1', recurringTimes.category + (62 * dayMs)],
-  ['te-greminder-group-0', fixedNow + 120_000],
-  ['te-greminder-group-1', recurringTimes.group + (28 * dayMs)],
+  ['te-creminder2-category|category-once', fixedNow + 60_000],
+  ['te-creminder2-category|category-monthly', recurringTimes.category + (62 * dayMs)],
+  ['te-greminder2-group|group-once', fixedNow + 120_000],
+  ['te-greminder2-group|group-biweekly', recurringTimes.group + (28 * dayMs)],
   ['te-reminder-daily-recurring', recurringTimes.item + (3 * dayMs)],
   ['te-reminder-item', fixedNow + 180_000],
   ['te-reminder-nested', fixedNow + 240_000],
@@ -131,25 +136,25 @@ const initialAlarmTimes = new Map([
 ]);
 const restartNow = fixedNow + (8 * dayMs);
 const restartAlarmTimes = new Map([
-  ['te-creminder-category-1', recurringTimes.category + (62 * dayMs)],
-  ['te-greminder-group-1', recurringTimes.group + (28 * dayMs)],
+  ['te-creminder2-category|category-monthly', recurringTimes.category + (62 * dayMs)],
+  ['te-greminder2-group|group-biweekly', recurringTimes.group + (28 * dayMs)],
   ['te-reminder-daily-recurring', recurringTimes.item + (11 * dayMs)],
   ['te-reminder-nested-recurring', recurringTimes.nested + (14 * dayMs)],
   ['te-sub-subscription', subscriptionReminderAt],
 ]);
 const restartStaleNames = [
-  'te-creminder-category-0',
-  'te-greminder-group-0',
+  'te-creminder2-category|category-once',
+  'te-greminder2-group|group-once',
   'te-reminder-item',
   'te-reminder-nested',
 ].sort();
 const deliveryNextTimes = new Map([
-  ['te-creminder-category-1', (() => {
-    const next = new Date(restartAlarmTimes.get('te-creminder-category-1'));
+  ['te-creminder2-category|category-monthly', (() => {
+    const next = new Date(restartAlarmTimes.get('te-creminder2-category|category-monthly'));
     next.setMonth(next.getMonth() + 1);
     return next.getTime();
   })()],
-  ['te-greminder-group-1', restartAlarmTimes.get('te-greminder-group-1') + (14 * dayMs)],
+  ['te-greminder2-group|group-biweekly', restartAlarmTimes.get('te-greminder2-group|group-biweekly') + (14 * dayMs)],
   ['te-reminder-daily-recurring', restartAlarmTimes.get('te-reminder-daily-recurring') + dayMs],
   ['te-reminder-nested-recurring', restartAlarmTimes.get('te-reminder-nested-recurring') + (2 * dayMs)],
 ]);
@@ -272,6 +277,9 @@ const context = vm.createContext({
 const backgroundSource = fs.readFileSync(path.join(root, 'background.js'), 'utf8');
 vm.runInContext(backgroundSource, context, { filename: 'background.js' });
 const testApi = vm.runInContext(`({
+  collectFutureReminderAlarms,
+  entityReminderAlarmName,
+  parseEntityReminderAlarmName,
   requestReminderAlarmReconciliation,
   waitForStartupReconciliation: () => reminderReconcileQueue
 })`, context);
@@ -342,6 +350,26 @@ async function testReminderReconciliation() {
   assert.deepEqual(alarmCalls.created.map(call => call.name).sort(), expectedReminderNames);
   assert.deepEqual(alarmCalls.cleared.sort(), staleReminderNames);
   assertAlarmTimes(initialAlarmTimes, 'service-worker startup reconciliation');
+
+  const encoded = testApi.entityReminderAlarmName('group', 'group-|空', { id: 'reminder-|醒' }, 0);
+  assert.equal(encoded, 'te-greminder2-group-%7C%E7%A9%BA|reminder-%7C%E9%86%92');
+  assert.deepEqual(
+    deepClone(testApi.parseEntityReminderAlarmName(encoded)),
+    { kind: 'group', entId: 'group-|空', reminderId: 'reminder-|醒', legacyIndex: null },
+    'stable alarm components must round-trip through delimiter-safe encoding',
+  );
+  const legacyState = deepClone(state);
+  legacyState.schema = 11;
+  for (const reminder of [...fixtureCategory(legacyState).reminders, ...fixtureGroup(legacyState).reminders]) delete reminder.id;
+  const legacyEntityNames = [...testApi.collectFutureReminderAlarms(legacyState, fixedNow).keys()]
+    .filter(name => name.startsWith('te-greminder-') || name.startsWith('te-creminder-'))
+    .sort();
+  assert.deepEqual(legacyEntityNames, [
+    'te-creminder-category-0',
+    'te-creminder-category-1',
+    'te-greminder-group-0',
+    'te-greminder-group-1',
+  ], 'schema-11 reminders must retain a transition alarm until migration is authoritative');
 
   for (const name of expectedReminderNames) assert.equal(alarmMap.has(name), true, `${name} was not scheduled`);
   for (const name of staleReminderNames) assert.equal(alarmMap.has(name), false, `${name} was not cleared`);
@@ -439,13 +467,13 @@ async function testReminderDeliveryPersistence() {
       getReminder: targetState => fixtureItem('nested-recurring', targetState).reminder,
     },
     {
-      name: 'te-greminder-group-1',
-      notificationId: 'te-gnotif-group-1',
+      name: 'te-greminder2-group|group-biweekly',
+      notificationId: 'te-gnotif-group|group-biweekly',
       getReminder: targetState => fixtureGroup(targetState).reminders[1],
     },
     {
-      name: 'te-creminder-category-1',
-      notificationId: 'te-cnotif-category-1',
+      name: 'te-creminder2-category|category-monthly',
+      notificationId: 'te-cnotif-category|category-monthly',
       getReminder: targetState => fixtureCategory(targetState).reminders[1],
     },
   ];
@@ -471,6 +499,39 @@ async function testReminderDeliveryPersistence() {
     assert.equal(alarmMap.has('other-alarm'), true, `${delivery.name} must preserve unrelated alarms`);
     assert.equal(alarmMap.has('te-pomodoro'), true, `${delivery.name} must preserve other Locus alarms`);
   }
+
+  resetReminderDeliveryScenario();
+  const movedIdentityName = 'te-greminder2-group|group-biweekly';
+  const movedIdentityTime = restartAlarmTimes.get(movedIdentityName);
+  fixtureGroup().reminders.reverse();
+  const movedIdentityBefore = deepClone(persistedState);
+  currentNow = movedIdentityTime;
+  await listeners.alarm({ name: movedIdentityName, scheduledTime: movedIdentityTime });
+  const movedIdentityExpected = deepClone(movedIdentityBefore);
+  movedIdentityExpected._revision += 1;
+  const movedReminder = fixtureGroup(movedIdentityExpected).reminders.find(reminder => reminder.id === 'group-biweekly');
+  movedReminder.at = deliveryNextTimes.get(movedIdentityName);
+  movedReminder.notified = false;
+  assert.deepEqual(persistedState, movedIdentityExpected, 'an index-shifted reminder must deliver and advance by stable id');
+  assert.deepEqual(captureCalls.notifications.map(call => call.id), ['te-gnotif-group|group-biweekly']);
+  assert.equal(fixtureGroup().reminders.find(reminder => reminder.id === 'group-once').at, fixedNow + 120_000, 'the shifted neighbor must remain untouched');
+
+  resetReminderDeliveryScenario();
+  const legacyIdentityState = deepClone(persistedState);
+  legacyIdentityState.schema = 11;
+  for (const reminder of [...fixtureCategory(legacyIdentityState).reminders, ...fixtureGroup(legacyIdentityState).reminders]) delete reminder.id;
+  persistedState = legacyIdentityState;
+  const legacyIdentityName = 'te-greminder-group-1';
+  const legacyIdentityTime = restartAlarmTimes.get('te-greminder2-group|group-biweekly');
+  const legacyIdentityBefore = deepClone(persistedState);
+  currentNow = legacyIdentityTime;
+  await listeners.alarm({ name: legacyIdentityName, scheduledTime: legacyIdentityTime });
+  const legacyIdentityExpected = deepClone(legacyIdentityBefore);
+  legacyIdentityExpected._revision += 1;
+  fixtureGroup(legacyIdentityExpected).reminders[1].at = deliveryNextTimes.get('te-greminder2-group|group-biweekly');
+  fixtureGroup(legacyIdentityExpected).reminders[1].notified = false;
+  assert.deepEqual(persistedState, legacyIdentityExpected, 'a schema-11 transition alarm must remain deliverable before migration');
+  assert.deepEqual(captureCalls.notifications.map(call => call.id), ['te-gnotif-group-1']);
 
   resetReminderDeliveryScenario();
   const oneShotName = 'te-reminder-item';
@@ -517,6 +578,34 @@ async function testReminderDeliveryPersistence() {
   currentNow = removedTime;
   await listeners.alarm({ name: staleName, scheduledTime: removedTime });
   assertNoReminderDelivery(staleBefore, 'a removed reminder alarm');
+
+  resetReminderDeliveryScenario();
+  const removedIdentityName = 'te-greminder2-group|group-biweekly';
+  const removedIdentityTime = restartAlarmTimes.get(removedIdentityName);
+  fixtureGroup().reminders[1] = {
+    id: 'same-time-replacement',
+    at: removedIdentityTime,
+    notified: false,
+    recur: { every: 'week', interval: 2 },
+  };
+  staleBefore = deepClone(persistedState);
+  currentNow = removedIdentityTime;
+  await listeners.alarm({ name: removedIdentityName, scheduledTime: removedIdentityTime });
+  assertNoReminderDelivery(staleBefore, 'a removed stable identity replaced at the same index and time');
+
+  resetReminderDeliveryScenario();
+  fixtureGroup().reminders[0].id = 'group-biweekly';
+  staleBefore = deepClone(persistedState);
+  currentNow = removedIdentityTime;
+  await listeners.alarm({ name: removedIdentityName, scheduledTime: removedIdentityTime });
+  assertNoReminderDelivery(staleBefore, 'a duplicated current-schema reminder identity');
+
+  resetReminderDeliveryScenario();
+  fixtureGroup().reminders[1].notified = true;
+  staleBefore = deepClone(persistedState);
+  currentNow = removedIdentityTime;
+  await listeners.alarm({ name: removedIdentityName, scheduledTime: removedIdentityTime });
+  assertNoReminderDelivery(staleBefore, 'an already-notified reminder alarm');
 
   resetReminderDeliveryScenario();
   const failedNotificationTime = fixtureItem('item').reminder.at;
@@ -693,7 +782,7 @@ async function testCaptureConflicts() {
   await testReminderDeliveryPersistence();
   await testCentralStateWriteProtocol();
   await testCaptureConflicts();
-  console.log(`Background contracts passed: reminderInitial=${initialAlarmTimes.size}, reminderRestart=${restartAlarmTimes.size}, recurringRearmed=${restartAlarmTimes.size - 1}, restartStale=${restartStaleNames.length}, alarmFailureOps=2, firedDeliveries=6, staleIgnored=2, deliveryFailurePaths=4`);
+  console.log(`Background contracts passed: reminderInitial=${initialAlarmTimes.size}, reminderRestart=${restartAlarmTimes.size}, recurringRearmed=${restartAlarmTimes.size - 1}, restartStale=${restartStaleNames.length}, alarmFailureOps=2, firedDeliveries=8, staleIgnored=5, identityMutationPaths=2, deliveryFailurePaths=4`);
 })().catch(error => {
   console.error(error);
   process.exitCode = 1;

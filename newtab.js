@@ -5,7 +5,7 @@
 // Schema version of the in-storage state. Bump when state shape changes,
 // then add a forward-migration branch in migrate(). Older builds reading
 // data stamped with a higher value get a blocking "newer data" guard.
-const CURRENT_SCHEMA = 11;
+const CURRENT_SCHEMA = 12;
 
 const SUPPORTED_LOCALES = ['en', 'zh-TW'];
 
@@ -1912,8 +1912,26 @@ function normalizeLoadedState() {
   return true;
 }
 
+function persistReminderIdentityMigration(fromSchema, normalized) {
+  if (!(fromSchema < 12 && normalized)) return null;
+  // Replace legacy index alarms only after schema 12 is authoritative. If the
+  // write fails, the background's schema-11 fallback alarms remain usable.
+  return State.persistNow({ recordMutation: false })
+    .then(() => chrome.runtime.sendMessage({ type: 'reconcile-reminders' }))
+    .then(result => {
+      if (result?.ok === false) toast('Saved reminder identities, but some alarms could not be updated. Restart the browser, then review Calendar.', { danger: true, duration: 8000 });
+      return result;
+    })
+    .catch(() => {
+      if (!State.isRecoveryRequired()) toast('Saved reminder identities, but alarm scheduling needs a browser restart', { danger: true, duration: 8000 });
+      return null;
+    });
+}
+
 function initAfterLoad() {
-  normalizeLoadedState();
+  const fromSchema = loadedSchema;
+  const normalized = normalizeLoadedState();
+  persistReminderIdentityMigration(fromSchema, normalized);
 
   applySettings();
   buildThemeGrid();
@@ -2077,6 +2095,33 @@ function startStateStorageSync() {
     .catch(error => { State.requireRecovery(); showStateRecoveryRequired(error); });
 }
 
+function isStableEntityReminderId(value) {
+  return typeof value === 'string' && value.length > 0 && value.length <= 200;
+}
+
+function allocateEntityReminderId(used) {
+  for (let attempts = 0; attempts < 10000; attempts++) {
+    const id = String(uid());
+    if (isStableEntityReminderId(id) && !used.has(id)) return id;
+  }
+  throw new Error('Could not allocate a unique reminder id');
+}
+
+function ensureStableEntityReminderIds(entity) {
+  if (!Array.isArray(entity?.reminders)) return false;
+  const used = new Set();
+  let changed = false;
+  for (const reminder of entity.reminders) {
+    if (!reminder || typeof reminder !== 'object' || Array.isArray(reminder)) continue;
+    if (!isStableEntityReminderId(reminder.id) || used.has(reminder.id)) {
+      reminder.id = allocateEntityReminderId(used);
+      changed = true;
+    }
+    used.add(reminder.id);
+  }
+  return changed;
+}
+
 function migrate() {
   const s = State.get();
   const from = Number(s.schema) || 0;
@@ -2184,6 +2229,24 @@ function migrate() {
     if (!['window', 'selected', 'all'].includes(s.settings.popupHibernateScope)) s.settings.popupHibernateScope = 'window';
     if (s.settings.popupHibernateSaveBefore == null) s.settings.popupHibernateSaveBefore = false;
     if (!Array.isArray(s.settings.popupHibernateSelectedTabIds)) s.settings.popupHibernateSelectedTabIds = [];
+  }
+
+  if (from < 12) {
+    // Schema 12 gives every group/category reminder a stable identity. Alarm
+    // delivery can then resolve the intended reminder after array insertion,
+    // removal, or reordering instead of trusting a mutable index. Existing
+    // reminder behavior is unchanged; only the missing identity is added.
+    for (const ws of (s.workspaces || [])) {
+      for (const cat of (ws.categories || [])) {
+        ensureStableEntityReminderIds(cat);
+        for (const group of (cat.groups || [])) ensureStableEntityReminderIds(group);
+      }
+    }
+    for (const collection of [s.archive || [], s.trash || []]) {
+      for (const entry of collection) {
+        if (entry?.kind === 'group') ensureStableEntityReminderIds(entry.data);
+      }
+    }
   }
 
   s.schema = CURRENT_SCHEMA;
@@ -3118,25 +3181,70 @@ async function clearReminder(itemId) {
 }
 
 // ── Group / category reminders (§6) ──────────────────────────────
-// Groups and categories carry `reminders[]` (each { at, notified, label?,
-// recur? }); collectReminders already reads them. Alarms are keyed by the
-// entry's array index — `te-greminder-<groupId>-<n>` / `te-creminder-<catId>-<n>`
-// — so every write reconciles the whole set for that entity, keeping indices
-// and scheduled alarms in lock-step even after a middle entry is removed.
+// Groups and categories carry `reminders[]` (each { id, at, notified, label?,
+// recur? }). Their persistent ids keep alarm delivery stable when array order changes.
+// Legacy index names remain parseable only for schema-11 transition cleanup.
 function findEntity(kind, entId) {
   return kind === 'group' ? (findGroup(entId)?.group || null) : (findCategory(entId)?.cat || null);
 }
+const ENTITY_REMINDER_ALARM_PREFIXES = {
+  group: 'te-greminder2-',
+  category: 'te-creminder2-',
+};
+const LEGACY_ENTITY_REMINDER_ALARM_PREFIXES = {
+  group: 'te-greminder-',
+  category: 'te-creminder-',
+};
+function legacyEntityReminderAlarmName(kind, entId, index) {
+  return `${LEGACY_ENTITY_REMINDER_ALARM_PREFIXES[kind]}${entId}-${index}`;
+}
+function entityReminderAlarmName(kind, entId, reminder, index) {
+  const prefix = ENTITY_REMINDER_ALARM_PREFIXES[kind];
+  if (!prefix) return '';
+  if (isStableEntityReminderId(reminder?.id)) {
+    return `${prefix}${encodeURIComponent(String(entId))}|${encodeURIComponent(reminder.id)}`;
+  }
+  return legacyEntityReminderAlarmName(kind, entId, index);
+}
+function parseEntityReminderAlarmName(name) {
+  const stableKind = typeof name === 'string' && name.startsWith(ENTITY_REMINDER_ALARM_PREFIXES.group)
+    ? 'group'
+    : (typeof name === 'string' && name.startsWith(ENTITY_REMINDER_ALARM_PREFIXES.category) ? 'category' : null);
+  if (stableKind) {
+    const rest = name.slice(ENTITY_REMINDER_ALARM_PREFIXES[stableKind].length);
+    const separator = rest.indexOf('|');
+    if (separator < 0 || rest.indexOf('|', separator + 1) >= 0) return null;
+    try {
+      const entId = decodeURIComponent(rest.slice(0, separator));
+      const reminderId = decodeURIComponent(rest.slice(separator + 1));
+      if (!entId || !isStableEntityReminderId(reminderId)) return null;
+      return { kind: stableKind, entId, reminderId, legacyIndex: null };
+    } catch {
+      return null;
+    }
+  }
+  const kind = typeof name === 'string' && name.startsWith(LEGACY_ENTITY_REMINDER_ALARM_PREFIXES.group)
+    ? 'group'
+    : (typeof name === 'string' && name.startsWith(LEGACY_ENTITY_REMINDER_ALARM_PREFIXES.category) ? 'category' : null);
+  if (!kind) return null;
+  const rest = name.slice(LEGACY_ENTITY_REMINDER_ALARM_PREFIXES[kind].length);
+  const cut = rest.lastIndexOf('-');
+  if (cut <= 0 || !/^\d+$/.test(rest.slice(cut + 1))) return null;
+  return { kind, entId: rest.slice(0, cut), reminderId: null, legacyIndex: Number(rest.slice(cut + 1)) };
+}
 async function reconcileEntityAlarms(kind, entId, reminders) {
-  const prefix = (kind === 'group' ? 'te-greminder-' : 'te-creminder-') + entId + '-';
   try {
     const all = await chrome.alarms.getAll();
-    await Promise.all(all.filter(a => a.name.startsWith(prefix)).map(a => chrome.alarms.clear(a.name)));
+    await Promise.all(all.filter(alarm => {
+      const parsed = parseEntityReminderAlarmName(alarm.name);
+      return parsed?.kind === kind && parsed.entId === entId;
+    }).map(alarm => chrome.alarms.clear(alarm.name)));
   } catch {}
   const list = reminders || [];
   for (let n = 0; n < list.length; n++) {
     const r = list[n];
-    if (r && r.at != null && r.at > Date.now()) {
-      try { await chrome.alarms.create(prefix + n, { when: r.at }); } catch {}
+    if (r && !r.notified && r.at != null && r.at > Date.now()) {
+      try { await chrome.alarms.create(entityReminderAlarmName(kind, entId, r, n), { when: r.at }); } catch {}
     }
   }
 }
@@ -3145,9 +3253,17 @@ async function setEntityReminder(kind, entId, data, index) {
   if (!ent) return;
   State.snapshot(index != null ? 'Edit reminder' : 'Add reminder');
   if (!Array.isArray(ent.reminders)) ent.reminders = [];
-  const entry = { at: data.at, notified: false, label: (data.label || '').trim() };
+  ensureStableEntityReminderIds(ent);
+  const existing = index != null ? ent.reminders[index] : null;
+  const used = new Set(ent.reminders.filter(reminder => reminder !== existing).map(reminder => reminder?.id).filter(isStableEntityReminderId));
+  const entry = {
+    id: isStableEntityReminderId(existing?.id) ? existing.id : allocateEntityReminderId(used),
+    at: data.at,
+    notified: false,
+    label: (data.label || '').trim(),
+  };
   if (data.recur) entry.recur = data.recur;
-  if (index != null && ent.reminders[index]) ent.reminders[index] = entry;
+  if (existing) ent.reminders[index] = entry;
   else ent.reminders.push(entry);
   await reconcileEntityAlarms(kind, entId, ent.reminders);
   State.persist();
@@ -3159,6 +3275,7 @@ async function setEntityReminderTime(kind, entId, index, ts) {
   const r = ent && Array.isArray(ent.reminders) ? ent.reminders[index] : null;
   if (!r) return;
   State.snapshot('Reschedule reminder');
+  ensureStableEntityReminderIds(ent);
   r.at = ts; r.notified = false;
   await reconcileEntityAlarms(kind, entId, ent.reminders);
   State.persist();
@@ -3169,6 +3286,7 @@ async function removeEntityReminder(kind, entId, index) {
   const ent = findEntity(kind, entId);
   if (!ent || !Array.isArray(ent.reminders) || !ent.reminders[index]) return;
   State.snapshot('Remove reminder');
+  ensureStableEntityReminderIds(ent);
   ent.reminders.splice(index, 1);
   if (!ent.reminders.length) delete ent.reminders;
   await reconcileEntityAlarms(kind, entId, ent.reminders);
@@ -3236,7 +3354,8 @@ function collectReminders({ scope = 'all', filter } = {}) {
       (cat.reminders || []).forEach((r, n) => {
         if (r && r.at != null) out.push({
           at: r.at, notified: !!r.notified, source: 'category',
-          refId: cat.id, index: n, alarmId: `te-creminder-${cat.id}-${n}`,
+          refId: cat.id, index: n, reminderId: r.id,
+          alarmId: entityReminderAlarmName('category', cat.id, r, n),
           wsId: ws.id, catId: cat.id,
           title: r.label || cat.name, color: r.color || null,
           recur: r.recur || null,
@@ -3247,7 +3366,8 @@ function collectReminders({ scope = 'all', filter } = {}) {
         (g.reminders || []).forEach((r, n) => {
           if (r && r.at != null) out.push({
             at: r.at, notified: !!r.notified, source: 'group',
-            refId: g.id, index: n, alarmId: `te-greminder-${g.id}-${n}`,
+            refId: g.id, index: n, reminderId: r.id,
+            alarmId: entityReminderAlarmName('group', g.id, r, n),
             wsId: ws.id, catId: cat.id, groupId: g.id,
             title: r.label || g.name, color: r.color || g.color || null,
             recur: r.recur || null,
@@ -8479,6 +8599,7 @@ function validateImportData(data, schema) {
   inspect(data, 0, 'data');
 
   const isRecord = value => value && typeof value === 'object' && !Array.isArray(value);
+  const requiresStableReminderIds = Number.isFinite(Number(schema)) && Number(schema) >= 12;
   if (!isRecord(data) || !Array.isArray(data.workspaces) || !data.workspaces.length) {
     throw new Error('Backup must contain at least one workspace');
   }
@@ -8512,9 +8633,20 @@ function validateImportData(data, schema) {
       item.items.forEach((child, index) => validateItem(child, `${label}.items[${index}]`, ids, stackDepth + 1));
     }
   };
+  const validateReminderList = (entity, label) => {
+    if (entity.reminders == null) return;
+    if (!Array.isArray(entity.reminders)) throw new Error(`${label}.reminders must be an array`);
+    const reminderIds = new Set();
+    entity.reminders.forEach((reminder, index) => {
+      const reminderLabel = `${label}.reminders[${index}]`;
+      if (!isRecord(reminder)) throw new Error(`${reminderLabel} must be an object`);
+      if (requiresStableReminderIds) registerId(reminder.id, reminderLabel, reminderIds);
+    });
+  };
   const validateGroup = (group, label, ids) => {
     if (!isRecord(group)) throw new Error(`${label} must be an object`);
     registerId(group.id, label, ids);
+    validateReminderList(group, label);
     if (!Array.isArray(group.items)) throw new Error(`${label}.items must be an array`);
     group.items.forEach((item, index) => validateItem(item, `${label}.items[${index}]`, ids));
   };
@@ -8530,6 +8662,7 @@ function validateImportData(data, schema) {
       const cp = `${wp}.categories[${ci}]`;
       if (!isRecord(category)) throw new Error(`${cp} must be an object`);
       registerId(category.id, cp);
+      validateReminderList(category, cp);
       if (!Array.isArray(category.groups)) throw new Error(`${cp}.groups must be an array`);
       category.groups.forEach((group, gi) => validateGroup(group, `${cp}.groups[${gi}]`, activeIds));
     });

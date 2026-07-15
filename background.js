@@ -345,10 +345,60 @@ function findCategoryById(state, id) {
 
 const LOCUS_REMINDER_ALARM_PREFIXES = [
   'te-reminder-',
+  'te-greminder2-',
+  'te-creminder2-',
   'te-greminder-',
   'te-creminder-',
   'te-sub-'
 ];
+const ENTITY_REMINDER_ALARM_PREFIXES = {
+  group: 'te-greminder2-',
+  category: 'te-creminder2-',
+};
+const LEGACY_ENTITY_REMINDER_ALARM_PREFIXES = {
+  group: 'te-greminder-',
+  category: 'te-creminder-',
+};
+
+function isStableEntityReminderId(value) {
+  return typeof value === 'string' && value.length > 0 && value.length <= 200;
+}
+
+function legacyEntityReminderAlarmName(kind, entId, index) {
+  return `${LEGACY_ENTITY_REMINDER_ALARM_PREFIXES[kind]}${entId}-${index}`;
+}
+
+function entityReminderAlarmName(kind, entId, reminder, index) {
+  if (!isStableEntityReminderId(reminder?.id)) return legacyEntityReminderAlarmName(kind, entId, index);
+  return `${ENTITY_REMINDER_ALARM_PREFIXES[kind]}${encodeURIComponent(String(entId))}|${encodeURIComponent(reminder.id)}`;
+}
+
+function parseEntityReminderAlarmName(name) {
+  const stableKind = typeof name === 'string' && name.startsWith(ENTITY_REMINDER_ALARM_PREFIXES.group)
+    ? 'group'
+    : (typeof name === 'string' && name.startsWith(ENTITY_REMINDER_ALARM_PREFIXES.category) ? 'category' : null);
+  if (stableKind) {
+    const rest = name.slice(ENTITY_REMINDER_ALARM_PREFIXES[stableKind].length);
+    const separator = rest.indexOf('|');
+    if (separator < 0 || rest.indexOf('|', separator + 1) >= 0) return null;
+    try {
+      const entId = decodeURIComponent(rest.slice(0, separator));
+      const reminderId = decodeURIComponent(rest.slice(separator + 1));
+      if (!entId || !isStableEntityReminderId(reminderId)) return null;
+      return { kind: stableKind, entId, reminderId, legacyIndex: null };
+    } catch {
+      return null;
+    }
+  }
+  const kind = typeof name === 'string' && name.startsWith(LEGACY_ENTITY_REMINDER_ALARM_PREFIXES.group)
+    ? 'group'
+    : (typeof name === 'string' && name.startsWith(LEGACY_ENTITY_REMINDER_ALARM_PREFIXES.category) ? 'category' : null);
+  if (!kind) return null;
+  const rest = name.slice(LEGACY_ENTITY_REMINDER_ALARM_PREFIXES[kind].length);
+  const cut = rest.lastIndexOf('-');
+  if (cut <= 0 || !/^\d+$/.test(rest.slice(cut + 1))) return null;
+  return { kind, entId: rest.slice(0, cut), reminderId: null, legacyIndex: Number(rest.slice(cut + 1)) };
+}
 
 function isLocusReminderAlarm(name) {
   return typeof name === 'string' && LOCUS_REMINDER_ALARM_PREFIXES.some(prefix => name.startsWith(prefix));
@@ -364,6 +414,7 @@ function addFutureAlarm(expected, name, at, now) {
 // sleep cannot silently stop the series, while an overdue one-shot stays in the
 // in-app Past Due list without producing a notification burst.
 function addReminderAlarm(expected, name, reminder, now) {
+  if (reminder?.notified) return;
   const when = Number(reminder?.at);
   if (!Number.isFinite(when)) return;
   if (when > now) {
@@ -372,6 +423,26 @@ function addReminderAlarm(expected, name, reminder, now) {
   }
   const next = nextRecurTime(when, reminder?.recur, now);
   if (Number.isFinite(next) && next > now) expected.set(name, next);
+}
+
+function addEntityReminderAlarms(expected, kind, entId, reminders, schema, now) {
+  const idCounts = new Map();
+  for (const reminder of reminders) {
+    if (!isStableEntityReminderId(reminder?.id)) continue;
+    idCounts.set(reminder.id, (idCounts.get(reminder.id) || 0) + 1);
+  }
+  reminders.forEach((reminder, index) => {
+    if (!reminder) return;
+    let name;
+    if (isStableEntityReminderId(reminder.id) && idCounts.get(reminder.id) === 1) {
+      name = entityReminderAlarmName(kind, entId, reminder, index);
+    } else if ((Number(schema) || 0) < 12) {
+      name = legacyEntityReminderAlarmName(kind, entId, index);
+    } else {
+      return;
+    }
+    addReminderAlarm(expected, name, reminder, now);
+  });
 }
 
 function subscriptionReminderTime(sub) {
@@ -404,15 +475,11 @@ function collectFutureReminderAlarms(state, now = Date.now()) {
   for (const ws of (Array.isArray(state?.workspaces) ? state.workspaces : [])) {
     for (const cat of (Array.isArray(ws?.categories) ? ws.categories : [])) {
       if (validId(cat?.id) && Array.isArray(cat.reminders)) {
-        cat.reminders.forEach((reminder, index) => {
-          if (reminder) addReminderAlarm(expected, `te-creminder-${cat.id}-${index}`, reminder, now);
-        });
+        addEntityReminderAlarms(expected, 'category', cat.id, cat.reminders, state?.schema, now);
       }
       for (const group of (Array.isArray(cat?.groups) ? cat.groups : [])) {
         if (validId(group?.id) && Array.isArray(group.reminders)) {
-          group.reminders.forEach((reminder, index) => {
-            if (reminder) addReminderAlarm(expected, `te-greminder-${group.id}-${index}`, reminder, now);
-          });
+          addEntityReminderAlarms(expected, 'group', group.id, group.reminders, state?.schema, now);
         }
         visitItems(group?.items);
       }
@@ -555,6 +622,7 @@ function nextRecurTime(at, recur, now = Date.now()) {
 // accepts a future occurrence that startup reconciliation derived from an older
 // stored recurrence without mutating that recurrence ahead of delivery.
 function reminderMatchesAlarm(reminder, alarm) {
+  if (reminder?.notified) return false;
   const at = Number(reminder?.at);
   const scheduledTime = Number(alarm?.scheduledTime);
   if (!Number.isFinite(at) || !Number.isFinite(scheduledTime)) return false;
@@ -637,25 +705,31 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
         return;
       }
       await reconcileAfterReminderDelivery(alarm.name);
-    } else if (alarm.name.startsWith('te-greminder-') || alarm.name.startsWith('te-creminder-')) {
-      // Group / category reminders (§6). The alarm name is
-      // `te-greminder-<groupId>-<index>` (or `te-creminder-<catId>-<index>`);
-      // the index is the last dash-segment, so parsing from the right stays
-      // correct even when the entity id itself contains dashes.
-      const isGroup = alarm.name.startsWith('te-greminder-');
-      const rest = alarm.name.slice((isGroup ? 'te-greminder-' : 'te-creminder-').length);
-      const cut = rest.lastIndexOf('-');
-      if (cut < 0) return;
-      const entId = rest.slice(0, cut);
-      const idx = parseInt(rest.slice(cut + 1), 10);
-      if (!Number.isInteger(idx)) return;
+    } else if (alarm.name.startsWith('te-greminder2-') || alarm.name.startsWith('te-creminder2-')
+      || alarm.name.startsWith('te-greminder-') || alarm.name.startsWith('te-creminder-')) {
+      // Stable names encode both the owning entity and reminder id. Legacy
+      // index names are accepted only while authority is older than schema 12.
+      const parsed = parseEntityReminderAlarmName(alarm.name);
+      if (!parsed) return;
+      const isGroup = parsed.kind === 'group';
       const s = await getState();
       if (!s) return;
-      const ent = isGroup ? findGroupById(s, entId) : findCategoryById(s, entId);
+      const ent = isGroup ? findGroupById(s, parsed.entId) : findCategoryById(s, parsed.entId);
       if (!ent || !Array.isArray(ent.reminders)) return;
-      const r = ent.reminders[idx];
+      let r;
+      if (parsed.reminderId) {
+        const matches = ent.reminders.filter(reminder => reminder?.id === parsed.reminderId);
+        if (matches.length !== 1) return;
+        [r] = matches;
+      } else {
+        if ((Number(s.schema) || 0) >= 12) return;
+        r = ent.reminders[parsed.legacyIndex];
+      }
       if (!reminderMatchesAlarm(r, alarm)) return;
-      await chrome.notifications.create((isGroup ? 'te-gnotif-' : 'te-cnotif-') + entId + '-' + idx, {
+      const notificationIdentity = parsed.reminderId
+        ? `${encodeURIComponent(parsed.entId)}|${encodeURIComponent(parsed.reminderId)}`
+        : `${parsed.entId}-${parsed.legacyIndex}`;
+      await chrome.notifications.create((isGroup ? 'te-gnotif-' : 'te-cnotif-') + notificationIdentity, {
         type: 'basic',
         iconUrl: chrome.runtime.getURL('icons/icon128.png'),
         title: '⏰ ' + (r.label || ent.name || (isGroup ? 'Group reminder' : 'Category reminder')),

@@ -16,7 +16,7 @@ const clone = value => JSON.parse(JSON.stringify(value));
 
 assert.ok(currentSchemaMatch, 'CURRENT_SCHEMA must be extractable');
 const currentSchema = Number(currentSchemaMatch[1]);
-const compatibilitySchemas = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+const compatibilitySchemas = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 const compatibilityApps = ['locus', 'folio', 'stow', 'tabento', 'tabnest', 'tabextend'];
 const semanticFuzzSeed = 0x51a7e5;
 const semanticFuzzRuns = 128;
@@ -62,7 +62,7 @@ const stateEndMarker = '\n})();';
 const stateEnd = source.indexOf(stateEndMarker, stateStart);
 assert.ok(stateStart >= 0 && stateEnd > stateStart, 'State implementation must be extractable');
 const stateSource = source.slice(stateStart, stateEnd + stateEndMarker.length);
-const migrateSource = extractBetween('function migrate() {', '\nconst STORAGE_QUOTA');
+const migrateSource = extractBetween('function isStableEntityReminderId(value) {', '\nconst STORAGE_QUOTA');
 const exportSource = extractBetween('function countState(s) {', '\n\nlet importCtx = null;');
 const importReaderSource = extractBetween('let importCtx = null;', '\n\nfunction openImportPreview() {');
 const applyImportSource = extractBetween('async function applyImportReplace(data) {', '\n\nfunction bindImportUI() {');
@@ -603,9 +603,21 @@ function makeCompatibilityFixture(schema, label) {
       categories: [{
         id: categoryId,
         name: `Compatibility Space ${label}`,
+        reminders: [{
+          ...(schema >= 12 ? { id: `${label}-category-reminder` } : {}),
+          at: fixedNow + 60_000,
+          notified: false,
+          label: `Category reminder ${label}`,
+        }],
         groups: [{
           id: groupId,
           name: `Modern group ${label}`,
+          reminders: [{
+            ...(schema >= 12 ? { id: `${label}-group-reminder` } : {}),
+            at: fixedNow + 120_000,
+            notified: false,
+            label: `Group reminder ${label}`,
+          }],
           items: [
             tab,
             { id: `${label}-note`, type: 'note', html: `Modern note ${label}` },
@@ -642,6 +654,12 @@ function makeCompatibilityFixture(schema, label) {
       data: {
         id: `${label}-trash-group`,
         name: `Modern trashed group ${label}`,
+        reminders: [{
+          ...(schema >= 12 ? { id: `${label}-trash-reminder` } : {}),
+          at: fixedNow + 180_000,
+          notified: false,
+          label: `Trash reminder ${label}`,
+        }],
         items: [{ id: `${label}-trash-item`, type: 'note', html: `Modern trashed note ${label}` }],
       },
       wsId: workspaceId,
@@ -654,13 +672,29 @@ function makeCompatibilityFixture(schema, label) {
   return data;
 }
 
-function assertCompatibilityContent(state, schema, label) {
+function assertCompatibilityContent(state, schema, label, { applied = false } = {}) {
   const workspace = state.workspaces.find(candidate => candidate.name === `Compatibility ${label}`);
   assert.ok(workspace, `${label} must retain its workspace`);
   assert.equal(workspace.categories.length, 1, `${label} must retain one Space`);
   const category = workspace.categories[0];
   assert.equal(category.groups.length, 1, `${label} must retain one group`);
   const group = category.groups[0];
+  if (schema >= 3) {
+    assert.equal(category.reminders?.[0]?.label, `Category reminder ${label}`);
+    assert.equal(group.reminders?.[0]?.label, `Group reminder ${label}`);
+    for (const [kind, reminder, expectedId] of [
+      ['category', category.reminders?.[0], `${label}-category-reminder`],
+      ['group', group.reminders?.[0], `${label}-group-reminder`],
+    ]) {
+      if (applied || schema >= 12) {
+        assert.equal(typeof reminder?.id, 'string', `${label} ${kind} reminder must have a stable id`);
+        assert.ok(reminder.id, `${label} ${kind} reminder id must not be empty`);
+        if (schema >= 12) assert.equal(reminder.id, expectedId, `${label} must preserve its schema-12 ${kind} reminder id`);
+      } else {
+        assert.equal('id' in reminder, false, `${label} pre-schema-12 preview must remain non-mutating`);
+      }
+    }
+  }
   assert.deepEqual(
     clone(group.items.map(entry => entry.type)),
     ['tab', 'note', 'todo', 'stack'],
@@ -699,6 +733,15 @@ function assertCompatibilityContent(state, schema, label) {
   if (schema >= 10) {
     assert.equal(state.trash[0].data.name, `Modern trashed group ${label}`);
     assert.equal(state.trash[0].data.items[0].html, `Modern trashed note ${label}`);
+    const trashReminder = state.trash[0].data.reminders[0];
+    assert.equal(trashReminder.label, `Trash reminder ${label}`);
+    if (applied || schema >= 12) {
+      assert.equal(typeof trashReminder.id, 'string', `${label} Trash reminder must have a stable id`);
+      assert.ok(trashReminder.id);
+      if (schema >= 12) assert.equal(trashReminder.id, `${label}-trash-reminder`);
+    } else {
+      assert.equal('id' in trashReminder, false, `${label} pre-schema-12 Trash preview must remain non-mutating`);
+    }
   }
   if (schema >= 3) {
     for (const entry of [...(state.archive || []), ...(state.trash || [])]) {
@@ -771,7 +814,7 @@ async function testCompatibilityCase({ label, mode, reportedSchema, serialized, 
     assertUniqueEntityIds(state, baseEntityCount + importedEntityCount, `${label} merge`);
     assert.equal(harness.metrics.downloads.length, 0, `${label} merge must not create a replace backup`);
   }
-  assertCompatibilityContent(state, schema, label);
+  assertCompatibilityContent(state, schema, label, { applied: true });
   assert.equal(JSON.stringify(importContext.data), parsedSnapshot, `${label} ${mode} must not mutate parsed input`);
   assert.deepEqual(harness.storedState(), clone(state), `${label} ${mode} must be authoritative`);
   assert.equal(harness.State.isClean(), true);

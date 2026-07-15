@@ -148,7 +148,7 @@ function createHarness(state, selectedIds = []) {
 function persistedState(state, revision) {
   return {
     ...clone(state),
-    schema: 11,
+    schema: 12,
     _revision: revision,
     recentEmoji: [],
     columnWidths: {},
@@ -190,7 +190,7 @@ function createPersistenceHarness(baseline, selectedIds = []) {
     chrome,
     clearTimeout,
     console,
-    CURRENT_SCHEMA: 11,
+    CURRENT_SCHEMA: 12,
     Date: FixedDate,
     ensureDefault() {},
     loadedSchema: 0,

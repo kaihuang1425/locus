@@ -12,6 +12,7 @@ node scripts/import-recovery-test.js
 node scripts/archive-scale-contract-test.js
 node scripts/export-import-scale-contract-test.js
 node scripts/background-contract-test.js
+node scripts/reminder-identity-contract-test.js
 node scripts/undo-contract-test.js
 node scripts/state-sync-contract-test.js
 node scripts/concurrency-contract-test.js
@@ -20,6 +21,12 @@ git diff --check
 
 The deterministic suites prove only the contracts they model. They do not promote
 a capability to installed-extension runtime verification.
+
+The import-recovery suite accepts a current-schema graph without mutation and
+rejects 33 explicit malformed boundaries plus 128 fixed-seed structural mutations.
+Schema-12 category/group reminder lists require unique nonempty IDs; schema-11
+fixtures may omit them, and merge normalization assigns stable IDs on a cloned
+payload before joining a current receiving graph.
 
 The archive-scale suite extracts the production single-item, whole-group, batch,
 Archive-to-Trash, and restore paths. Each archive route exercises 1,024 mixed
@@ -50,22 +57,29 @@ lifecycle evidence, not installed Chrome restart/sleep or delayed-delivery evide
 rendered Past Due behavior, notification delivery, and DST/timezone behavior remain
 runtime gates.
 
-The same background suite invokes the production `alarms.onAlarm` listener for six
+The same background suite invokes the production `alarms.onAlarm` listener for eight
 accepted deliveries. Daily item, multi-day nested-item, biweekly group, and monthly
 category recurrences must each create exactly one awaited notification, advance only
 their own persisted reminder through one central revisioned write, and reconcile the
-same alarm name to its exact next occurrence. A one-shot and a recurrence at its
-`until` boundary must persist as notified without re-arming. Two alarms whose reminder
-was rescheduled or removed must produce zero notification, state write, or alarm
-reconciliation. Injected notification failure must leave state untouched; injected
+same alarm name to its exact next occurrence. It also delivers a stable group reminder
+after its array index changes and a legacy schema-11 group reminder before migration.
+A one-shot and a recurrence at its `until` boundary must persist as notified without
+re-arming. Five stale/malformed paths (rescheduled, removed, same-index/same-time
+replacement, duplicate ID, and already-notified) must produce zero notification,
+state write, or alarm reconciliation. Injected notification failure must leave state
+untouched; injected
 quota rejection must leave authority unchanged, avoid a blind write retry, rebuild
 the consumed recurring alarm from an authoritative read, and surface the storage
 warning. A generic write rejection must do the same and create a clickable update
 warning; injected post-write alarm-create failure must retain the accepted next
-occurrence and create a clickable scheduling warning. This remains a mocked-
-browser delivery model, not evidence for installed notification rendering/timing,
-service-worker termination, group/category identity during index mutation, or
-DST/timezone transitions.
+occurrence and create a clickable scheduling warning. The focused reminder-identity
+suite separately extracts the new-tab migration-persistence, add/edit/reschedule/
+remove, and alarm-reconcile paths: schema 12 must persist before legacy alarms are
+replaced; four mutations must preserve stable IDs across index shifts, retire only the
+removed alarm, skip notified reminders, and round-trip stable plus arbitrary legacy
+alarm components without delimiter ambiguity. This remains a mocked-browser/state
+model, not evidence for installed notification rendering/timing, service-worker
+termination, installed mutation races, or DST/timezone transitions.
 
 The export/import contract suite extracts the production export serializer, FileReader
 boundary, validator, replace/merge applications, migration, and page State client.
@@ -76,10 +90,11 @@ replace and merge with semantic content, canvas/column metadata, restore
 destinations, and entity cardinality intact. Replace must first download the exact
 portable pre-import graph; merge must rekey every imported identity without
 collisions. The same suite exercises one fixture for every supported numeric schema
-from 0 through 11, rotates all six accepted app envelopes, and includes the raw
-legacy shape. All 26 schema/mode combinations must preserve content and exact
+from 0 through 12, rotates all six accepted app envelopes, and includes the raw
+legacy shape. All 28 schema/mode combinations must preserve content and exact
 counts, migrate version-gated defaults on replace, keep local profile settings on
-merge, and retain collision-free restore destinations. The schema list is explicit
+merge, retain collision-free restore destinations, and preserve or migrate stable
+category/group/Trash reminder IDs. The schema list is explicit
 so a future `CURRENT_SCHEMA` bump fails until its fixture is added. A fixed-seed
 valid-semantic corpus adds 128 current-schema graphs and 256 replace/merge cases
 covering 5,013 entities. Coverage assertions require multiple workspaces, Spaces

@@ -53,6 +53,35 @@
     };
   }
 
+  function ensureEntityReminderIds(entity, allocate) {
+    if (!Array.isArray(entity?.reminders)) return;
+    const used = new Set();
+    for (const reminder of entity.reminders) {
+      if (!reminder || typeof reminder !== 'object' || Array.isArray(reminder)) continue;
+      const valid = typeof reminder.id === 'string' && reminder.id.length > 0 && reminder.id.length <= 200;
+      if (!valid || used.has(reminder.id)) {
+        let id;
+        do { id = allocate(); } while (used.has(id));
+        reminder.id = id;
+      }
+      used.add(reminder.id);
+    }
+  }
+
+  function ensureImportedReminderIds(data, allocate) {
+    for (const workspace of (data.workspaces || [])) {
+      for (const category of (workspace.categories || [])) {
+        ensureEntityReminderIds(category, allocate);
+        for (const group of (category.groups || [])) ensureEntityReminderIds(group, allocate);
+      }
+    }
+    for (const collection of [data.archive || [], data.trash || []]) {
+      for (const entry of collection) {
+        if (entry?.kind === 'group') ensureEntityReminderIds(entry.data, allocate);
+      }
+    }
+  }
+
   function normalizeLegacy(source, options) {
     const { makeId, schema } = options;
     const numericSchema = Number(schema);
@@ -240,6 +269,10 @@
     const used = collectEntityIds(existingState);
     const allocate = createAllocator(used, makeId);
     const idMap = new Map();
+    // The receiving state may already be at schema 12, so its normal migration
+    // will not revisit older imported records. Repair reminder identities on the
+    // cloned import before merging without mutating the preview payload.
+    ensureImportedReminderIds(data, allocate);
 
     for (const workspace of (data.workspaces || [])) {
       const oldWorkspaceId = workspace.id;

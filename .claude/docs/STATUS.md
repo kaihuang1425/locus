@@ -21,7 +21,8 @@ Last updated: 2026-07-16.
    and installed legacy/current round trips; and run an unpacked-extension
    CSP/favicon/network audit. Extend reminder contracts to the installed
    restart/sleep and delivery lifecycle, a complete one-shot overdue policy,
-   stable group/category identity across index mutations, and DST/timezone behavior.
+   installed group/category mutation delivery under schema-12 stable identities,
+   and DST/timezone behavior.
 2. **Validate and finish the core first-use contract** (`docs/UX_SIMPLIFICATION.md`) — remove
    the hidden questionnaire/coach implementation debt, finish keyboard and narrow-layout checks,
    and run the representative-user activation protocol: save one real tab, see its
@@ -36,6 +37,27 @@ Last updated: 2026-07-16.
    rendered and user-flow evidence.
 
 ## Done (newest first)
+
+- **2026-07-16 -- Stable group/category reminder identity / P0-10 + P0-08** --
+  schema 12 adds a persistent ID to every active category/group reminder and to
+  group reminders held in Archive or Trash. Migration repairs missing, invalid, or
+  duplicate IDs; replace covers every numeric schema from 0 through 12, while merge
+  repairs an older cloned payload even when the receiving graph is already current.
+  Current-schema import rejects missing/duplicate reminder IDs. New alarms use the
+  distinct `te-greminder2-` / `te-creminder2-` namespaces with encoded entity and
+  reminder IDs; delivery resolves exactly one reminder by ID, so removing, inserting,
+  or reordering a neighbor cannot retarget the event. Schema-11 index alarms remain
+  usable until migration is authoritative and are then reconciled away. Already-
+  notified, duplicate, removed, and same-index/same-time replacement events fail
+  closed. The production-extracted contracts cover four new-tab mutations, three
+  encoded/legacy name round trips, schemas 0–12 through 28 replace/merge cases,
+  eight accepted background deliveries, five stale/malformed no-ops, and two explicit
+  identity-mutation paths; the complete static/deterministic gate passes.
+  **Implemented: yes. Verified: partial (production-extracted mocked-browser/state
+  contracts only). User-validated: no. Released: no.** No permission, markup, style,
+  or rendered copy changed. The documented shim remains unavailable in this managed
+  browser, and installed restart/sleep/delivery, notification rendering, mutation
+  races, one-shot Past Due policy, and DST/timezone behavior remain open.
 
 - **2026-07-16 -- Fired reminder persistence and stale-alarm rejection / P0-10** --
   alarm delivery now verifies that `scheduledTime` still belongs to the current
@@ -403,9 +425,10 @@ Last updated: 2026-07-16.
 - The legacy multi-step welcome questionnaire, associated helpers, and coach-mark
   paths remain hidden/dead in the source. Remove them after confirming that no
   current binding or migration depends on them.
-- Deterministic import-recovery, archive-scale, export/import-scale, background, Undo, freshness, and concurrency contracts now cover legacy and
+- Deterministic import-recovery, archive-scale, export/import-scale, reminder-identity,
+  background, Undo, freshness, and concurrency contracts now cover legacy and
   every-level ID collisions, idless Archive entries, replace rollback/normalization,
-  production-extracted import validation across 29 malformed boundaries and 128
+  production-extracted import validation across 33 malformed boundaries and 128
   fixed-seed structural mutations,
   1,024-record single-item/whole-group/batch Archive and Archive-to-Trash restore
   transformations with exact ID preservation, plus injected-quota batch Archive
@@ -415,8 +438,9 @@ Last updated: 2026-07-16.
   counted items), 1,024 Archive, and 1,024 Trash records through production
   serialization, validation, replace, merge,
   pre-replace backup, collision-free rekeying, and rejected-write rollback,
-  all numeric schemas 0–11 across the six accepted app envelopes plus raw legacy
-  through 26 replace/merge cases with versioned defaults and exact counts,
+  all numeric schemas 0–12 across the six accepted app envelopes plus raw legacy
+  through 28 replace/merge cases with versioned defaults, exact counts, and stable
+  category/group/Trash reminder identity migration,
   128 fixed-seed valid semantic graphs spanning 5,013 entities through 256
   replace/merge cases with enforced coverage families and exact semantic equality,
   an exact 20,971,520-byte valid import reaching preview, a one-byte-over valid
@@ -425,8 +449,9 @@ Last updated: 2026-07-16.
   post-import warning paths, an exact nine-alarm initial map, an advanced-clock
   startup reconciliation that clears four newly overdue one-shots and re-arms four
   recurring item/nested/group/category reminders without catch-up notifications,
-  state writes, or mutation, and six fired-delivery cases that persist item/nested/
-  group/category recurrence, reject two stale alarms, and exercise notification,
+  state writes, or mutation, and eight fired-delivery cases that persist item/nested/
+  group/category recurrence plus stable-index and legacy-transition delivery, reject
+  five stale/malformed alarms, and exercise notification,
   quota/generic storage, and post-write reconciliation failures, plus no-retry
   capture conflicts and action-scoped Undo across pending capture, newer-edit interruption, restored
   history order, tab-open retry, persistence-failure recovery, central-writer conflict/failure
@@ -440,8 +465,8 @@ Last updated: 2026-07-16.
   cross-context/service-worker restart and unknown-ack lifecycle evidence,
   actual Chrome quota allocation, File/FileReader/preview behavior, and installed
   browser legacy/current import round trips, installed reminder restart/sleep and
-  delivery behavior, rendered one-shot Past Due behavior, stable group/category
-  identity across index mutations, and DST/timezone semantics, installed-browser
+  delivery behavior, rendered one-shot Past Due behavior, installed group/category
+  mutation races under stable identity, and DST/timezone semantics, installed-browser
   Archive/Trash quota and export/import
   recovery, and a complete
   unpacked-extension evidence bundle. Static and mocked contracts do not close

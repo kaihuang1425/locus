@@ -150,7 +150,7 @@ const context = vm.createContext({
   chrome,
   clearTimeout,
   console,
-  CURRENT_SCHEMA: 11,
+  CURRENT_SCHEMA: 12,
   LOCUS_STATE_WRITE_TIMEOUT_MS: 25,
   handleStorageError() {},
   loadedSchema: 0,

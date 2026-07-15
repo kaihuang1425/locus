@@ -547,3 +547,20 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   rendered Past Due behavior, group/category index-mutation races, and DST/timezone
   semantics remain open. No schema, permission, or extension-page UI changed, and
   the work is not user-validated or released.
+- **2026-07-16** -- Completed a **stable group/category reminder identity cycle**
+  against P0-10 and P0-08. Schema 12 now gives each active, archived, or trashed
+  category/group reminder a persistent ID; migration and older merge imports repair
+  missing, invalid, or duplicate identities without mutating the preview payload,
+  while current-schema imports reject missing or duplicate IDs. Stable alarms use
+  distinct `te-greminder2-` / `te-creminder2-` namespaces with encoded entity and
+  reminder components, so delivery follows the intended reminder across array
+  insertion, removal, and reordering. Legacy schema-11 index alarms remain usable
+  until migration is authoritative, then reconciliation replaces them. Production-
+  extracted contracts cover four new-tab mutations, three stable/legacy name round
+  trips, all schemas 0–12 through 28 replace/merge cases, eight accepted deliveries,
+  five stale/malformed no-ops, and two explicit identity-mutation paths. The complete
+  static/deterministic gate passes. Evidence remains partial mocked-browser/state
+  evidence: the managed-browser shim is unavailable, and installed lifecycle,
+  notification rendering/timing, mutation races, one-shot Past Due policy, and
+  DST/timezone behavior remain open. No permission, markup, style, user-validation,
+  or release status changed.

@@ -65,7 +65,16 @@ const incoming = {
     categories: [{
       id: 'cat',
       canvasPositions: { group: { x: 40, y: 50 } },
-      groups: [{ id: 'group', items: [item('item'), item('stack', 'stack')] }],
+      reminders: [
+        { at: now + 1000, notified: false },
+        { id: 'category-reminder', at: now + 2000, notified: false },
+        { id: 'category-reminder', at: now + 3000, notified: false },
+      ],
+      groups: [{
+        id: 'group',
+        reminders: [{ at: now + 4000, notified: false }],
+        items: [item('item'), item('stack', 'stack')],
+      }],
     }],
   }],
   columnWidths: { group: 444, stale: 999 },
@@ -80,7 +89,7 @@ const incoming = {
   }],
   trash: [{
     kind: 'group',
-    data: { id: 'group', items: [item('item')] },
+    data: { id: 'group', reminders: [{ at: now + 5000, notified: false }], items: [item('item')] },
     wsId: 'ws',
     catId: 'cat',
     trashedAt: now - retentionMs - 1000,
@@ -107,6 +116,15 @@ assert.equal(prepared.archive[0].wsId, mergedWorkspace.id);
 assert.equal(prepared.archive[0].catId, mergedCategory.id);
 assert.equal(prepared.archive[0].groupId, mergedGroup.id);
 assert.equal(prepared.trash[0].retentionStartedAt, now);
+for (const [label, entity] of [
+  ['merged category', mergedCategory],
+  ['merged group', mergedGroup],
+  ['merged trashed group', prepared.trash[0].data],
+]) {
+  const ids = (entity.reminders || []).map(reminder => reminder.id);
+  assert.equal(ids.every(id => typeof id === 'string' && id.length > 0), true, `${label} reminders must receive ids`);
+  assert.equal(new Set(ids).size, ids.length, `${label} reminder ids must be unique`);
+}
 
 const allMergedIds = collectEntityIds({
   workspaces: prepared.workspaces,
@@ -166,8 +184,10 @@ function makeValidImport(suffix = 'base') {
       activeCatId: `cat-${suffix}`,
       categories: [{
         id: `cat-${suffix}`,
+        reminders: [{ id: `cat-reminder-${suffix}`, at: now + 1000, notified: false }],
         groups: [{
           id: `group-${suffix}`,
+          reminders: [{ id: `group-reminder-${suffix}`, at: now + 2000, notified: false }],
           items: [
             { id: `tab-${suffix}`, type: 'tab', title: 'Safe tab', url: `https://example.com/${suffix}` },
             { id: `note-${suffix}`, type: 'note', html: '<b>safe</b>' },
@@ -187,7 +207,11 @@ function makeValidImport(suffix = 'base') {
     }],
     trash: [{
       kind: 'group',
-      data: { id: `trash-${suffix}`, items: [] },
+      data: {
+        id: `trash-${suffix}`,
+        reminders: [{ id: `trash-reminder-${suffix}`, at: now + 3000, notified: false }],
+        items: [],
+      },
     }],
   };
 }
@@ -204,6 +228,12 @@ const validImport = makeValidImport();
 const validSnapshot = JSON.stringify(validImport);
 validateImportData(validImport, currentSchema);
 assert.equal(JSON.stringify(validImport), validSnapshot, 'validation must not mutate an accepted backup');
+
+const schema11Reminders = makeValidImport('schema-11-reminders');
+delete schema11Reminders.workspaces[0].categories[0].reminders[0].id;
+delete schema11Reminders.workspaces[0].categories[0].groups[0].reminders[0].id;
+delete schema11Reminders.trash[0].data.reminders[0].id;
+validateImportData(schema11Reminders, 11);
 
 expectImportRejection('future schema', makeValidImport(), /newer schema/, currentSchema + 1);
 expectImportRejection('array root', [], /at least one workspace/);
@@ -277,6 +307,25 @@ expectImportRejection('non-object group', invalidGroupRecord, /must be an object
 const invalidItems = makeValidImport('invalid-items');
 invalidItems.workspaces[0].categories[0].groups[0].items = {};
 expectImportRejection('non-array items', invalidItems, /items must be an array/);
+
+const invalidReminders = makeValidImport('invalid-reminders');
+invalidReminders.workspaces[0].categories[0].reminders = {};
+expectImportRejection('non-array reminders', invalidReminders, /reminders must be an array/);
+
+const invalidReminderRecord = makeValidImport('invalid-reminder-record');
+invalidReminderRecord.workspaces[0].categories[0].groups[0].reminders[0] = null;
+expectImportRejection('non-object reminder', invalidReminderRecord, /must be an object/);
+
+const missingReminderId = makeValidImport('missing-reminder-id');
+delete missingReminderId.workspaces[0].categories[0].reminders[0].id;
+expectImportRejection('missing current-schema reminder id', missingReminderId, /invalid id/);
+
+const duplicateReminderId = makeValidImport('duplicate-reminder-id');
+duplicateReminderId.workspaces[0].categories[0].reminders.push({
+  ...duplicateReminderId.workspaces[0].categories[0].reminders[0],
+  at: now + 4000,
+});
+expectImportRejection('duplicate current-schema reminder id', duplicateReminderId, /reuses id/);
 
 const invalidItemRecord = makeValidImport('invalid-item-record');
 invalidItemRecord.workspaces[0].categories[0].groups[0].items[0] = null;
@@ -415,4 +464,4 @@ for (let run = 0; run < 128; run++) {
 }
 assert.deepEqual(fuzzFamilyCounts, new Array(fuzzMutators.length).fill(16));
 
-console.log('Import recovery fixtures passed (29 malformed boundaries; 128 seeded fuzz cases)');
+console.log('Import recovery fixtures passed (33 malformed boundaries; 128 seeded fuzz cases)');

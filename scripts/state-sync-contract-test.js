@@ -8,6 +8,9 @@ const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'newtab.js'), 'utf8').replace(/\r\n/g, '\n');
 const clone = value => JSON.parse(JSON.stringify(value));
+const currentSchemaMatch = source.match(/const CURRENT_SCHEMA = (\d+);/);
+assert.ok(currentSchemaMatch, 'CURRENT_SCHEMA must be extractable');
+const currentSchema = Number(currentSchemaMatch[1]);
 
 const stateStart = source.indexOf('const State = (() => {');
 const stateEndMarker = '\n})();';
@@ -21,7 +24,7 @@ function extractBetween(startMarker, endMarker) {
   return source.slice(start, end);
 }
 
-const migrateSource = extractBetween('function migrate() {', '\nconst STORAGE_QUOTA');
+const migrateSource = extractBetween('function isStableEntityReminderId(value) {', '\nconst STORAGE_QUOTA');
 const ensureDefaultSource = extractBetween('function ensureDefault() {', '\nconst THEMES = [');
 const trashSource = extractBetween('function normalizeExpiredTrash(', '\n\nfunction archiveItem(');
 const ensureOnboardingSource = extractBetween('function ensureOnboarding(settings) {', '\n\n//');
@@ -42,7 +45,7 @@ let storageErrorCalls = 0;
 
 function currentState(revision = 0) {
   return {
-    schema: 11,
+    schema: currentSchema,
     _revision: revision,
     activeWsId: 'w1',
     workspaces: [{
@@ -144,7 +147,7 @@ const context = vm.createContext({
   chrome,
   clearTimeout,
   console,
-  CURRENT_SCHEMA: 11,
+  CURRENT_SCHEMA: currentSchema,
   LOCUS_STATE_WRITE_TIMEOUT_MS: 25,
   THEMES: [{ id: 'folio' }, { id: 'folio-dark' }],
   esc: value => String(value ?? ''),
@@ -181,6 +184,12 @@ const State = context.__state;
 const normalizeLoadedState = context.__normalizeLoadedState;
 acceptedStateObserver = candidate => State.observeStoredState(candidate);
 
+function assertStableReminderIds(entity, label) {
+  const ids = (entity.reminders || []).map(reminder => reminder.id);
+  assert.equal(ids.every(id => typeof id === 'string' && id.length > 0 && id.length <= 200), true, `${label} must have valid reminder ids`);
+  assert.equal(new Set(ids).size, ids.length, `${label} reminder ids must be unique`);
+}
+
 (async () => {
   await State.load();
   const writesAtCleanBoot = writeCalls;
@@ -203,13 +212,37 @@ acceptedStateObserver = candidate => State.observeStoredState(candidate);
   assert.equal(writeCalls, writesBeforeSettingsNormalization + 1);
   assert.equal(normalizeLoadedState(), false, 'settings normalization must be idempotent after persistence');
 
-  stored = { te: { ...currentState(7), schema: 10 } };
+  const legacyReminderState = { ...currentState(7), schema: 11 };
+  const legacyCategory = legacyReminderState.workspaces[0].categories[0];
+  legacyCategory.reminders = [
+    { at: 1, notified: false },
+    { id: 'category-kept', at: 2, notified: false },
+    { id: 'category-kept', at: 3, notified: false },
+  ];
+  legacyCategory.groups = [{
+    id: 'reminder-group',
+    items: [],
+    reminders: [{ id: 'g'.repeat(201), at: 4, notified: false }, { at: 5, notified: false }],
+  }];
+  legacyReminderState.archive = [{
+    kind: 'group',
+    data: { id: 'archive-group', items: [], reminders: [{ at: 6, notified: false }] },
+  }];
+  legacyReminderState.trash = [{
+    kind: 'group',
+    data: { id: 'trash-group', items: [], reminders: [{ at: 7, notified: false }] },
+  }];
+  stored = { te: legacyReminderState };
   await State.load();
   const writesBeforeMigration = writeCalls;
   assert.equal(normalizeLoadedState(), true, 'legacy schema normalization must schedule persistence');
+  assertStableReminderIds(State.get().workspaces[0].categories[0], 'active category');
+  assertStableReminderIds(State.get().workspaces[0].categories[0].groups[0], 'active group');
+  assertStableReminderIds(State.get().archive[0].data, 'archived group');
+  assertStableReminderIds(State.get().trash[0].data, 'trashed group');
   await new Promise(resolve => setTimeout(resolve, 220));
   assert.equal(writeCalls, writesBeforeMigration + 1, 'all boot normalization must coalesce into one write');
-  assert.equal(stored.te.schema, 11);
+  assert.equal(stored.te.schema, currentSchema);
   assert.equal(normalizeLoadedState(), false, 'migration must be idempotent after its accepted write');
 
   stored = { te: { ...currentState(10), workspaces: [], activeWsId: null } };
