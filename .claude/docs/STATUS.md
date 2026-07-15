@@ -17,7 +17,7 @@ Last updated: 2026-07-16.
    termination/restart;
    add real-browser failure-path evidence for save-before-close; exercise real installed-browser
    Archive/Trash quota persistence and installed-browser export/import round trips at scale; extend import
-   coverage through semantic fuzz, actual quota/large-file,
+   coverage through actual quota/large-file,
    and real-browser round trips; and run an unpacked-extension CSP/favicon/network
    audit. Extend reminder contracts to
    overdue, restart/sleep, recurrence, and DST/timezone behavior.
@@ -36,6 +36,24 @@ Last updated: 2026-07-16.
 
 ## Done (newest first)
 
+- **2026-07-16 — Valid semantic import fuzz evidence / P0-05 + P0-08** —
+  added a `0x51a7e5` fixed-seed corpus of 128 valid current-schema graphs spanning
+  5,013 entities and 256 replace/merge cases. Coverage assertions require multiple
+  workspaces, Spaces with no groups, empty groups/Archive/Trash, all item and stored
+  entry kinds, nested stacks, every accepted URL family, Unicode and already-safe
+  rich text, optional item metadata, active selections, restore references,
+  canvas/column records, settings, and recent emoji. Every case crosses the
+  production FileReader parser, validator, graph transforms, migration, and State
+  writer with exact counts, identity-independent semantic equality, unique IDs,
+  correctly remapped references/layout keys, replace-only imported settings, one
+  authoritative write, and immutable parsed input. Two added generated-graph write
+  rejections bring the suite total to six and preserve local rollback, unchanged
+  authority, visible recovery, and no false success. The full static/deterministic
+  block passes. **Implemented: yes. Verified: partial (fixed-seed deterministic
+  browser-API model only). User-validated: no. Released: no.** No production,
+  schema, permission, or UI behavior changed. Actual Chrome file/preview behavior,
+  DOM-backed sanitizer transformations, quota/large-file limits, alarm outcomes,
+  and installed-browser round trips remain open.
 - **2026-07-16 — Numeric-schema import fixture matrix evidence / P0-05 +
   P0-08** — extended the production-extracted export/import contract through every
   supported numeric schema from 0 through 11, all six accepted app envelopes, and
@@ -341,6 +359,8 @@ Last updated: 2026-07-16.
   pre-replace backup, collision-free rekeying, and rejected-write rollback,
   all numeric schemas 0–11 across the six accepted app envelopes plus raw legacy
   through 26 replace/merge cases with versioned defaults and exact counts,
+  128 fixed-seed valid semantic graphs spanning 5,013 entities through 256
+  replace/merge cases with enforced coverage families and exact semantic equality,
   post-import warning paths, alarm-map reconciliation, no-retry capture conflicts,
   and action-scoped Undo across pending capture, newer-edit interruption, restored
   history order, tab-open retry, persistence-failure recovery, central-writer conflict/failure
@@ -352,7 +372,7 @@ Last updated: 2026-07-16.
   browser-effect interruption, and 10,000 seeded lockless schedules.
   Remaining P0 gaps are installed
   cross-context/service-worker restart and unknown-ack lifecycle evidence,
-  semantic-fuzz/actual-quota/large-file and installed-browser legacy/current import round trips, overdue/recurrence/
+  actual-quota/large-file and installed-browser legacy/current import round trips, overdue/recurrence/
   DST reminder semantics, installed-browser Archive/Trash quota and export/import
   recovery, and a complete
   unpacked-extension evidence bundle. Static and mocked contracts do not close

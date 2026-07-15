@@ -484,3 +484,18 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   file/preview behavior, quota and large-file limits, alarm outcomes, and installed
   round trips remain open. No production UI, schema, permission, user-validation,
   or release status changed.
+- **2026-07-16** — Completed a **valid semantic import fuzz evidence cycle**
+  against P0-05 and P0-08. A `0x51a7e5` fixed seed now generates 128 valid
+  current-schema graphs spanning 5,013 entities and drives all 256 replace/merge
+  cases through the production FileReader parser, validator, graph transforms,
+  migration, and State writer. Enforced coverage includes multiple workspaces,
+  Spaces without groups, empty groups/Archive/Trash, all item/stored-entry kinds,
+  nested stacks, all five accepted URL families, Unicode and safe rich text,
+  optional metadata, selections, Archive/Trash, restore references,
+  canvas/column records, settings, and emoji. Exact counts, semantic equality,
+  unique identities, remapped references, settings isolation, one authoritative
+  write, and two additional generated-graph rollback cases pass. This remains
+  fixed-seed deterministic model evidence: actual Chrome file/preview behavior,
+  DOM-backed sanitizer transformations, quota/large-file limits, alarm outcomes,
+  and installed round trips are open. No production UI, schema, permission,
+  user-validation, or release status changed.

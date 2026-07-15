@@ -49,12 +49,21 @@ from 0 through 11, rotates all six accepted app envelopes, and includes the raw
 legacy shape. All 26 schema/mode combinations must preserve content and exact
 counts, migrate version-gated defaults on replace, keep local profile settings on
 merge, and retain collision-free restore destinations. The schema list is explicit
-so a future `CURRENT_SCHEMA` bump fails until its fixture is added. Injected write
-rejection for current and raw-legacy inputs must roll both modes back locally, leave
-authoritative storage unchanged, surface recovery, and report no success. This is a
-deterministic browser-API model, not evidence for semantic fuzz, Chrome's actual
-Blob/FileReader/download UI, quota/large-file boundary, reminder outcomes,
-service-worker lifecycle, or installed round trips.
+so a future `CURRENT_SCHEMA` bump fails until its fixture is added. A fixed-seed
+valid-semantic corpus adds 128 current-schema graphs and 256 replace/merge cases
+covering 5,013 entities. Coverage assertions require multiple workspaces, Spaces
+without groups, empty groups/Archive/Trash, every item and stored-entry kind,
+nested stacks, all five accepted URL families, Unicode and already-safe rich text,
+optional item metadata, Archive/Trash, selections, restore references,
+canvas/column records, settings, and recent emoji. Exact counts,
+identity-independent semantic content, references,
+settings boundaries, authoritative persistence, and input immutability must survive
+every case. Injected write rejection for current-scale, raw-legacy, and generated
+semantic inputs must roll both modes back locally, leave authoritative storage
+unchanged, surface recovery, and report no success. This is a fixed-seed
+deterministic browser-API model, not evidence for Chrome's DOM-backed rich-text
+sanitizer transformations, actual Blob/FileReader/download UI, quota/large-file
+boundary, reminder outcomes, service-worker lifecycle, or installed round trips.
 
 The Undo suite includes a deferred tab-reopen interleaving: a newer edit must
 survive, remain first in history, and let a capture retry reuse any tab already
