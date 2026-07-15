@@ -14,7 +14,7 @@ jobs:
       - name: Syntax-check JS
         run: |
           set -e
-          for f in newtab.js background.js popup.js suspended.js emoji-data.js prepaint.js import-utils.js scripts/quality-gates.js scripts/import-recovery-test.js scripts/archive-scale-contract-test.js scripts/background-contract-test.js scripts/undo-contract-test.js scripts/concurrency-contract-test.js scripts/state-sync-contract-test.js; do
+          for f in newtab.js background.js popup.js suspended.js emoji-data.js prepaint.js import-utils.js scripts/quality-gates.js scripts/import-recovery-test.js scripts/archive-scale-contract-test.js scripts/export-import-scale-contract-test.js scripts/background-contract-test.js scripts/undo-contract-test.js scripts/concurrency-contract-test.js scripts/state-sync-contract-test.js; do
             echo "node --check $f"
             node --check "$f"
           done
@@ -38,6 +38,8 @@ jobs:
         run: node scripts/import-recovery-test.js
       - name: Test archive scale contracts
         run: node scripts/archive-scale-contract-test.js
+      - name: Test export/import scale contracts
+        run: node scripts/export-import-scale-contract-test.js
       - name: Test background contracts
         run: node scripts/background-contract-test.js
       - name: Test Undo contracts

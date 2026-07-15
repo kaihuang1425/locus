@@ -16,7 +16,7 @@ Last updated: 2026-07-16.
    lost/timed-out acknowledgements, storage-change ordering, and service-worker
    termination/restart;
    add real-browser failure-path evidence for save-before-close; exercise real installed-browser
-   Archive/Trash quota persistence and serialized export/import round trips at scale; complete every
+   Archive/Trash quota persistence and installed-browser export/import round trips at scale; complete every
    supported legacy-schema fixture and extend import coverage through semantic fuzz, quota/large-file,
    and real-browser round trips; and run an unpacked-extension CSP/favicon/network
    audit. Extend reminder contracts to
@@ -36,6 +36,24 @@ Last updated: 2026-07-16.
 
 ## Done (newest first)
 
+- **2026-07-16 — Serialized export/import scale evidence / P0-08 + P0-09** — added
+  a production-extracted deterministic suite spanning `exportJSON()`, the
+  FileReader/JSON/validator boundary, current-schema migration, replace and merge
+  application, and the page State writer. A 1,488,148-byte payload carries 1,024
+  mixed top-level active records (1,536 items including stack children), 1,024
+  Archive entries, and 1,024 Trash entries with exact counts and no portable
+  `_revision`. Replace and merge preserve semantic content,
+  entity cardinality, canvas/column metadata, and restore destinations; merge
+  rekeys without collisions, while replace first downloads the exact portable
+  current graph.
+  Injected write rejection rolls both modes back, leaves authoritative storage
+  unchanged, surfaces recovery, and reports no success. The suite is wired into
+  `VERIFY.md`, both overnight command copies, and CI; the full static/deterministic
+  block passes. **Implemented: yes. Verified: partial (deterministic browser-API
+  model only). User-validated: no. Released: no.** No production, schema,
+  permission, or UI behavior changed. Actual Chrome Blob/FileReader/download and
+  preview behavior, real quota/large-file limits, complete legacy-schema coverage,
+  and installed-browser round trips remain open.
 - **2026-07-16 — Archive/Trash quota-recovery evidence / P0-09** — joined the
   production batch Archive and Archive-to-Trash mutations to the production
   new-tab State writer, ordinary-write failure handler, and storage-error router.
@@ -293,7 +311,7 @@ Last updated: 2026-07-16.
 - The legacy multi-step welcome questionnaire, associated helpers, and coach-mark
   paths remain hidden/dead in the source. Remove them after confirming that no
   current binding or migration depends on them.
-- Deterministic import-recovery, archive-scale, background, Undo, freshness, and concurrency contracts now cover legacy and
+- Deterministic import-recovery, archive-scale, export/import-scale, background, Undo, freshness, and concurrency contracts now cover legacy and
   every-level ID collisions, idless Archive entries, replace rollback/normalization,
   production-extracted import validation across 29 malformed boundaries and 128
   fixed-seed structural mutations,
@@ -301,6 +319,10 @@ Last updated: 2026-07-16.
   transformations with exact ID preservation, plus injected-quota batch Archive
   and Archive-to-Trash failures that preserve both the dirty local graph and the
   unchanged authoritative graph through reload recovery,
+  a 1,488,148-byte current-schema export with 1,024 top-level active records (1,536
+  counted items), 1,024 Archive, and 1,024 Trash records through production
+  serialization, validation, replace, merge,
+  pre-replace backup, collision-free rekeying, and rejected-write rollback,
   post-import warning paths, alarm-map reconciliation, no-retry capture conflicts,
   and action-scoped Undo across pending capture, newer-edit interruption, restored
   history order, tab-open retry, persistence-failure recovery, central-writer conflict/failure
@@ -312,9 +334,9 @@ Last updated: 2026-07-16.
   browser-effect interruption, and 10,000 seeded lockless schedules.
   Remaining P0 gaps are installed
   cross-context/service-worker restart and unknown-ack lifecycle evidence, full
-  legacy-schema/semantic-fuzz/quota/large-file/browser import round trips, overdue/recurrence/
-  DST reminder semantics, real installed-browser Archive/Trash quota persistence
-  and serialized export/import recovery, and a complete
+  legacy-schema/semantic-fuzz/actual-quota/large-file and installed-browser import round trips, overdue/recurrence/
+  DST reminder semantics, installed-browser Archive/Trash quota and export/import
+  recovery, and a complete
   unpacked-extension evidence bundle. Static and mocked contracts do not close
   those browser-runtime risks.
 - New-tab freshness and failed-capture recovery are production-extracted and

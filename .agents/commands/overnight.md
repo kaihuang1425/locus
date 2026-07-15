@@ -56,6 +56,7 @@ Run the full static block from `VERIFY.md`:
 - `node scripts/quality-gates.js`
 - `node scripts/import-recovery-test.js`
 - `node scripts/archive-scale-contract-test.js`
+- `node scripts/export-import-scale-contract-test.js`
 - `node scripts/background-contract-test.js`
 - `node scripts/undo-contract-test.js`
 - `node scripts/state-sync-contract-test.js`

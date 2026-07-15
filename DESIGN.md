@@ -451,3 +451,25 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   production UI, schema, permission, strategy, owner decision, user-validation, or
   release status changed. Real storage quota pressure, serialized export/import,
   and installed-browser behavior remain open.
+- **2026-07-16** — Completed an **Archive/Trash injected-quota recovery evidence
+  cycle** against P0-09. The production batch Archive and Archive-to-Trash paths now
+  run with the production State writer, ordinary-failure handler, and storage-error
+  router at 1,024 mixed records. Typed quota rejection preserves the optimistic
+  graph behind recovery, leaves authoritative storage unchanged, and reloads every
+  identity; the paired background-writer contract preserves its stored graph and
+  emits a typed failure plus notification. This is deterministic model evidence,
+  not a rendered or installed-browser result; no production UI, schema, permission,
+  user-validation, or release status changed.
+- **2026-07-16** — Completed a **serialized export/import scale evidence cycle**
+  against P0-08 and P0-09. A production-extracted suite serializes a 1,488,148-byte
+  current-schema graph containing 1,024 mixed top-level active records (1,536 items
+  including stack children) plus 1,024 Archive and 1,024 Trash entries, then passes
+  it through the real FileReader/JSON/validator
+  boundary and both replace and merge applications. Semantic content, entity
+  cardinality, canvas/column metadata, restore destinations, exact portable pre-replace
+  backup, and collision-free merge rekeying survive; rejected writes roll both
+  modes back without changing authority or reporting success. This is deterministic
+  browser-API model evidence only: actual Chrome downloads/previews, quota and
+  large-file limits, full legacy compatibility, and installed round trips remain
+  open. No production UI, schema, permission, user-validation, or release status
+  changed.
