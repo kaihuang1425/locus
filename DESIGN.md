@@ -439,3 +439,15 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   strategy, user-validation, or release status changed, and full legacy-schema,
   semantic-fuzz, quota, large-file, safety-backup/alarm, and installed-browser
   round trips remain open.
+- **2026-07-16** — Completed an **Archive/Trash 1,024-record scale evidence cycle**
+  against P0-09. A new deterministic suite extracts the production single-item,
+  whole-group, batch archive, Archive-to-Trash, and restore paths from `newtab.js`.
+  Each archive route preserves 1,024 mixed top-level records, including nested
+  stacks, with every entity ID present exactly once. Single/group restores and the
+  batch Archive → Trash → restore flow reproduce a canonical-equivalent workspace;
+  missing IDs and foreign entries stay no-op without persistence. The contract is
+  wired into the verification playbook, unattended gate, and CI, and the full
+  static/deterministic block passes. This is partial model evidence only: no
+  production UI, schema, permission, strategy, owner decision, user-validation, or
+  release status changed. Real storage quota pressure, serialized export/import,
+  and installed-browser behavior remain open.

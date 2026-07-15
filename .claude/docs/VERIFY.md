@@ -9,6 +9,7 @@ slice done. Never claim visual verification that didn't happen.
 for f in newtab.js popup.js background.js suspended.js emoji-data.js prepaint.js import-utils.js scripts/*.js; do node --check "$f"; done
 node scripts/quality-gates.js
 node scripts/import-recovery-test.js
+node scripts/archive-scale-contract-test.js
 node scripts/background-contract-test.js
 node scripts/undo-contract-test.js
 node scripts/state-sync-contract-test.js
@@ -18,6 +19,13 @@ git diff --check
 
 The deterministic suites prove only the contracts they model. They do not promote
 a capability to installed-extension runtime verification.
+
+The archive-scale suite extracts the production single-item, whole-group, batch,
+Archive-to-Trash, and restore paths. Each archive route exercises 1,024 mixed
+top-level items (including stacks with nested records), preserves every entity ID
+exactly once, and restores a canonical-equivalent workspace graph. Missing IDs and
+foreign entries must remain no-ops. This proves in-memory transformation behavior,
+not `chrome.storage.local` quota handling, serialized export files, or installed UI.
 
 The Undo suite includes a deferred tab-reopen interleaving: a newer edit must
 survive, remain first in history, and let a capture retry reuse any tab already

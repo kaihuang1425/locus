@@ -15,9 +15,9 @@ Last updated: 2026-07-16.
    whole-state writer across real new-tab/popup/background contexts, installed
    lost/timed-out acknowledgements, storage-change ordering, and service-worker
    termination/restart;
-   add real-browser failure-path evidence for save-before-close; exercise archive,
-   quota, and export/import round trips at scale; complete every supported legacy-
-   schema fixture and extend import coverage through semantic fuzz, quota/large-file,
+   add real-browser failure-path evidence for save-before-close; exercise quota-bound
+   Archive/Trash persistence and export/import round trips at scale; complete every
+   supported legacy-schema fixture and extend import coverage through semantic fuzz, quota/large-file,
    and real-browser round trips; and run an unpacked-extension CSP/favicon/network
    audit. Extend reminder contracts to
    overdue, restart/sleep, recurrence, and DST/timezone behavior.
@@ -36,6 +36,19 @@ Last updated: 2026-07-16.
 
 ## Done (newest first)
 
+- **2026-07-16 — Archive/Trash 1,024-record scale evidence / P0-09** — added a
+  production-extracted contract for single-item, whole-group, and batch archive,
+  Archive-to-Trash, and both restore paths. Each archive route preserves 1,024
+  mixed top-level records—including stacks with nested records—with every entity
+  ID present exactly once. Single-item and whole-group restore, plus the batch
+  Archive → Trash → restore flow, reproduce a canonical-equivalent workspace
+  graph. Missing IDs and foreign entries remain no-ops without a persistence
+  attempt. The contract is now part of `VERIFY.md`, both overnight command copies,
+  and CI; the full static/deterministic block passes. **Implemented: yes. Verified:
+  partial (static/deterministic model only). User-validated: no. Released: no.**
+  No production, schema, permission, or UI behavior changed. Real
+  `chrome.storage.local` quota pressure, serialized export/import round trips, and
+  installed-browser UI/runtime evidence remain open.
 - **2026-07-16 — Import-validator malformed/fuzz evidence / P0-08** — expanded
   `scripts/import-recovery-test.js` to extract the production
   `validateImportData()` boundary from `newtab.js`. A representative current-schema
@@ -266,10 +279,12 @@ Last updated: 2026-07-16.
 - The legacy multi-step welcome questionnaire, associated helpers, and coach-mark
   paths remain hidden/dead in the source. Remove them after confirming that no
   current binding or migration depends on them.
-- Deterministic import-recovery, background, Undo, freshness, and concurrency contracts now cover legacy and
+- Deterministic import-recovery, archive-scale, background, Undo, freshness, and concurrency contracts now cover legacy and
   every-level ID collisions, idless Archive entries, replace rollback/normalization,
   production-extracted import validation across 29 malformed boundaries and 128
   fixed-seed structural mutations,
+  1,024-record single-item/whole-group/batch Archive and Archive-to-Trash restore
+  transformations with exact ID preservation,
   post-import warning paths, alarm-map reconciliation, no-retry capture conflicts,
   and action-scoped Undo across pending capture, newer-edit interruption, restored
   history order, tab-open retry, persistence-failure recovery, central-writer conflict/failure
@@ -282,7 +297,8 @@ Last updated: 2026-07-16.
   Remaining P0 gaps are installed
   cross-context/service-worker restart and unknown-ack lifecycle evidence, full
   legacy-schema/semantic-fuzz/quota/large-file/browser import round trips, overdue/recurrence/
-  DST reminder semantics, 1,000-entry archive/quota recovery, and a complete
+  DST reminder semantics, quota-bound Archive/Trash persistence and export/import
+  recovery, and a complete
   unpacked-extension evidence bundle. Static and mocked contracts do not close
   those browser-runtime risks.
 - New-tab freshness and failed-capture recovery are production-extracted and
