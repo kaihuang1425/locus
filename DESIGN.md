@@ -473,3 +473,14 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   large-file limits, full legacy compatibility, and installed round trips remain
   open. No production UI, schema, permission, user-validation, or release status
   changed.
+- **2026-07-16** — Completed a **numeric-schema import compatibility evidence
+  cycle** against P0-05 and P0-08. The production-extracted export/import suite now
+  carries schemas 0 through 11, all six accepted app envelopes, and the raw legacy
+  shape through 26 replace/merge cases. Content, counts, schema-4/5 item fields,
+  schema-6–11 defaults, unique identities, restore destinations, profile-setting
+  isolation, and migration to the current schema survive; four current/raw-legacy
+  rejected writes roll back without changing authority or reporting success. This
+  is deterministic browser-API model evidence only: semantic fuzz, actual Chrome
+  file/preview behavior, quota and large-file limits, alarm outcomes, and installed
+  round trips remain open. No production UI, schema, permission, user-validation,
+  or release status changed.

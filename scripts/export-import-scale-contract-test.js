@@ -16,6 +16,14 @@ const clone = value => JSON.parse(JSON.stringify(value));
 
 assert.ok(currentSchemaMatch, 'CURRENT_SCHEMA must be extractable');
 const currentSchema = Number(currentSchemaMatch[1]);
+const compatibilitySchemas = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+const compatibilityApps = ['locus', 'folio', 'stow', 'tabento', 'tabnest', 'tabextend'];
+
+assert.deepEqual(
+  compatibilitySchemas,
+  Array.from({ length: currentSchema + 1 }, (_, schema) => schema),
+  'schema compatibility fixtures must be extended whenever CURRENT_SCHEMA changes',
+);
 
 class FixedDate extends Date {
   constructor(...args) {
@@ -443,6 +451,294 @@ function assertRestoreDestinations(state, label) {
   }
 }
 
+function makeCompatibilitySettings(schema, label) {
+  const settings = {
+    language: 'en',
+    theme: 'folio',
+    importCompatibilityMarker: label,
+  };
+  if (schema < 6) settings.tourCompleted = true;
+  else settings.onboarding = { welcomeSeen: false, hintsSeen: { imported: true }, disabled: true };
+  if (schema >= 7) settings.showLanding = false;
+  if (schema >= 8) {
+    settings.popupHibernateScope = schema >= 11 ? 'selected' : 'all';
+    settings.popupHibernateKeepPinned = false;
+    settings.popupHibernateKeepAudio = false;
+  }
+  if (schema >= 9) settings.popupSaveMode = 'queue';
+  if (schema >= 11) {
+    settings.popupHibernateSaveBefore = true;
+    settings.popupHibernateSelectedTabIds = [101, 202];
+  }
+  return settings;
+}
+
+function makeCompatibilityFixture(schema, label) {
+  const settings = makeCompatibilitySettings(schema, label);
+  if (schema < 3) {
+    return {
+      schema,
+      settings,
+      workspaces: [{
+        name: `Compatibility ${label}`,
+        groups: [{
+          name: `Legacy group ${label}`,
+          items: [
+            { title: `Legacy tab ${label}`, url: `https://example.com/compat/${label}` },
+            { text: `Legacy note ${label}` },
+            { text: `Legacy task ${label}`, done: false },
+            { name: `Legacy stack ${label}`, items: [{ text: `Legacy nested ${label}` }] },
+          ],
+        }],
+      }],
+      archive: [{
+        kind: 'item',
+        data: { title: `Legacy archived ${label}`, url: `https://example.com/compat/${label}/archive` },
+        at: fixedNow - 1000,
+      }],
+    };
+  }
+
+  const workspaceId = `${label}-workspace`;
+  const categoryId = `${label}-category`;
+  const groupId = `${label}-group`;
+  const tab = {
+    id: `${label}-tab`,
+    type: 'tab',
+    title: `Modern tab ${label}`,
+    url: `https://example.com/compat/${label}`,
+    ...(schema >= 4 ? { createdAt: fixedNow - 5000 } : {}),
+    ...(schema >= 5 ? {
+      notes: `<p>Why ${label}</p>`,
+      tags: ['compatibility', label],
+      customFields: [{ label: 'Source', value: label }],
+      checklist: [{ text: `Review ${label}`, done: false }],
+      cover: { emoji: '🧭' },
+    } : {}),
+  };
+  const data = {
+    schema,
+    activeWsId: workspaceId,
+    settings,
+    workspaces: [{
+      id: workspaceId,
+      name: `Compatibility ${label}`,
+      activeCatId: categoryId,
+      categories: [{
+        id: categoryId,
+        name: `Compatibility Space ${label}`,
+        groups: [{
+          id: groupId,
+          name: `Modern group ${label}`,
+          items: [
+            tab,
+            { id: `${label}-note`, type: 'note', html: `Modern note ${label}` },
+            { id: `${label}-todo`, type: 'todo', text: `Modern task ${label}`, done: false },
+            {
+              id: `${label}-stack`,
+              type: 'stack',
+              name: `Modern stack ${label}`,
+              items: [{ id: `${label}-nested`, type: 'note', html: `Modern nested ${label}` }],
+            },
+          ],
+        }],
+      }],
+    }],
+    archive: [{
+      kind: 'item',
+      data: {
+        id: `${label}-archive`,
+        type: 'tab',
+        title: `Modern archived ${label}`,
+        url: `https://example.com/compat/${label}/archive`,
+      },
+      wsId: workspaceId,
+      catId: categoryId,
+      groupId,
+      at: fixedNow - 2000,
+    }],
+    recentEmoji: ['🧭'],
+    columnWidths: { [groupId]: 333 },
+  };
+  if (schema >= 10) {
+    data.trash = [{
+      kind: 'group',
+      data: {
+        id: `${label}-trash-group`,
+        name: `Modern trashed group ${label}`,
+        items: [{ id: `${label}-trash-item`, type: 'note', html: `Modern trashed note ${label}` }],
+      },
+      wsId: workspaceId,
+      catId: categoryId,
+      groupId,
+      at: fixedNow - 4000,
+      trashedAt: fixedNow - 3000,
+    }];
+  }
+  return data;
+}
+
+function assertCompatibilityContent(state, schema, label) {
+  const workspace = state.workspaces.find(candidate => candidate.name === `Compatibility ${label}`);
+  assert.ok(workspace, `${label} must retain its workspace`);
+  assert.equal(workspace.categories.length, 1, `${label} must retain one Space`);
+  const category = workspace.categories[0];
+  assert.equal(category.groups.length, 1, `${label} must retain one group`);
+  const group = category.groups[0];
+  assert.deepEqual(
+    clone(group.items.map(entry => entry.type)),
+    ['tab', 'note', 'todo', 'stack'],
+    `${label} must retain every active item type`,
+  );
+  const [tab, note, todo, stack] = group.items;
+  const generation = schema < 3 ? 'Legacy' : 'Modern';
+  assert.equal(tab.title, `${generation} tab ${label}`);
+  assert.equal(tab.url, `https://example.com/compat/${label}`);
+  assert.equal(note.html, `${generation} note ${label}`, `${label} must retain note content`);
+  assert.equal(todo.text, `${generation} task ${label}`);
+  assert.equal(todo.done, false);
+  assert.equal(stack.name, `${generation} stack ${label}`);
+  assert.equal(stack.items[0].type, 'note', `${label} must retain its nested note`);
+  assert.equal(
+    stack.items[0].html,
+    `${generation} nested ${label}`,
+    `${label} must retain nested content`,
+  );
+  if (schema >= 3) {
+    assert.equal('createdAt' in tab, schema >= 4, `${label} must match schema-4 metadata availability`);
+    assert.equal('notes' in tab, schema >= 5, `${label} must match schema-5 detail availability`);
+    if (schema >= 4) assert.equal(tab.createdAt, fixedNow - 5000);
+    if (schema >= 5) {
+      assert.equal(tab.notes, `<p>Why ${label}</p>`);
+      assert.deepEqual(clone(tab.tags), ['compatibility', label]);
+      assert.deepEqual(clone(tab.customFields), [{ label: 'Source', value: label }]);
+      assert.deepEqual(clone(tab.checklist), [{ text: `Review ${label}`, done: false }]);
+      assert.deepEqual(clone(tab.cover), { emoji: '🧭' });
+    }
+  }
+  assert.equal(state.archive.length, 1, `${label} must retain its Archive entry`);
+  assert.equal(state.archive[0].data.title, `${generation} archived ${label}`);
+  assert.equal(state.archive[0].data.url, `https://example.com/compat/${label}/archive`);
+  assert.equal((state.trash || []).length, schema >= 10 ? 1 : 0, `${label} must match schema-10 Trash availability`);
+  if (schema >= 10) {
+    assert.equal(state.trash[0].data.name, `Modern trashed group ${label}`);
+    assert.equal(state.trash[0].data.items[0].html, `Modern trashed note ${label}`);
+  }
+  if (schema >= 3) {
+    for (const entry of [...(state.archive || []), ...(state.trash || [])]) {
+      assert.equal(entry.wsId, workspace.id, `${label} must retain its restore workspace`);
+      assert.equal(entry.catId, category.id, `${label} must retain its restore Space`);
+      assert.equal(entry.groupId, group.id, `${label} must retain its restore group`);
+    }
+  }
+}
+
+function assertCompatibilitySettings(state, schema, label) {
+  const settings = state.settings;
+  assert.equal(settings.importCompatibilityMarker, label);
+  assert.equal(settings.onboarding.welcomeSeen, schema < 6);
+  assert.deepEqual(clone(settings.onboarding.hintsSeen), schema < 6 ? {} : { imported: true });
+  assert.equal(settings.onboarding.disabled, schema >= 6);
+  assert.equal(settings.showLanding, schema < 7 ? true : false);
+  assert.equal(settings.popupHibernateScope, schema < 8 ? 'window' : (schema >= 11 ? 'selected' : 'all'));
+  assert.equal(settings.popupHibernateKeepPinned, schema < 8 ? true : false);
+  assert.equal(settings.popupHibernateKeepAudio, schema < 8 ? true : false);
+  assert.equal(settings.popupSaveMode, schema < 9 ? 'group' : 'queue');
+  assert.equal(settings.popupHibernateSaveBefore, schema >= 11);
+  assert.deepEqual(clone(settings.popupHibernateSelectedTabIds), []);
+}
+
+async function testCompatibilityCase({ label, mode, reportedSchema, serialized, schema }) {
+  const base = makeBaseState(`${label}-${mode}-target`, 120 + schema);
+  const baseEntityCount = listEntityIds(base).length;
+  const harness = createHarness(base);
+  const baseCounts = clone(harness.contract.countState(base));
+  await harness.State.load();
+  const beforePreview = clone(harness.State.get());
+  const importContext = await harness.importSerialized(serialized, `${label}.json`);
+  assert.equal(importContext.schema, reportedSchema, `${label} must report its source schema`);
+  assert.deepEqual(clone(harness.State.get()), beforePreview, `${label} preview must not mutate State`);
+  assertCompatibilityContent(importContext.data, schema, label);
+  if (schema >= 11) {
+    assert.deepEqual(
+      clone(importContext.data.settings.popupHibernateSelectedTabIds),
+      [101, 202],
+      `${label} parser must retain selected-tab ids before replace normalization`,
+    );
+  }
+  const importedCounts = clone(importContext.counts);
+  const importedEntityCount = listEntityIds(importContext.data).length;
+  assertUniqueEntityIds(importContext.data, importedEntityCount, `${label} parsed fixture`);
+  const parsedSnapshot = JSON.stringify(importContext.data);
+
+  const applied = mode === 'replace'
+    ? await harness.contract.applyImportReplace(importContext.data)
+    : await harness.contract.applyImportMerge(importContext.data);
+  assert.equal(applied, true, `${label} ${mode} must persist`);
+  await Promise.resolve();
+
+  const state = harness.State.get();
+  const counts = clone(harness.contract.countState(state));
+  if (mode === 'replace') {
+    assert.deepEqual(counts, importedCounts, `${label} replace must retain exact counts`);
+    assert.equal(state.schema, currentSchema, `${label} replace must migrate to CURRENT_SCHEMA`);
+    assertCompatibilitySettings(state, schema, label);
+    assertUniqueEntityIds(state, importedEntityCount, `${label} replace`);
+    assert.equal(harness.metrics.downloads.length, 1, `${label} replace must create a safety backup`);
+  } else {
+    const expectedCounts = Object.fromEntries(
+      Object.keys(importedCounts).map(key => [key, importedCounts[key] + baseCounts[key]]),
+    );
+    assert.deepEqual(counts, expectedCounts, `${label} merge must add exact counts`);
+    assert.equal(state.settings.baseMarker, `${label}-${mode}-target`, `${label} merge must retain local settings`);
+    assert.equal('importCompatibilityMarker' in state.settings, false, `${label} merge must not import profile settings`);
+    assertUniqueEntityIds(state, baseEntityCount + importedEntityCount, `${label} merge`);
+    assert.equal(harness.metrics.downloads.length, 0, `${label} merge must not create a replace backup`);
+  }
+  assertCompatibilityContent(state, schema, label);
+  assert.equal(JSON.stringify(importContext.data), parsedSnapshot, `${label} ${mode} must not mutate parsed input`);
+  assert.deepEqual(harness.storedState(), clone(state), `${label} ${mode} must be authoritative`);
+  assert.equal(harness.State.isClean(), true);
+  assert.equal(harness.metrics.previews, 1);
+  assert.equal(harness.metrics.writeAttempts, 1);
+  assert.equal(harness.metrics.reminderRequests, 1);
+}
+
+async function testCompatibilityMatrix() {
+  let cases = 0;
+  for (const schema of compatibilitySchemas) {
+    const app = compatibilityApps[schema % compatibilityApps.length];
+    const label = `schema-${schema}-${app}`;
+    const data = makeCompatibilityFixture(schema, label);
+    const serialized = JSON.stringify({
+      app,
+      schema,
+      exportedAt: new FixedDate().toISOString(),
+      data,
+    });
+    for (const mode of ['replace', 'merge']) {
+      await testCompatibilityCase({ label, mode, reportedSchema: schema, serialized, schema });
+      cases += 1;
+    }
+  }
+
+  const rawLabel = 'raw-legacy';
+  const rawData = makeCompatibilityFixture(0, rawLabel);
+  delete rawData.schema;
+  const rawSerialized = JSON.stringify(rawData);
+  for (const mode of ['replace', 'merge']) {
+    await testCompatibilityCase({
+      label: rawLabel,
+      mode,
+      reportedSchema: 'legacy',
+      schema: 0,
+      serialized: rawSerialized,
+    });
+    cases += 1;
+  }
+  return { cases, rawImport: { text: rawSerialized } };
+}
+
 async function exportScaleFixture() {
   const sourceState = makeScaleState('roundtrip');
   const expectedEntityCount = listEntityIds(sourceState).length;
@@ -533,12 +829,12 @@ async function testMergeRoundTrip(scaleExport) {
   assert.equal(harness.metrics.downloads.length, 0, 'merge must not create a destructive-replace safety backup');
 }
 
-async function testRejectedImportRollback(scaleExport, mode) {
+async function testRejectedImportRollback(serializedImport, mode) {
   const harness = createHarness(makeBaseState(`${mode}-failure`, 90), 'failure');
   await harness.State.load();
   const beforeLocal = clone(harness.State.get());
   const beforeStored = harness.storedState();
-  const importContext = await harness.importSerialized(scaleExport.text, `${mode}-failure.json`);
+  const importContext = await harness.importSerialized(serializedImport.text, `${mode}-failure.json`);
   const applied = mode === 'replace'
     ? await harness.contract.applyImportReplace(importContext.data)
     : await harness.contract.applyImportMerge(importContext.data);
@@ -557,9 +853,12 @@ async function testRejectedImportRollback(scaleExport, mode) {
   const scaleExport = await exportScaleFixture();
   await testReplaceRoundTrip(scaleExport);
   await testMergeRoundTrip(scaleExport);
+  const compatibility = await testCompatibilityMatrix();
   await testRejectedImportRollback(scaleExport, 'replace');
   await testRejectedImportRollback(scaleExport, 'merge');
-  console.log(`Export/import scale contracts passed: activeTopLevel=${scale}, activeItems=${expectedCounts.items}, archive=${scale}, trash=${scale}, bytes=${scaleExport.serializedBytes}, modes=replace+merge, rejectedWrites=2`);
+  await testRejectedImportRollback(compatibility.rawImport, 'replace');
+  await testRejectedImportRollback(compatibility.rawImport, 'merge');
+  console.log(`Export/import contracts passed: activeTopLevel=${scale}, activeItems=${expectedCounts.items}, archive=${scale}, trash=${scale}, bytes=${scaleExport.serializedBytes}, schemas=0-${currentSchema}, envelopes=${compatibilityApps.length}+raw, compatibilityCases=${compatibility.cases}, modes=replace+merge, rejectedWrites=4`);
 })().catch(error => {
   console.error(error);
   process.exitCode = 1;

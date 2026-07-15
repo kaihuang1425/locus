@@ -36,18 +36,25 @@ quota, then requires a typed failure, unchanged stored graph, and visible
 notification. This proves deterministic failure routing, not Chrome's real quota
 allocation, rendered UI, serialized export files, or installed-extension behavior.
 
-The export/import scale suite extracts the production export serializer, FileReader
+The export/import contract suite extracts the production export serializer, FileReader
 boundary, validator, replace/merge applications, migration, and page State client.
 It serializes 1,024 mixed top-level active records (1,536 items after counting
 stack children) plus 1,024 Archive and 1,024 Trash entries.
 The portable payload must omit `_revision`, report exact counts, and survive both
 replace and merge with semantic content, canvas/column metadata, restore
 destinations, and entity cardinality intact. Replace must first download the exact
-pre-import graph; merge must rekey every imported identity without collisions.
-Injected write rejection must roll either mode back locally, leave authoritative
-storage unchanged, surface recovery, and report no success. This is a deterministic
-browser-API model, not evidence for Chrome's actual Blob/FileReader/download UI,
-quota/large-file boundary, service-worker lifecycle, or installed round trips.
+portable pre-import graph; merge must rekey every imported identity without
+collisions. The same suite exercises one fixture for every supported numeric schema
+from 0 through 11, rotates all six accepted app envelopes, and includes the raw
+legacy shape. All 26 schema/mode combinations must preserve content and exact
+counts, migrate version-gated defaults on replace, keep local profile settings on
+merge, and retain collision-free restore destinations. The schema list is explicit
+so a future `CURRENT_SCHEMA` bump fails until its fixture is added. Injected write
+rejection for current and raw-legacy inputs must roll both modes back locally, leave
+authoritative storage unchanged, surface recovery, and report no success. This is a
+deterministic browser-API model, not evidence for semantic fuzz, Chrome's actual
+Blob/FileReader/download UI, quota/large-file boundary, reminder outcomes,
+service-worker lifecycle, or installed round trips.
 
 The Undo suite includes a deferred tab-reopen interleaving: a newer edit must
 survive, remain first in history, and let a capture retry reuse any tab already
