@@ -24,8 +24,16 @@ The archive-scale suite extracts the production single-item, whole-group, batch,
 Archive-to-Trash, and restore paths. Each archive route exercises 1,024 mixed
 top-level items (including stacks with nested records), preserves every entity ID
 exactly once, and restores a canonical-equivalent workspace graph. Missing IDs and
-foreign entries must remain no-ops. This proves in-memory transformation behavior,
-not `chrome.storage.local` quota handling, serialized export files, or installed UI.
+foreign entries must remain no-ops. The suite also joins the production batch
+Archive and Archive-to-Trash functions to the production State writer,
+ordinary-write recovery handler, and storage-error router. An injected typed quota
+rejection must keep the 1,024-record local mutation visible behind the reload
+interlock, leave the authoritative graph unchanged, route storage-full feedback,
+and restore every ID on a reload-style authoritative read. The background suite
+separately makes the production writer's `chrome.storage.local.set()` reject for
+quota, then requires a typed failure, unchanged stored graph, and visible
+notification. This proves deterministic failure routing, not Chrome's real quota
+allocation, rendered UI, serialized export files, or installed-extension behavior.
 
 The Undo suite includes a deferred tab-reopen interleaving: a newer edit must
 survive, remain first in history, and let a capture retry reuse any tab already

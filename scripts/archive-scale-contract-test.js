@@ -9,6 +9,7 @@ const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'newtab.js'), 'utf8').replace(/\r\n/g, '\n');
 const scale = 1024;
 const fixedNow = Date.UTC(2030, 0, 15, 12, 0, 0);
+const clone = value => JSON.parse(JSON.stringify(value));
 
 class FixedDate extends Date {
   constructor(...args) {
@@ -26,6 +27,20 @@ function extractBetween(startMarker, endMarker) {
   assert.ok(start >= 0 && end > start, `${startMarker} must be extractable`);
   return source.slice(start, end);
 }
+
+const stateStart = source.indexOf('const State = (() => {');
+const stateEndMarker = '\n})();';
+const stateEnd = source.indexOf(stateEndMarker, stateStart);
+assert.ok(stateStart >= 0 && stateEnd > stateStart, 'State implementation must be extractable');
+const stateSource = source.slice(stateStart, stateEnd + stateEndMarker.length);
+const ordinaryFailureSource = extractBetween(
+  'async function recoverAfterOrdinaryWriteFailure(error) {',
+  '\n\nfunction handleObservedStoredState(stored)',
+);
+const storageErrorSource = extractBetween(
+  'function handleStorageError(err) {',
+  '\n\nfunction showStorageFull(msg) {',
+);
 
 const productionSources = [
   extractBetween('function findGroup(gId) {', '\n\n// ════════════════════════════════════════════════════════════════\n// HASH ROUTER'),
@@ -128,6 +143,108 @@ function createHarness(state, selectedIds = []) {
     filename: 'newtab-archive-contract.js',
   });
   return { ...sandbox.archiveContract, selectedItemIds, metrics };
+}
+
+function persistedState(state, revision) {
+  return {
+    ...clone(state),
+    schema: 11,
+    _revision: revision,
+    recentEmoji: [],
+    columnWidths: {},
+  };
+}
+
+function createPersistenceHarness(baseline, selectedIds = []) {
+  const stored = { te: clone(baseline) };
+  const selectedItemIds = new Set(selectedIds);
+  const metrics = {
+    writeAttempts: 0,
+    storageFullMessages: [],
+    recoveryMessages: [],
+    toasts: [],
+  };
+  let nextId = 0;
+  const chrome = {
+    storage: {
+      local: {
+        async get() {
+          return clone(stored);
+        },
+      },
+    },
+    runtime: {
+      async sendMessage(message) {
+        assert.equal(message?.type, 'locus-state-write');
+        metrics.writeAttempts += 1;
+        return {
+          ok: false,
+          code: 'LOCUS_STATE_WRITE_FAILED',
+          message: 'QUOTA_BYTES quota exceeded.',
+        };
+      },
+    },
+  };
+  const sandbox = {
+    browserLanguage: () => 'en',
+    chrome,
+    clearTimeout,
+    console,
+    CURRENT_SCHEMA: 11,
+    Date: FixedDate,
+    ensureDefault() {},
+    loadedSchema: 0,
+    migrate() {},
+    navigator: {},
+    normalizeExpiredTrash() {},
+    normalizeLoadedSettings() {},
+    refreshStorageUsage() {},
+    renderArchiveList() {},
+    renderBoard() {},
+    selectedItemIds,
+    setTimeout,
+    showStateRecoveryRequired(error) {
+      metrics.recoveryMessages.push(String(error?.message || error || ''));
+    },
+    showStorageFull(message) {
+      metrics.storageFullMessages.push(String(message || ''));
+    },
+    structuredClone,
+    toast(message) {
+      metrics.toasts.push(String(message || ''));
+    },
+    tr: (key, vars) => vars?.count == null ? key : `${key}:${vars.count}`,
+    uid: () => `archive-quota-generated-${++nextId}`,
+    updateNavChrome() {},
+    clearItemSelection() {
+      selectedItemIds.clear();
+    },
+  };
+  const context = vm.createContext(sandbox);
+  vm.runInContext(`${stateSource}\nglobalThis.__state = State;`, context, {
+    filename: 'newtab-state.js',
+  });
+  vm.runInContext(
+    `${storageErrorSource}\n${ordinaryFailureSource}\n${productionSources}\n${exposeContract}`,
+    context,
+    { filename: 'newtab-archive-quota-contract.js' },
+  );
+
+  async function waitForQuotaRecovery() {
+    const deadline = Date.now() + 1500;
+    while (!context.__state.isRecoveryRequired() && Date.now() < deadline) {
+      await new Promise(resolve => setTimeout(resolve, 10));
+    }
+    assert.equal(context.__state.isRecoveryRequired(), true, 'quota rejection must require authoritative recovery');
+  }
+
+  return {
+    State: context.__state,
+    archiveContract: context.archiveContract,
+    metrics,
+    storedState: () => clone(stored.te),
+    waitForQuotaRecovery,
+  };
 }
 
 function topLevelItemIds(state) {
@@ -296,9 +413,78 @@ function runMissingEntryNoOps() {
   assert.equal(contract.metrics.persists, 0);
 }
 
-runSingleItemRoundTrip();
-runGroupRoundTrip();
-runBatchTrashRoundTrip();
-runMissingEntryNoOps();
+async function runQuotaRejectedBatchArchive() {
+  const baseline = persistedState(makeState('quota-archive'), 30);
+  const initialIds = allEntityIds(baseline);
+  const initialGraph = canonicalWorkspaces(baseline);
+  const itemIds = topLevelItemIds(baseline);
+  const harness = createPersistenceHarness(baseline, itemIds);
 
-console.log(`Archive scale contracts passed: single=${scale}, groupItems=${scale}, batch=${scale}, trash=${scale}`);
+  await harness.State.load();
+  harness.archiveContract.runBatchAction('archive');
+  await harness.waitForQuotaRecovery();
+
+  const local = harness.State.get();
+  assert.equal(activeTopLevelCount(local), 0);
+  assert.equal(local.archive.length, scale);
+  assertIdentityPreserved(local, initialIds, 'quota-rejected batch archive local graph');
+  assert.deepEqual(harness.storedState(), baseline, 'quota rejection must not change the authoritative active graph');
+  assert.equal(harness.State.needsPersistence(), true, 'the unconfirmed archive must stay visibly dirty');
+  assert.equal(harness.metrics.writeAttempts, 1);
+  assert.equal(harness.metrics.storageFullMessages.length, 1, 'quota rejection must route to storage-full feedback');
+  assert.match(harness.metrics.storageFullMessages[0], /quota/i);
+  assert.equal(harness.metrics.recoveryMessages.length, 1, 'quota rejection must show the reload interlock');
+
+  await harness.State.load();
+  assert.equal(activeTopLevelCount(harness.State.get()), scale);
+  assert.equal(harness.State.get().archive.length, 0);
+  assert.equal(canonicalWorkspaces(harness.State.get()), initialGraph);
+  assertIdentityPreserved(harness.State.get(), initialIds, 'quota-rejected batch archive recovery');
+  assert.equal(harness.State.isClean(), true);
+}
+
+async function runQuotaRejectedArchiveToTrash() {
+  const baseline = persistedState(makeState('quota-trash'), 40);
+  const initialIds = allEntityIds(baseline);
+  const itemIds = topLevelItemIds(baseline);
+  createHarness(baseline, itemIds).runBatchAction('archive');
+  assert.equal(baseline.archive.length, scale, 'Trash quota fixture must begin with every item authoritatively archived');
+  const authoritativeArchive = clone(baseline.archive);
+  const harness = createPersistenceHarness(baseline);
+
+  await harness.State.load();
+  harness.archiveContract.moveArchiveEntriesToTrash([...harness.State.get().archive]);
+  await harness.waitForQuotaRecovery();
+
+  const local = harness.State.get();
+  assert.equal(local.archive.length, 0);
+  assert.equal(local.trash.length, scale);
+  assertIdentityPreserved(local, initialIds, 'quota-rejected Archive-to-Trash local graph');
+  assert.deepEqual(harness.storedState(), clone(baseline), 'quota rejection must keep the authoritative Archive graph');
+  assert.equal(harness.State.needsPersistence(), true, 'the unconfirmed Trash move must stay visibly dirty');
+  assert.equal(harness.metrics.writeAttempts, 1);
+  assert.equal(harness.metrics.storageFullMessages.length, 1, 'Trash quota rejection must route to storage-full feedback');
+  assert.match(harness.metrics.storageFullMessages[0], /quota/i);
+  assert.equal(harness.metrics.recoveryMessages.length, 1, 'Trash quota rejection must show the reload interlock');
+
+  await harness.State.load();
+  assert.equal(harness.State.get().archive.length, scale);
+  assert.equal(harness.State.get().trash.length, 0);
+  assert.deepEqual(clone(harness.State.get().archive), authoritativeArchive);
+  assertIdentityPreserved(harness.State.get(), initialIds, 'quota-rejected Archive-to-Trash recovery');
+  assert.equal(harness.State.isClean(), true);
+}
+
+(async () => {
+  runSingleItemRoundTrip();
+  runGroupRoundTrip();
+  runBatchTrashRoundTrip();
+  runMissingEntryNoOps();
+  await runQuotaRejectedBatchArchive();
+  await runQuotaRejectedArchiveToTrash();
+
+  console.log(`Archive scale contracts passed: single=${scale}, groupItems=${scale}, batch=${scale}, trash=${scale}, quotaRecovery=2`);
+})().catch(error => {
+  console.error(error);
+  process.exitCode = 1;
+});

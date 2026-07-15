@@ -15,8 +15,8 @@ Last updated: 2026-07-16.
    whole-state writer across real new-tab/popup/background contexts, installed
    lost/timed-out acknowledgements, storage-change ordering, and service-worker
    termination/restart;
-   add real-browser failure-path evidence for save-before-close; exercise quota-bound
-   Archive/Trash persistence and export/import round trips at scale; complete every
+   add real-browser failure-path evidence for save-before-close; exercise real installed-browser
+   Archive/Trash quota persistence and serialized export/import round trips at scale; complete every
    supported legacy-schema fixture and extend import coverage through semantic fuzz, quota/large-file,
    and real-browser round trips; and run an unpacked-extension CSP/favicon/network
    audit. Extend reminder contracts to
@@ -36,6 +36,20 @@ Last updated: 2026-07-16.
 
 ## Done (newest first)
 
+- **2026-07-16 — Archive/Trash quota-recovery evidence / P0-09** — joined the
+  production batch Archive and Archive-to-Trash mutations to the production
+  new-tab State writer, ordinary-write failure handler, and storage-error router.
+  Injected typed quota rejections at 1,024 mixed records leave the authoritative
+  active or Archive graph unchanged, retain the optimistic local graph behind the
+  reload interlock, route to storage-full feedback, and recover every entity ID
+  exactly once on a reload-style authoritative read. The background contract also
+  makes the production writer's `chrome.storage.local.set()` throw a quota error;
+  it returns a typed failure, preserves the stored revision and graph, and emits a
+  storage-full notification. The full static/deterministic block passes.
+  **Implemented: yes. Verified: partial (injected deterministic quota model only).
+  User-validated: no. Released: no.** No production, schema, permission, or UI
+  behavior changed. A real Chrome quota boundary, rendered feedback, serialized
+  export/import, and installed-browser lifecycle evidence remain open.
 - **2026-07-16 — Archive/Trash 1,024-record scale evidence / P0-09** — added a
   production-extracted contract for single-item, whole-group, and batch archive,
   Archive-to-Trash, and both restore paths. Each archive route preserves 1,024
@@ -284,7 +298,9 @@ Last updated: 2026-07-16.
   production-extracted import validation across 29 malformed boundaries and 128
   fixed-seed structural mutations,
   1,024-record single-item/whole-group/batch Archive and Archive-to-Trash restore
-  transformations with exact ID preservation,
+  transformations with exact ID preservation, plus injected-quota batch Archive
+  and Archive-to-Trash failures that preserve both the dirty local graph and the
+  unchanged authoritative graph through reload recovery,
   post-import warning paths, alarm-map reconciliation, no-retry capture conflicts,
   and action-scoped Undo across pending capture, newer-edit interruption, restored
   history order, tab-open retry, persistence-failure recovery, central-writer conflict/failure
@@ -297,8 +313,8 @@ Last updated: 2026-07-16.
   Remaining P0 gaps are installed
   cross-context/service-worker restart and unknown-ack lifecycle evidence, full
   legacy-schema/semantic-fuzz/quota/large-file/browser import round trips, overdue/recurrence/
-  DST reminder semantics, quota-bound Archive/Trash persistence and export/import
-  recovery, and a complete
+  DST reminder semantics, real installed-browser Archive/Trash quota persistence
+  and serialized export/import recovery, and a complete
   unpacked-extension evidence bundle. Static and mocked contracts do not close
   those browser-runtime risks.
 - New-tab freshness and failed-capture recovery are production-extracted and

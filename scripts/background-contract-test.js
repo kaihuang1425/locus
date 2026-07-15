@@ -99,6 +99,7 @@ const chrome = {
       },
       async set(value) {
         captureCalls.storageSets += 1;
+        if (storageMode === 'quota') throw new Error('QUOTA_BYTES quota exceeded.');
         persistedState = deepClone(value.te);
       },
     },
@@ -256,6 +257,21 @@ async function testCentralStateWriteProtocol() {
   assert.equal(accepted.revision, 3);
   assert.equal(persistedState._revision, 3);
   assert.equal(persistedState.settings.protocolMarker, 'accepted');
+
+  storageMode = 'quota';
+  const beforeQuota = deepClone(persistedState);
+  const quotaCandidate = deepClone(persistedState);
+  quotaCandidate.settings.protocolMarker = 'must-not-persist';
+  const notificationsBeforeQuota = captureCalls.notifications.length;
+  const quota = await sendRuntimeMessage({ type: 'locus-state-write', state: quotaCandidate });
+  assert.equal(quota.ok, false);
+  assert.equal(quota.code, 'LOCUS_STATE_WRITE_FAILED');
+  assert.match(quota.message, /quota/i);
+  assert.deepEqual(persistedState, beforeQuota, 'a quota rejection must leave authoritative storage unchanged');
+  const quotaNotification = captureCalls.notifications[notificationsBeforeQuota];
+  assert.ok(quotaNotification, 'a quota rejection must create a visible background notification');
+  assert.match(quotaNotification.options.title, /storage full/i);
+  storageMode = 'normal';
 
   const staleCandidate = deepClone(candidate);
   staleCandidate.settings.protocolMarker = 'stale-overwrite';
