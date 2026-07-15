@@ -16,9 +16,10 @@ Last updated: 2026-07-16.
    lost/timed-out acknowledgements, storage-change ordering, and service-worker
    termination/restart;
    add real-browser failure-path evidence for save-before-close; exercise archive,
-   quota, and export/import round trips at scale; expand the deterministic legacy
-   and every-level collision fixtures with malformed/fuzz and quota cases; and run
-   an unpacked-extension CSP/favicon/network audit. Extend reminder contracts to
+   quota, and export/import round trips at scale; complete every supported legacy-
+   schema fixture and extend import coverage through semantic fuzz, quota/large-file,
+   and real-browser round trips; and run an unpacked-extension CSP/favicon/network
+   audit. Extend reminder contracts to
    overdue, restart/sleep, recurrence, and DST/timezone behavior.
 2. **Validate and finish the core first-use contract** (`docs/UX_SIMPLIFICATION.md`) — remove
    the hidden questionnaire/coach implementation debt, finish keyboard and narrow-layout checks,
@@ -35,6 +36,19 @@ Last updated: 2026-07-16.
 
 ## Done (newest first)
 
+- **2026-07-16 — Import-validator malformed/fuzz evidence / P0-08** — expanded
+  `scripts/import-recovery-test.js` to extract the production
+  `validateImportData()` boundary from `newtab.js`. A representative current-schema
+  backup is accepted without mutation; 29 explicit malformed boundaries cover
+  future schemas, invalid root/collection shapes, unsafe object keys, size/depth/
+  node limits, active and stored-payload ID failures, item/stack structure, URL
+  schemes, and corrupt Archive/Trash envelopes. A fixed-seed corpus adds 128
+  mutations across eight structural families, all rejected with a non-empty error.
+  The full static/deterministic block passes, including the 10,000-schedule writer
+  run. **Implemented: yes. Verified: partial (static/deterministic model only).
+  User-validated: no. Released: no.** No production, schema, permission, or UI
+  behavior changed. Complete legacy-schema compatibility, semantic fuzz, quota,
+  large-file, safety-backup/alarm, and installed-browser round trips remain open.
 - **2026-07-16 — New-tab state freshness and authoritative recovery / P0-04** —
   added a confirmed-state baseline and dirty-aware `storage.onChanged` contract.
   A clean, idle page adopts and renders a newer stored revision; a dirty page
@@ -254,6 +268,8 @@ Last updated: 2026-07-16.
   current binding or migration depends on them.
 - Deterministic import-recovery, background, Undo, freshness, and concurrency contracts now cover legacy and
   every-level ID collisions, idless Archive entries, replace rollback/normalization,
+  production-extracted import validation across 29 malformed boundaries and 128
+  fixed-seed structural mutations,
   post-import warning paths, alarm-map reconciliation, no-retry capture conflicts,
   and action-scoped Undo across pending capture, newer-edit interruption, restored
   history order, tab-open retry, persistence-failure recovery, central-writer conflict/failure
@@ -264,7 +280,8 @@ Last updated: 2026-07-16.
   handling, invalid-token rejection, dirty ordinary-write preservation,
   browser-effect interruption, and 10,000 seeded lockless schedules.
   Remaining P0 gaps are installed
-  cross-context/service-worker restart and unknown-ack lifecycle evidence, full legacy/fuzz/quota/large-file/browser import round trips, overdue/recurrence/
+  cross-context/service-worker restart and unknown-ack lifecycle evidence, full
+  legacy-schema/semantic-fuzz/quota/large-file/browser import round trips, overdue/recurrence/
   DST reminder semantics, 1,000-entry archive/quota recovery, and a complete
   unpacked-extension evidence bundle. Static and mocked contracts do not close
   those browser-runtime risks.

@@ -427,3 +427,15 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   unknown-ack lifecycle behavior, quota behavior, and browser-side recovery UI
   remain unverified. No schema, permission, strategy, owner decision,
   user-validation, or release status changed.
+- **2026-07-16** — Completed a bounded **import-validator malformed/fuzz evidence
+  cycle** against P0-08. The deterministic import-recovery suite now extracts the
+  production `validateImportData()` boundary, proves a representative valid backup
+  is accepted without mutation, and exercises 29 explicit rejection boundaries
+  spanning future schemas, structure, unsafe keys, resource limits, IDs, item/URL
+  forms, and Archive/Trash envelopes. A fixed seed adds 128 mutations across eight
+  structural families; every mutation fails closed with a non-empty error. The full
+  static/deterministic block passes, including the 10,000-schedule writer model.
+  This is partial automated evidence only: no production UI, schema, permission,
+  strategy, user-validation, or release status changed, and full legacy-schema,
+  semantic-fuzz, quota, large-file, safety-backup/alarm, and installed-browser
+  round trips remain open.
