@@ -579,3 +579,18 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   installed restart/sleep/notification behavior, rendered interactions, mutation
   races, and DST/timezone semantics remain open. No schema, permission, markup,
   style, localized copy, user-validation, or release status changed.
+- **2026-07-16** -- Completed a **local-calendar recurrence time-zone cycle**
+  against P0-10. Background re-arming/alarm matching and new-tab pending projection
+  now advance daily, weekly, and monthly series through nominal calendar coordinates
+  rather than fixed elapsed time or a locally normalized cursor. Local wall time is
+  retained across 23/25-hour days; nonexistent DST times, a deleted civil date, and
+  missing month-days are skipped without permanent drift; repeated fall-back time
+  resolves to its first instant once; and invalid bounds fail closed. A production-
+  extracted contract starts fresh processes under New York, Berlin, Taipei, and
+  Apia and passes 21 recurrence cases plus 37 background/display parity checks,
+  including exact `until`, input immutability, and stale second-fold rejection. This
+  is partial deterministic time-zone evidence only. The managed-browser shim remains
+  unavailable, and installed Chrome alarm timing through sleep/restart and time-zone
+  transitions, live operating-system time-zone changes, notification delivery, and
+  rendered Past Due interactions remain open. No schema, permission, markup, style,
+  localized copy, user-validation, or release status changed.

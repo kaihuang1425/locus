@@ -14,6 +14,7 @@ node scripts/export-import-scale-contract-test.js
 node scripts/background-contract-test.js
 node scripts/reminder-identity-contract-test.js
 node scripts/reminder-overdue-contract-test.js
+node scripts/reminder-timezone-contract-test.js
 node scripts/undo-contract-test.js
 node scripts/state-sync-contract-test.js
 node scripts/concurrency-contract-test.js
@@ -55,8 +56,8 @@ must be idempotent. Injected alarm-create and stale-alarm-clear failures must re
 two structured operations with no false success or state mutation. Expired recurring
 reminders and overdue one-shots stay unscheduled. This is deterministic mocked-browser
 lifecycle evidence, not installed Chrome restart/sleep or delayed-delivery evidence;
-rendered Past Due behavior, notification delivery, and DST/timezone behavior remain
-runtime gates.
+rendered Past Due behavior, notification delivery, and installed time-zone transition
+behavior remain runtime gates.
 
 The same background suite invokes the production `alarms.onAlarm` listener for eight
 accepted deliveries. Daily item, multi-day nested-item, biweekly group, and monthly
@@ -80,7 +81,8 @@ replaced; four mutations must preserve stable IDs across index shifts, retire on
 removed alarm, skip notified reminders, and round-trip stable plus arbitrary legacy
 alarm components without delimiter ambiguity. This remains a mocked-browser/state
 model, not evidence for installed notification rendering/timing, service-worker
-termination, installed mutation races, or DST/timezone transitions.
+termination, or installed mutation races. The focused time-zone suite below owns
+the separate deterministic DST/date-line contract.
 
 The reminder-overdue suite extracts the production pending-reminder projection,
 item badge, editor, and Calendar-entry paths. Unnotified overdue one-shots and
@@ -92,8 +94,20 @@ reconciliation without mutating stored data. Projection must preserve entity
 indexes and stable reminder IDs, keep Calendar entries sorted, open item/entity
 editors on the projected occurrence, and wire the landing, app-menu, Calendar,
 and item-badge signals through one policy. This is deterministic DOM-free model
-evidence, not rendered UI, installed alarm delivery/restart, notification timing,
-or DST/timezone evidence.
+evidence, not rendered UI, installed alarm delivery/restart, or notification timing.
+
+The reminder-timezone suite starts fresh Node processes under `America/New_York`,
+`Europe/Berlin`, `Asia/Taipei`, and `Pacific/Apia`, then extracts the production
+background recurrence/alarm-match helpers and new-tab display projection. Twenty-one
+recurrence cases and 37 background/display parity assertions require daily, weekly,
+and monthly schedules to retain local wall time across 23- and 25-hour days; skip
+nonexistent spring-forward times, a deleted civil date, and missing month-days rather
+than accepting forward normalization; accept the first fall-back fold exactly once;
+respect `until` against the next valid occurrence; and fail malformed inputs closed.
+The suite also rejects the later fold as a stale alarm and proves recurrence inputs
+remain unchanged. This is deterministic production-extracted time-zone evidence,
+not proof of Chrome's installed alarm timing, browser sleep/restart, bundled time-zone
+data, or a live operating-system time-zone change.
 
 The export/import contract suite extracts the production export serializer, FileReader
 boundary, validator, replace/merge applications, migration, and page State client.

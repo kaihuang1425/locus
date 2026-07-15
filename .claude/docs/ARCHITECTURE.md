@@ -109,7 +109,7 @@ syncs hash routes so surfaces survive reload/back.
 a fixed layer above Home, not a router surface: Escape, the chevron, or downward
 wheel motion dismiss it for the current
 page and reveal the already-rendered Home. Its counts come from the active
-category's Inbox and `collectReminders()`. Saved-link typeahead reads
+category's Inbox and `collectPendingReminders()`. Saved-link typeahead reads
 `collectWorkspaceTabs()` and the shared `parseSearchQuery()` operator parser;
 web submission uses `chrome.search.query()` (manifest `search` permission) so the
 browser's configured default engine remains authoritative.
@@ -172,6 +172,10 @@ in newtab.css; rail folds to a top strip below 880px.
   stored time. A past recurring item, nested item, group, or category reminder uses
   `nextRecurTime()` to schedule only its first future wall-clock occurrence; missed
   occurrences are not replayed and reconciliation never mutates workspace state.
+  Daily, weekly, and monthly recurrence advances nominal local-calendar coordinates,
+  not fixed elapsed milliseconds: wall time survives 23/25-hour days; a nonexistent
+  wall time, deleted civil date, or missing month-day is skipped without normalization
+  drift; and a repeated fall-back wall time uses its first instant only.
   Past one-shots and recurrences beyond `until` remain unscheduled, while stale
   managed reminder alarms are cleared and unrelated alarms are preserved. Keep alarm
   API failures structured so callers cannot mistake partial reconciliation for

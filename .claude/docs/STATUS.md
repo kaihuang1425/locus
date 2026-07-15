@@ -23,7 +23,8 @@ Last updated: 2026-07-16.
    restart/sleep and delivery lifecycle, the rendered/installed one-shot Past Due
    and reschedule/clear flow,
    installed group/category mutation delivery under schema-12 stable identities,
-   and DST/timezone behavior.
+   installed alarm timing through DST/date-line transitions, and live time-zone
+   changes.
 2. **Validate and finish the core first-use contract** (`docs/UX_SIMPLIFICATION.md`) — remove
    the hidden questionnaire/coach implementation debt, finish keyboard and narrow-layout checks,
    and run the representative-user activation protocol: save one real tab, see its
@@ -38,6 +39,26 @@ Last updated: 2026-07-16.
    rendered and user-flow evidence.
 
 ## Done (newest first)
+
+- **2026-07-16 -- Local-calendar recurrence across time zones / P0-10** --
+  daily, weekly, and monthly reminders now advance nominal local-calendar dates
+  instead of carrying elapsed-millisecond or normalized `Date` drift. Their local
+  wall time stays fixed across 23- and 25-hour days. A nonexistent spring-forward
+  time, deleted civil date, or missing month-day is skipped to the next scheduled
+  valid occurrence; a repeated fall-back wall time resolves to its first instant
+  once; and malformed bounds fail closed. Service-worker reconciliation/alarm
+  matching and new-tab pending projection use the same rule without mutating the
+  stored recurrence. A production-extracted contract runs fresh processes in New
+  York, Berlin, Taipei, and Apia: 21 recurrence cases, 37 background/display parity
+  checks, two accepted first-fold alarms, two rejected second-fold alarms, four
+  notified-alarm rejections, and 16 malformed-input cases pass with the complete
+  static/deterministic gate. **Implemented: yes. Verified: partial (multi-process,
+  production-extracted deterministic time-zone contracts only). User-validated:
+  no. Released: no.** No schema, permission, markup, style, or localized copy
+  changed. The managed-browser shim remains unavailable; installed Chrome alarm
+  timing through sleep/restart and time-zone transitions, live operating-system
+  time-zone changes, notification delivery, and rendered Past Due behavior remain
+  open.
 
 - **2026-07-16 -- Pending-reminder and one-shot Past Due policy / P0-10** --
   new-tab pending surfaces now exclude delivered (`notified`) records instead of
@@ -448,7 +469,8 @@ Last updated: 2026-07-16.
   paths remain hidden/dead in the source. Remove them after confirming that no
   current binding or migration depends on them.
 - Deterministic import-recovery, archive-scale, export/import-scale,
-  reminder-identity, reminder-overdue, background, Undo, freshness, and concurrency
+  reminder-identity, reminder-overdue, reminder-timezone, background, Undo,
+  freshness, and concurrency
   contracts now cover legacy and
   every-level ID collisions, idless Archive entries, replace rollback/normalization,
   production-extracted import validation across 33 malformed boundaries and 128
@@ -479,6 +501,10 @@ Last updated: 2026-07-16.
   and a pending-reminder projection that keeps unresolved one-shots and expired series
   in Past due, excludes delivered records, and matches background daily/biweekly/
   monthly recurrence projection without mutating identity-bearing source entries,
+  plus a four-zone production-extracted recurrence matrix covering 23/25-hour days,
+  missing spring-forward wall times, repeated fall-back folds, missing month-days,
+  Apia's deleted civil date, exact `until` behavior, background/display parity,
+  immutable inputs, and stale second-fold rejection,
   plus no-retry
   capture conflicts and action-scoped Undo across pending capture, newer-edit interruption, restored
   history order, tab-open retry, persistence-failure recovery, central-writer conflict/failure
@@ -493,7 +519,8 @@ Last updated: 2026-07-16.
   actual Chrome quota allocation, File/FileReader/preview behavior, and installed
   browser legacy/current import round trips, installed reminder restart/sleep and
   delivery behavior, rendered one-shot Past Due behavior, installed group/category
-  mutation races under stable identity, and DST/timezone semantics, installed-browser
+  mutation races under stable identity, installed alarm timing through time-zone
+  transitions and live time-zone changes, installed-browser
   Archive/Trash quota and export/import
   recovery, and a complete
   unpacked-extension evidence bundle. Static and mocked contracts do not close

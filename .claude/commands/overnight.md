@@ -60,6 +60,7 @@ Run the full static block from `VERIFY.md`:
 - `node scripts/background-contract-test.js`
 - `node scripts/reminder-identity-contract-test.js`
 - `node scripts/reminder-overdue-contract-test.js`
+- `node scripts/reminder-timezone-contract-test.js`
 - `node scripts/undo-contract-test.js`
 - `node scripts/state-sync-contract-test.js`
 - `node scripts/concurrency-contract-test.js`

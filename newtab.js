@@ -3316,20 +3316,48 @@ function recurLabel(recur) {
 // An unnotified one-shot (or an expired recurrence) keeps its stored timestamp
 // and therefore remains recoverable through the Calendar's Past due path.
 function nextReminderOccurrenceForDisplay(at, recur, now = Date.now()) {
-  if (!recur || !recur.every) return null;
-  const interval = Math.max(1, recur.interval || 1);
-  const step = ts => {
-    const d = new Date(ts);
-    if (recur.every === 'day') d.setDate(d.getDate() + interval);
-    else if (recur.every === 'week') d.setDate(d.getDate() + 7 * interval);
-    else if (recur.every === 'month') d.setMonth(d.getMonth() + interval);
-    else return null;
-    return d.getTime();
-  };
-  let ts = step(at);
-  while (ts != null && ts <= now) ts = step(ts);
-  if (ts != null && recur.until && ts > recur.until) return null;
-  return ts;
+  const start = Number(at);
+  const cutoff = Number(now);
+  if (!Number.isFinite(start) || !Number.isFinite(cutoff)) return null;
+  if (!['day', 'week', 'month'].includes(recur?.every)) return null;
+  const rawInterval = Number(recur.interval);
+  const interval = Number.isFinite(rawInterval) ? Math.max(1, Math.trunc(rawInterval)) : 1;
+  const base = new Date(start);
+  const hour = base.getHours();
+  const minute = base.getMinutes();
+  const second = base.getSeconds();
+  const millisecond = base.getMilliseconds();
+  const monthlyDay = base.getDate();
+  const cursor = new Date(Date.UTC(base.getFullYear(), base.getMonth(), base.getDate(), 12));
+  const until = Number(recur.until);
+  const hasUntil = recur.until != null && recur.until !== '';
+  if (hasUntil && !Number.isFinite(until)) return null;
+
+  while (true) {
+    if (recur.every === 'month') {
+      cursor.setUTCDate(1);
+      cursor.setUTCMonth(cursor.getUTCMonth() + interval);
+    } else {
+      cursor.setUTCDate(cursor.getUTCDate() + interval * (recur.every === 'week' ? 7 : 1));
+    }
+
+    const year = cursor.getUTCFullYear();
+    const month = cursor.getUTCMonth();
+    const day = recur.every === 'month' ? monthlyDay : cursor.getUTCDate();
+    const candidate = new Date(year, month, day, hour, minute, second, millisecond);
+    const ts = candidate.getTime();
+    if (!Number.isFinite(ts)) return null;
+    if (hasUntil && ts > until) return null;
+
+    const exactWallTime = candidate.getFullYear() === year
+      && candidate.getMonth() === month
+      && candidate.getDate() === day
+      && candidate.getHours() === hour
+      && candidate.getMinutes() === minute
+      && candidate.getSeconds() === second
+      && candidate.getMilliseconds() === millisecond;
+    if (exactWallTime && ts > cutoff) return ts;
+  }
 }
 
 function pendingReminderTime(reminder, now = Date.now()) {
