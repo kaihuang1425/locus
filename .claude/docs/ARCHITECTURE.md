@@ -161,6 +161,15 @@ in newtab.css; rail folds to a top strip below 880px.
   remains an installed-runtime gate. Preserve typed conflict replies, visible
   recovery, and the rule that source tabs close only after an accepted receipt.
   Never add a second direct whole-state writer.
+- `background.js` also owns reminder-alarm reconciliation at service-worker
+  evaluation, browser startup/install, and after import. Future one-shots keep their
+  stored time. A past recurring item, nested item, group, or category reminder uses
+  `nextRecurTime()` to schedule only its first future wall-clock occurrence; missed
+  occurrences are not replayed and reconciliation never mutates workspace state.
+  Past one-shots and recurrences beyond `until` remain unscheduled, while stale
+  managed reminder alarms are cleared and unrelated alarms are preserved. Keep alarm
+  API failures structured so callers cannot mistake partial reconciliation for
+  success.
 - New-tab keeps a serialized confirmed-state baseline separate from its mutable
   graph. `storage.onChanged` may report the expected stored candidate before the
   service-worker response; matching that event is observation only and never a

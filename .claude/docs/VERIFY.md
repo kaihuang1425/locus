@@ -36,6 +36,20 @@ quota, then requires a typed failure, unchanged stored graph, and visible
 notification. This proves deterministic failure routing, not Chrome's real quota
 allocation, rendered UI, serialized export files, or installed-extension behavior.
 
+The background suite also fixes the production reminder clock. Its initial service-
+worker reconciliation must create nine alarms at exact times: future one-shots,
+overdue daily, multi-day, biweekly, and monthly recurrences advanced to their first
+future occurrences, and a subscription. After advancing eight days and invoking the
+registered `runtime.onStartup` listener, it must clear four newly overdue one-shots,
+re-arm the four recurring series, retain the subscription, preserve unrelated and
+non-reminder Locus alarms, and make no state write or catch-up notification. A repeat
+must be idempotent. Injected alarm-create and stale-alarm-clear failures must return
+two structured operations with no false success or state mutation. Expired recurring
+reminders and overdue one-shots stay unscheduled. This is deterministic mocked-browser
+lifecycle evidence, not installed Chrome restart/sleep or delayed-delivery evidence;
+fired-series persistence, rendered Past Due behavior, notification delivery, and
+DST/timezone behavior remain runtime gates.
+
 The export/import contract suite extracts the production export serializer, FileReader
 boundary, validator, replace/merge applications, migration, and page State client.
 It serializes 1,024 mixed top-level active records (1,536 items after counting

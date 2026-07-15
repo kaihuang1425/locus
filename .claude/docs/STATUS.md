@@ -19,8 +19,9 @@ Last updated: 2026-07-16.
    Archive/Trash quota persistence and installed-browser export/import round trips at scale; verify actual
    Chrome import quota allocation, File/FileReader and large-file preview behavior,
    and installed legacy/current round trips; and run an unpacked-extension
-   CSP/favicon/network audit. Extend reminder contracts to
-   overdue, restart/sleep, recurrence, and DST/timezone behavior.
+   CSP/favicon/network audit. Extend reminder contracts to the installed
+   restart/sleep and delivery lifecycle, fired-series persistence, a complete
+   one-shot overdue policy, and DST/timezone behavior.
 2. **Validate and finish the core first-use contract** (`docs/UX_SIMPLIFICATION.md`) — remove
    the hidden questionnaire/coach implementation debt, finish keyboard and narrow-layout checks,
    and run the representative-user activation protocol: save one real tab, see its
@@ -35,6 +36,23 @@ Last updated: 2026-07-16.
    rendered and user-flow evidence.
 
 ## Done (newest first)
+
+- **2026-07-16 -- Recurring reminder restart recovery / P0-10** -- reminder
+  reconciliation now re-arms an overdue recurring item, nested item, group, or
+  category reminder at its first future wall-clock occurrence. It skips missed
+  occurrences without emitting catch-up notifications or mutating persisted state;
+  overdue one-shots remain unscheduled for the in-app Past Due path, and recurrences
+  beyond `until` remain expired. The production-extracted background contract starts
+  with nine exact alarms, advances its clock eight days through the real startup
+  listener, clears four newly stale one-shots, and retains five alarms by re-arming
+  four daily/multi-day/biweekly/monthly series plus the subscription. Repeating the
+  reconciliation is idempotent, preserves unrelated alarms, and injected create and
+  clear failures return two structured operations without a false success, state
+  write, mutation, or notification. The complete static/deterministic block passes.
+  **Implemented: yes. Verified: partial (clock-controlled mocked-browser lifecycle
+  only). User-validated: no. Released: no.** No schema, permission, or UI behavior
+  changed. Actual installed-Chrome restart/sleep/delivery, fired-series persistence,
+  the rendered one-shot Past Due policy, and DST/timezone behavior remain open.
 
 - **2026-07-16 -- Import byte-limit and quota-sized rollback evidence / P0-05 +
   P0-08** -- extended the production-extracted export/import suite with four
@@ -383,7 +401,10 @@ Last updated: 2026-07-16.
   an exact 20,971,520-byte valid import reaching preview, a one-byte-over valid
   import rejected before FileReader, and two 10,551,296-byte replace/merge imports
   rolling back after injected typed quota rejection with no false success,
-  post-import warning paths, alarm-map reconciliation, no-retry capture conflicts,
+  post-import warning paths, an exact nine-alarm initial map, and an advanced-clock
+  startup reconciliation that clears four newly overdue one-shots and re-arms four
+  recurring item/nested/group/category reminders without catch-up notifications,
+  state writes, or mutation, plus no-retry capture conflicts,
   and action-scoped Undo across pending capture, newer-edit interruption, restored
   history order, tab-open retry, persistence-failure recovery, central-writer conflict/failure
   recovery, immutable client candidates, queued-successor invalidation, overlapping
@@ -395,8 +416,9 @@ Last updated: 2026-07-16.
   Remaining P0 gaps are installed
   cross-context/service-worker restart and unknown-ack lifecycle evidence,
   actual Chrome quota allocation, File/FileReader/preview behavior, and installed
-  browser legacy/current import round trips, overdue/recurrence/
-  DST reminder semantics, installed-browser Archive/Trash quota and export/import
+  browser legacy/current import round trips, installed reminder restart/sleep and
+  delivery behavior, fired-series persistence, rendered one-shot Past Due behavior,
+  and DST/timezone semantics, installed-browser Archive/Trash quota and export/import
   recovery, and a complete
   unpacked-extension evidence bundle. Static and mocked contracts do not close
   those browser-runtime risks.

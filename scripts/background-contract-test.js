@@ -7,17 +7,27 @@ const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
 const fixedNow = Date.UTC(2030, 0, 15, 12, 0, 0);
+const dayMs = 24 * 60 * 60 * 1000;
+let currentNow = fixedNow;
 const deepClone = value => JSON.parse(JSON.stringify(value));
 
 class FixedDate extends Date {
   constructor(...args) {
-    super(...(args.length ? args : [fixedNow]));
+    super(...(args.length ? args : [currentNow]));
   }
 
   static now() {
-    return fixedNow;
+    return currentNow;
   }
 }
+
+const recurringTimes = {
+  item: fixedNow - (2 * dayMs) - 60_000,
+  nested: fixedNow - (5 * dayMs) - 120_000,
+  group: fixedNow - (15 * dayMs),
+  category: fixedNow - (32 * dayMs),
+  expired: fixedNow - (2 * dayMs),
+};
 
 const state = {
   _revision: 2,
@@ -29,19 +39,49 @@ const state = {
     categories: [{
       id: 'category',
       name: 'Category',
-      reminders: [{ at: fixedNow + 60_000, notified: false }],
+      reminders: [
+        { at: fixedNow + 60_000, notified: false },
+        { at: recurringTimes.category, notified: false, recur: { every: 'month', interval: 1 } },
+      ],
       groups: [{
         id: 'group',
         name: 'Inbox',
-        reminders: [{ at: fixedNow + 120_000, notified: false }],
+        reminders: [
+          { at: fixedNow + 120_000, notified: false },
+          { at: recurringTimes.group, notified: false, recur: { every: 'week', interval: 2 } },
+        ],
         items: [
           { id: 'item', type: 'tab', title: 'Item', url: 'https://item.test', reminder: { at: fixedNow + 180_000, notified: false } },
           {
             id: 'stack',
             type: 'stack',
-            items: [{ id: 'nested', type: 'todo', text: 'Nested', reminder: { at: fixedNow + 240_000, notified: false } }],
+            items: [
+              { id: 'nested', type: 'todo', text: 'Nested', reminder: { at: fixedNow + 240_000, notified: false } },
+              {
+                id: 'nested-recurring',
+                type: 'todo',
+                text: 'Nested recurring',
+                reminder: { at: recurringTimes.nested, notified: false, recur: { every: 'day', interval: 2 } },
+              },
+            ],
           },
           { id: 'past', type: 'todo', text: 'Past', reminder: { at: fixedNow - 1, notified: false } },
+          {
+            id: 'daily-recurring',
+            type: 'todo',
+            text: 'Daily recurring',
+            reminder: { at: recurringTimes.item, notified: false, recur: { every: 'day', interval: 1 } },
+          },
+          {
+            id: 'expired-recurring',
+            type: 'todo',
+            text: 'Expired recurring',
+            reminder: {
+              at: recurringTimes.expired,
+              notified: false,
+              recur: { every: 'day', interval: 1, until: fixedNow - 1 },
+            },
+          },
         ],
       }],
     }],
@@ -56,16 +96,52 @@ const staleState = { ...deepClone(state), _revision: 1 };
 let persistedState = deepClone(state);
 const expectedReminderNames = [
   'te-creminder-category-0',
+  'te-creminder-category-1',
   'te-greminder-group-0',
+  'te-greminder-group-1',
+  'te-reminder-daily-recurring',
   'te-reminder-item',
   'te-reminder-nested',
+  'te-reminder-nested-recurring',
   'te-sub-subscription',
 ].sort();
 const staleReminderNames = [
   'te-creminder-missing-0',
   'te-greminder-missing-0',
+  'te-reminder-expired-recurring',
   'te-reminder-missing',
+  'te-reminder-past',
   'te-sub-missing',
+].sort();
+const subscriptionReminderAt = (() => {
+  const when = new Date('2030-02-20T09:00');
+  when.setDate(when.getDate() - 3);
+  return when.getTime();
+})();
+const initialAlarmTimes = new Map([
+  ['te-creminder-category-0', fixedNow + 60_000],
+  ['te-creminder-category-1', recurringTimes.category + (62 * dayMs)],
+  ['te-greminder-group-0', fixedNow + 120_000],
+  ['te-greminder-group-1', recurringTimes.group + (28 * dayMs)],
+  ['te-reminder-daily-recurring', recurringTimes.item + (3 * dayMs)],
+  ['te-reminder-item', fixedNow + 180_000],
+  ['te-reminder-nested', fixedNow + 240_000],
+  ['te-reminder-nested-recurring', recurringTimes.nested + (6 * dayMs)],
+  ['te-sub-subscription', subscriptionReminderAt],
+]);
+const restartNow = fixedNow + (8 * dayMs);
+const restartAlarmTimes = new Map([
+  ['te-creminder-category-1', recurringTimes.category + (62 * dayMs)],
+  ['te-greminder-group-1', recurringTimes.group + (28 * dayMs)],
+  ['te-reminder-daily-recurring', recurringTimes.item + (11 * dayMs)],
+  ['te-reminder-nested-recurring', recurringTimes.nested + (14 * dayMs)],
+  ['te-sub-subscription', subscriptionReminderAt],
+]);
+const restartStaleNames = [
+  'te-creminder-category-0',
+  'te-greminder-group-0',
+  'te-reminder-item',
+  'te-reminder-nested',
 ].sort();
 
 const alarmMap = new Map([
@@ -79,6 +155,7 @@ const listeners = Object.create(null);
 let storageMode = 'normal';
 let conflictRead = 0;
 let randomSequence = 0;
+let alarmFailure = null;
 
 const event = name => ({
   addListener(listener) {
@@ -126,10 +203,12 @@ const chrome = {
       return [...alarmMap.values()].map(deepClone);
     },
     async create(name, options) {
+      if (alarmFailure?.create === name) throw new Error('Injected alarm create failure.');
       alarmCalls.created.push({ name, when: options.when });
       alarmMap.set(name, { name, scheduledTime: options.when });
     },
     async clear(name) {
+      if (alarmFailure?.clear === name) throw new Error('Injected alarm clear failure.');
       alarmCalls.cleared.push(name);
       return alarmMap.delete(name);
     },
@@ -188,6 +267,12 @@ const alarmSnapshot = () => [...alarmMap.values()]
   .sort((a, b) => a.name.localeCompare(b.name))
   .map(alarm => ({ name: alarm.name, scheduledTime: alarm.scheduledTime }));
 
+function assertAlarmTimes(expected, label) {
+  for (const [name, scheduledTime] of expected) {
+    assert.equal(alarmMap.get(name)?.scheduledTime, scheduledTime, `${label}: ${name} must use its exact next time`);
+  }
+}
+
 async function testReminderReconciliation() {
   const startupResult = await testApi.waitForStartupReconciliation();
   assert.equal(startupResult.ok, true);
@@ -196,10 +281,12 @@ async function testReminderReconciliation() {
   assert.equal(startupResult.staleCleared, staleReminderNames.length);
   assert.deepEqual(alarmCalls.created.map(call => call.name).sort(), expectedReminderNames);
   assert.deepEqual(alarmCalls.cleared.sort(), staleReminderNames);
+  assertAlarmTimes(initialAlarmTimes, 'service-worker startup reconciliation');
 
   for (const name of expectedReminderNames) assert.equal(alarmMap.has(name), true, `${name} was not scheduled`);
   for (const name of staleReminderNames) assert.equal(alarmMap.has(name), false, `${name} was not cleared`);
   assert.equal(alarmMap.has('te-reminder-past'), false, 'past item reminders must not be recreated');
+  assert.equal(alarmMap.has('te-reminder-expired-recurring'), false, 'expired recurrence must not be recreated');
   assert.equal(alarmMap.has('te-sub-paused-subscription'), false, 'paused subscriptions must not be recreated');
   assert.equal(alarmMap.has('other-alarm'), true, 'unrelated alarms must be preserved');
   assert.equal(alarmMap.has('te-pomodoro'), true, 'other Locus alarms must be preserved');
@@ -215,6 +302,68 @@ async function testReminderReconciliation() {
   assert.deepEqual(alarmCalls.cleared, []);
   assert.deepEqual(alarmCalls.created.map(call => call.name).sort(), expectedReminderNames);
   assert.deepEqual(alarmSnapshot(), beforeSecondRun, 'a second reconciliation must not change alarm state');
+
+  const stateBeforeRestart = deepClone(persistedState);
+  const storageSetsBeforeRestart = captureCalls.storageSets;
+  const notificationsBeforeRestart = captureCalls.notifications.length;
+  currentNow = restartNow;
+  alarmCalls.created.length = 0;
+  alarmCalls.cleared.length = 0;
+  listeners.startup();
+  const restartResult = await testApi.waitForStartupReconciliation();
+  assert.equal(restartResult.ok, true);
+  assert.equal(restartResult.reason, 'browser-startup');
+  assert.equal(restartResult.expected, restartAlarmTimes.size);
+  assert.equal(restartResult.scheduled, restartAlarmTimes.size);
+  assert.equal(restartResult.staleCleared, restartStaleNames.length);
+  assert.deepEqual(alarmCalls.created.map(call => call.name).sort(), [...restartAlarmTimes.keys()].sort());
+  assert.deepEqual(alarmCalls.cleared.sort(), restartStaleNames);
+  assertAlarmTimes(restartAlarmTimes, 'advanced-clock browser startup reconciliation');
+  for (const name of restartStaleNames) assert.equal(alarmMap.has(name), false, `${name} must clear after becoming overdue`);
+  assert.equal(alarmMap.has('other-alarm'), true, 'restart reconciliation must preserve unrelated alarms');
+  assert.equal(alarmMap.has('te-pomodoro'), true, 'restart reconciliation must preserve other Locus alarms');
+  assert.deepEqual(persistedState, stateBeforeRestart, 'reconciliation must not mutate persisted reminder data');
+  assert.equal(captureCalls.storageSets, storageSetsBeforeRestart, 'reconciliation must not write workspace state');
+  assert.equal(captureCalls.notifications.length, notificationsBeforeRestart, 'reconciliation must not emit catch-up notifications');
+
+  const beforeRestartIdempotence = alarmSnapshot();
+  alarmCalls.created.length = 0;
+  alarmCalls.cleared.length = 0;
+  const restartSecond = await testApi.requestReminderAlarmReconciliation('contract-restart-idempotence');
+  assert.equal(restartSecond.ok, true);
+  assert.equal(restartSecond.expected, restartAlarmTimes.size);
+  assert.equal(restartSecond.scheduled, restartAlarmTimes.size);
+  assert.equal(restartSecond.staleCleared, 0);
+  assert.deepEqual(alarmCalls.cleared, []);
+  assert.deepEqual(alarmCalls.created.map(call => call.name).sort(), [...restartAlarmTimes.keys()].sort());
+  assert.deepEqual(alarmSnapshot(), beforeRestartIdempotence, 'repeated restart reconciliation must be idempotent');
+  assert.deepEqual(persistedState, stateBeforeRestart, 'idempotent reconciliation must not mutate reminder data');
+
+  const failedCreateName = 'te-reminder-daily-recurring';
+  const failedClearName = 'te-reminder-failure-stale';
+  alarmMap.set(failedClearName, { name: failedClearName, scheduledTime: restartNow + 1 });
+  alarmFailure = { create: failedCreateName, clear: failedClearName };
+  alarmCalls.created.length = 0;
+  alarmCalls.cleared.length = 0;
+  const failedResult = await testApi.requestReminderAlarmReconciliation('contract-alarm-failures');
+  assert.equal(failedResult.ok, false, 'alarm API failures must not report reconciliation success');
+  assert.equal(failedResult.expected, restartAlarmTimes.size);
+  assert.equal(failedResult.scheduled, restartAlarmTimes.size - 1);
+  assert.equal(failedResult.staleCleared, 0);
+  assert.deepEqual(
+    Array.from(failedResult.errors, error => ({ operation: error.operation, name: error.name }))
+      .sort((a, b) => a.operation.localeCompare(b.operation)),
+    [
+      { operation: 'clear-stale', name: failedClearName },
+      { operation: 'schedule', name: failedCreateName },
+    ],
+  );
+  assert.equal(alarmMap.has(failedClearName), true, 'a failed clear must leave the stale alarm observable');
+  assert.deepEqual(persistedState, stateBeforeRestart, 'alarm API failures must not mutate reminder data');
+  assert.equal(captureCalls.storageSets, storageSetsBeforeRestart, 'alarm API failures must not write workspace state');
+  assert.equal(captureCalls.notifications.length, notificationsBeforeRestart, 'alarm API failures must not emit catch-up notifications');
+  alarmFailure = null;
+  alarmMap.delete(failedClearName);
 }
 
 async function assertCaptureConflict(runCapture, source) {
@@ -329,7 +478,7 @@ async function testCaptureConflicts() {
   await testReminderReconciliation();
   await testCentralStateWriteProtocol();
   await testCaptureConflicts();
-  console.log('Background contracts passed');
+  console.log(`Background contracts passed: reminderInitial=${initialAlarmTimes.size}, reminderRestart=${restartAlarmTimes.size}, recurringRearmed=${restartAlarmTimes.size - 1}, restartStale=${restartStaleNames.length}, alarmFailureOps=2`);
 })().catch(error => {
   console.error(error);
   process.exitCode = 1;

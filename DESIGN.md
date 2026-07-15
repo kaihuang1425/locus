@@ -513,3 +513,18 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   real quota allocation, DOM-backed sanitizer transformations, alarm outcomes,
   and installed round trips are open. No production UI, schema, permission,
   user-validation, or release status changed.
+- **2026-07-16** -- Completed a **recurring reminder restart-recovery cycle**
+  against P0-10. Background reconciliation now advances an overdue recurring item,
+  nested item, group, or category reminder to its first future wall-clock occurrence
+  without replaying missed notifications or mutating persisted state. Expired
+  recurrences and overdue one-shots remain unscheduled. The production-extracted
+  contract creates nine exact initial alarms, advances its clock eight days through
+  the registered browser-startup listener, clears four newly stale one-shots, and
+  retains five alarms by re-arming four daily/multi-day/biweekly/monthly series plus
+  the subscription. Repetition is idempotent; unrelated alarms survive; injected
+  create and clear failures return two structured operations with no false success,
+  state write, mutation, or notification. This is clock-controlled mocked-browser
+  lifecycle evidence only: installed Chrome restart/sleep and delivery behavior,
+  fired-series persistence, rendered Past Due behavior, and DST/timezone semantics
+  remain open. No schema, permission, or UI behavior changed, and the work is not
+  user-validated or released.

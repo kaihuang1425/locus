@@ -359,6 +359,21 @@ function addFutureAlarm(expected, name, at, now) {
   if (Number.isFinite(when) && when > now) expected.set(name, when);
 }
 
+// Reconciliation does not replay missed occurrences. A past recurring reminder
+// is re-armed at its first future wall-clock occurrence so browser restart or
+// sleep cannot silently stop the series, while an overdue one-shot stays in the
+// in-app Past Due list without producing a notification burst.
+function addReminderAlarm(expected, name, reminder, now) {
+  const when = Number(reminder?.at);
+  if (!Number.isFinite(when)) return;
+  if (when > now) {
+    expected.set(name, when);
+    return;
+  }
+  const next = nextRecurTime(when, reminder?.recur, now);
+  if (Number.isFinite(next) && next > now) expected.set(name, next);
+}
+
 function subscriptionReminderTime(sub) {
   if (!sub || sub.paused || sub.remind === false || typeof sub.nextBilling !== 'string') return null;
   const nextBilling = sub.nextBilling.trim();
@@ -380,7 +395,7 @@ function collectFutureReminderAlarms(state, now = Date.now()) {
     for (const item of items) {
       if (!item || typeof item !== 'object') continue;
       if (validId(item.id) && item.reminder) {
-        addFutureAlarm(expected, 'te-reminder-' + item.id, item.reminder.at, now);
+        addReminderAlarm(expected, 'te-reminder-' + item.id, item.reminder, now);
       }
       if (item.type === 'stack') visitItems(item.items);
     }
@@ -390,13 +405,13 @@ function collectFutureReminderAlarms(state, now = Date.now()) {
     for (const cat of (Array.isArray(ws?.categories) ? ws.categories : [])) {
       if (validId(cat?.id) && Array.isArray(cat.reminders)) {
         cat.reminders.forEach((reminder, index) => {
-          if (reminder) addFutureAlarm(expected, `te-creminder-${cat.id}-${index}`, reminder.at, now);
+          if (reminder) addReminderAlarm(expected, `te-creminder-${cat.id}-${index}`, reminder, now);
         });
       }
       for (const group of (Array.isArray(cat?.groups) ? cat.groups : [])) {
         if (validId(group?.id) && Array.isArray(group.reminders)) {
           group.reminders.forEach((reminder, index) => {
-            if (reminder) addFutureAlarm(expected, `te-greminder-${group.id}-${index}`, reminder.at, now);
+            if (reminder) addReminderAlarm(expected, `te-greminder-${group.id}-${index}`, reminder, now);
           });
         }
         visitItems(group?.items);
@@ -518,7 +533,7 @@ void requestReminderAlarmReconciliation('service-worker-start');
 // Returns null when the reminder doesn't recur or has passed its `until` bound.
 // If the service worker slept through several cycles we skip straight to the
 // next future occurrence rather than firing a burst of catch-up notifications.
-function nextRecurTime(at, recur) {
+function nextRecurTime(at, recur, now = Date.now()) {
   if (!recur || !recur.every) return null;
   const interval = Math.max(1, recur.interval || 1);
   const step = (ts) => {
@@ -530,7 +545,6 @@ function nextRecurTime(at, recur) {
     return d.getTime();
   };
   let ts = step(at);
-  const now = Date.now();
   while (ts != null && ts <= now) ts = step(ts);
   if (ts != null && recur.until && ts > recur.until) return null;
   return ts;
