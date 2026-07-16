@@ -359,6 +359,17 @@ not close a blocker; the evidence gate must pass.
 | P0-12 | **First-use overload.** The worktree replaces the visible questionnaire with a localized, focus-trapped, single-task save-first welcome; removes the chained landing handoff; simplifies navigation/top bar/rail; implements a context → Inbox capture/recovery → three-Spaces Home; shows the newest Inbox saves; makes Library routes durable; and gates alternate layouts behind Advanced. Hidden legacy questionnaire code and broader shell residue remain. | Remove dead onboarding residue, finish the complete keyboard/screen-reader and responsive acceptance pass, and test the exact release candidate. | Formative rounds pass; then at least 12/15 new ICP users complete save-and-recover in the target time without coaching. | Open; corrective product shape and the welcome focus fix are implemented; installed accessibility, formative, and validation evidence absent |
 | P0-13 | **Public truth split.** Two landing sites, stale release notes, unsupported roadmap claims, and a concept site with fake quota/account/plugin/release states can mislead users or Store reviewers. The Cloudflare concept and repaired `docs/index.html` candidate are now `noindex`; the owner has not selected a public surface. | Choose one marketing surface; keep prototypes/candidates unpromoted until approved; derive README/Store/privacy/release copy from this ledger. | Claims audit has zero unapproved claims; version/release/channel facts agree; legal pages are final. | Open; surfaces quarantined and core copy repaired, owner decision and final audit open |
 
+P0-04 evidence update (2026-07-16): new-tab and popup state clients now retry only
+the exact `Receiving end does not exist` rejection and stop after three total sends
+of the same immutable candidate. Persistent absence leaves authority unchanged and
+produces typed background-service recovery; closed ports, lost responses, timeouts,
+conflicts, and every other ambiguous outcome remain single-shot. Production-
+extracted tests cover transient and persistent absence in both clients and a channel
+closing after acceptance. This remains deterministic injected-message evidence. The
+user-supplied Edge screenshot establishes the pre-fix symptom only; post-fix
+installed service-worker wake/restart, rendered recovery, cross-context ordering,
+and source-tab behavior remain open.
+
 P0-10 evidence update (2026-07-16): the deterministic pending/Past due policy and a
 production-extracted four-zone local-calendar recurrence contract are present. The
 time-zone matrix covers 23/25-hour days, missing and repeated DST wall times, missing

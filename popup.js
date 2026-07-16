@@ -112,6 +112,34 @@ let popupStateWriteQueue = Promise.resolve();
 let popupStateWriteFailureEpoch = 0;
 let popupCapturePending = false;
 
+const isMissingPopupStateWriteReceiver = error =>
+  /Receiving end does not exist\.?$/i.test(String(error?.message || error || '').trim());
+const configuredPopupReceiverRetryMs = Number(globalThis.LOCUS_STATE_RECEIVER_RETRY_MS);
+const popupReceiverRetryMs = Number.isFinite(configuredPopupReceiverRetryMs) && configuredPopupReceiverRetryMs >= 0
+  ? Math.min(configuredPopupReceiverRetryMs, 1000)
+  : 150;
+
+async function sendPopupStateWriteMessage(candidate) {
+  let missingReceiver = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt > 0) {
+      await new Promise(resolve => setTimeout(resolve, popupReceiverRetryMs * attempt));
+    }
+    try {
+      return await chrome.runtime.sendMessage({ type: 'locus-state-write', state: candidate });
+    } catch (error) {
+      // This exact rejection means no listener accepted the message. Retrying
+      // any other transport failure could duplicate an already committed write.
+      if (!isMissingPopupStateWriteReceiver(error)) throw error;
+      missingReceiver = error;
+    }
+  }
+  const error = new Error('Locus could not reach its background service. Reopen Locus; if this repeats, reload the extension from the browser Extensions page.');
+  error.code = 'LOCUS_STATE_RECEIVER_UNAVAILABLE';
+  error.receiverError = String(missingReceiver?.message || missingReceiver || '');
+  throw error;
+}
+
 async function persistPopupState() {
   if (!state) return;
   // Capture the graph at call time. A queued write must never read a later
@@ -127,7 +155,7 @@ async function persistPopupState() {
     }
     const localRevision = Number(state?._revision) || 0;
     candidate._revision = localRevision;
-    const response = await chrome.runtime.sendMessage({ type: 'locus-state-write', state: candidate });
+    const response = await sendPopupStateWriteMessage(candidate);
     if (!response?.ok) {
       const error = new Error(response?.message || 'Locus could not confirm this save. Reopen the popup, then retry.');
       error.code = response?.code || 'LOCUS_STATE_WRITE_FAILED';

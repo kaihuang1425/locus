@@ -160,7 +160,13 @@ in newtab.css; rail folds to a top strip below 880px.
   requested, assign its current `_revision` only when its turn begins, and accept
   only the next revision receipt. If one request fails, a failure epoch cancels
   every candidate already queued behind it so a rollback graph cannot be sent as
-  another mutation. The service worker runs every background and message write
+  another mutation. A page may resend that same immutable candidate at most twice
+  only when `runtime.sendMessage()` rejects with `Receiving end does not exist`,
+  because no state-write listener accepted that attempt. Exhaustion becomes the
+  typed `LOCUS_STATE_RECEIVER_UNAVAILABLE` failure and keeps the new-tab page behind
+  authoritative recovery. Closed ports, lost or malformed receipts, timeouts, and
+  every other transport failure retain their never-retry, unknown-outcome handling.
+  The service worker runs every background and message write
   through one FIFO, performs the revision comparison inside that queue, and also
   takes the `locus-state-write` Web Lock when available. The FIFO is the modeled
   lock-unavailable boundary for one service-worker lifetime; termination/restart

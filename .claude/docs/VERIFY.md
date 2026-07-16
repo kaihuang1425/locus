@@ -174,18 +174,27 @@ receipt; and dirty-page preservation behind explicit authoritative recovery with
 rebasing. It also covers a newer event beating a stale in-flight recovery read,
 a higher graph remembered before recovery beating a stale read, a delayed exact
 self-event after two receipts, an in-flight ordinary conflict retaining its local
-graph, accepted-but-lost and never-settling receipt recovery, invalid fractional/
-negative baseline rejection, active-capture deferral, debounce cancellation, and
-fail-closed newer-schema handling. It models event ordering and a bounded receipt
-timeout; it does not establish Chrome's installed runtime ordering or service-worker
-lifecycle. The background suite also rejects malformed client and stored revision
-tokens before `storage.set`.
+graph, accepted-but-lost and never-settling receipt recovery, and the state-write
+receiver boundary. One transient `Receiving end does not exist` rejection resends
+the same candidate and succeeds; persistent absence stops after three total attempts
+with unchanged authority and typed recovery; a port closing after acceptance gets
+one attempt only and recovers the accepted graph. The extracted error router shows
+the typed background-service message directly instead of labeling it a storage
+error. The suite also covers invalid
+fractional/negative baseline rejection, active-capture deferral, debounce
+cancellation, and fail-closed newer-schema handling. It models event ordering, a
+bounded receipt timeout, and injected message failures; it does not establish
+Chrome's installed runtime ordering or service-worker lifecycle. The background
+suite also rejects malformed client and stored revision tokens before `storage.set`.
 
 The concurrency suite extracts the production popup client queue, single-tab
-capture flow, and service-worker writer. Before the writer matrix it covers two
+capture flow, and service-worker writer. Before the writer matrix it covers five
 client-queue cases: ordered successes must send immutable candidates at consecutive
-revisions, while a failed first write must invalidate its already-queued successor
-without sending it and permit a fresh post-recovery retry. A separate flow defers
+revisions; a failed first write must invalidate its already-queued successor without
+sending it and permit a fresh post-recovery retry; and transient receiver absence,
+persistent receiver absence, and an ambiguous closed-port receipt must respectively
+retry the immutable candidate, stop after three attempts, and remain single-shot.
+A separate flow defers
 and fails the first popup capture, rejects an overlapping capture before another
 send, verifies that neither source closes, then confirms that a later successful
 retry can close only its own source. The default writer run covers 10 deterministic

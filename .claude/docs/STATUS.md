@@ -13,8 +13,8 @@ Last updated: 2026-07-16.
 
 1. **Finish P0 durability and release evidence** — exercise the centralized
    whole-state writer across real new-tab/popup/background contexts, installed
-   lost/timed-out acknowledgements, storage-change ordering, and service-worker
-   termination/restart;
+   receiver absence, lost/timed-out acknowledgements, storage-change ordering, and
+   service-worker termination/restart;
    add real-browser failure-path evidence for save-before-close; exercise real installed-browser
    Archive/Trash quota persistence and installed-browser export/import round trips at scale; verify actual
    Chrome import quota allocation, File/FileReader and large-file preview behavior,
@@ -39,6 +39,24 @@ Last updated: 2026-07-16.
    rendered and user-flow evidence.
 
 ## Done (newest first)
+
+- **2026-07-16 -- Missing state-write receiver recovery / P0-04** -- new-tab and
+  popup writers now retry only the exact `Receiving end does not exist` rejection,
+  resending the same immutable candidate for at most three total attempts. A
+  persistent absence leaves authoritative storage and local revision unchanged,
+  returns `LOCUS_STATE_RECEIVER_UNAVAILABLE`, blocks queued new-tab edits behind
+  recovery, and identifies the background service instead of reporting generic
+  storage failure. Closed ports, lost responses, timeouts, conflicts, and other
+  transport failures remain single-shot because their commit outcome may be
+  unknown. Production-extracted contracts cover transient and persistent receiver
+  absence in both page clients plus a channel closing after acceptance; the full
+  static/deterministic gate passes. **Implemented: yes.
+  Verified: partial (production-extracted deterministic message-failure contracts
+  only). User-validated: no. Released: no.** No schema, permission, markup, style,
+  or localized dictionaries changed. The supplied installed-Edge screenshot proves
+  the pre-fix failure only; browser policy blocked inspection of the privileged
+  `edge://newtab/` page, so post-fix service-worker wake/restart behavior and rendered
+  recovery remain open.
 
 - **2026-07-16 -- Local-calendar recurrence across time zones / P0-10** --
   daily, weekly, and monthly reminders now advance nominal local-calendar dates
@@ -458,13 +476,14 @@ Last updated: 2026-07-16.
 
 ## Known issues / tensions
 
-- Fresh Chrome runtime verification is unavailable for the current worktree:
-  Chrome is installed, but this session has no configured Chrome-control/native-host
-  path or accessible already-loaded Locus tab; the managed in-app browser also
-  rejected the documented localhost shim. Installed MV3 behavior, the shimmed UI
-  pass, CSP, local favicon loading, service-worker/message lifecycle behavior,
-  actual UI flows, and network silence therefore still require an unpacked-extension
-  pass in an environment that can load the candidate.
+- Fresh installed-runtime verification is unavailable for the current worktree. A
+  live Locus new-tab was present as the privileged `edge://newtab/` surface, but
+  browser security policy blocked page inspection; the managed in-app browser also
+  rejected the documented localhost shim. The supplied screenshot establishes the
+  pre-fix missing-receiver failure, not post-fix behavior. Installed MV3 behavior,
+  the shimmed UI pass, CSP, local favicon loading, service-worker/message lifecycle
+  behavior, actual UI flows, and network silence therefore still require an
+  unpacked-extension pass in an environment that can load the candidate.
 - The legacy multi-step welcome questionnaire, associated helpers, and coach-mark
   paths remain hidden/dead in the source. Remove them after confirming that no
   current binding or migration depends on them.
@@ -512,7 +531,9 @@ Last updated: 2026-07-16.
   popup/new-tab capture no-close behavior, clean/dirty external-state handling,
   no-op boot suppression, legacy settings normalization, authoritative failed-capture
   recovery, lost/timed-out receipt recovery, stale-read protection, delayed-event
-  handling, invalid-token rejection, dirty ordinary-write preservation,
+  handling, invalid-token rejection, transient and persistent missing-receiver
+  handling in new-tab and popup, ambiguous closed-port no-retry behavior, dirty
+  ordinary-write preservation,
   browser-effect interruption, and 10,000 seeded lockless schedules.
   Remaining P0 gaps are installed
   cross-context/service-worker restart and unknown-ack lifecycle evidence,

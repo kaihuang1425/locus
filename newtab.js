@@ -937,6 +937,33 @@ const State = (() => {
     }
     cancelPersistTimer();
   }
+  const isMissingStateWriteReceiver = error =>
+    /Receiving end does not exist\.?$/i.test(String(error?.message || error || '').trim());
+  const configuredReceiverRetryMs = Number(globalThis.LOCUS_STATE_RECEIVER_RETRY_MS);
+  const receiverRetryMs = Number.isFinite(configuredReceiverRetryMs) && configuredReceiverRetryMs >= 0
+    ? Math.min(configuredReceiverRetryMs, 1000)
+    : 150;
+  async function sendStateWriteMessage(candidate) {
+    let missingReceiver = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      if (attempt > 0) {
+        await new Promise(resolve => setTimeout(resolve, receiverRetryMs * attempt));
+      }
+      try {
+        return await chrome.runtime.sendMessage({ type: 'locus-state-write', state: candidate });
+      } catch (error) {
+        // This exact rejection means no listener accepted the message, so a
+        // bounded retry cannot duplicate a committed write. Every other channel
+        // failure keeps its unknown-outcome, never-retry semantics.
+        if (!isMissingStateWriteReceiver(error)) throw error;
+        missingReceiver = error;
+      }
+    }
+    const error = new Error('Locus could not reach its background service. Reload Locus; if this repeats, reload the extension from the browser Extensions page.');
+    error.code = 'LOCUS_STATE_RECEIVER_UNAVAILABLE';
+    error.receiverError = String(missingReceiver?.message || missingReceiver || '');
+    throw error;
+  }
   async function requestStateWrite(candidate) {
     const localRevision = storedRevision(state);
     if (localRevision == null) {
@@ -963,7 +990,7 @@ const State = (() => {
         }, receiptTimeoutMs);
       });
       const response = await Promise.race([
-        chrome.runtime.sendMessage({ type: 'locus-state-write', state: candidate }),
+        sendStateWriteMessage(candidate),
         receiptTimeout,
       ]);
       if (!response?.ok) {
@@ -986,11 +1013,14 @@ const State = (() => {
       // effects fail-closed until that authoritative graph is reloaded.
       if (recoveryRequired) throw recoveryError();
     } catch (error) {
-      // A transport failure, malformed/lost receipt, timeout, or writer
-      // conflict all leave the commit outcome unknown to this page. Block every
-      // queued successor centrally; callers may roll back their display, but
-      // only an authoritative reread or reload can resume persistence.
-      if (error && typeof error === 'object') error.locusExpectedStateJson = inFlightExpectedStateJson;
+      // An exhausted missing-receiver sequence leaves authority unchanged but
+      // still leaves this local graph unsaved. Every other transport failure,
+      // malformed/lost receipt, timeout, or writer conflict may have an unknown
+      // commit outcome. Both cases block queued successors; only an authoritative
+      // reread or reload can resume persistence.
+      if (error && typeof error === 'object' && error.code !== 'LOCUS_STATE_RECEIVER_UNAVAILABLE') {
+        error.locusExpectedStateJson = inFlightExpectedStateJson;
+      }
       requireRecovery();
       throw error;
     } finally {
@@ -2313,7 +2343,7 @@ async function refreshStorageUsage() {
 function handleStorageError(err) {
   const msg = String(err?.message || err || '');
   const quotaHit = /quota|QUOTA/i.test(msg);
-  if (err?.code === 'LOCUS_STATE_CONFLICT') {
+  if (err?.code === 'LOCUS_STATE_CONFLICT' || err?.code === 'LOCUS_STATE_RECEIVER_UNAVAILABLE') {
     try { toast(msg, { danger: true, duration: 7000 }); } catch {}
   } else if (quotaHit) {
     showStorageFull(msg);

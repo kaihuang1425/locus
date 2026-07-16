@@ -594,3 +594,15 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   transitions, live operating-system time-zone changes, notification delivery, and
   rendered Past Due interactions remain open. No schema, permission, markup, style,
   localized copy, user-validation, or release status changed.
+- **2026-07-16** -- Completed a **missing state-write receiver recovery cycle**
+  against P0-04. New-tab and popup persistence now retry only the exact missing-
+  receiver rejection, using the same immutable candidate for at most three total
+  attempts. Persistent absence leaves authority unchanged and surfaces a typed
+  background-service failure; ambiguous port closure, lost responses, timeouts,
+  conflicts, and other failures remain single-shot. Production-extracted new-tab
+  and popup contracts cover transient absence, persistent absence, and closure
+  after acceptance. This is partial deterministic message-failure evidence only:
+  the supplied Edge screenshot proves the pre-fix symptom, browser policy blocked
+  privileged new-tab inspection, and post-fix installed service-worker lifecycle
+  plus rendered recovery remain open. No schema, permission, markup, style,
+  localized dictionary, user-validation, or release status changed.

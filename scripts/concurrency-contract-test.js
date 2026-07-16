@@ -121,6 +121,7 @@ function createPopupClientHarness(initialState = makeState()) {
   const sent = [];
   let sendCount = 0;
   let firstGate = null;
+  let responseMode = 'normal';
 
   const context = vm.createContext({
     __initialPopupState: clone(initialState),
@@ -136,11 +137,23 @@ function createPopupClientHarness(initialState = makeState()) {
             await firstGate.wait;
             return firstGate.response;
           }
+          if (responseMode === 'missing-receiver-once') {
+            responseMode = 'normal';
+            throw new Error('Could not establish connection. Receiving end does not exist.');
+          }
+          if (responseMode === 'missing-receiver-always') {
+            throw new Error('Could not establish connection. Receiving end does not exist.');
+          }
+          if (responseMode === 'close-after-accept') {
+            throw new Error('The message port closed before a response was received.');
+          }
           const localRevision = Number(candidate?._revision) || 0;
           return { ok: true, revision: localRevision + 1 };
         },
       },
     },
+    LOCUS_STATE_RECEIVER_RETRY_MS: 1,
+    setTimeout,
     structuredClone,
   });
 
@@ -164,6 +177,7 @@ function createPopupClientHarness(initialState = makeState()) {
   return {
     client: context.__popupClient,
     sent,
+    setResponseMode(mode) { responseMode = mode; },
     deferFirst(response) {
       let signalStarted;
       let release;
@@ -223,6 +237,37 @@ async function deterministicPopupQueueFailureInvalidation() {
   await harness.client.persist();
   assert.equal(harness.sent.length, 2, 'A fresh candidate after recovery must be allowed to retry');
   assert.deepEqual(stateTokens(harness.sent[1]), ['popup-reloaded', 'popup-retry']);
+  clientQueueCases++;
+}
+
+async function deterministicPopupReceiverAvailability() {
+  const transient = createPopupClientHarness();
+  transient.setResponseMode('missing-receiver-once');
+  transient.client.addToken('popup-transient-receiver');
+  await transient.client.persist();
+  assert.equal(transient.sent.length, 2, 'A transient missing popup receiver must retry exactly once');
+  assert.deepEqual(transient.sent[1], transient.sent[0], 'A popup receiver retry must resend the immutable candidate');
+  assert.equal(transient.client.read()._revision, 1, 'A confirmed popup receiver retry must adopt its revision');
+  clientQueueCases++;
+
+  const absent = createPopupClientHarness();
+  absent.setResponseMode('missing-receiver-always');
+  absent.client.addToken('popup-absent-receiver');
+  const absentOutcome = await Promise.allSettled([absent.client.persist()]);
+  assert.equal(absentOutcome[0].status, 'rejected');
+  assert.equal(absentOutcome[0].reason?.code, 'LOCUS_STATE_RECEIVER_UNAVAILABLE');
+  assert.equal(absent.sent.length, 3, 'A persistently absent popup receiver must stop after three attempts');
+  assert.equal(absent.client.read()._revision, 0, 'An unconfirmed popup write must not advance its local revision');
+  clientQueueCases++;
+
+  const ambiguous = createPopupClientHarness();
+  ambiguous.setResponseMode('close-after-accept');
+  ambiguous.client.addToken('popup-ambiguous-receipt');
+  const ambiguousOutcome = await Promise.allSettled([ambiguous.client.persist()]);
+  assert.equal(ambiguousOutcome[0].status, 'rejected');
+  assert.notEqual(ambiguousOutcome[0].reason?.code, 'LOCUS_STATE_RECEIVER_UNAVAILABLE');
+  assert.equal(ambiguous.sent.length, 1, 'An ambiguous popup receipt failure must never be retried');
+  assert.equal(ambiguous.client.read()._revision, 0, 'An ambiguous popup receipt must not advance its local revision');
   clientQueueCases++;
 }
 
@@ -618,6 +663,7 @@ async function runRandomizedLocklessStress() {
 (async () => {
   await deterministicPopupQueueSuccess();
   await deterministicPopupQueueFailureInvalidation();
+  await deterministicPopupReceiverAvailability();
   await deterministicPopupCaptureFailureOverlap();
   await runDeterministicMatrix();
   const totals = await runRandomizedLocklessStress();

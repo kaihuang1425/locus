@@ -30,6 +30,7 @@ const trashSource = extractBetween('function normalizeExpiredTrash(', '\n\nfunct
 const ensureOnboardingSource = extractBetween('function ensureOnboarding(settings) {', '\n\n//');
 const normalizeLoadedSource = extractBetween('function normalizeLoadedSettings() {', '\n\nfunction initAfterLoad()');
 const ordinaryFailureSource = extractBetween('async function recoverAfterOrdinaryWriteFailure(error) {', '\n\nfunction handleObservedStoredState(stored)');
+const storageErrorRouterSource = extractBetween('function handleStorageError(err) {', '\n\nfunction showStorageFull(msg)');
 
 let stored;
 let writeCalls = 0;
@@ -106,6 +107,13 @@ const chrome = {
     async sendMessage(message) {
       assert.equal(message?.type, 'locus-state-write');
       writeCalls += 1;
+      if (stateWriteResponseMode === 'missing-receiver-once') {
+        stateWriteResponseMode = 'normal';
+        throw new Error('Could not establish connection. Receiving end does not exist.');
+      }
+      if (stateWriteResponseMode === 'missing-receiver-always') {
+        throw new Error('Could not establish connection. Receiving end does not exist.');
+      }
       const candidate = clone(message.state);
       if (deferredWriter) {
         const pending = deferredWriter;
@@ -121,6 +129,11 @@ const chrome = {
       const revision = localRevision + 1;
       candidate._revision = revision;
       stored = { te: candidate };
+      if (stateWriteResponseMode === 'close-after-accept') {
+        acceptedStateObserver?.(clone(candidate));
+        stateWriteResponseMode = 'normal';
+        throw new Error('The message port closed before a response was received.');
+      }
       if (stateWriteResponseMode === 'drop-after-accept') {
         acceptedStateObserver?.(clone(candidate));
         stateWriteResponseMode = 'normal';
@@ -148,6 +161,7 @@ const context = vm.createContext({
   clearTimeout,
   console,
   CURRENT_SCHEMA: currentSchema,
+  LOCUS_STATE_RECEIVER_RETRY_MS: 1,
   LOCUS_STATE_WRITE_TIMEOUT_MS: 25,
   THEMES: [{ id: 'folio' }, { id: 'folio-dark' }],
   esc: value => String(value ?? ''),
@@ -297,6 +311,46 @@ function assertStableReminderIds(entity, label) {
   assert.equal(State.isRecoveryRequired(), false);
   assert.equal(State.get().settings.secondSelfMarker, 'second-receipt-won');
 
+  State.get().settings.transientReceiverMarker = 'retried-before-accept';
+  stateWriteResponseMode = 'missing-receiver-once';
+  const writesBeforeTransientReceiver = writeCalls;
+  await State.persistNow();
+  assert.equal(writeCalls, writesBeforeTransientReceiver + 2, 'one missing receiver must make one safe retry');
+  assert.equal(stored.te.settings.transientReceiverMarker, 'retried-before-accept');
+  assert.equal(State.isRecoveryRequired(), false, 'a successful receiver retry must not block later edits');
+
+  const authoritativeBeforeMissingReceiver = clone(stored.te);
+  State.get().settings.missingReceiverMarker = 'must-not-persist';
+  stateWriteResponseMode = 'missing-receiver-always';
+  const writesBeforeMissingReceiver = writeCalls;
+  await assert.rejects(
+    State.persistNow(),
+    error => error?.code === 'LOCUS_STATE_RECEIVER_UNAVAILABLE',
+    'persistent receiver absence must surface a typed background-service failure',
+  );
+  assert.equal(writeCalls, writesBeforeMissingReceiver + 3, 'receiver retries must be strictly bounded');
+  assert.deepEqual(stored.te, authoritativeBeforeMissingReceiver, 'a missing receiver must never change authority');
+  assert.equal(State.get().settings.missingReceiverMarker, 'must-not-persist', 'the local graph stays visible behind recovery');
+  assert.equal(State.isRecoveryRequired(), true);
+  stateWriteResponseMode = 'normal';
+  await State.recoverAuthoritative();
+  assert.equal(State.get().settings.missingReceiverMarker, undefined);
+
+  State.get().settings.closedChannelMarker = 'accepted-before-close';
+  stateWriteResponseMode = 'close-after-accept';
+  const writesBeforeClosedChannel = writeCalls;
+  await assert.rejects(
+    State.persistNow(),
+    error => /message port closed/i.test(String(error?.message))
+      && error?.code !== 'LOCUS_STATE_RECEIVER_UNAVAILABLE',
+    'a possibly accepted write with a closed channel must not be classified as safe to retry',
+  );
+  assert.equal(writeCalls, writesBeforeClosedChannel + 1, 'unknown outcomes must never be retried');
+  assert.equal(stored.te.settings.closedChannelMarker, 'accepted-before-close');
+  assert.equal(State.isRecoveryRequired(), true);
+  await State.recoverAuthoritative();
+  assert.equal(State.get().settings.closedChannelMarker, 'accepted-before-close');
+
   const activeCapture = State.snapshot('browser effects still pending');
   assert.equal(State.beginCaptureAction(activeCapture), true);
   const duringCapture = clone(stored.te);
@@ -407,6 +461,27 @@ function assertStableReminderIds(entity, label) {
   await assert.rejects(State.recoverAuthoritative(), error => error?.code === 'LOCUS_STATE_NEWER_SCHEMA');
   assert.equal(State.isRecoveryRequired(), true, 'newer-schema recovery must stay fail-closed');
   await assert.rejects(State.persistNow(), error => error?.code === 'LOCUS_STATE_RECOVERY_REQUIRED');
+
+  const routedToasts = [];
+  const storageErrorRouterContext = vm.createContext({
+    __routedToasts: routedToasts,
+    showStorageFull(message) { routedToasts.push(`quota:${message}`); },
+    toast(message, options) { routedToasts.push({ message, options }); },
+  });
+  vm.runInContext(
+    `${storageErrorRouterSource}\nglobalThis.__handleStorageError = handleStorageError;`,
+    storageErrorRouterContext,
+    { filename: 'newtab-storage-error-router.js' },
+  );
+  storageErrorRouterContext.__handleStorageError({
+    code: 'LOCUS_STATE_RECEIVER_UNAVAILABLE',
+    message: 'Locus could not reach its background service.',
+  });
+  assert.equal(routedToasts[0]?.message, 'Locus could not reach its background service.');
+  assert.equal(routedToasts[0]?.options?.danger, true);
+  assert.equal(routedToasts[0]?.options?.duration, 7000);
+  storageErrorRouterContext.__handleStorageError(new Error('Injected generic failure'));
+  assert.equal(routedToasts[1]?.message, 'Storage error: Injected generic failure');
 
   console.log('State sync contracts passed');
 })().catch(error => {
