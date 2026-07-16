@@ -606,3 +606,15 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   privileged new-tab inspection, and post-fix installed service-worker lifecycle
   plus rendered recovery remain open. No schema, permission, markup, style,
   localized dictionary, user-validation, or release status changed.
+- **2026-07-16** -- Completed the **persistent receiver-recovery follow-up** for
+  P0-04. A request deadline now closes its receiver-retry lifecycle, so a delayed
+  no-listener rejection cannot start abandoned sends after timeout recovery. The
+  inert recovery overlay marks only `LOCUS_STATE_RECEIVER_UNAVAILABLE` for an
+  extension-runtime restart; its existing button then uses `chrome.runtime.reload()`
+  to replace a stale unpacked service worker, with page reload as an unavailable-API
+  fallback. Revision conflicts, quota failures, and unknown acknowledgements retain
+  page-only recovery, avoiding disruption to unrelated open Locus pages. The
+  production-extracted state-sync contract covers the post-timeout boundary, scoped
+  action, ordinary-write code propagation, and fallback. Installed browser behavior
+  remains unverified in this environment. No schema, permission, markup, style,
+  localized copy, user-validation, or release status changed.

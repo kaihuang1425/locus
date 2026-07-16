@@ -178,9 +178,12 @@ graph, accepted-but-lost and never-settling receipt recovery, and the state-writ
 receiver boundary. One transient `Receiving end does not exist` rejection resends
 the same candidate and succeeds; persistent absence stops after three total attempts
 with unchanged authority and typed recovery; a port closing after acceptance gets
-one attempt only and recovers the accepted graph. The extracted error router shows
-the typed background-service message directly instead of labeling it a storage
-error. The suite also covers invalid
+one attempt only and recovers the accepted graph. A delayed no-receiver rejection
+arriving after the receipt deadline cannot start a late retry. The extracted error
+router shows the typed background-service message directly instead of labeling it a
+storage error. The recovery-overlay contract restarts the extension runtime only for
+that typed absence, retains page-only reload for reconciliation failures, and falls
+back to page reload when `runtime.reload()` is unavailable. The suite also covers invalid
 fractional/negative baseline rejection, active-capture deferral, debounce
 cancellation, and fail-closed newer-schema handling. It models event ordering, a
 bounded receipt timeout, and injected message failures; it does not establish

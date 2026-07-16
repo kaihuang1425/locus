@@ -46,17 +46,22 @@ Last updated: 2026-07-16.
   persistent absence leaves authoritative storage and local revision unchanged,
   returns `LOCUS_STATE_RECEIVER_UNAVAILABLE`, blocks queued new-tab edits behind
   recovery, and identifies the background service instead of reporting generic
-  storage failure. Closed ports, lost responses, timeouts, conflicts, and other
-  transport failures remain single-shot because their commit outcome may be
-  unknown. Production-extracted contracts cover transient and persistent receiver
-  absence in both page clients plus a channel closing after acceptance; the full
-  static/deterministic gate passes. **Implemented: yes.
-  Verified: partial (production-extracted deterministic message-failure contracts
-  only). User-validated: no. Released: no.** No schema, permission, markup, style,
-  or localized dictionaries changed. The supplied installed-Edge screenshot proves
-  the pre-fix failure only; browser policy blocked inspection of the privileged
-  `edge://newtab/` page, so post-fix service-worker wake/restart behavior and rendered
-  recovery remain open.
+  storage failure. A receipt timeout now closes the retry lifecycle, preventing a
+  delayed no-receiver rejection from launching abandoned sends. For this typed
+  failure only, the recovery button restarts the extension runtime so a stale
+  unpacked service worker can be replaced; unsupported runtime reload falls back to
+  the existing page reload, while conflicts and unknown outcomes remain page-only.
+  Closed ports, lost responses, timeouts, conflicts, and other transport failures
+  remain single-shot because their commit outcome may be unknown. Production-
+  extracted contracts cover transient, persistent, and post-timeout receiver
+  absence, both page clients, a channel closing after acceptance, the scoped runtime-
+  restart action, and its fallback; the full static/deterministic gate passes.
+  **Implemented: yes. Verified: partial (production-extracted deterministic message-
+  failure and recovery-action contracts only). User-validated: no. Released: no.**
+  No schema, permission, markup, style, or localized dictionaries changed. The
+  supplied installed-Edge screenshot proves the pre-fix failure only; browser policy
+  blocked inspection of the privileged `edge://newtab/` page, so post-fix installed
+  service-worker wake/restart behavior and rendered recovery remain open.
 
 - **2026-07-16 -- Local-calendar recurrence across time zones / P0-10** --
   daily, weekly, and monthly reminders now advance nominal local-calendar dates
@@ -532,8 +537,9 @@ Last updated: 2026-07-16.
   no-op boot suppression, legacy settings normalization, authoritative failed-capture
   recovery, lost/timed-out receipt recovery, stale-read protection, delayed-event
   handling, invalid-token rejection, transient and persistent missing-receiver
-  handling in new-tab and popup, ambiguous closed-port no-retry behavior, dirty
-  ordinary-write preservation,
+  handling in new-tab and popup, post-timeout retry cancellation, scoped extension-
+  runtime recovery with page fallback, ambiguous closed-port no-retry behavior,
+  dirty ordinary-write preservation,
   browser-effect interruption, and 10,000 seeded lockless schedules.
   Remaining P0 gaps are installed
   cross-context/service-worker restart and unknown-ack lifecycle evidence,

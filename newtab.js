@@ -943,11 +943,15 @@ const State = (() => {
   const receiverRetryMs = Number.isFinite(configuredReceiverRetryMs) && configuredReceiverRetryMs >= 0
     ? Math.min(configuredReceiverRetryMs, 1000)
     : 150;
-  async function sendStateWriteMessage(candidate) {
+  async function sendStateWriteMessage(candidate, retryAllowed = () => true) {
     let missingReceiver = null;
     for (let attempt = 0; attempt < 3; attempt++) {
       if (attempt > 0) {
         await new Promise(resolve => setTimeout(resolve, receiverRetryMs * attempt));
+        // Promise.race cannot cancel an already-sent runtime message. If the
+        // receipt deadline won while a delayed no-receiver rejection was still
+        // pending, do not let that abandoned operation launch another write.
+        if (!retryAllowed()) throw missingReceiver;
       }
       try {
         return await chrome.runtime.sendMessage({ type: 'locus-state-write', state: candidate });
@@ -955,7 +959,7 @@ const State = (() => {
         // This exact rejection means no listener accepted the message, so a
         // bounded retry cannot duplicate a committed write. Every other channel
         // failure keeps its unknown-outcome, never-retry semantics.
-        if (!isMissingStateWriteReceiver(error)) throw error;
+        if (!isMissingStateWriteReceiver(error) || !retryAllowed()) throw error;
         missingReceiver = error;
       }
     }
@@ -977,6 +981,7 @@ const State = (() => {
     expectedStoredState._revision = localRevision + 1;
     inFlightExpectedStateJson = stateJson(expectedStoredState);
     let receiptTimer = null;
+    let receiverRetryOpen = true;
     try {
       const configuredTimeout = Number(globalThis.LOCUS_STATE_WRITE_TIMEOUT_MS);
       const receiptTimeoutMs = Number.isFinite(configuredTimeout) && configuredTimeout > 0
@@ -990,7 +995,7 @@ const State = (() => {
         }, receiptTimeoutMs);
       });
       const response = await Promise.race([
-        sendStateWriteMessage(candidate),
+        sendStateWriteMessage(candidate, () => receiverRetryOpen),
         receiptTimeout,
       ]);
       if (!response?.ok) {
@@ -1024,6 +1029,7 @@ const State = (() => {
       requireRecovery();
       throw error;
     } finally {
+      receiverRetryOpen = false;
       if (receiptTimer != null) clearTimeout(receiptTimer);
       inFlightExpectedStateJson = '';
     }
@@ -2037,6 +2043,7 @@ function refreshRenderedStateFromStorage() {
   const recoveryOverlay = document.getElementById('state-recovery-overlay');
   if (recoveryOverlay && !recoveryOverlay.classList.contains('hidden')) {
     recoveryOverlay.classList.add('hidden');
+    delete recoveryOverlay.dataset.reloadExtension;
     setStateRecoveryInterlock(false);
     restoreOpener(recoveryOverlay);
   }
@@ -2066,12 +2073,35 @@ function showStateRecoveryRequired(error) {
     try { toast(error?.message || tr('stateRecovery.detail'), { danger: true, duration: 10000 }); } catch {}
     return;
   }
+  const overlayWasHidden = overlay.classList.contains('hidden');
+  if (error?.code === 'LOCUS_STATE_RECEIVER_UNAVAILABLE') {
+    overlay.dataset.reloadExtension = '1';
+  } else if (overlayWasHidden) {
+    overlay.dataset.reloadExtension = '0';
+  }
   const detail = document.getElementById('state-recovery-detail');
   if (detail) detail.textContent = error?.message || tr('stateRecovery.detail');
-  if (overlay.classList.contains('hidden')) rememberOpener(overlay);
+  if (overlayWasHidden) rememberOpener(overlay);
   setStateRecoveryInterlock(true);
   overlay.classList.remove('hidden');
   setTimeout(() => document.getElementById('state-recovery-reload')?.focus(), 50);
+}
+
+function reloadLocusRuntime() {
+  if (typeof chrome === 'undefined' || typeof chrome.runtime?.reload !== 'function') {
+    location.reload();
+    return;
+  }
+  // A successful runtime reload destroys this extension-page context. The
+  // timer is only a fallback for environments where reload() is exposed but
+  // cannot restart the extension (for example, unsupported kiosk behavior).
+  const pageFallback = setTimeout(() => location.reload(), 1000);
+  try {
+    chrome.runtime.reload();
+  } catch {
+    clearTimeout(pageFallback);
+    location.reload();
+  }
 }
 
 function bindStateRecoveryOverlay() {
@@ -2088,7 +2118,10 @@ function bindStateRecoveryOverlay() {
     event.preventDefault();
     event.stopPropagation();
   });
-  document.getElementById('state-recovery-reload').onclick = () => location.reload();
+  document.getElementById('state-recovery-reload').onclick = () => {
+    if (overlay.dataset.reloadExtension === '1') reloadLocusRuntime();
+    else location.reload();
+  };
 }
 
 async function recoverAfterOrdinaryWriteFailure(error) {
@@ -2096,7 +2129,9 @@ async function recoverAfterOrdinaryWriteFailure(error) {
   // Never replace it automatically after a conflict, quota failure, or unknown
   // outcome; keep it visible behind the explicit reload interlock.
   handleStorageError(error);
-  showStateRecoveryRequired(new Error('Locus could not safely confirm this edit. Your current view has not been replaced. Reload the latest saved data before continuing.'));
+  const recoveryNotice = new Error('Locus could not safely confirm this edit. Your current view has not been replaced. Reload the latest saved data before continuing.');
+  if (error?.code) recoveryNotice.code = error.code;
+  showStateRecoveryRequired(recoveryNotice);
 }
 
 function handleObservedStoredState(stored) {

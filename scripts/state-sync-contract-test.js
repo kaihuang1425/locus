@@ -31,6 +31,7 @@ const ensureOnboardingSource = extractBetween('function ensureOnboarding(setting
 const normalizeLoadedSource = extractBetween('function normalizeLoadedSettings() {', '\n\nfunction initAfterLoad()');
 const ordinaryFailureSource = extractBetween('async function recoverAfterOrdinaryWriteFailure(error) {', '\n\nfunction handleObservedStoredState(stored)');
 const storageErrorRouterSource = extractBetween('function handleStorageError(err) {', '\n\nfunction showStorageFull(msg)');
+const recoveryOverlaySource = extractBetween('function showStateRecoveryRequired(error) {', '\n\nasync function recoverAfterOrdinaryWriteFailure(error)');
 
 let stored;
 let writeCalls = 0;
@@ -38,10 +39,12 @@ let nextId = 1;
 let deferredReceipt = null;
 let deferredGet = null;
 let deferredWriter = null;
+let deferredMissingReceiver = null;
 let nextGetSnapshot = null;
 let stateWriteResponseMode = 'normal';
 let acceptedStateObserver = null;
 let recoveryOverlayCalls = 0;
+const recoveryOverlayErrors = [];
 let storageErrorCalls = 0;
 
 function currentState(revision = 0) {
@@ -85,6 +88,15 @@ function deferStateWriter() {
   return { started, release };
 }
 
+function deferMissingReceiver() {
+  let signalStarted;
+  let release;
+  const started = new Promise(resolve => { signalStarted = resolve; });
+  const wait = new Promise(resolve => { release = resolve; });
+  deferredMissingReceiver = { signalStarted, wait };
+  return { started, release };
+}
+
 stored = { te: currentState(4) };
 
 const chrome = {
@@ -112,6 +124,14 @@ const chrome = {
         throw new Error('Could not establish connection. Receiving end does not exist.');
       }
       if (stateWriteResponseMode === 'missing-receiver-always') {
+        throw new Error('Could not establish connection. Receiving end does not exist.');
+      }
+      if (stateWriteResponseMode === 'delayed-missing-receiver') {
+        const pending = deferredMissingReceiver;
+        assert.ok(pending, 'delayed missing receiver mode requires a gate');
+        deferredMissingReceiver = null;
+        pending.signalStarted();
+        await pending.wait;
         throw new Error('Could not establish connection. Receiving end does not exist.');
       }
       const candidate = clone(message.state);
@@ -161,8 +181,8 @@ const context = vm.createContext({
   clearTimeout,
   console,
   CURRENT_SCHEMA: currentSchema,
-  LOCUS_STATE_RECEIVER_RETRY_MS: 1,
-  LOCUS_STATE_WRITE_TIMEOUT_MS: 25,
+  LOCUS_STATE_RECEIVER_RETRY_MS: 5,
+  LOCUS_STATE_WRITE_TIMEOUT_MS: 40,
   THEMES: [{ id: 'folio' }, { id: 'folio-dark' }],
   esc: value => String(value ?? ''),
   handleStorageError() { storageErrorCalls += 1; },
@@ -174,7 +194,10 @@ const context = vm.createContext({
   refreshStorageUsage() {},
   Router: { init() {} },
   setTimeout,
-  showStateRecoveryRequired() { recoveryOverlayCalls += 1; },
+  showStateRecoveryRequired(error) {
+    recoveryOverlayCalls += 1;
+    recoveryOverlayErrors.push(error);
+  },
   structuredClone,
   TRASH_RETENTION_MS: 30 * 24 * 60 * 60 * 1000,
   trashTimestamp: entry => Number(entry?.retentionStartedAt || entry?.trashedAt || entry?.at) || 0,
@@ -336,6 +359,59 @@ function assertStableReminderIds(entity, label) {
   await State.recoverAuthoritative();
   assert.equal(State.get().settings.missingReceiverMarker, undefined);
 
+  const recoveryErrorsBeforeDebouncedReceiver = recoveryOverlayErrors.length;
+  State.get().settings.debouncedReceiverMarker = 'ordinary-edit-restart';
+  stateWriteResponseMode = 'missing-receiver-always';
+  const writesBeforeDebouncedReceiver = writeCalls;
+  State.persist();
+  await new Promise(resolve => setTimeout(resolve, 240));
+  assert.equal(writeCalls, writesBeforeDebouncedReceiver + 3, 'a debounced ordinary edit must use the bounded receiver sequence');
+  assert.equal(recoveryOverlayErrors.length > recoveryErrorsBeforeDebouncedReceiver, true);
+  assert.equal(
+    recoveryOverlayErrors.at(-1)?.code,
+    'LOCUS_STATE_RECEIVER_UNAVAILABLE',
+    'ordinary debounced writes must preserve the receiver-restart recovery action end to end',
+  );
+  stateWriteResponseMode = 'normal';
+  await State.recoverAuthoritative();
+  assert.equal(State.get().settings.debouncedReceiverMarker, undefined);
+
+  State.get().settings.backoffDeadlineMarker = 'deadline-during-backoff';
+  stateWriteResponseMode = 'missing-receiver-always';
+  context.LOCUS_STATE_WRITE_TIMEOUT_MS = 1;
+  const writesBeforeBackoffDeadline = writeCalls;
+  await assert.rejects(
+    State.persistNow(),
+    error => error?.code === 'LOCUS_STATE_UNKNOWN_ACK',
+    'the receipt deadline can close while a receiver retry is backing off',
+  );
+  await new Promise(resolve => setTimeout(resolve, 20));
+  assert.equal(writeCalls, writesBeforeBackoffDeadline + 1, 'a timed-out backoff must not launch its next send');
+  context.LOCUS_STATE_WRITE_TIMEOUT_MS = 40;
+  stateWriteResponseMode = 'normal';
+  await State.recoverAuthoritative();
+  assert.equal(State.get().settings.backoffDeadlineMarker, undefined);
+
+  State.get().settings.delayedReceiverMarker = 'deadline-must-cancel-retries';
+  stateWriteResponseMode = 'delayed-missing-receiver';
+  const delayedReceiver = deferMissingReceiver();
+  const writesBeforeDelayedReceiver = writeCalls;
+  const delayedReceiverWrite = State.persistNow();
+  await delayedReceiver.started;
+  await assert.rejects(
+    delayedReceiverWrite,
+    error => error?.code === 'LOCUS_STATE_UNKNOWN_ACK',
+    'the receipt deadline must still fail closed while a runtime message is pending',
+  );
+  assert.equal(writeCalls, writesBeforeDelayedReceiver + 1);
+  const writesAtDelayedReceiverTimeout = writeCalls;
+  delayedReceiver.release();
+  await new Promise(resolve => setTimeout(resolve, 20));
+  assert.equal(writeCalls, writesAtDelayedReceiverTimeout, 'an abandoned timed-out request must not launch receiver retries later');
+  stateWriteResponseMode = 'normal';
+  await State.recoverAuthoritative();
+  assert.equal(State.get().settings.delayedReceiverMarker, undefined);
+
   State.get().settings.closedChannelMarker = 'accepted-before-close';
   stateWriteResponseMode = 'close-after-accept';
   const writesBeforeClosedChannel = writeCalls;
@@ -482,6 +558,87 @@ function assertStableReminderIds(entity, label) {
   assert.equal(routedToasts[0]?.options?.duration, 7000);
   storageErrorRouterContext.__handleStorageError(new Error('Injected generic failure'));
   assert.equal(routedToasts[1]?.message, 'Storage error: Injected generic failure');
+
+  const runtimeReloads = [];
+  const pageReloads = [];
+  const scheduledCallbacks = [];
+  const clearedCallbacks = [];
+  let recoveryHidden = true;
+  const recoveryOverlay = {
+    dataset: {},
+    classList: {
+      contains(name) { return name === 'hidden' && recoveryHidden; },
+      remove(name) { if (name === 'hidden') recoveryHidden = false; },
+    },
+    addEventListener(type, listener) { this[`${type}Listener`] = listener; },
+  };
+  const recoveryDetail = { textContent: '' };
+  const recoveryButton = { focus() {} };
+  const recoveryDocument = {
+    getElementById(id) {
+      return {
+        'state-recovery-overlay': recoveryOverlay,
+        'state-recovery-detail': recoveryDetail,
+        'state-recovery-reload': recoveryButton,
+      }[id] || null;
+    },
+  };
+  const recoveryOverlayContext = vm.createContext({
+    chrome: { runtime: { reload() { runtimeReloads.push('runtime'); } } },
+    clearTimeout(id) { clearedCallbacks.push(id); },
+    document: recoveryDocument,
+    location: { reload() { pageReloads.push('page'); } },
+    rememberOpener() {},
+    setStateRecoveryInterlock() {},
+    setTimeout(callback) { scheduledCallbacks.push(callback); return scheduledCallbacks.length; },
+    toast() {},
+    trapTabKey() {},
+    tr: key => key,
+  });
+  vm.runInContext(
+    `${recoveryOverlaySource}\nglobalThis.__showRecovery = showStateRecoveryRequired; globalThis.__bindRecovery = bindStateRecoveryOverlay;`,
+    recoveryOverlayContext,
+    { filename: 'newtab-state-recovery-overlay.js' },
+  );
+  recoveryOverlayContext.__showRecovery({
+    code: 'LOCUS_STATE_RECEIVER_UNAVAILABLE',
+    message: 'Background unavailable',
+  });
+  recoveryOverlayContext.__showRecovery(new Error('Queued write was cancelled'));
+  recoveryOverlayContext.__bindRecovery();
+  assert.equal(recoveryOverlay.dataset.reloadExtension, '1', 'a queued follow-on failure must not downgrade runtime recovery');
+  const callbacksBeforeRuntimeReload = scheduledCallbacks.length;
+  recoveryButton.onclick();
+  assert.equal(runtimeReloads.length, 1, 'receiver absence must restart the extension runtime');
+  assert.equal(pageReloads.length, 0, 'the runtime restart gets the first recovery attempt');
+  assert.equal(scheduledCallbacks.length, callbacksBeforeRuntimeReload + 1, 'runtime restart keeps one bounded page fallback');
+  scheduledCallbacks.at(-1)();
+  assert.equal(pageReloads.length, 1, 'a runtime reload that does not tear down the page must fall back');
+
+  recoveryHidden = true;
+  recoveryOverlayContext.__showRecovery(new Error('Revision conflict'));
+  assert.equal(recoveryOverlay.dataset.reloadExtension, '0');
+  recoveryButton.onclick();
+  assert.equal(runtimeReloads.length, 1, 'ordinary reconciliation must not restart unrelated extension pages');
+  assert.equal(pageReloads.length, 2, 'ordinary reconciliation keeps the page-only reload');
+
+  recoveryOverlayContext.chrome.runtime.reload = undefined;
+  recoveryOverlayContext.__showRecovery({ code: 'LOCUS_STATE_RECEIVER_UNAVAILABLE' });
+  recoveryButton.onclick();
+  assert.equal(pageReloads.length, 3, 'receiver recovery must fall back when runtime reload is unavailable');
+
+  recoveryHidden = true;
+  recoveryOverlayContext.chrome.runtime.reload = () => {
+    runtimeReloads.push('runtime-throw');
+    throw new Error('Runtime reload unavailable');
+  };
+  recoveryOverlayContext.__showRecovery({ code: 'LOCUS_STATE_RECEIVER_UNAVAILABLE' });
+  const callbacksBeforeThrownRuntimeReload = scheduledCallbacks.length;
+  recoveryButton.onclick();
+  assert.equal(runtimeReloads.at(-1), 'runtime-throw');
+  assert.equal(scheduledCallbacks.length, callbacksBeforeThrownRuntimeReload + 1);
+  assert.equal(clearedCallbacks.at(-1), scheduledCallbacks.length, 'a thrown runtime reload must cancel its delayed fallback');
+  assert.equal(pageReloads.length, 4, 'a thrown runtime reload must immediately reload the page');
 
   console.log('State sync contracts passed');
 })().catch(error => {

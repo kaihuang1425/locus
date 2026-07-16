@@ -164,8 +164,13 @@ in newtab.css; rail folds to a top strip below 880px.
   only when `runtime.sendMessage()` rejects with `Receiving end does not exist`,
   because no state-write listener accepted that attempt. Exhaustion becomes the
   typed `LOCUS_STATE_RECEIVER_UNAVAILABLE` failure and keeps the new-tab page behind
-  authoritative recovery. Closed ports, lost or malformed receipts, timeouts, and
-  every other transport failure retain their never-retry, unknown-outcome handling.
+  authoritative recovery. The retry lifecycle closes with the request's receipt
+  deadline, so a delayed no-receiver rejection cannot launch abandoned writes after
+  timeout recovery has begun. The typed recovery button restarts the extension with
+  `chrome.runtime.reload()` so an unpacked old-worker/new-page skew can converge; it
+  falls back to a page reload if that API is unavailable. Other recovery causes keep
+  the narrower page-only reload. Closed ports, lost or malformed receipts, timeouts,
+  and every other transport failure retain their never-retry, unknown-outcome handling.
   The service worker runs every background and message write
   through one FIFO, performs the revision comparison inside that queue, and also
   takes the `locus-state-write` Web Lock when available. The FIFO is the modeled
