@@ -25,20 +25,535 @@ Last updated: 2026-07-16.
    installed group/category mutation delivery under schema-12 stable identities,
    installed alarm timing through DST/date-line transitions, and live time-zone
    changes.
-2. **Validate and finish the core first-use contract** (`docs/UX_SIMPLIFICATION.md`) — remove
-   the hidden questionnaire/coach implementation debt, finish keyboard and narrow-layout checks,
-   and run the representative-user activation protocol: save one real tab, see its
+2. **Complete popup recovery coverage and validate installed core activation**
+   (`docs/UX_SIMPLIFICATION.md`) — the asked single-tab destination flow now offers
+   an explicit, default-off, receipt-gated Open-in-Locus continuation. Define the
+   equally bounded consequence for ask-every-time-off quick capture and whole-window
+   save without forcing navigation or duplicating the Home recovery surface. Then run the
+   installed keyboard/screen-reader, light/dark, en/zh-TW, reduced-motion,
+   1280×720/800 px, reload/navigation, and real capture checks. Include the
+   Home previews plus the saved-item recovery sheet on Home, board,
+   group, All Links, and Read Later routes:
+   Open, direct-field saving/saved/error states and write-failure recovery, item
+   reminder set/change/clear, stale items, Tab containment, nested Escape, focus
+   return, Back/Forward, and reload. Include Archive → Trash →
+   permanent deletion in both locales, with cancel, persistence failure, focus
+   return, and screen-reader announcement. Then run the
+   representative-user activation protocol: save one real tab, see its
    destination, navigate away or reload, then find and reopen it without coaching.
-3. **Resolve owner launch decisions** — decide the license/business model, investigate
+3. **Converge the remaining reminder mutation boundaries** — item-detail Set,
+   Change, quick choices, and Clear now use one exact-target service-worker-owned
+   state→alarm receipt. Audit non-detail item entries plus Calendar and group/category
+   add/edit/remove paths; route each unsafe path through an exact identity, one
+   snapshot, one acknowledged state write, and post-write alarm result before UI
+   success. Preserve stable schema-12 entity reminder IDs, import compatibility,
+   Past due recovery, English/zh-TW, focus, keyboard, and Escape ordering without
+   promoting Calendar or entity reminder tools beyond their earned role.
+4. **Finish the remaining organization mutation boundaries** — audit contextual
+   capture/paste/import-generated Groups plus the remaining direct title/color
+   prompt flows; and remove user-visible organization `category` terminology from
+   import diagnostics and Explorer. Preserve real state, focus return, Escape
+   ordering, and keyboard alternatives without reopening the centralized
+   Workspace/Space, existing-Space Group-move, Group/Stack identity, or Duplicate
+   Group contracts or
+   expanding breadth. Define a separately backed-up migration before attempting to
+   repair ambiguous Canvas/capture/restore hints left by the removed legacy direct-
+   move path.
+   Keep populated workspace/Space deletion unavailable until a later owner-approved
+   container recovery and restore-destination contract exists.
+5. **Resolve owner launch decisions** — decide the license/business model, investigate
    the Locus name collision before store submission, choose the initial Store
    single-purpose scope (including whether trackers are excluded), and approve only
    claims that have passed the canonical evidence ledger.
-4. **Space layout fidelity triage, after the gates above** — Canvas, Explorer,
-   Gallery, Graph, Timeline, and details are functional but uneven. Keep them under
-   Advanced views until the core loop passes and each promoted view earns fresh
-   rendered and user-flow evidence.
+6. **Space layout fidelity triage, after the gates above** — Canvas, Explorer,
+   Gallery, Graph, Timeline, and the Space Details layout are functional but
+   uneven. Keep them under Advanced views until the core loop passes and each
+   promoted view earns fresh rendered and user-flow evidence.
 
 ## Done (newest first)
+
+- **2026-07-16 — Receipt-gated popup Open-in-Locus continuation** — added an
+  explicit, default-off “Open saved item in Locus” / “儲存後在 Locus 開啟項目”
+  choice to the single-tab destination picker. The selected action carries only
+  primitive Workspace/item/source-tab identity on the same revisioned
+  `locus-state-write` request as the saved item. After state acceptance, the service
+  worker fresh-reads authority, requires one globally unique active item and one
+  unambiguous owning Space still inside the original Workspace, creates its
+  existing `/home?item=<id>` route inactive in the source popup window, attempts
+  the configured source close, activates the route, and focuses that window. A known
+  resolver or route-create failure remains an accepted save, leaves the source
+  open, and shows an
+  in-section localized partial-success result; source-close or activation trouble
+  retains the already-created route and uses a localized browser notice. An
+  activation failure also returns that exact route-tab identity, so the popup retry
+  switches to the saved item instead of creating a duplicate generic tab; failed
+  retries announce in the existing polite status region. Fallback notifications
+  carry and reopen that same route-tab identity. Combined close-and-activation
+  failure copy retains both outcomes. Rejected
+  state creates no route and closes no source. Popup persistence now has the same
+  bounded unknown-ack timeout and late missing-receiver retry closure as new-tab;
+  every ambiguous transport rejection, including native-coded and non-object
+  failures, becomes an unknown acknowledgement, while unknown/protocol/invalidated-
+  queue outcomes require reopening before another capture. Pending
+  actions own Back, Escape, Ctrl/Cmd+K, and competing controls. A valid Home-detail
+  boot is no longer covered by calm Landing or automatic Welcome, without marking
+  onboarding seen. The production-extracted popup Locate contract covers state→
+  effect ordering, exact/moved/nested identity, stale/duplicate/stored/moved-out
+  rejection, URI round-trip, source-window create/focus, create/close/activate and
+  combined partial failures, rejected/unknown receipts, exact-tab activation and
+  notification retry, retry live status, semantic recovery/focus hooks, en/zh-TW
+  parity, and overlay
+  suppression. The complete deterministic gate passes, including 10,000 concurrency
+  schedules. This is **Implemented: yes; Verified: partial (production-extracted,
+  static, and mocked-browser evidence only); User-validated: no; Released: no**.
+  Installed popup teardown/message lifetime, real tab effects, pixels, screen-reader
+  output, themes/locales, reduced motion, 1280×720/800 px behavior, reload/history,
+  and representative-user activation remain unverified. Ask-every-time-off quick
+  capture and whole-window save still lack an explicit recovery continuation. No
+  schema, import shape, permission, host access, existing stable element ID, local-
+  only boundary, or feature breadth changed.
+- **2026-07-16 — Receipt-gated item-detail reminder/alarm ordering** — routed
+  saved-item detail Set, Change, quick choices, and Clear through
+  `commitItemDetailReminderMutation()`. Each action carries the primitive rendered
+  item/route context, exhaustively re-resolves one unchanged target, preserves
+  imported reminder fields outside the editor's owned schedule/delivery fields,
+  takes one localized snapshot, and issues exactly one
+  `State.persistNow({ reconcileReminders: true })` request. Missing, duplicated,
+  moved, replaced, retyped, or concurrently changed targets fail closed before
+  history, mutation, persistence, alarm work, close, or success.
+
+  The central `locus-state-write` protocol now accepts the optional reminder intent.
+  The service worker first commits the revisioned candidate, then awaits its
+  serialized full alarm reconciliation and returns the structured result in the same
+  typed receipt. This removes the page-teardown gap between acknowledgement and a
+  second page-owned reconcile message. A known writer rejection runs no alarm pass.
+  A timed-out/lost unknown response retains the sole dirty graph behind recovery with
+  no page follow-up, picker close, render, or false success; an already accepted
+  worker transaction may still have completed its bundled alarm effect. If state is
+  accepted but the alarm API reports a
+  failure, the accepted reminder remains and the picker closes to a localized
+  warning with a direct Undo action.
+
+  A synchronous reminder token joins the item-detail pending boundary before history
+  or live mutation. It blocks duplicate actions, picker/detail close, navigation,
+  other detail edits, and app-wide shortcuts while keeping Tab contained and usable.
+  Recovery remains the top layer; otherwise Escape closes the reminder before the
+  detail, and completion returns focus to the rebuilt Set or Change control. The
+  picker's polite status sits outside its `aria-busy` body, exposes pending/error
+  tokens and invalid-time semantics, and uses English plus native zh-TW copy.
+
+  The production-controller/static item-detail contract covers Set/Change/Clear,
+  strict snapshot→write→alarm-result→close/render/focus/feedback order, imported-
+  field preservation, duplicate/stale targets, rejected and unknown receipts,
+  accepted-state alarm warnings, pending/non-pending keys, recovery precedence,
+  focus, live/busy structure, locale parity, and responsive/theme hooks. The
+  background mocked-browser contract additionally proves storage acceptance before
+  alarm-map access and structured success/failure receipts; the complete
+  deterministic suite passes. **Implemented: yes. Verified: partial (deterministic
+  production-controller/static-source and mocked-browser evidence only). User-
+  validated: no. Released: no.** Installed Chrome message-port/service-worker
+  lifetime, real alarm creation/cleanup, teardown/reload/Back/Forward, notification
+  scheduling, screen-reader output, light/dark and en/zh-TW pixels, reduced motion,
+  1280×720/800 px behavior, and representative-user comprehension remain
+  unverified. Non-detail item and group/category reminder mutation entry points are
+  queue item #3. No schema, import shape, permission, host access, local-only
+  boundary, stable element ID, or feature breadth changed.
+
+- **2026-07-16 — Receipt-gated direct saved-item detail fields** — routed title,
+  URL, task state/text, saved context, cover, tags, checklist, and custom fields
+  through one `commitItemDetailMutation()` controller. Each rendered sheet captures
+  primitive Workspace/Space/Group/Stack/item identity plus exact route, location,
+  value, type, ancestry, and object-reference fingerprints. Confirmation
+  exhaustively re-resolves one current target across the whole graph. Missing,
+  duplicated, moved, replaced, retyped, concurrently changed, or ambiguously owned
+  records fail closed before history, mutation, persistence, or render.
+
+  Field logic first runs against a detached JSON candidate, so a synchronous field
+  failure leaves the live graph and Undo history untouched. A real change creates
+  one snapshot, applies only the candidate diff to the sole dirty local graph, and
+  awaits exactly one `State.persistNow()` receipt. The sheet exposes localized
+  Saving, Saved, stale, and failure feedback through a polite live status; its body
+  is `aria-busy`, and mutation controls are guarded while pending. A synchronous
+  pending token blocks a second edit, sheet close, and programmatic or browser
+  history changes while Tab remains usable inside the sheet. An initial editor
+  Escape may blur and focus the stable panel; later Escape is consumed until the
+  receipt settles. A blur-started pagehide transaction owns the one write, so
+  teardown does not start a duplicate fallback write.
+
+  Only an acknowledged receipt may render the board/detail sheet, refresh the
+  heading, or report success. Rejected and unknown receipts keep the dirty local
+  graph behind authoritative recovery with no retry, rollback, lower-surface
+  render, or false success. The production-controller/static contract covers the
+  deferred receipt, one-snapshot/one-write boundary, accepted/rejected/unknown
+  outcomes, existing-recovery refusal, detached-candidate throw, changed-slot and
+  imported-data preservation, stale-target matrix, executable pending controls,
+  duplicate-edit refusal, pending history/Escape/pagehide behavior, structurally
+  separate live/busy regions, localized status, and responsive/theme-token CSS.
+  The direct-field wiring
+  covers exactly title, URL, task state/text, saved context, cover, tags, checklist,
+  and custom fields. **Implemented: yes. Verified: partial (deterministic
+  production-controller/static-source evidence only). User-validated: no.
+  Released: no.** Installed Chrome persistence/recovery, actual
+  Back/Forward/reload/pagehide completion, screen-reader announcements, themes,
+  en/zh-TW pixels, reduced motion, 1280×720/800 px behavior, and representative-
+  user comprehension remain unverified. Item-detail reminder Set/Change/quick/Clear
+  is covered by the newer state→alarm receipt entry above. Stack identity remains
+  under the separate acknowledged identity
+  editor; Archive and the Open browser effect are also outside this transaction.
+  No schema, import shape, permission, host access, local-only boundary, stable
+  element ID, or feature breadth changed.
+
+- **2026-07-16 — Home saved-item recovery** — replaced the inert,
+  hover-reactive Inbox and recent-Space preview rows with full-width native
+  buttons that name the real saved link, note, task, Stack, or fallback item in
+  English and native zh-TW. Activation retains only primitive Workspace/origin/
+  item identity, then re-resolves exactly one current item across the active graph
+  plus one owning Space. Missing, globally duplicated, ambiguously owned, or
+  moved-out-of-Workspace records fail closed with localized feedback, no route,
+  no history snapshot, and focus left on the invoking row. Items moved within the
+  Workspace open from their current real location.
+
+  A successful preview now uses the canonical `/home?item=<id>` route and shared
+  item-detail sheet over Home. It does not select the owning Space, initialize or
+  render Canvas/another Advanced layout, or turn inspection into a state write.
+  Home item routes survive reload and Back/Forward, normalize duplicate or stale
+  IDs closed, and keep the prior active Space intact. Opening and closing pass
+  `persist: false`; browser history compares only durable route selections before
+  writing, so an ephemeral Home sheet open/close remains read-only while a real
+  Workspace/Space/layout selection still persists. Escape closes only the sheet.
+  Rebuilt focus first targets the exact Inbox/Space preview origin, then a current
+  native Home row for an item that moved, then the existing item/heading fallback.
+  Hover, focus-visible, and pressed states share the established background,
+  outline, theme, forced-color, and reduced-motion system without ornamental
+  movement.
+
+  The production-helper/static contract covers native click and Enter/Space
+  semantics, `/home?item` build/parse/current/apply/close, global and owning-Space
+  identity ambiguity, nested Stacks, stale/moved records, zero-write open/close/
+  Back/Forward, durable-selection persistence, active-Space and Canvas isolation,
+  exact and moved-row focus, locale parity, and responsive CSS. All 27 JavaScript
+  syntax checks, quality gates, and the complete deterministic suite pass,
+  including the 10,000-schedule concurrency corpus. **Implemented: yes. Verified:
+  partial (production-helper/static-source contracts only). User-validated: no.
+  Released: no.** No schema, import shape, permission, host access, local-only
+  boundary, or stable element ID changed. Installed Chrome pixels and behavior at
+  1280×720/800 px, real Back/Forward/reload, actual screen-reader output, themes,
+  en/zh-TW layout, reduced motion, persistence observation, and representative-user
+  comprehension remain unverified. Direct-field detail receipt gating is covered
+  above; item-detail reminder/alarm ordering is covered by the newer entry above.
+  Popup post-save Locate continuation and installed first-use validation are now
+  queue item #2.
+
+- **2026-07-16 — Receipt-gated Duplicate Group** — routed Board, Canvas/focused-
+  Group, List More, and List context-menu actions through the shared localized
+  identity dialog. Opening creates only a review draft, selects its localized copy
+  name, preserves an intentionally edited name/symbol/color across source changes,
+  and requires a second confirmation when the exact source graph or destination
+  Space name changes. Missing, duplicate, moved, or inactive targets fail before
+  history; unavailable fields move focus to an enabled exit unless fail-closed
+  recovery owns the foreground, and rejected actions recover from detached menu
+  openers. English and native zh-TW update untouched generated names live and use
+  Group/`群組`, Space/`空間`, Create copy/`建立副本`, browser-neutral recovery copy,
+  and wrapping narrow-dialog descriptions.
+
+  Confirmation deep-clones the complete JSON-compatible Group, preserves reminder
+  and imported/custom data, and assigns fresh Group/item/Stack IDs recursively from
+  one bounded allocator. That allocator reserves active, Archive, Trash, restore,
+  capture, size, and Canvas identifiers. The copy is inserted after its source,
+  receives detached legacy/current sizing records, and gets a non-overlapping
+  Canvas position computed by the production placement helpers from per-Group
+  footprints. Null current records fall back to valid legacy widths like the
+  renderer, and unsized columns reserve the 60vh cards cap plus column chrome at
+  the current viewport height. One localized
+  snapshot and one awaited `persistNow()` receipt own the whole mutation; pending
+  state keeps a guarded primary focus anchor, while rejection retains the single
+  dirty graph behind recovery without retry, render, close, reconciliation, or
+  success feedback. Acknowledgement alone renders, closes, focuses the copy,
+  exposes exact-action Undo, and requests reminder reconciliation. Focused-Group
+  actions route to the copied Group without a second state write, so Back can
+  return to the source. Browser history closes an uncommitted draft before applying
+  its route; while a receipt or recovery owns the foreground, it preserves the
+  reviewed route without another graph write. Recovery is shown and focuses Reload
+  in the same rejection turn. Duplicate, Undo, and Redo reconcile alarms only after
+  their state receipts; delayed failures expose exact Undo only while that copy is
+  still the latest action, otherwise they use generic recovery guidance.
+
+  The production-controller/static contract covers every entry, cancellation,
+  stale review, recursive collision streams, custom/reminder preservation,
+  partial legacy/current Canvas sizing, delayed/rejected receipts, focused-Group
+  routing and history interlock, production Canvas non-overlap, alarm ordering,
+  stale-warning suppression, locale changes, recovery focus,
+  responsive wrapping, forced colors, and reduced motion; the complete
+  deterministic gate passes. **Implemented: yes. Verified: partial (production-
+  controller/static-source contracts only). User-validated: no. Released: no.**
+  No schema, permission, host access, import shape, local-only boundary, or existing
+  stable element ID changed. Installed browser persistence/recovery rendering,
+  live alarm creation/cleanup, actual screen-reader output, themes, en/zh-TW
+  layout, 1280×720/800 px pixels, reload/Back/Forward, and representative-user
+  trust remain unverified. Generated-Group/direct-prompt/terminology residue stays
+  in queue item #4.
+
+- **2026-07-16 — Receipt-gated existing-Space Group move** — replaced the Board
+  menu's flat, immediate destination mutations with one shared localized action
+  across Board, Canvas/focused Group, and both List menus. The existing organization
+  dialog now presents a required, scroll-bounded radiogroup with no preselection;
+  duplicate names receive deterministic Workspace-order qualifiers, arrow/Home/End
+  and Enter/Space only choose a draft, and a separate confirmation remains required.
+  The controller captures primitive IDs, re-resolves one active Workspace plus
+  unique source Space, destination Space, and Group targets, refuses missing,
+  duplicate, moved, same-Space, cross-Workspace, and inactive-Workspace state before
+  history, and requires a second confirmation when displayed names, destination
+  order, or Group counts change. Concurrent nested content moves as the current
+  exact Group object. One localized snapshot covers the source-to-destination
+  append, source Canvas-position transfer, exact remembered-capture repair, and
+  exact Archive/Trash item restore-reference repair while leaving the active source
+  Space, unrelated layout/settings records, and outside selections unchanged. The
+  confirm control remains the sole guarded focus anchor while one `persistNow()`
+  receipt is pending. Only acknowledgement prunes moved hidden selections, renders,
+  closes, scrolls/focuses the destination Space, reports localized success, and
+  exposes exact-action Undo; rejection leaves the one dirty graph behind recovery
+  with no retry, rollback, render, close, focus claim, or false success. Cancel,
+  Close, outside click, and Escape make no write and restore the exact More/toggle
+  opener. English and native zh-TW use Space/`空間`, Group/`群組`, Move/`移動`, and
+  the shared typography, spacing, 44 px control, radius, elevation, light/dark,
+  forced-color, reduced-motion, 32 px gutter, 720 px height, and 520 px wrapping
+  system. A production-controller/static contract covers entry convergence,
+  keyboard/radiogroup behavior, stale/duplicate/cross-scope guards, exact graph and
+  reference mutations, delayed/rejected receipts, selection timing, focus,
+  localization, and responsive hooks; the complete deterministic gate passes.
+  **Implemented: yes. Verified: partial (production-controller/static-source
+  contracts only). User-validated: no. Released: no.** No schema, permission, host
+  access, import shape, local-only boundary, or existing stable element ID changed.
+  Installed Chrome persistence/recovery rendering, actual screen-reader output,
+  themes, en/zh-TW layout, 1280×720/800 px pixels, reload/history, and
+  representative-user trust remain unverified. Duplicate Group is covered above;
+  generated-Group/direct-prompt/terminology residue remains queue item #4.
+
+- **2026-07-16 — Receipt-gated Group and Stack identity editing** — converged
+  explicit Group create/edit on empty Space, Board, List, and focused Group
+  surfaces plus Stack create/edit on Board, List, detail, and selected-item batch
+  creation on one localized identity dialog. The controller stores primitive IDs,
+  re-resolves unique Workspace/Space/Group/item/ancestor targets, permits duplicate
+  display names, rejects blank names and ID collisions, preserves imported custom
+  or missing symbols/colors and untouched raw names, and requires review after a
+  concurrent identity change. Batch creation validates the exact stable-ID
+  selection, rejects ancestor/descendant and cross-Space sets, keeps every item in
+  place until confirmation, and moves document-order records into the first
+  selected item's Group as one transaction. A success takes one localized snapshot
+  and waits for one `State.persistNow()` receipt before rendering, closing,
+  clearing selection, returning focus to the rebuilt target, or offering exact-
+  action Undo. A rejected receipt leaves the dirty graph behind fail-closed
+  recovery with no retry, rollback, render, close, or success claim. Group/Stack
+  headers now use explicit keyboard controls rather than nested buttons or inline
+  editors. The shared symbol picker has localized loading, no-match, and failure
+  states; draft selection performs no write; Recent updates only at an owning save
+  boundary; outside dismissal, Tab, and Escape return to the correct last-opened
+  layer. The color radiogroup supports roving keys and a transient current-custom
+  value without normalizing imported data. English and native zh-TW use Group/
+  `群組`, Stack/`堆疊`, Add/`新增`, and Save/`儲存`. A production-controller/static
+  contract covers entry convergence, exact graph mutations, stale/duplicate/moved
+  guards, delayed/rejected receipts, missing/imported identity preservation, batch
+  safety, focus/interlock ordering, live localization, and responsive/forced-color/
+  reduced-motion hooks; the complete deterministic gate passes. **Implemented:
+  yes. Verified: partial (production-controller/static-source contracts only).
+  User-validated: no. Released: no.** No schema, stored/import shape, permission,
+  host access, privacy boundary, or existing stable element ID changed. Installed
+  Chrome persistence/recovery rendering, pixels, screen-reader output, themes,
+  en/zh-TW layout, 1280×720/800 px behavior, reload/history, and representative-
+  user trust remain unverified. Duplicate Group is covered above; generated-Group,
+  remaining prompt, and terminology residue are queue item #4.
+
+- **2026-07-16 — Receipt-gated workspace and Space creation** — routed the top-bar
+  and workspace-manager Workspace actions, sidebar, Home defensive empty state,
+  and command-palette Space actions through the shared localized naming dialog.
+  The Group menu's “New Space…” action now creates the destination and moves the
+  exact Group as one operation. The controller stores only primitive parent/source
+  IDs, re-resolves them before mutation, permits duplicate names, refuses blank
+  names and duplicate IDs, allocates against active/Archive/Trash graphs, and
+  requires explicit review if the Group name changes concurrently. A new workspace
+  seeds one real empty localized `Pinned`/`釘選` Space; no fake groups or saved items
+  are introduced. Create-and-move preserves the Group ID, nested records, Canvas
+  position, and remembered capture target. Each success takes one localized
+  snapshot and waits for exactly one `State.persistNow()` receipt before render,
+  feedback, focus, or exact-action Undo; a rejected or unknown receipt retains the
+  dirty graph behind fail-closed recovery without retry or false success. The
+  workspace manager now owns dialog semantics, scroll/interlock state, Tab/Escape,
+  opener return, asynchronous selected-chip focus, keyboard-visible deletion, and
+  height-safe/narrow styling. Context menus contain Tab and consume Escape so they
+  close before the manager. Its duplicate browser-window save subsection and the
+  old generic-modal/native-prompt creation routes are removed; the canonical Save
+  eligible-tabs/window flow remains. English and native zh-TW use Workspace/
+  `工作區`, Space/`空間`, and Group/`群組`. A production-controller/static contract
+  covers every entry, graph identity, collision/stale guards, delayed/rejected
+  receipts, atomic move, exact Undo, stale-name review, focus/keyboard layering,
+  locale repaint, and responsive/forced-color CSS; the complete deterministic gate
+  passes. **Implemented: yes. Verified: partial (production-controller/static-
+  source contracts only). User-validated: no. Released: no.** No schema,
+  state/import shape, permission, host access, privacy boundary, or existing stable
+  element ID changed. Installed Chrome persistence/recovery rendering, pixels,
+  screen-reader output, themes, en/zh-TW layout, 1280×720/800 px behavior,
+  reload/history, and representative-user trust remain unverified. Duplicate Group
+  is covered above; generated-Group/direct-prompt audits and lower-priority
+  terminology/menu residue are queue item #4.
+
+- **2026-07-16 — Receipt-gated workspace and Space renaming** — replaced the two
+  reachable workspace and two reachable Space rename implementations with one
+  localized, text-only Locus dialog. Workspace chips, workspace-manager cards,
+  Home-card menus, and visible sidebar Space menus now pass stable IDs into the
+  same controller; the hidden category-tab handlers and conflicting sidebar
+  double-click rename are removed. Context menus are keyboard reachable from
+  their visible anchors, and rebuilt targets carry stable datasets for verified
+  focus return. The controller trims outer whitespace, reports blank names inline,
+  treats an unchanged name as a no-op, permits duplicate names, and refuses
+  duplicate IDs. It re-resolves the live entity and owning workspace before
+  mutation; a concurrent rename refreshes the field for explicit review, while a
+  missing or moved target becomes unavailable without a write. Confirmation takes
+  one localized snapshot, mutates only `name`, and waits for one
+  `State.persistNow()` receipt. Only an acknowledged write renders, reports
+  success, and exposes that exact action ID through Undo. Rejection leaves the
+  dirty graph behind fail-closed recovery with no retry, rollback, close, render,
+  or success claim. Pending state disables draft/secondary actions while retaining
+  one guarded `aria-disabled` primary focus anchor, and consumes Escape;
+  otherwise Tab stays contained, Enter confirms from the field, Escape closes only
+  this layer, outside-target shortcuts are suppressed, and Cancel or success
+  restores the opener or a visible equivalent. Independent inert ownership leaves
+  recovery authoritative, late-mounted roots inherit the interlock, and rename,
+  delete, legacy-modal, and command-palette decisions cannot stack. English and
+  native zh-TW use the public Workspace/`工作區` and Space/`空間` vocabulary; locale
+  reapplication repaints title, validation, and pending copy without resetting the
+  draft. The dialog reuses the shared type, spacing, radius, elevation, focus,
+  light/dark, reduced-motion, forced-color, 32 px gutter, height-safe, and narrow-
+  action system. A production-controller/static contract covers the four reachable
+  paths, stable targeting, validation/concurrency, one-write receipt gating,
+  failure recovery, exact Undo, focus, keyboard/interlocks, locale repaint, and
+  responsive CSS; the complete static/deterministic gate passes. **Implemented:
+  yes. Verified: partial (production-controller/static-source contracts only).
+  User-validated: no. Released: no.** No schema, state/import shape, permission,
+  host access, privacy boundary, or stable element ID changed. Installed Chrome
+  write-failure rendering, pixels, screen-reader output, themes, en/zh-TW layout,
+  1280×720/800 px behavior, reload/history, and representative-user trust remain
+  unverified. Organization creation and Group/Stack naming are covered above;
+  remaining generated/direct-prompt organization residue is queue item #4.
+
+- **2026-07-16 — Empty-only workspace and Space deletion boundary** — routed the
+  workspace chip, workspace manager, category tab, Home card, and sidebar Space
+  through one localized Locus alert dialog instead of five native confirmations
+  and direct state mutations. Before exposing Delete, the controller recursively
+  audits groups, stack containers and descendants, plus category/group reminders.
+  Any populated organization shows recovery guidance with Close as its only action:
+  archive or move every group and remove remaining reminders; nothing is deleted.
+  The visible Home-card and sidebar Space menus now reopen the first existing
+  reminder through the localized edit/Remove flow instead of blindly adding another,
+  so delivered and legacy multiple reminders can be cleared sequentially rather
+  than dead-ending that guidance.
+  Only empty structural shells may be confirmed, with copy naming the workspace/
+  Space structure that changes, what remains unaffected, and the bounded recovery
+  instruction to use Undo before that Locus page reloads or closes. It does not
+  promise availability through intervening history changes. Last, duplicate, missing,
+  and changed targets are refused or repainted; a newly populated target becomes
+  blocked instead of honoring stale consent. Cancel/Close is initial focus, the
+  independently owned interlock inerts every background root but the fail-closed
+  recovery overlay, Tab is contained, Escape owns only this top layer even after
+  programmatic focus loss, and global shortcuts plus lazy/programmatic command-
+  palette opens cannot escape the decision.
+  Context-menu actions preserve a visible opener; success verifies focus on the
+  refreshed visible workspace manager or active Space. Locale reapplication repaints
+  the live blocked, Space-specific, and pending states. Empty-shell confirmation
+  disables both actions, announces pending state, and waits for `State.persistNow()`; only its
+  receipt renders, reports success, and exposes the exact localized snapshot label
+  through Undo. Rejection stays behind fail-closed recovery with no success,
+  unlock, or durable render. Group menus now expose Archive only, removing the
+  duplicate Delete alias, and the obsolete group-delete confirmation toggle is gone
+  while its stored field remains inert for schema/import compatibility. English and
+  native zh-TW copy share the existing modal, destructive, theme, narrow-width,
+  focus, and reduced-motion system. Paired production-controller/static contracts
+  cover occupancy, populated blocking, empty-only deletion, stale refresh, guards,
+  cancel, pending/failure/success, Undo receipt, inertness, visible focus, Tab,
+  Escape/shortcut containment, lazy palette interlock, live locale repaint, five
+  entry points, and centralized mutation; the complete static/
+  deterministic gate passes. **Implemented: yes. Verified: partial (production-
+  controller/static-source contracts only). User-validated: no. Released: no.** No
+  schema, permission, host access, state/import shape, archive format, or advanced
+  surface changed. Installed pixels, real Chrome write-failure rendering, screen-
+  reader output, themes, en/zh-TW layout, 1280×720/800 px behavior, the reload/close
+  Undo boundary, and representative-user trust remain open.
+
+- **2026-07-16 — Archive-first destructive recovery / P0-09** — removed the
+  active saved-item “Delete permanently” bypass, leaving Archive as the single
+  recoverable removal action before Archive → Trash. Trash single-row and batch
+  deletion now converge on one localized Locus alert dialog that names the exact
+  item or count, states what remains unchanged, and makes irreversibility explicit.
+  Cancel is the safe initial focus; Tab stays contained; Escape consumes only this
+  top layer; cancellation and stale entries are no-ops; and focus returns to the
+  opener or the rebuilt Trash search. Confirm disables both actions, announces a
+  busy state, and writes immediately through the central State writer. Only an
+  acknowledged receipt clears in-memory Undo/Redo, rebuilds the surface/counts,
+  and shows success; rejection uses the existing fail-closed recovery overlay
+  without a success toast or durable render. The production-controller/static
+  contract covers single/batch scope, duplicate/stale inputs, cancellation,
+  pending/success/failure, focus, Tab, Escape, locale copy, modal/narrow/destructive
+  styling, unique IDs, and absence of the active-item bypass; the complete
+  static/deterministic gate passes. **Implemented: yes. Verified: partial
+  (production-controller/static-source contracts only). User-validated: no.
+  Released: no.** No schema, permission, host access, import shape, retention
+  policy, or advanced surface changed. Installed pixels, screen-reader output,
+  real Chrome persistence-failure rendering, 1280×720/800 px behavior, themes,
+  locales, and representative-user trust remain open.
+
+- **2026-07-16 — Saved-item recovery sheet** — replaced the former non-blocking
+  item inspector with one route-backed modal recovery sheet across board, group,
+  All Links/Favorites, and Read Later. Board and Library routes retain
+  `?item=<id>`; group routes retain `/item/<id>`, so close stays on the source
+  surface and Back/Forward/reload have a canonical state. Routed ids must still
+  belong to that workspace/category/group or Library filter; moved and stale items
+  normalize closed instead of borrowing the wrong context. The sheet names the real
+  item and Space/group, gives saved links a primary Open action, and puts save
+  context, Reminder, and Tags before progressive cover/checklist/custom-field
+  metadata. It inerts the app background with independent detail/reminder/recovery
+  owners, traps Tab from the focused dialog, applies two-step editor Escape, and
+  flushes an active editor before route or page teardown. Page teardown replaces
+  any focused editor and replaces the edit debounce with an immediate write
+  attempt even when that editor already blurred; a late-mounted detail
+  root inherits recovery/reminder owners that are already active. Nested layers
+  retain precedence, and close restores the connected opener, same item, or board heading.
+  Stale routes clear the sheet and only their owned inertness. All detail and
+  reminder-dialog copy and control names exist in English and native zh-TW; narrow
+  reflow and reduced-motion rules are retained. A new
+  production-extracted/static contract covers routing, modal semantics, hierarchy,
+  surface validation, immediate pagehide-write wiring, stacked and late-mounted
+  inert ownership, focus/Escape
+  behavior, locale parity, and responsive-motion
+  source rules, and the complete static/deterministic gate passes. **Implemented:
+  yes. Verified: partial (production-helper and static-source contracts only).
+  User-validated: no. Released: no.** No schema, item shape, permission, import,
+  host-access, or local-only boundary changed. Browser policy blocked the shim and
+  installed integration is unavailable, so installed editing/persistence recovery,
+  stale-item rendering, screen-reader output, themes, locale pixels, 1280×720/
+  800 px pixels, browser history/reload, and representative-user recovery remain
+  open.
+
+- **2026-07-16 — Canonical save-first welcome / P0-12** — removed the hidden
+  six-step preference questionnaire, unreachable spotlight tour, Calendar coach
+  mark, tip toggle/reset controls, duplicate Reset onboarding menu action, native
+  confirmation, hardcoded coach copy, and their CSS/Escape-stack residue. First run,
+  Settings replay, app-menu Guide, and About replay now converge on one localized
+  save-first dialog. Its controller exposes immediate focus plus distinct loading,
+  eligible-tab, no-eligible-tab, query-error/retry, failed-save, and successful
+  Inbox-handoff states; Escape stops before lower surfaces and restores the opener,
+  including the Settings replay path. The new production-controller contract covers
+  loading, newest eligible candidate selection, acknowledged close intent, empty,
+  error/retry, failed persistence, Tab containment, Escape, opener return, Inbox
+  navigation, saved-item focus, en/zh-TW copy, narrow/reduced-motion rules, unique
+  active IDs, and absence of every removed path. The complete static/deterministic
+  gate passes. **Implemented: yes. Verified: partial (production-controller and
+  static-source contracts only). User-validated: no. Released: no.** No schema,
+  permission, storage shape, import compatibility, capture writer, or advanced
+  surface changed. The in-app browser loaded the unshimmed static DOM with no
+  duplicate IDs or captured console errors, but browser policy blocked the shim and
+  a static-state fixture; Chrome integration lacks its native bridge/profile.
+  Installed tab capture/closure, pixels, screen-reader output, themes, locale layout,
+  1280×720/800 px behavior, reload/history, and representative-user activation
+  therefore remain open.
 
 - **2026-07-16 -- Missing state-write receiver recovery / P0-04** -- new-tab and
   popup writers now retry only the exact `Receiving end does not exist` rejection,
@@ -135,9 +650,9 @@ Last updated: 2026-07-16.
   notified without re-arming. If notification creation fails, state stays untouched;
   a rejected state write is not retried, leaves authority unchanged, and rebuilds a
   consumed recurring alarm from an authoritative read; quota uses the existing
-  warning and other write failures add an actionable update warning. A post-write
-  reconciliation failure keeps the accepted next occurrence and adds an actionable
-  scheduling warning that opens Locus. The production-extracted contract covers six
+  warning and other write failures add an update warning. A post-write
+  reconciliation failure keeps the accepted next occurrence and adds a scheduling
+  warning that opens Locus. The production-extracted contract covers six
   deliveries, two stale/removed alarms, and four failure paths,
   and the complete static/deterministic block passes. **Implemented: yes. Verified:
   partial (clock-controlled mocked-browser delivery only). User-validated: no.
@@ -481,22 +996,77 @@ Last updated: 2026-07-16.
 
 ## Known issues / tensions
 
+- Workspace and Space create/rename/removal, existing-Space Group move, explicit
+  Group/Stack identity editing, and Duplicate Group are now centralized; populated scopes
+  are blocked behind Archive/move guidance, empty structural deletion is receipt-
+  gated, and group removal is Archive-only. Deleting a populated container remains
+  deliberately unavailable until its Archive destination and structural restore
+  semantics are defined. Capture/paste/import-generated Groups and
+  remaining direct title/color prompts need a bounded audit; and import diagnostics/
+  Explorer retain lower-priority organization `category` labels. They remain queue
+  item #4.
+  The removed legacy direct Group-move path may have left ambiguous orphan Canvas
+  positions or stale capture/Archive/Trash restore hints in profiles that used it.
+  The new transaction repairs only the exact current source tuple; retroactive
+  cleanup needs a separately specified, backed-up migration because same Group IDs
+  and several stale positions do not establish authoritative provenance.
+  Native confirmations in contextual Advanced trackers are outside this core slice
+  and must not be treated as polished or promoted behavior.
+- Home now completes locate → recover through real saved-item previews. The sheet's
+  direct title, URL, task, saved-context, cover, tag, checklist, and custom-field
+  mutations share one acknowledged transaction; its reminder Set/Change/quick/Clear
+  path uses a sibling exact-target transaction whose service-worker receipt owns
+  state→alarm ordering. Non-detail item and group/category reminder entries retain
+  separate controllers and remain queue item #3. The popup's asked single-tab flow
+  now offers a worker-owned Open-in-Locus handoff into that same Home sheet. Quick
+  capture with ask-every-time off and whole-window save still confirm and close
+  without an explicit recovery handoff; keep their resolution in queue item #2
+  rather than adding another recovery surface.
 - Fresh installed-runtime verification is unavailable for the current worktree. A
   live Locus new-tab was present as the privileged `edge://newtab/` surface, but
-  browser security policy blocked page inspection; the managed in-app browser also
-  rejected the documented localhost shim. The supplied screenshot establishes the
-  pre-fix missing-receiver failure, not post-fix behavior. Installed MV3 behavior,
-  the shimmed UI pass, CSP, local favicon loading, service-worker/message lifecycle
-  behavior, actual UI flows, and network silence therefore still require an
-  unpacked-extension pass in an environment that can load the candidate.
-- The legacy multi-step welcome questionnaire, associated helpers, and coach-mark
-  paths remain hidden/dead in the source. Remove them after confirming that no
-  current binding or migration depends on them.
-- Deterministic import-recovery, archive-scale, export/import-scale,
+  browser security policy blocked page inspection; the supplied screenshot
+  establishes the pre-fix missing-receiver failure, not post-fix behavior. A fresh
+  2026-07-16 check found Chrome installed but no configured browser-integration
+  profile/native bridge. The in-app browser served the unshimmed localhost DOM with
+  no duplicate IDs or captured console errors, but `chrome` was unavailable and
+  browser policy blocked both the documented shim and a static-state fixture. None
+  of that is an active-UI or installed pass. Installed MV3 behavior, the shimmed UI
+  pass, CSP, local favicon loading, service-worker/message lifecycle behavior,
+  actual UI flows, responsive/theme/locale pixels, and network silence therefore
+  still require an unpacked-extension pass in an environment that can load the
+  candidate.
+- Deterministic onboarding, item-detail, Trash-recovery, organization-removal,
+  organization-delete, organization-naming, organization-creation,
+  organization-move, Group/Stack identity, import-recovery, archive-scale, export/import-scale,
   reminder-identity, reminder-overdue, reminder-timezone, background, Undo,
-  freshness, and concurrency
+  freshness, popup-Locate, and concurrency
   contracts now cover legacy and
   every-level ID collisions, idless Archive entries, replace rollback/normalization,
+  Home `/home?item` recovery with global/owning-Space identity checks, native
+  activation, read-only open/close/Back/Forward, active-Space/Canvas isolation,
+  exact and moved-row focus, and English/zh-TW interaction-state parity,
+  same-request popup state→Locate ordering, authoritative exact/moved/nested
+  re-resolution, stale/duplicate/stored/moved-out rejection, encoded Home-detail
+  handoff, create-before-close-before-activate ordering, typed accepted-save Locate
+  failures, bounded popup receipt timeout, and Landing/Welcome deep-link precedence,
+  receipt-gated item-detail reminder Set/Change/Clear with exact target/route
+  identity, imported-field preservation, one combined state/alarm receipt, failure/
+  warning distinction, duplicate suppression, nested keyboard/Escape/recovery
+  ordering, rebuilt-control focus, and localized live/busy feedback,
+  four reachable workspace/Space rename surfaces, six creation/create-and-move
+  entries, and Board/Canvas/focused-Group plus both List existing-Space move
+  entries through one stable-ID dialog,
+  plus Board/Canvas/focused-Group and both List Duplicate entries through the
+  identity dialog with draft-only open/cancel, whole-graph stale review, recursive
+  fresh-ID allocation across active/stored/reference/layout keys, detached custom
+  and reminder preservation, merged legacy/current Canvas footprints, one-write
+  receipt gating, focused-Group routing without another state write, recovery-
+  owned focus, and post-receipt alarm reconciliation for Duplicate/Undo/Redo,
+  duplicate-name and duplicate-ID behavior, blank/unchanged/stale/moved targets,
+  one-write acknowledgement, action-scoped Undo, failed-write recovery precedence,
+  recovery-button keyboard activation, actual asynchronous workspace-chip focus
+  completion, locale repaint, narrow/forced-color styling, and removal of hidden-
+  tab and double-click rename duplicates,
   production-extracted import validation across 33 malformed boundaries and 128
   fixed-seed structural mutations,
   1,024-record single-item/whole-group/batch Archive and Archive-to-Trash restore
@@ -521,7 +1091,9 @@ Last updated: 2026-07-16.
   state writes, or mutation, and eight fired-delivery cases that persist item/nested/
   group/category recurrence plus stable-index and legacy-transition delivery, reject
   five stale/malformed alarms, and exercise notification, quota/generic storage,
-  and post-write reconciliation failures,
+  and post-write reconciliation failures, plus a central runtime-message case that
+  persists before alarm-map access and returns structured reconciliation success or
+  accepted-state scheduling failure in the same receipt,
   and a pending-reminder projection that keeps unresolved one-shots and expired series
   in Past due, excludes delivered records, and matches background daily/biweekly/
   monthly recurrence projection without mutating identity-bearing source entries,
@@ -544,9 +1116,10 @@ Last updated: 2026-07-16.
   Remaining P0 gaps are installed
   cross-context/service-worker restart and unknown-ack lifecycle evidence,
   actual Chrome quota allocation, File/FileReader/preview behavior, and installed
-  browser legacy/current import round trips, installed reminder restart/sleep and
-  delivery behavior, rendered one-shot Past Due behavior, installed group/category
-  mutation races under stable identity, installed alarm timing through time-zone
+  browser legacy/current import round trips, installed reminder state/alarm receipt
+  teardown plus restart/sleep and delivery behavior, rendered one-shot Past Due
+  behavior, remaining non-detail item and group/category mutation races under stable
+  identity, installed alarm timing through time-zone
   transitions and live time-zone changes, installed-browser
   Archive/Trash quota and export/import
   recovery, and a complete

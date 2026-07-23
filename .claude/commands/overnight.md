@@ -54,6 +54,16 @@ Run the full static block from `VERIFY.md`:
 - `node --check` on each of `newtab.js popup.js background.js suspended.js
   emoji-data.js prepaint.js import-utils.js scripts/*.js`
 - `node scripts/quality-gates.js`
+- `node scripts/onboarding-contract-test.js`
+- `node scripts/item-detail-contract-test.js`
+- `node scripts/popup-locate-contract-test.js`
+- `node scripts/trash-recovery-contract-test.js`
+- `node scripts/organization-removal-contract-test.js`
+- `node scripts/organization-delete-contract-test.js`
+- `node scripts/organization-naming-contract-test.js`
+- `node scripts/organization-creation-contract-test.js`
+- `node scripts/organization-move-contract-test.js`
+- `node scripts/group-stack-identity-contract-test.js`
 - `node scripts/import-recovery-test.js`
 - `node scripts/archive-scale-contract-test.js`
 - `node scripts/export-import-scale-contract-test.js`

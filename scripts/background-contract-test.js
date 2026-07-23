@@ -166,6 +166,7 @@ const alarmMap = new Map([
 ]);
 const alarmCalls = { created: [], cleared: [] };
 const captureCalls = { storageSets: 0, removedTabs: [], notifications: [], openedTabs: [], clearedNotifications: [] };
+const stateWriteEffectOrder = [];
 const listeners = Object.create(null);
 let storageMode = 'normal';
 let conflictRead = 0;
@@ -191,6 +192,7 @@ const chrome = {
         return { te: deepClone(conflictRead % 2 === 1 ? staleState : state) };
       },
       async set(value) {
+        stateWriteEffectOrder.push('storage-set');
         captureCalls.storageSets += 1;
         if (storageMode === 'quota') throw new Error('QUOTA_BYTES quota exceeded.');
         if (storageMode === 'error') throw new Error('Injected state write failure.');
@@ -217,6 +219,7 @@ const chrome = {
   alarms: {
     onAlarm: event('alarm'),
     async getAll() {
+      stateWriteEffectOrder.push('alarms-get-all');
       return [...alarmMap.values()].map(deepClone);
     },
     async create(name, options) {
@@ -710,6 +713,35 @@ async function testCentralStateWriteProtocol() {
   assert.equal(persistedState._revision, 3);
   assert.equal(persistedState.settings.protocolMarker, 'accepted');
 
+  const reconciledCandidate = deepClone(persistedState);
+  fixtureItem('item', reconciledCandidate).reminder.at = fixedNow + 300_000;
+  stateWriteEffectOrder.length = 0;
+  const reconciled = await sendRuntimeMessage({
+    type: 'locus-state-write',
+    state: reconciledCandidate,
+    reconcileReminders: true,
+  });
+  assert.equal(reconciled.ok, true);
+  assert.equal(reconciled.revision, 4);
+  assert.equal(reconciled.reminderReconciliation?.ok, true, 'the write receipt must include its completed alarm effect');
+  assert.equal(reconciled.reminderReconciliation?.reason, 'state-write');
+  assert.deepEqual(stateWriteEffectOrder.slice(0, 2), ['storage-set', 'alarms-get-all'], 'alarm reconciliation must begin only after storage accepts the state');
+  assert.equal(alarmMap.get('te-reminder-item')?.scheduledTime, fixedNow + 300_000);
+
+  const alarmFailureCandidate = deepClone(persistedState);
+  fixtureItem('item', alarmFailureCandidate).reminder.at = fixedNow + 360_000;
+  alarmFailure = { create: 'te-reminder-item' };
+  const alarmFailureReceipt = await sendRuntimeMessage({
+    type: 'locus-state-write',
+    state: alarmFailureCandidate,
+    reconcileReminders: true,
+  });
+  assert.equal(alarmFailureReceipt.ok, true, 'an alarm failure must not erase an accepted state receipt');
+  assert.equal(alarmFailureReceipt.revision, 5);
+  assert.equal(alarmFailureReceipt.reminderReconciliation?.ok, false, 'the accepted receipt must expose the post-write alarm failure');
+  assert.equal(fixtureItem('item').reminder.at, fixedNow + 360_000, 'the accepted reminder state must survive an alarm failure');
+  alarmFailure = null;
+
   storageMode = 'quota';
   const beforeQuota = deepClone(persistedState);
   const quotaCandidate = deepClone(persistedState);
@@ -782,7 +814,7 @@ async function testCaptureConflicts() {
   await testReminderDeliveryPersistence();
   await testCentralStateWriteProtocol();
   await testCaptureConflicts();
-  console.log(`Background contracts passed: reminderInitial=${initialAlarmTimes.size}, reminderRestart=${restartAlarmTimes.size}, recurringRearmed=${restartAlarmTimes.size - 1}, restartStale=${restartStaleNames.length}, alarmFailureOps=2, firedDeliveries=8, staleIgnored=5, identityMutationPaths=2, deliveryFailurePaths=4`);
+  console.log(`Background contracts passed: reminderInitial=${initialAlarmTimes.size}, reminderRestart=${restartAlarmTimes.size}, recurringRearmed=${restartAlarmTimes.size - 1}, restartStale=${restartStaleNames.length}, alarmFailureOps=2, firedDeliveries=8, staleIgnored=5, identityMutationPaths=2, deliveryFailurePaths=4, stateAlarmReceipts=2`);
 })().catch(error => {
   console.error(error);
   process.exitCode = 1;

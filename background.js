@@ -572,10 +572,168 @@ function requestReminderAlarmReconciliation(reason) {
   return run;
 }
 
+function resolvePopupLocateSavedItem(state, { workspaceId, itemId } = {}) {
+  if (!state || typeof workspaceId !== 'string' || !workspaceId || typeof itemId !== 'string' || !itemId) return null;
+  const workspaces = Array.isArray(state.workspaces) ? state.workspaces : [];
+  const expectedWorkspaces = workspaces.filter(workspace => workspace?.id === workspaceId);
+  if (expectedWorkspaces.length !== 1) return null;
+
+  const matches = [];
+  const seen = new Set();
+  for (const workspace of workspaces) {
+    for (const category of (workspace?.categories || [])) {
+      for (const group of (category?.groups || [])) {
+        const pending = [...(group?.items || [])];
+        while (pending.length) {
+          const item = pending.pop();
+          if (!item || typeof item !== 'object' || seen.has(item)) continue;
+          seen.add(item);
+          if (item.id === itemId) matches.push({ workspace, category, group, item });
+          if (Array.isArray(item.items)) pending.push(...item.items);
+        }
+      }
+    }
+  }
+  if (matches.length !== 1 || matches[0].workspace !== expectedWorkspaces[0]) return null;
+  const target = matches[0];
+  const owningSpaces = (target.workspace.categories || []).filter(space => space?.id === target.category?.id);
+  return owningSpaces.length === 1 ? target : null;
+}
+
+function buildPopupLocateHash(workspaceId, itemId) {
+  return `#/ws/${encodeURIComponent(workspaceId)}/home?item=${encodeURIComponent(itemId)}`;
+}
+
+const POPUP_LOCATE_NOTICE = {
+  en: {
+    sourceOpenTitle: "Saved, but Locus couldn't close the tab",
+    sourceOpenMessage: 'The saved item is open. Close the original tab manually if needed.',
+    routeInactiveTitle: "Saved, but Locus couldn't switch tabs",
+    routeInactiveMessage: 'The saved item is open in another tab. Switch to it manually.',
+    routeInactiveSourceOpenTitle: "Saved, but some actions didn't finish",
+    routeInactiveSourceOpenMessage: "The saved item is open in another tab, but Locus couldn't switch to it or close the original tab.",
+  },
+  'zh-TW': {
+    sourceOpenTitle: '已儲存，但無法關閉原分頁',
+    sourceOpenMessage: '已開啟儲存的項目；若不再需要原分頁，請手動關閉。',
+    routeInactiveTitle: '已儲存，但無法切換分頁',
+    routeInactiveMessage: '項目已在其他分頁開啟，請手動切換。',
+    routeInactiveSourceOpenTitle: '已儲存，但部分操作未完成',
+    routeInactiveSourceOpenMessage: '項目已在其他分頁開啟，但 Locus 無法切換到該分頁，也無法關閉原分頁。',
+  },
+};
+
+const POPUP_LOCATE_NOTIFICATION_PREFIX = 'te-popup-locate-';
+
+async function showPopupLocateNotice(state, titleKey, messageKey, routeTabId) {
+  const locale = appLocale(state);
+  const copy = POPUP_LOCATE_NOTICE[locale] || POPUP_LOCATE_NOTICE.en;
+  try {
+    await chrome.notifications.create(`${POPUP_LOCATE_NOTIFICATION_PREFIX}${routeTabId}-${uid()}`, {
+      type: 'basic',
+      iconUrl: chrome.runtime.getURL('icons/icon128.png'),
+      title: copy[titleKey],
+      message: copy[messageKey],
+      priority: 1,
+    });
+  } catch (error) {
+    console.error('Could not show the popup Locate notice:', error);
+  }
+}
+
+async function activatePopupLocateTab(tabId) {
+  const routeTab = await chrome.tabs.update(tabId, { active: true });
+  if (Number.isInteger(routeTab?.windowId)) {
+    try {
+      await chrome.windows.update(routeTab.windowId, { focused: true });
+    } catch (error) {
+      const focusError = new Error('Locus activated the recovery tab but could not focus its window.');
+      focusError.code = 'LOCUS_LOCATE_WINDOW_FOCUS_FAILED';
+      focusError.routeTab = routeTab;
+      focusError.windowError = error;
+      throw focusError;
+    }
+  }
+  return routeTab;
+}
+
+async function performPopupLocateSavedItem(intent) {
+  const authoritative = await getState();
+  const target = resolvePopupLocateSavedItem(authoritative, intent);
+  if (!target) return { ok: false, code: 'LOCUS_LOCATE_TARGET_UNAVAILABLE' };
+
+  let routeTab;
+  try {
+    const createOptions = {
+      url: chrome.runtime.getURL('newtab.html') + buildPopupLocateHash(target.workspace.id, target.item.id),
+      active: false,
+    };
+    if (Number.isInteger(intent?.sourceWindowId)) createOptions.windowId = intent.sourceWindowId;
+    routeTab = await chrome.tabs.create(createOptions);
+  } catch (error) {
+    console.error('Could not create the popup Locate route:', error);
+    return { ok: false, code: 'LOCUS_LOCATE_CREATE_FAILED' };
+  }
+  if (!Number.isInteger(routeTab?.id)) return { ok: false, code: 'LOCUS_LOCATE_CREATE_FAILED' };
+
+  let sourceClosed = null;
+  let sourceCloseFailed = false;
+  if (intent?.closeSource === true && Number.isInteger(intent.sourceTabId)) {
+    sourceClosed = false;
+    try {
+      await chrome.tabs.remove(intent.sourceTabId);
+      sourceClosed = true;
+    } catch (error) {
+      sourceCloseFailed = true;
+      console.error('Saved item opened, but the source tab close was not confirmed:', error);
+    }
+  }
+
+  try {
+    await activatePopupLocateTab(routeTab.id);
+  } catch (error) {
+    console.error('Could not activate the popup Locate route:', error);
+    const noticePrefix = sourceCloseFailed ? 'routeInactiveSourceOpen' : 'routeInactive';
+    await showPopupLocateNotice(authoritative, `${noticePrefix}Title`, `${noticePrefix}Message`, routeTab.id);
+    return {
+      ok: false,
+      code: 'LOCUS_LOCATE_ACTIVATE_FAILED',
+      routeCreated: true,
+      routeTabId: routeTab.id,
+      sourceClosed,
+      sourceCloseFailed,
+    };
+  }
+
+  if (sourceCloseFailed) {
+    await showPopupLocateNotice(authoritative, 'sourceOpenTitle', 'sourceOpenMessage', routeTab.id);
+  }
+  return { ok: true, routeCreated: true, sourceClosed, sourceCloseFailed };
+}
+
+async function handleStateWriteMessage(message) {
+  const revision = await setState(message.state);
+  const response = { ok: true, revision };
+  if (message.reconcileReminders === true) {
+    response.reminderReconciliation = await requestReminderAlarmReconciliation('state-write');
+  }
+  if (message.locateSavedItem) {
+    try {
+      response.locateResult = await performPopupLocateSavedItem(message.locateSavedItem);
+    } catch (error) {
+      // The state receipt remains accepted. Browser-effect failures are a typed
+      // partial success and must never be misreported as a rejected save.
+      console.error('Popup Locate failed after the save was accepted:', error);
+      response.locateResult = { ok: false, code: 'LOCUS_LOCATE_FAILED' };
+    }
+  }
+  return response;
+}
+
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type === 'locus-state-write') {
-    setState(message.state)
-      .then(revision => sendResponse({ ok: true, revision }))
+    handleStateWriteMessage(message)
+      .then(sendResponse)
       .catch(error => sendResponse(serializeStateWriteError(error)));
     return true;
   }
@@ -803,11 +961,28 @@ function stripHtml(html) {
 }
 
 // Delivery and actionable failure notifications all open the local new-tab app.
-const NOTIF_OPEN_PREFIXES = ['te-notif-', 'te-gnotif-', 'te-cnotif-', 'te-sub-notif-', 'te-storage-quota-', 'te-capture-error-', 'te-reminder-error-'];
+const NOTIF_OPEN_PREFIXES = ['te-notif-', 'te-gnotif-', 'te-cnotif-', 'te-sub-notif-', 'te-storage-quota-', 'te-capture-error-', 'te-reminder-error-', POPUP_LOCATE_NOTIFICATION_PREFIX];
 chrome.notifications.onClicked.addListener(async (notifId) => {
   if (!NOTIF_OPEN_PREFIXES.some(p => notifId.startsWith(p))) return;
+  const localNewTabUrl = chrome.runtime.getURL('newtab.html');
+  let fallbackUrl = localNewTabUrl;
   try {
-    await chrome.tabs.create({ url: chrome.runtime.getURL('newtab.html') });
+    if (notifId.startsWith(POPUP_LOCATE_NOTIFICATION_PREFIX)) {
+      const rawTabId = notifId.slice(POPUP_LOCATE_NOTIFICATION_PREFIX.length).split('-', 1)[0];
+      const routeTabId = Number(rawTabId);
+      if (Number.isSafeInteger(routeTabId) && routeTabId >= 0) {
+        try {
+          await activatePopupLocateTab(routeTabId);
+          await chrome.notifications.clear(notifId);
+          return;
+        } catch (error) {
+          console.error('Could not return to the popup Locate tab:', error);
+          const activatedRouteUrl = String(error?.routeTab?.url || '');
+          if (activatedRouteUrl.startsWith(localNewTabUrl)) fallbackUrl = activatedRouteUrl;
+        }
+      }
+    }
+    await chrome.tabs.create({ url: fallbackUrl });
     await chrome.notifications.clear(notifId);
   } catch (error) {
     console.error('Could not open Locus from notification:', error);

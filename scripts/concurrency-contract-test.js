@@ -154,6 +154,7 @@ function createPopupClientHarness(initialState = makeState()) {
     },
     LOCUS_STATE_RECEIVER_RETRY_MS: 1,
     setTimeout,
+    clearTimeout,
     structuredClone,
   });
 
@@ -265,7 +266,7 @@ async function deterministicPopupReceiverAvailability() {
   ambiguous.client.addToken('popup-ambiguous-receipt');
   const ambiguousOutcome = await Promise.allSettled([ambiguous.client.persist()]);
   assert.equal(ambiguousOutcome[0].status, 'rejected');
-  assert.notEqual(ambiguousOutcome[0].reason?.code, 'LOCUS_STATE_RECEIVER_UNAVAILABLE');
+  assert.equal(ambiguousOutcome[0].reason?.code, 'LOCUS_STATE_UNKNOWN_ACK');
   assert.equal(ambiguous.sent.length, 1, 'An ambiguous popup receipt failure must never be retried');
   assert.equal(ambiguous.client.read()._revision, 0, 'An ambiguous popup receipt must not advance its local revision');
   clientQueueCases++;
@@ -301,12 +302,15 @@ async function deterministicPopupCaptureFailureOverlap() {
       },
     },
     setTimeout() { return 0; },
+    clearTimeout() {},
     structuredClone,
     window: { close() {} },
+    document: { body: { classList: { add() {}, remove() {} } } },
   });
 
   vm.runInContext(
     `let state = structuredClone(globalThis.__initialPopupState);\n` +
+      `const $ = () => ({ setAttribute() {} });\n` +
       `const tr = key => key;\n` +
       `const toast = message => globalThis.__toasts.push(message);\n` +
       `let nextUid = 1;\n` +

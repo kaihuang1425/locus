@@ -81,12 +81,32 @@ const I18N = {
 Object.assign(I18N.en, {
   captureConflict: 'Locus changed in another window. Your tabs were left untouched. Open Locus, then retry.',
   captureFailed: 'Save failed. Your tabs were left untouched. Open Locus, then retry.',
-  captureBusy: 'Another save is still being confirmed. Your tabs were left untouched.'
+  captureUnknown: 'Locus could not confirm the save. Reopen Locus before retrying; the source tab may stay open.',
+  captureBusy: 'Another save is still being confirmed. Your tabs were left untouched.',
+  locateAfterSave: 'Open saved item in Locus',
+  savedTitle: 'Saved',
+  done: 'Close',
+  switchToSavedItem: 'Switch to saved item',
+  locateFailed: destination => `Saved to ${destination}, but the saved item couldn't be opened. Locus did not close the source tab.`,
+  locateRouteInactive: destination => `Saved to ${destination}. The saved item is open in another tab, but Locus couldn't switch to it.`,
+  locateRouteInactiveSourceOpen: destination => `Saved to ${destination}. The saved item is open in another tab, but Locus couldn't switch to it or close the source tab.`,
+  openLocusRetryFailed: destination => `Saved to ${destination}, but Locus still couldn't open. Try again.`,
+  switchToSavedItemFailed: destination => `Saved to ${destination}. Locus still couldn't switch to the saved item. Switch tabs manually or try again.`
 });
 Object.assign(I18N['zh-TW'], {
   captureConflict: 'Locus 已在其他視窗變更。分頁完全未受影響。請開啟 Locus 後再試。',
   captureFailed: '儲存失敗。分頁完全未受影響。請開啟 Locus 後再試。',
-  captureBusy: '另一項儲存仍在確認中。分頁完全未受影響。'
+  captureUnknown: 'Locus 無法確認是否已儲存。請重新開啟 Locus 後再試；原分頁可能仍開啟。',
+  captureBusy: '另一項儲存仍在確認中。分頁完全未受影響。',
+  locateAfterSave: '儲存後在 Locus 開啟項目',
+  savedTitle: '已儲存',
+  done: '關閉',
+  switchToSavedItem: '切換到已儲存項目',
+  locateFailed: destination => `已儲存到「${destination}」，但無法開啟這個項目。Locus 未關閉原分頁。`,
+  locateRouteInactive: destination => `已儲存到「${destination}」。項目已在其他分頁開啟，但 Locus 無法切換到該分頁。`,
+  locateRouteInactiveSourceOpen: destination => `已儲存到「${destination}」。項目已在其他分頁開啟，但 Locus 無法切換到該分頁，也未關閉原分頁。`,
+  openLocusRetryFailed: destination => `已儲存到「${destination}」，但仍無法開啟 Locus，請再試一次。`,
+  switchToSavedItemFailed: destination => `已儲存到「${destination}」。Locus 仍無法切換到已儲存項目，請手動切換分頁或再試一次。`
 });
 
 let all = [];
@@ -111,6 +131,16 @@ let selectedTabIds = new Set();
 let popupStateWriteQueue = Promise.resolve();
 let popupStateWriteFailureEpoch = 0;
 let popupCapturePending = false;
+let popupStateRecoveryRequired = false;
+let locateResultVisible = false;
+let locateRecoveryTabId = null;
+let popupCaptureControl = null;
+
+const isPopupStateRecoveryError = error => [
+  'LOCUS_STATE_UNKNOWN_ACK',
+  'LOCUS_STATE_PROTOCOL',
+  'LOCUS_STATE_QUEUE_INVALIDATED',
+].includes(error?.code);
 
 const isMissingPopupStateWriteReceiver = error =>
   /Receiving end does not exist\.?$/i.test(String(error?.message || error || '').trim());
@@ -118,19 +148,36 @@ const configuredPopupReceiverRetryMs = Number(globalThis.LOCUS_STATE_RECEIVER_RE
 const popupReceiverRetryMs = Number.isFinite(configuredPopupReceiverRetryMs) && configuredPopupReceiverRetryMs >= 0
   ? Math.min(configuredPopupReceiverRetryMs, 1000)
   : 150;
+const configuredPopupStateWriteTimeoutMs = Number(globalThis.LOCUS_STATE_WRITE_TIMEOUT_MS);
+const popupStateWriteTimeoutMs = Number.isFinite(configuredPopupStateWriteTimeoutMs) && configuredPopupStateWriteTimeoutMs > 0
+  ? configuredPopupStateWriteTimeoutMs
+  : 10000;
 
-async function sendPopupStateWriteMessage(candidate) {
+async function sendPopupStateWriteMessage(candidate, retryAllowed = () => true, { locateSavedItem = null } = {}) {
   let missingReceiver = null;
   for (let attempt = 0; attempt < 3; attempt++) {
     if (attempt > 0) {
       await new Promise(resolve => setTimeout(resolve, popupReceiverRetryMs * attempt));
+      if (!retryAllowed()) throw missingReceiver;
     }
     try {
-      return await chrome.runtime.sendMessage({ type: 'locus-state-write', state: candidate });
+      return await chrome.runtime.sendMessage({
+        type: 'locus-state-write',
+        state: candidate,
+        ...(locateSavedItem ? { locateSavedItem } : {}),
+      });
     } catch (error) {
       // This exact rejection means no listener accepted the message. Retrying
       // any other transport failure could duplicate an already committed write.
-      if (!isMissingPopupStateWriteReceiver(error)) throw error;
+      if (!isMissingPopupStateWriteReceiver(error) || !retryAllowed()) {
+        if (!isMissingPopupStateWriteReceiver(error)) {
+          const unknown = new Error(String(error?.message || error || 'Locus could not confirm the save.'));
+          unknown.code = 'LOCUS_STATE_UNKNOWN_ACK';
+          if (error && typeof error === 'object' && error.code != null) unknown.nativeCode = error.code;
+          throw unknown;
+        }
+        throw error;
+      }
       missingReceiver = error;
     }
   }
@@ -140,7 +187,7 @@ async function sendPopupStateWriteMessage(candidate) {
   throw error;
 }
 
-async function persistPopupState() {
+async function persistPopupState({ locateSavedItem = null } = {}) {
   if (!state) return;
   // Capture the graph at call time. A queued write must never read a later
   // rollback from the mutable popup state and mistake that graph for its own
@@ -155,19 +202,37 @@ async function persistPopupState() {
     }
     const localRevision = Number(state?._revision) || 0;
     candidate._revision = localRevision;
-    const response = await sendPopupStateWriteMessage(candidate);
-    if (!response?.ok) {
-      const error = new Error(response?.message || 'Locus could not confirm this save. Reopen the popup, then retry.');
-      error.code = response?.code || 'LOCUS_STATE_WRITE_FAILED';
-      throw error;
+    let receiptTimer = null;
+    let receiverRetryOpen = true;
+    try {
+      const receiptTimeout = new Promise((_, reject) => {
+        receiptTimer = setTimeout(() => {
+          const error = new Error('Locus could not confirm this save in time. Reopen Locus before retrying.');
+          error.code = 'LOCUS_STATE_UNKNOWN_ACK';
+          reject(error);
+        }, popupStateWriteTimeoutMs);
+      });
+      const response = await Promise.race([
+        sendPopupStateWriteMessage(candidate, () => receiverRetryOpen, { locateSavedItem }),
+        receiptTimeout,
+      ]);
+      if (!response?.ok) {
+        const error = new Error(response?.message || 'Locus could not confirm this save. Reopen the popup, then retry.');
+        error.code = response ? (response.code || 'LOCUS_STATE_WRITE_FAILED') : 'LOCUS_STATE_UNKNOWN_ACK';
+        throw error;
+      }
+      const nextRevision = Number(response.revision);
+      if (!Number.isSafeInteger(nextRevision) || nextRevision !== localRevision + 1) {
+        const error = new Error('Locus received an invalid save confirmation. Reopen the popup before retrying.');
+        error.code = 'LOCUS_STATE_PROTOCOL';
+        throw error;
+      }
+      state._revision = nextRevision;
+      return response;
+    } finally {
+      receiverRetryOpen = false;
+      if (receiptTimer != null) clearTimeout(receiptTimer);
     }
-    const nextRevision = Number(response.revision);
-    if (!Number.isSafeInteger(nextRevision) || nextRevision !== localRevision + 1) {
-      const error = new Error('Locus received an invalid save confirmation. Reopen the popup before retrying.');
-      error.code = 'LOCUS_STATE_PROTOCOL';
-      throw error;
-    }
-    state._revision = nextRevision;
   };
   const run = popupStateWriteQueue.then(requestWrite);
   popupStateWriteQueue = run.then(
@@ -185,16 +250,28 @@ const tr = (key, ...args) => {
 };
 
 function beginPopupCapture() {
+  if (popupStateRecoveryRequired) {
+    showCaptureFailure({ code: 'LOCUS_STATE_UNKNOWN_ACK' });
+    return false;
+  }
   if (popupCapturePending) {
     toast(tr('captureBusy'));
     return false;
   }
   popupCapturePending = true;
+  popupCaptureControl = document.activeElement?.closest?.('button, input, textarea') || null;
+  popupCaptureControl?.setAttribute('aria-busy', 'true');
+  $('popup')?.setAttribute('aria-busy', 'true');
+  document.body.classList.add('capture-pending');
   return true;
 }
 
 function finishPopupCapture() {
   popupCapturePending = false;
+  popupCaptureControl?.removeAttribute('aria-busy');
+  popupCaptureControl = null;
+  $('popup')?.setAttribute('aria-busy', 'false');
+  document.body.classList.remove('capture-pending');
 }
 
 const THEME_IDS = new Set(['folio', 'folio-dark', 'tabento', 'tabento-dark', 'dark', 'aurora', 'light', 'dracula', 'nord', 'rose-pine', 'tokyo-night', 'solarized-dark', 'solarized-light', 'gruvbox', 'catppuccin', 'sepia', 'mono']);
@@ -252,16 +329,22 @@ function clonePopupState() {
 }
 
 function showCaptureFailure(error) {
-  const message = tr(error?.code === 'LOCUS_STATE_CONFLICT' ? 'captureConflict' : 'captureFailed');
+  const message = tr(
+    error?.code === 'LOCUS_STATE_CONFLICT'
+      ? 'captureConflict'
+      : isPopupStateRecoveryError(error)
+        ? 'captureUnknown'
+        : 'captureFailed'
+  );
   toast(message, { persistent: true });
   const host = $('pop-toast');
   const copy = document.createElement('span');
+  copy.className = 'pop-toast-copy';
   copy.textContent = message;
-  copy.style.minWidth = '0';
   const action = document.createElement('button');
   action.type = 'button';
+  action.className = 'pop-toast-action';
   action.textContent = tr('openLocus');
-  action.style.cssText = 'flex:0 0 auto;border:0;border-radius:999px;padding:5px 9px;background:var(--bg2);color:var(--text);font:inherit;font-weight:700;cursor:pointer';
   action.onclick = async () => {
     try {
       await chrome.tabs.create({ url: chrome.runtime.getURL('newtab.html') });
@@ -273,16 +356,17 @@ function showCaptureFailure(error) {
   host.textContent = '';
   host.appendChild(copy);
   host.appendChild(action);
-  host.style.display = 'flex';
-  host.style.alignItems = 'center';
-  host.style.gap = '8px';
-  host.style.pointerEvents = 'auto';
+  host.classList.add('interactive');
+  requestAnimationFrame(() => action.focus());
 }
 
 async function recoverCaptureWriteFailure(error, snapshot) {
   console.error('Popup capture failed', error);
   if (error && typeof error === 'object') {
     try { error.locusCaptureHandled = true; } catch {}
+  }
+  if (isPopupStateRecoveryError(error)) {
+    popupStateRecoveryRequired = true;
   }
   if (snapshot !== undefined) state = snapshot;
   try {
@@ -523,6 +607,16 @@ function startCapture(tab) {
 function openSavePicker(tab, mode = 'tab') {
   pickerMode = mode;
   pendingTab = mode === 'tab' ? tab : null;
+  locateResultVisible = false;
+  locateRecoveryTabId = null;
+  $('stg-back').classList.remove('hidden');
+  $('stg-destination-label').classList.remove('hidden');
+  $('stg-list').classList.remove('hidden');
+  $('stg-locate-result').classList.add('hidden');
+  $('stg-locate-result').setAttribute('role', 'status');
+  const hasDestination = state?.workspaces?.some(ws => (ws.categories || []).some(cat => (cat.groups || []).length));
+  $('stg-locate-option').classList.toggle('hidden', mode !== 'tab' || !hasDestination);
+  $('stg-locate').checked = false;
   if (mode === 'tab') {
     $('save-title').textContent = tr('saveTab');
     $('save-tab-title').textContent = tab?.title || tab?.url || tr('unnamedTab');
@@ -561,7 +655,10 @@ function openSavePicker(tab, mode = 'tab') {
         row.className = 'stg-row';
         row.innerHTML = `<span class="sym">${esc(group.symbol || '⌑')}</span><span class="nm">${esc(group.name)}</span><span class="cnt">${group.items?.length || 0}</span>`;
         row.onclick = () => {
-          if (pickerMode === 'tab') { doSave(ws, cat, group, tab); return; }
+          if (pickerMode === 'tab') {
+            doSave(ws, cat, group, tab, { locate: $('stg-locate').checked });
+            return;
+          }
           if (pickerMode === 'window') {
             windowSaveTargetGroupId = group.id;
             $('sw-destination-name').textContent = `${cat.name} / ${group.name}`;
@@ -591,10 +688,32 @@ function openSavePicker(tab, mode = 'tab') {
   showSection('save-to-section');
 }
 
-async function doSave(ws, cat, group, tab) {
+function showLocateFailure(cat, group, result = null) {
+  locateResultVisible = true;
+  locateRecoveryTabId = result?.routeCreated && Number.isInteger(result?.routeTabId)
+    ? result.routeTabId
+    : null;
+  const destination = `${cat.name} / ${group.name}`;
+  $('save-title').textContent = tr('savedTitle');
+  $('save-context').textContent = destination;
+  $('stg-destination-label').classList.add('hidden');
+  $('stg-list').classList.add('hidden');
+  $('stg-locate-option').classList.add('hidden');
+  $('stg-back').classList.add('hidden');
+  const resultKey = result?.routeCreated
+    ? (result?.sourceCloseFailed ? 'locateRouteInactiveSourceOpen' : 'locateRouteInactive')
+    : 'locateFailed';
+  $('stg-locate-result-message').textContent = tr(resultKey, destination);
+  $('stg-open-locus').textContent = tr(locateRecoveryTabId == null ? 'openLocus' : 'switchToSavedItem');
+  $('stg-locate-result').classList.remove('hidden');
+  requestAnimationFrame(() => $('stg-open-locus').focus());
+}
+
+async function doSave(ws, cat, group, tab, { locate = false } = {}) {
   if (!beginPopupCapture()) return false;
   try {
     let snapshot;
+    let response;
     try {
       snapshot = clonePopupState();
       group.items = group.items || [];
@@ -603,12 +722,29 @@ async function doSave(ws, cat, group, tab) {
         return false;
       }
       const meta = captureFields(tab);
-      group.items.push({ id: uid(), type: 'tab', title: meta.title, url: tab.url, fav: meta.fav, createdAt: Date.now() });
+      const item = { id: uid(), type: 'tab', title: meta.title, url: tab.url, fav: meta.fav, createdAt: Date.now() };
+      group.items.push(item);
       if (state.settings?.captureRememberLast !== false) state.settings.captureLastTarget = { workspaceId: ws.id, categoryId: cat.id, groupId: group.id };
-      await persistPopupState();
+      response = await persistPopupState({
+        locateSavedItem: locate ? {
+          workspaceId: ws.id,
+          itemId: item.id,
+          sourceTabId: tab.id,
+          sourceWindowId: tab.windowId,
+          closeSource: state.settings?.closeTabOnSave !== false,
+        } : null,
+      });
     } catch (error) {
       await recoverCaptureWriteFailure(error, snapshot);
       return false;
+    }
+    if (locate) {
+      if (response?.locateResult?.ok !== true) {
+        showLocateFailure(cat, group, response?.locateResult);
+      } else {
+        window.close();
+      }
+      return true;
     }
     if (state.settings?.closeTabOnSave !== false) {
       try { await chrome.tabs.remove(tab.id); } catch {}
@@ -924,14 +1060,15 @@ async function importBookmarksFromPopup() {
   }
 }
 
-function trapTabKey(event, root) {
+function trapTabKey(event, root, extraRoot = null) {
   if (event.key !== 'Tab' || !root) return;
-  const focusable = [...root.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')]
+  const roots = [root, extraRoot].filter(Boolean);
+  const focusable = roots.flatMap(container => [...container.querySelectorAll('button:not([disabled]), input:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')])
     .filter(el => !el.closest('.hidden'));
   if (!focusable.length) return;
   const first = focusable[0];
   const last = focusable[focusable.length - 1];
-  if (!root.contains(document.activeElement)) {
+  if (!roots.some(container => container.contains(document.activeElement))) {
     event.preventDefault();
     first.focus();
   } else if (event.shiftKey && document.activeElement === first) {
@@ -953,13 +1090,8 @@ function backSection() {
 
 function toast(message, { persistent = false } = {}) {
   const el = $('pop-toast');
+  el.classList.remove('interactive');
   el.textContent = message;
-  el.style.display = '';
-  el.style.alignItems = '';
-  el.style.gap = '';
-  el.style.pointerEvents = 'none';
-  el.style.whiteSpace = persistent ? 'normal' : '';
-  el.style.textAlign = persistent ? 'left' : '';
   el.setAttribute('role', persistent ? 'alert' : 'status');
   requestAnimationFrame(() => el.classList.add('show'));
   clearTimeout(toastTimer);
@@ -967,6 +1099,15 @@ function toast(message, { persistent = false } = {}) {
 }
 
 function bind() {
+  // Keep a receipt-gated capture from being replaced by another popup action.
+  // The action popup can still be dismissed by Chrome itself; Locate is carried
+  // by the worker-owned state request so that teardown cannot strand the effect.
+  document.addEventListener('click', event => {
+    if (!popupCapturePending) return;
+    if (!event.target.closest('button, input, textarea, [role="button"]')) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+  }, true);
   $('open-full').onclick = () => { chrome.tabs.create({ url: chrome.runtime.getURL('newtab.html') }); window.close(); };
   $('open-more').onclick = event => showSection('more-section', event.currentTarget);
   $('more-back').onclick = () => showSection('main-section');
@@ -989,11 +1130,38 @@ function bind() {
   // "Change" changes the destination — it never saves anything by itself.
   $('change-destination').onclick = () => openSavePicker(null, 'destination');
   $('stg-back').onclick = () => {
+    if (locateResultVisible) {
+      window.close();
+      return;
+    }
     const back = pickerMode === 'window' ? 'save-window-section' : pickerMode === 'hibernate' ? 'hibernate-section' : 'main-section';
     pendingTab = null;
     pickerMode = 'tab';
     showSection(back);
   };
+  $('stg-open-locus').onclick = async () => {
+    try {
+      if (locateRecoveryTabId == null) {
+        await chrome.tabs.create({ url: chrome.runtime.getURL('newtab.html') });
+      } else {
+        const routeTab = await chrome.tabs.update(locateRecoveryTabId, { active: true });
+        if (Number.isInteger(routeTab?.windowId)) {
+          await chrome.windows.update(routeTab.windowId, { focused: true });
+        }
+      }
+      window.close();
+    } catch (error) {
+      console.error('Could not open Locus after Locate failed', error);
+      const destination = $('save-context').textContent || tr('destination');
+      const failure = tr(locateRecoveryTabId == null ? 'openLocusRetryFailed' : 'switchToSavedItemFailed', destination);
+      $('stg-locate-result-message').textContent = '';
+      requestAnimationFrame(() => {
+        $('stg-locate-result-message').textContent = failure;
+        $('stg-open-locus').focus();
+      });
+    }
+  };
+  $('stg-done').onclick = () => window.close();
   $('sw-back').onclick = () => showSection('main-section');
   $('sw-change').onclick = () => openSavePicker(null, 'window');
   $('sw-modes').querySelectorAll('.sw-mode').forEach(button => {
@@ -1049,16 +1217,29 @@ function bind() {
   $('hib-change').onclick = () => openSavePicker(null, 'hibernate');
   $('hib-go').onclick = hibernateSelectedScope;
   document.addEventListener('keydown', event => {
-    if (event.key === 'Tab' && activeSection !== 'main-section') trapTabKey(event, $(activeSection));
-    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+    const searchShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k';
+    if (popupCapturePending && (event.key === 'Escape' || searchShortcut)) {
       event.preventDefault();
+      event.stopImmediatePropagation();
+      return;
+    }
+    const toastRoot = $('pop-toast').classList.contains('interactive') && $('pop-toast').classList.contains('show')
+      ? $('pop-toast')
+      : null;
+    if (event.key === 'Tab' && (activeSection !== 'main-section' || toastRoot)) {
+      trapTabKey(event, $(activeSection), toastRoot);
+    }
+    if (searchShortcut) {
+      event.preventDefault();
+      if (locateResultVisible) return;
       if (activeSection !== 'main-section') showSection('main-section');
       $('ps').focus();
       $('ps').select();
     }
     if (event.key === 'Escape') {
       event.preventDefault();
-      if (activeSection !== 'main-section') showSection(backSection());
+      if (locateResultVisible) window.close();
+      else if (activeSection !== 'main-section') showSection(backSection());
       else window.close();
     }
   });

@@ -47,7 +47,8 @@ for (const file of ['newtab.js', 'popup.js']) {
   const source = read(file);
   const writes = source.match(/chrome\.storage\.local\.set\(\{\s*te\s*:/g) || [];
   if (writes.length !== 0) fail(`${file} must not write whole state outside the service worker`);
-  if (!/chrome\.runtime\.sendMessage\(\{\s*type:\s*['"]locus-state-write['"]\s*,\s*state:\s*candidate\s*\}\)/.test(source)
+  const sendsStateWrite = /chrome\.runtime\.sendMessage\(\{\s*type:\s*['"]locus-state-write['"]\s*,\s*state:\s*candidate(?:\s*,[\s\S]{0,320})?\s*\}\)/.test(source);
+  if (!sendsStateWrite
     || !source.includes('_revision')
     || !source.includes('WriteFailureEpoch')
     || !source.includes('LOCUS_STATE_QUEUE_INVALIDATED')) {
@@ -101,9 +102,10 @@ const observedStateHandler = newtab.slice(
 if (!observedStateHandler.includes('showStateRecoveryRequired') || observedStateHandler.includes('restoreAuthoritativeState')) {
   fail('Dirty external state must stay behind the reload interlock and must never be auto-adopted');
 }
+const stateWriteRequestStart = newtab.indexOf('async function requestStateWrite(candidate');
 const stateWriteRequest = newtab.slice(
-  newtab.indexOf('async function requestStateWrite(candidate) {'),
-  newtab.indexOf('\n  function writeState()', newtab.indexOf('async function requestStateWrite(candidate) {')),
+  stateWriteRequestStart,
+  newtab.indexOf('\n  function writeState(', stateWriteRequestStart),
 );
 if (!stateWriteRequest.includes('catch (error)') || !stateWriteRequest.includes('requireRecovery()')) {
   fail('Unknown or failed writer receipts must centrally invalidate later mutations');
@@ -134,7 +136,7 @@ if (!newtab.includes('restoredTabId') || !/chrome\.tabs\.get\(tab\.restoredTabId
   fail('Closed-tab restoration retries must be idempotent');
 }
 if (!/visibleFocusableElements[\s\S]{0,700}getClientRects\(\)\.length/.test(newtab) || !/trapTabKey[\s\S]{0,300}visibleFocusableElements/.test(newtab)) {
-  fail('Modal focus traps must ignore hidden legacy controls');
+  fail('Modal focus traps must ignore non-rendered controls');
 }
 if (!/newestHomeItems\(items[^)]*\)[\s\S]{0,1200}buildHomePreviewRow/.test(newtab)) {
   fail('Home must show newly saved items instead of the oldest Inbox entries');
@@ -171,7 +173,7 @@ const popupHibernateCapture = popup.slice(
   popup.indexOf('async function hibernateSelectedScope('),
   popup.indexOf('\nasync function saveTabsBeforeHibernate', popup.indexOf('async function hibernateSelectedScope(')),
 );
-if (!/await persistPopupState\(\)[\s\S]*catch \(error\)[\s\S]*return false[\s\S]*chrome\.tabs\.remove/.test(popupSingleCapture)
+if (!/await persistPopupState\([\s\S]*?\);[\s\S]*catch \(error\)[\s\S]*return false[\s\S]*chrome\.tabs\.remove/.test(popupSingleCapture)
   || !/await persistPopupState\(\)[\s\S]*catch \(error\)[\s\S]*return false[\s\S]*chrome\.tabs\.remove/.test(popupWindowCapture)) {
   fail('Popup capture paths must stop before closing tabs when their revisioned write rejects');
 }

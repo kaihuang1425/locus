@@ -32,8 +32,11 @@ const I18N = {
     'action.collapseSidebar': 'Collapse sidebar',
     'action.newWorkspace': 'New workspace',
     'action.allWorkspaces': 'All workspaces',
-    'action.newCategory': 'New category',
+    'action.newSpace': 'New space',
     'action.undo': 'Undo (Ctrl+Z)',
+    'workspaceManager.title': 'Workspaces',
+    'workspaceManager.yours': 'Your workspaces',
+    'workspaceManager.items': '{count} items',
     'action.tools': 'Tools (Pomodoro, Finance, Subs...)',
     'action.switchLayout': 'Switch layout',
     'action.calendar': 'Calendar (reminders)',
@@ -50,6 +53,8 @@ const I18N = {
     'welcome.taskDescription': 'Save a real tab to your Inbox, then Locus will show you exactly where it went.',
     'welcome.looking': 'Looking for an open tab…',
     'welcome.empty': 'No saveable tab is open yet. Explore Locus, then use the toolbar popup from any page.',
+    'welcome.error': 'Locus couldn’t check your open tabs. Try again, or explore without saving.',
+    'welcome.retry': 'Try again',
     'welcome.explore': 'Explore on my own',
     'welcome.save': 'Save this tab',
     'action.more': 'More',
@@ -64,8 +69,6 @@ const I18N = {
     'menu.workspaces': 'Workspaces',
     'menu.guide': 'Guide / tutorial',
     'menu.about': 'About Locus',
-    'menu.resetOnboarding': 'Reset onboarding',
-    'menu.resetConfirm': 'Show the first-run welcome again? Your saved data is not affected.',
     'about.tagline': 'A calmer home for explicitly saved tabs, notes, tasks, and reminders.',
     'about.private': 'Privacy boundaries — browser-profile storage (export before uninstalling or deleting the profile), no Locus account or backend, and no host permissions.',
     'about.replay': 'Replay welcome guide',
@@ -100,15 +103,11 @@ const I18N = {
     'settings.hibernateHint': 'opens a placeholder; the site loads only after you continue',
     'settings.showUrls': 'Show URLs on cards',
     'settings.animations': 'Animations',
-    'settings.confirmDelete': 'Confirm before deleting groups',
     'settings.privacyBlur': 'Privacy blur mode',
     'settings.privacyBlurHint': 'blur all content (for screen sharing)',
     'settings.autoSwitch': 'Auto-switch workspace on window focus',
     'settings.autoSwitchHint': 'each workspace tied to a browser window',
     'settings.showTour': 'Replay welcome',
-    'settings.tips': 'Show tips as you explore',
-    'settings.tipsHint': 'a one-time hint the first time you open a feature',
-    'settings.resetHints': 'Reset tips',
     'settings.shortcuts': 'Shortcuts',
     'settings.archivedItems': 'Archived items',
     'settings.storage': 'Storage',
@@ -129,7 +128,7 @@ const I18N = {
     'settings.profile': 'Profile',
     'settings.yourName': 'Your name',
     'settings.yourNameHint': 'Used for the home greeting. Stored in this browser profile; export before uninstalling or deleting the profile.',
-    'settings.tipsOnboarding': 'Tips & onboarding',
+    'settings.tipsOnboarding': 'Welcome',
     'settings.privacyFirst': 'Privacy first',
     'settings.privacyFirstBody': 'Workspace data is stored in this browser profile; export before uninstalling or deleting it. Locus has no account, backend, or host permissions.',
     'settings.globalShortcuts': 'Browser shortcuts',
@@ -273,11 +272,236 @@ const I18N = {
     'trash.daysLeft': '{count} days left',
     'trash.dayLeft': '1 day left',
     'trash.expiresToday': 'Deletes today',
-    'trash.confirmOne': 'Permanently delete “{title}”? This cannot be undone.',
-    'trash.confirmMany': 'Permanently delete {count} selected items? This cannot be undone.',
+    'trash.confirmTitle': 'Delete forever?',
+    'trash.confirmOne': '“{title}” will be removed from this browser profile. Other saved items won’t change, and this cannot be undone.',
+    'trash.confirmMany': '{count} selected items will be removed from this browser profile. Other saved items won’t change, and this cannot be undone.',
+    'trash.cancelDelete': 'Cancel',
+    'trash.deleting': 'Deleting…',
     'trash.restored': 'Restored from Trash',
     'trash.restoredMany': 'Restored {count} items from Trash',
     'trash.deleted': 'Permanently deleted',
+    'organization.cancel': 'Cancel',
+    'organization.close': 'Close',
+    'organization.deleting': 'Deleting…',
+    'organization.changeSymbol': 'Change symbol…',
+    'organization.renameMenu': 'Rename…',
+    'organization.rename': 'Rename',
+    'organization.renaming': 'Renaming…',
+    'organization.create': 'Create',
+    'organization.creating': 'Creating…',
+    'organization.nameChanged': 'The name changed. Review the latest name, then try again.',
+    'organization.idUnavailable': 'Locus couldn’t prepare this change. Try again.',
+    'organization.workspace.createTitle': 'Create workspace',
+    'organization.workspace.renameTitle': 'Rename workspace',
+    'organization.workspace.nameLabel': 'Workspace name',
+    'organization.workspace.actions': 'Workspace actions for “{name}”',
+    'organization.workspace.nameRequired': 'Enter a workspace name.',
+    'organization.workspace.unavailable': 'This workspace no longer exists.',
+    'organization.workspace.createHistory': 'Create workspace “{name}”',
+    'organization.workspace.created': 'Workspace “{name}” created',
+    'organization.workspace.renameHistory': 'Rename workspace “{from}” to “{to}”',
+    'organization.workspace.renamed': 'Workspace renamed to “{name}”',
+    'organization.workspace.confirmTitle': 'Delete empty workspace?',
+    'organization.workspace.confirmEmpty': '“{name}” has no groups, saved items, or reminders. The workspace and its Space structure will be removed from this browser profile. Other workspaces won’t change. After deleting, choose Undo on this page before reloading or closing Locus.',
+    'organization.workspace.blockedTitle': 'Workspace still contains recoverable data',
+    'organization.workspace.blockedBody': 'Archive or move every group from every Space, then remove any remaining Space reminders. Nothing was deleted.',
+    'organization.workspace.delete': 'Delete workspace',
+    'organization.workspace.deleteHistory': 'Delete workspace “{name}”',
+    'organization.workspace.deleted': 'Workspace deleted',
+    'organization.space.defaultName': 'Pinned',
+    'organization.space.createTitle': 'Create space',
+    'organization.space.createForGroupTitle': 'Create a space for “{group}”',
+    'organization.space.createForGroupBody': 'The group will move into the new space.',
+    'organization.space.renameTitle': 'Rename space',
+    'organization.space.nameLabel': 'Space name',
+    'organization.space.actions': 'Space actions for “{name}”',
+    'organization.space.nameRequired': 'Enter a space name.',
+    'organization.space.unavailable': 'This space no longer exists.',
+    'organization.space.parentUnavailable': 'This workspace no longer exists. Close this dialog and try again.',
+    'organization.space.position': 'Space {position} of {count}',
+    'organization.space.duplicateLabel': '{name}, {position}',
+    'organization.space.moveMenuLabel': 'Move to another space…',
+    'organization.space.newAndMoveMenu': 'Move to a new space…',
+    'organization.group.unavailable': 'This group moved or no longer exists. Close this dialog and try again.',
+    'organization.group.nameChanged': 'The group name changed. Review the updated group, then try again.',
+    'organization.group.moveTitle': 'Move group “{group}”',
+    'organization.group.moveBody': 'Currently in “{source}”. Choose another space in “{workspace}”. The group and everything in it will move together.',
+    'organization.group.moveListLabel': 'Move to',
+    'organization.group.moveClose': 'Close move dialog',
+    'organization.group.moveOption': 'Move to “{space}”, {groups}',
+    'organization.group.moveOptionDuplicate': 'Move to “{space}”, {groups}, {position}',
+    'organization.group.moveOptionOne': '1 group',
+    'organization.group.moveOptionMany': '{count} groups',
+    'organization.group.move': 'Move group',
+    'organization.group.moving': 'Moving…',
+    'organization.group.moveRequired': 'Choose a space.',
+    'organization.group.moveDestinationUnavailable': 'That space no longer exists. Choose another space.',
+    'organization.group.moveChanged': 'The group or space list changed. Review the latest choices, then move again.',
+    'organization.group.moveRecoveryRequired': 'Locus couldn’t confirm this move. Reload the latest saved data before continuing.',
+    'organization.group.moveContextChanged': 'The active workspace or space changed. Close this dialog and try again.',
+    'organization.group.moveNoDestination': 'No other spaces are available.',
+    'organization.group.moveHistory': 'Move group “{group}” to space “{space}”',
+    'organization.group.moved': 'Moved “{group}” to “{space}”',
+    'groupEditor.createTitle': 'Create group',
+    'groupEditor.editTitle': 'Edit group',
+    'groupEditor.duplicateTitle': 'Duplicate group',
+    'groupEditor.close': 'Close group editor',
+    'groupEditor.duplicateClose': 'Close duplicate group dialog',
+    'groupEditor.symbolLabel': 'Symbol',
+    'groupEditor.symbolHint': 'Choose a symbol',
+    'groupEditor.nameLabel': 'Group name',
+    'groupEditor.namePlaceholder': 'e.g. Research',
+    'groupEditor.colorLabel': 'Color',
+    'groupEditor.create': 'Create group',
+    'groupEditor.creating': 'Creating…',
+    'groupEditor.duplicate': 'Create copy',
+    'groupEditor.duplicating': 'Creating copy…',
+    'groupEditor.save': 'Save changes',
+    'groupEditor.saving': 'Saving…',
+    'groupEditor.nameRequired': 'Enter a group name.',
+    'groupEditor.parentUnavailable': 'This space moved or no longer exists. Close this dialog and try again.',
+    'groupEditor.unavailable': 'This group moved or no longer exists. Close this dialog and try again.',
+    'groupEditor.changed': 'This group changed. Review the latest name, symbol, and color, then try again.',
+    'groupEditor.duplicateChanged': 'This group changed while the dialog was open. Select “Create copy” again to use the latest version.',
+    'groupEditor.idUnavailable': 'Locus couldn’t prepare this group. Try again.',
+    'groupEditor.duplicateIdUnavailable': 'Locus couldn’t prepare this copy. Try again.',
+    'groupEditor.recoveryRequired': 'Locus couldn’t confirm this change. Reload the latest saved data before continuing.',
+    'groupEditor.duplicateRecoveryRequired': 'Locus couldn’t confirm whether this copy was saved. Reload the latest saved data before continuing.',
+    'groupEditor.duplicateDefaultName': '{name} (copy)',
+    'groupEditor.duplicateDescription': 'Create a copy of “{group}”, including everything in it and its reminders. The copy will be added to “{space}”; the original won’t change.',
+    'groupEditor.createHistory': 'Create group “{name}”',
+    'groupEditor.created': 'Group “{name}” created',
+    'groupEditor.duplicateHistory': 'Duplicate group “{source}” as “{name}”',
+    'groupEditor.duplicated': 'Created “{name}” from “{source}”',
+    'groupEditor.duplicateReminderWarning': 'Created “{name}”, but some copied reminders could not be scheduled. Restart your browser, then review Calendar.',
+    'groupEditor.editHistory': 'Update group “{name}”',
+    'groupEditor.updated': 'Group “{name}” updated',
+    'groupEditor.colorOption': 'Use {color}',
+    'groupEditor.color.indigo': 'indigo',
+    'groupEditor.color.blue': 'blue',
+    'groupEditor.color.cyan': 'cyan',
+    'groupEditor.color.green': 'green',
+    'groupEditor.color.lime': 'lime',
+    'groupEditor.color.yellow': 'yellow',
+    'groupEditor.color.orange': 'orange',
+    'groupEditor.color.red': 'red',
+    'groupEditor.color.pink': 'pink',
+    'groupEditor.color.purple': 'purple',
+    'groupEditor.color.slate': 'slate',
+    'groupEditor.color.custom': 'current custom color',
+    'stackEditor.createTitle': 'Create stack',
+    'stackEditor.editTitle': 'Edit stack',
+    'stackEditor.batchTitle': 'Create stack from selection',
+    'stackEditor.close': 'Close stack editor',
+    'stackEditor.symbolLabel': 'Symbol',
+    'stackEditor.symbolHint': 'Choose a symbol',
+    'stackEditor.nameLabel': 'Stack name',
+    'stackEditor.namePlaceholder': 'e.g. This week',
+    'stackEditor.defaultName': 'Stack',
+    'stackEditor.colorLabel': 'Color',
+    'stackEditor.create': 'Create stack',
+    'stackEditor.creating': 'Creating…',
+    'stackEditor.save': 'Save changes',
+    'stackEditor.saving': 'Saving…',
+    'stackEditor.nameRequired': 'Enter a stack name.',
+    'stackEditor.parentUnavailable': 'This group moved or no longer exists. Close this dialog and try again.',
+    'stackEditor.unavailable': 'This stack moved or no longer exists. Close this dialog and try again.',
+    'stackEditor.changed': 'This stack changed. Review the latest name, symbol, and color, then save again.',
+    'stackEditor.selectionUnavailable': 'One or more selected items moved or no longer exist. Close this dialog and select them again.',
+    'stackEditor.selectionNested': 'A stack and one of its contents cannot be selected together. Adjust the selection and try again.',
+    'stackEditor.selectionScope': 'Select items from the same space.',
+    'stackEditor.minimumSelection': 'Select at least 2 items.',
+    'stackEditor.idUnavailable': 'Locus couldn’t prepare this stack. Try again.',
+    'stackEditor.recoveryRequired': 'Locus couldn’t confirm this change. Reload the latest saved data before continuing.',
+    'stackEditor.batchDescription': 'Move {count} selected items into a new stack in “{group}”.',
+    'stackEditor.createHistory': 'Create stack “{name}”',
+    'stackEditor.created': 'Stack “{name}” created',
+    'stackEditor.editHistory': 'Update stack “{name}”',
+    'stackEditor.updated': 'Stack “{name}” updated',
+    'stackEditor.batchHistory': 'Stack {count} items as “{name}”',
+    'stackEditor.stacked': 'Stacked {count} items as “{name}”',
+    'stackAction.edit': 'Edit stack…',
+    'stackAction.editFor': 'Edit stack “{name}”',
+    'stackAction.editIntention': 'Edit intention…',
+    'stackAction.expand': 'Expand',
+    'stackAction.collapse': 'Collapse',
+    'stackAction.expandFor': 'Expand stack “{name}”',
+    'stackAction.collapseFor': 'Collapse stack “{name}”',
+    'stackAction.archive': 'Archive',
+    'stackAction.aria': 'Stack “{name}”',
+    'selection.selected': 'selected',
+    'selection.open': 'Open',
+    'selection.openTitle': 'Open selected tabs',
+    'selection.move': 'Move',
+    'selection.moveTitle': 'Move selected items',
+    'selection.stack': 'Stack',
+    'selection.stackTitle': 'Create a stack from selected items',
+    'selection.archive': 'Archive',
+    'selection.archiveTitle': 'Archive selected items',
+    'selection.clearTitle': 'Clear selection',
+    'itemAction.details': 'Details…',
+    'itemAction.editColor': 'Edit color',
+    'itemAction.setReminder': 'Set reminder…',
+    'itemAction.clearReminder': 'Clear reminder',
+    'itemAction.archive': 'Archive',
+    'groupAction.new': 'New group',
+    'groupAction.edit': 'Edit group…',
+    'groupAction.editFor': 'Edit group “{name}”',
+    'groupAction.more': 'More group actions',
+    'groupAction.moreFor': 'Group actions for “{name}”',
+    'groupAction.editIntention': 'Edit intention…',
+    'groupAction.setReminder': 'Set reminder…',
+    'groupAction.expand': 'Expand',
+    'groupAction.collapse': 'Collapse',
+    'groupAction.expandFor': 'Expand group “{name}”',
+    'groupAction.collapseFor': 'Collapse group “{name}”',
+    'groupAction.openAll': 'Open all tabs',
+    'groupAction.openAsPage': 'Open as page',
+    'groupAction.duplicate': 'Duplicate group…',
+    'groupAction.addStack': 'Add stack…',
+    'groupAction.archive': 'Archive',
+    'groupAction.oneItem': '1 item',
+    'groupAction.items': '{count} items',
+    'groupAction.aria': 'Group “{name}”',
+    'emojiPicker.title': 'Choose a symbol',
+    'emojiPicker.search': 'Search symbols…',
+    'emojiPicker.categories': 'Symbol categories',
+    'emojiPicker.loading': 'Loading symbols…',
+    'emojiPicker.empty': 'No symbols found',
+    'emojiPicker.error': 'Couldn’t load symbols. Close this picker and try again.',
+    'emojiPicker.choose': 'Choose {symbol}',
+    'emojiPicker.current': 'Choose a symbol, current {symbol}',
+    'emojiPicker.category.recent': 'Recent',
+    'emojiPicker.category.smileys': 'Smileys',
+    'emojiPicker.category.people': 'People',
+    'emojiPicker.category.objects': 'Objects',
+    'emojiPicker.category.symbols': 'Symbols',
+    'emojiPicker.category.food': 'Food',
+    'emojiPicker.category.activity': 'Activities',
+    'emojiPicker.category.places': 'Places',
+    'emojiPicker.category.nature': 'Nature',
+    'organization.space.createHistory': 'Create space “{name}”',
+    'organization.space.created': 'Space “{name}” created',
+    'organization.space.createAndMoveHistory': 'Create space “{space}” and move group “{group}”',
+    'organization.space.createdAndMoved': 'Created space “{space}” and moved group “{group}”',
+    'organization.space.renameHistory': 'Rename space “{from}” to “{to}”',
+    'organization.space.renamed': 'Space renamed to “{name}”',
+    'organization.space.confirmTitle': 'Delete empty space?',
+    'organization.space.confirmEmpty': '“{name}” has no groups, saved items, or reminders. The space and its view settings will be removed from this workspace. Other spaces won’t change. After deleting, choose Undo on this page before reloading or closing Locus.',
+    'organization.space.blockedTitle': 'Space still contains recoverable data',
+    'organization.space.blockedBody': 'Archive or move every group, then remove this space’s remaining reminders. Nothing was deleted.',
+    'organization.space.delete': 'Delete space',
+    'organization.space.deleteHistory': 'Delete space “{name}”',
+    'organization.space.deleted': 'Space deleted',
+    'history.undid': 'Undid: {action}',
+    'history.redid': 'Redid',
+    'history.undoStale': 'Undo is no longer available because newer changes were made.',
+    'history.undoPending': 'This save is still finishing. Undo will be available when it completes.',
+    'history.undoInterrupted': 'Undo paused because newer changes were made. Undo the newer change first, then retry.',
+    'history.undoFailed': 'Undo failed. Your saved data was left unchanged.',
+    'history.redoInterrupted': 'Redo paused because newer changes were made. Reload the latest saved data, then retry.',
+    'history.redoFailed': 'Redo failed. Your saved data was left unchanged.',
+    'history.reminderReconcileWarning': 'The change was saved, but some reminders could not be updated. Restart your browser, then review Calendar.',
     'trash.today': 'Today',
     'trash.yesterday': 'Yesterday',
     'trash.thisWeek': 'This week',
@@ -313,11 +537,18 @@ const I18N = {
     'home.items': '{n} items',
     'home.empty': 'Empty — drag a tab here to start',
     'home.emptyTitle': 'No spaces yet',
-    'home.emptyBody': 'Create a category to start organizing your tabs.',
+    'home.emptyBody': 'Create a space to start organizing your saved items.',
     'home.inboxZone': 'Inbox',
     'home.inboxHint': 'Capture one page, then recover it here.',
     'home.openInbox': 'Open Inbox',
     'home.recentSpaces': 'Your spaces',
+    'home.previewOpen': 'Open saved {type}: {title}',
+    'home.previewUnavailable': "This saved item can't be opened from Home right now. Refresh Home and try again.",
+    'home.previewType.tab': 'link',
+    'home.previewType.note': 'note',
+    'home.previewType.todo': 'task',
+    'home.previewType.stack': 'stack',
+    'home.previewType.item': 'item',
     'empty.addSave': 'Add / Save',
     'empty.addNote': 'Add note',
     'empty.importBookmarks': 'Import bookmarks',
@@ -407,7 +638,94 @@ const I18N = {
     'search.tipExclude': 'Prefix a word or operator with - to exclude it.',
     'search.resultAria': 'Search result: {title}',
     'search.stackItems': '{count} nested items',
-    'search.unknownDate': 'Date unavailable'
+    'search.unknownDate': 'Date unavailable',
+    'detail.close': 'Close item details',
+    'detail.closeTitle': 'Close details (Esc)',
+    'detail.open': 'Open link',
+    'detail.emptyNote': 'This note is empty. Edit it on the board.',
+    'detail.title': 'Title',
+    'detail.url': 'URL',
+    'detail.task': 'Task',
+    'detail.stackName': 'Stack name',
+    'detail.markComplete': 'Mark task complete',
+    'detail.markIncomplete': 'Mark task incomplete',
+    'detail.whySaved': 'Why you saved it',
+    'detail.notesPlaceholder': 'Add context, a quote, or the next step…',
+    'detail.reminder': 'Reminder',
+    'detail.pastDue': 'Past due',
+    'detail.repeats': 'Repeats {schedule}',
+    'detail.daily': 'daily',
+    'detail.weekly': 'weekly',
+    'detail.monthly': 'monthly',
+    'detail.everyDays': 'every {count} days',
+    'detail.everyWeeks': 'every {count} weeks',
+    'detail.everyMonths': 'every {count} months',
+    'detail.changeReminder': 'Change',
+    'detail.clearReminder': 'Clear',
+    'detail.setReminder': 'Set reminder…',
+    'detail.closeReminderDialog': 'Close reminder dialog',
+    'reminder.setTitle': 'Set reminder',
+    'reminder.editTitle': 'Edit reminder',
+    'reminder.label': 'Reminder name',
+    'reminder.labelOptional': 'Reminder name (optional)',
+    'reminder.reviewExample': 'For example: Review “{name}”',
+    'reminder.routineExample': 'For example: “{name}” routine',
+    'reminder.inOneHour': 'In 1 hour',
+    'reminder.inThreeHours': 'In 3 hours',
+    'reminder.tomorrow': 'Tomorrow',
+    'reminder.nextWeek': 'Next week',
+    'reminder.pickDate': 'Or pick a date',
+    'reminder.repeat': 'Repeat',
+    'reminder.none': 'Does not repeat',
+    'reminder.daily': 'Daily',
+    'reminder.weekly': 'Weekly',
+    'reminder.monthly': 'Monthly',
+    'reminder.clear': 'Clear',
+    'reminder.remove': 'Remove',
+    'reminder.update': 'Update',
+    'reminder.set': 'Set',
+    'reminder.futureTime': 'Choose a future time',
+    'reminder.saving': 'Saving reminder…',
+    'reminder.changed': 'This item changed or moved. Close this dialog, reopen the item, then try again.',
+    'reminder.saveFailed': 'Locus couldn’t confirm whether this reminder was saved. Reload the latest data before continuing.',
+    'reminder.setSuccess': 'Reminder saved',
+    'reminder.clearSuccess': 'Reminder cleared',
+    'reminder.scheduleWarning': 'The reminder was saved, but it may not alert yet. Restart your browser, then review Calendar.',
+    'reminder.clearScheduleWarning': 'The reminder was cleared, but its previous alert may still appear. Restart your browser, then review Calendar.',
+    'reminder.setHistory': 'Set reminder',
+    'reminder.updateHistory': 'Update reminder',
+    'reminder.clearHistory': 'Clear reminder',
+    'detail.tags': 'Tags',
+    'detail.addTag': 'Add tag…',
+    'detail.removeTag': 'Remove tag “{tag}”',
+    'detail.more': 'More details',
+    'detail.cover': 'Cover',
+    'detail.coverColor': 'Use cover color {color}',
+    'detail.coverEmoji': 'Cover emoji',
+    'detail.clearCover': 'Clear cover',
+    'detail.checklist': 'Checklist',
+    'detail.checklistItem': 'Checklist item',
+    'detail.toggleChecklist': 'Toggle checklist item “{item}”',
+    'detail.removeChecklist': 'Remove checklist item “{item}”',
+    'detail.addChecklist': 'Add checklist item…',
+    'detail.customFields': 'Custom fields',
+    'detail.fieldLabel': 'Label',
+    'detail.fieldValue': 'Value',
+    'detail.removeField': 'Remove custom field “{label}”',
+    'detail.addField': 'Add field',
+    'detail.saving': 'Saving changes…',
+    'detail.saved': 'Changes saved',
+    'detail.changed': 'This item changed or moved. Reopen its details, then try again.',
+    'detail.saveFailed': 'Locus couldn’t confirm whether this change was saved. Reload the latest data before continuing.',
+    'detail.history.editTitle': 'Edit item title',
+    'detail.history.editUrl': 'Edit item URL',
+    'detail.history.updateTask': 'Update task',
+    'detail.history.renameStack': 'Rename stack',
+    'detail.history.updateCover': 'Update cover',
+    'detail.history.editNotes': 'Edit saved context',
+    'detail.history.updateTags': 'Update tags',
+    'detail.history.updateChecklist': 'Update checklist',
+    'detail.history.updateFields': 'Update custom fields'
   },
   'zh-TW': {
     'shell.openTabs': '開啟分頁',
@@ -415,8 +733,11 @@ const I18N = {
     'action.collapseSidebar': '收合側邊欄',
     'action.newWorkspace': '新增工作區',
     'action.allWorkspaces': '所有工作區',
-    'action.newCategory': '新增分類',
+    'action.newSpace': '新增空間',
     'action.undo': '復原 (Ctrl+Z)',
+    'workspaceManager.title': '工作區',
+    'workspaceManager.yours': '你的工作區',
+    'workspaceManager.items': '{count} 個項目',
     'action.tools': '工具 (番茄鐘、記帳、訂閱...)',
     'action.switchLayout': '切換版面',
     'action.calendar': '行事曆（提醒）',
@@ -433,6 +754,8 @@ const I18N = {
     'welcome.taskDescription': '將真實分頁儲存到收件匣，Locus 會清楚顯示它的位置。',
     'welcome.looking': '正在尋找開啟的分頁…',
     'welcome.empty': '目前沒有可儲存的分頁。先探索 Locus，之後可在任何頁面使用工具列彈出視窗。',
+    'welcome.error': 'Locus 無法讀取開啟中的分頁。請再試一次，或先開始使用。',
+    'welcome.retry': '再試一次',
     'welcome.explore': '自行探索',
     'welcome.save': '儲存此分頁',
     'action.more': '更多',
@@ -447,8 +770,6 @@ const I18N = {
     'menu.workspaces': '工作區',
     'menu.guide': '導覽 / 教學',
     'menu.about': '關於 Locus',
-    'menu.resetOnboarding': '重設新手導覽',
-    'menu.resetConfirm': '要再次顯示首次啟動的歡迎導覽嗎？您儲存的資料不受影響。',
     'about.tagline': '讓明確儲存的分頁、筆記、任務與提醒有個更安靜的首頁。',
     'about.private': '隱私界線－資料存在此瀏覽器設定檔（解除安裝或刪除設定檔前請先匯出），沒有 Locus 帳號、後端或主機權限。',
     'about.replay': '重播歡迎導覽',
@@ -483,15 +804,11 @@ const I18N = {
     'settings.hibernateHint': '先開啟預留頁；只有在你繼續時才載入網站',
     'settings.showUrls': '在卡片上顯示網址',
     'settings.animations': '動畫',
-    'settings.confirmDelete': '刪除群組前先確認',
     'settings.privacyBlur': '隱私模糊模式',
     'settings.privacyBlurHint': '模糊所有內容，適合螢幕分享',
     'settings.autoSwitch': '視窗聚焦時自動切換工作區',
     'settings.autoSwitchHint': '每個工作區綁定一個瀏覽器視窗',
     'settings.showTour': '重播歡迎導覽',
-    'settings.tips': '探索時顯示提示',
-    'settings.tipsHint': '第一次開啟功能時顯示一次性提示',
-    'settings.resetHints': '重設提示',
     'settings.shortcuts': '快捷鍵',
     'settings.archivedItems': '封存項目',
     'settings.storage': '儲存空間',
@@ -512,7 +829,7 @@ const I18N = {
     'settings.profile': '個人資料',
     'settings.yourName': '你的名字',
     'settings.yourNameHint': '用於首頁問候語。資料存在此瀏覽器設定檔；解除安裝或刪除設定檔前請先匯出。',
-    'settings.tipsOnboarding': '提示與新手導覽',
+    'settings.tipsOnboarding': '歡迎導覽',
     'settings.privacyFirst': '隱私優先',
     'settings.privacyFirstBody': '工作區資料存在此瀏覽器設定檔；解除安裝或刪除前請先匯出。Locus 沒有帳號、後端或主機權限。',
     'settings.globalShortcuts': '瀏覽器快捷鍵',
@@ -656,11 +973,236 @@ const I18N = {
     'trash.daysLeft': '剩餘 {count} 天',
     'trash.dayLeft': '剩餘 1 天',
     'trash.expiresToday': '今天刪除',
-    'trash.confirmOne': '要永久刪除「{title}」嗎？此動作無法復原。',
-    'trash.confirmMany': '要永久刪除所選的 {count} 個項目嗎？此動作無法復原。',
+    'trash.confirmTitle': '永久刪除？',
+    'trash.confirmOne': '「{title}」將從這個瀏覽器設定檔中移除，其他已儲存項目不受影響。刪除後無法復原。',
+    'trash.confirmMany': '所選的 {count} 個項目將從這個瀏覽器設定檔中移除，其他已儲存項目不受影響。刪除後無法復原。',
+    'trash.cancelDelete': '取消',
+    'trash.deleting': '刪除中…',
     'trash.restored': '已從垃圾桶復原',
     'trash.restoredMany': '已從垃圾桶復原 {count} 個項目',
     'trash.deleted': '已永久刪除',
+    'organization.cancel': '取消',
+    'organization.close': '關閉',
+    'organization.deleting': '刪除中…',
+    'organization.changeSymbol': '變更圖示…',
+    'organization.renameMenu': '重新命名…',
+    'organization.rename': '重新命名',
+    'organization.renaming': '重新命名中…',
+    'organization.create': '新增',
+    'organization.creating': '新增中…',
+    'organization.nameChanged': '名稱已變更。請確認最新名稱後再試一次。',
+    'organization.idUnavailable': 'Locus 無法準備這項變更，請再試一次。',
+    'organization.workspace.createTitle': '新增工作區',
+    'organization.workspace.renameTitle': '重新命名工作區',
+    'organization.workspace.nameLabel': '工作區名稱',
+    'organization.workspace.actions': '「{name}」工作區的操作',
+    'organization.workspace.nameRequired': '請輸入工作區名稱。',
+    'organization.workspace.unavailable': '這個工作區已不存在。',
+    'organization.workspace.createHistory': '新增工作區「{name}」',
+    'organization.workspace.created': '已新增工作區「{name}」',
+    'organization.workspace.renameHistory': '工作區「{from}」改名為「{to}」',
+    'organization.workspace.renamed': '工作區名稱已改為「{name}」',
+    'organization.workspace.confirmTitle': '刪除空的工作區？',
+    'organization.workspace.confirmEmpty': '「{name}」已沒有群組、已儲存項目或提醒。刪除後，這個工作區及其中的空間結構會從此瀏覽器設定檔移除，其他工作區不受影響。如要復原，請先在這個頁面使用「復原」，再重新載入或關閉 Locus。',
+    'organization.workspace.blockedTitle': '工作區仍有可保留的內容',
+    'organization.workspace.blockedBody': '請先封存或移動每個空間中的所有群組，再移除剩餘的空間提醒。這次沒有刪除任何內容。',
+    'organization.workspace.delete': '刪除工作區',
+    'organization.workspace.deleteHistory': '刪除工作區「{name}」',
+    'organization.workspace.deleted': '已刪除工作區',
+    'organization.space.defaultName': '釘選',
+    'organization.space.createTitle': '新增空間',
+    'organization.space.createForGroupTitle': '為「{group}」新增空間',
+    'organization.space.createForGroupBody': '這個群組會移到新空間。',
+    'organization.space.renameTitle': '重新命名空間',
+    'organization.space.nameLabel': '空間名稱',
+    'organization.space.actions': '「{name}」空間的操作',
+    'organization.space.nameRequired': '請輸入空間名稱。',
+    'organization.space.unavailable': '這個空間已不存在。',
+    'organization.space.parentUnavailable': '這個工作區已不存在。請關閉視窗後再試一次。',
+    'organization.space.position': '第 {position} 個空間，共 {count} 個',
+    'organization.space.duplicateLabel': '{name}，{position}',
+    'organization.space.moveMenuLabel': '移到其他空間…',
+    'organization.space.newAndMoveMenu': '移到新空間…',
+    'organization.group.unavailable': '這個群組已移動或不存在。請關閉視窗後再試一次。',
+    'organization.group.nameChanged': '群組名稱已變更。請確認更新後的群組，再試一次。',
+    'organization.group.moveTitle': '移動群組「{group}」',
+    'organization.group.moveBody': '目前位於「{source}」。請在「{workspace}」中選擇其他空間。群組和其中所有內容會一起移動。',
+    'organization.group.moveListLabel': '移到',
+    'organization.group.moveClose': '關閉移動群組視窗',
+    'organization.group.moveOption': '移到「{space}」，{groups}',
+    'organization.group.moveOptionDuplicate': '移到「{space}」，{groups}，{position}',
+    'organization.group.moveOptionOne': '1 個群組',
+    'organization.group.moveOptionMany': '{count} 個群組',
+    'organization.group.move': '移動群組',
+    'organization.group.moving': '移動中…',
+    'organization.group.moveRequired': '請選擇空間。',
+    'organization.group.moveDestinationUnavailable': '這個空間已不存在，請改選其他空間。',
+    'organization.group.moveChanged': '群組或空間清單已變更。請確認最新選項後再移動一次。',
+    'organization.group.moveRecoveryRequired': 'Locus 無法確認這次移動是否已儲存。請重新載入最新資料後再繼續。',
+    'organization.group.moveContextChanged': '目前的工作區或空間已變更。請關閉視窗後再試一次。',
+    'organization.group.moveNoDestination': '這個工作區中沒有其他空間。',
+    'organization.group.moveHistory': '將群組「{group}」移到空間「{space}」',
+    'organization.group.moved': '已將群組「{group}」移到空間「{space}」',
+    'groupEditor.createTitle': '新增群組',
+    'groupEditor.editTitle': '編輯群組',
+    'groupEditor.duplicateTitle': '建立群組副本',
+    'groupEditor.close': '關閉群組編輯器',
+    'groupEditor.duplicateClose': '關閉建立群組副本視窗',
+    'groupEditor.symbolLabel': '圖示',
+    'groupEditor.symbolHint': '選擇圖示',
+    'groupEditor.nameLabel': '群組名稱',
+    'groupEditor.namePlaceholder': '例如：研究資料',
+    'groupEditor.colorLabel': '顏色',
+    'groupEditor.create': '新增群組',
+    'groupEditor.creating': '新增中…',
+    'groupEditor.duplicate': '建立副本',
+    'groupEditor.duplicating': '建立副本中…',
+    'groupEditor.save': '儲存變更',
+    'groupEditor.saving': '儲存中…',
+    'groupEditor.nameRequired': '請輸入群組名稱。',
+    'groupEditor.parentUnavailable': '這個空間已移動或不存在。請關閉視窗後再試一次。',
+    'groupEditor.unavailable': '這個群組已移動或不存在。請關閉視窗後再試一次。',
+    'groupEditor.changed': '群組設定已變更。請確認最新的名稱、圖示和顏色，再儲存一次。',
+    'groupEditor.duplicateChanged': '開啟視窗期間，群組已變更。請再選一次「建立副本」，複製最新內容。',
+    'groupEditor.idUnavailable': 'Locus 無法準備這個群組，請再試一次。',
+    'groupEditor.duplicateIdUnavailable': 'Locus 無法準備這個副本，請再試一次。',
+    'groupEditor.recoveryRequired': 'Locus 無法確認這項變更是否已儲存。請重新載入最新資料後再繼續。',
+    'groupEditor.duplicateRecoveryRequired': 'Locus 無法確認副本是否已儲存。請重新載入最新資料後再繼續。',
+    'groupEditor.duplicateDefaultName': '{name}（副本）',
+    'groupEditor.duplicateDescription': '建立「{group}」的副本，包括其中所有內容與提醒。副本會新增至「{space}」，原群組不受影響。',
+    'groupEditor.createHistory': '新增群組「{name}」',
+    'groupEditor.created': '已新增群組「{name}」',
+    'groupEditor.duplicateHistory': '建立群組「{source}」的副本「{name}」',
+    'groupEditor.duplicated': '已從群組「{source}」建立「{name}」',
+    'groupEditor.duplicateReminderWarning': '已建立「{name}」，但副本中的部分提醒無法排程。請重新啟動瀏覽器，再到「行事曆」確認。',
+    'groupEditor.editHistory': '更新群組「{name}」',
+    'groupEditor.updated': '已更新群組「{name}」',
+    'groupEditor.colorOption': '使用{color}',
+    'groupEditor.color.indigo': '靛藍',
+    'groupEditor.color.blue': '藍色',
+    'groupEditor.color.cyan': '青色',
+    'groupEditor.color.green': '綠色',
+    'groupEditor.color.lime': '黃綠色',
+    'groupEditor.color.yellow': '黃色',
+    'groupEditor.color.orange': '橘色',
+    'groupEditor.color.red': '紅色',
+    'groupEditor.color.pink': '粉紅色',
+    'groupEditor.color.purple': '紫色',
+    'groupEditor.color.slate': '灰藍色',
+    'groupEditor.color.custom': '目前的自訂顏色',
+    'stackEditor.createTitle': '新增堆疊',
+    'stackEditor.editTitle': '編輯堆疊',
+    'stackEditor.batchTitle': '將所選項目建立為堆疊',
+    'stackEditor.close': '關閉堆疊編輯器',
+    'stackEditor.symbolLabel': '圖示',
+    'stackEditor.symbolHint': '選擇圖示',
+    'stackEditor.nameLabel': '堆疊名稱',
+    'stackEditor.namePlaceholder': '例如：本週閱讀',
+    'stackEditor.defaultName': '堆疊',
+    'stackEditor.colorLabel': '顏色',
+    'stackEditor.create': '新增堆疊',
+    'stackEditor.creating': '新增中…',
+    'stackEditor.save': '儲存變更',
+    'stackEditor.saving': '儲存中…',
+    'stackEditor.nameRequired': '請輸入堆疊名稱。',
+    'stackEditor.parentUnavailable': '這個群組已移動或不存在。請關閉視窗後再試一次。',
+    'stackEditor.unavailable': '這個堆疊已移動或不存在。請關閉視窗後再試一次。',
+    'stackEditor.changed': '堆疊設定已變更。請確認最新的名稱、圖示和顏色，再儲存一次。',
+    'stackEditor.selectionUnavailable': '部分所選項目已移動或不存在。請關閉視窗後重新選取。',
+    'stackEditor.selectionNested': '無法同時選取堆疊及其中的項目。請調整選取範圍後再試一次。',
+    'stackEditor.selectionScope': '請選取同一個空間中的項目。',
+    'stackEditor.minimumSelection': '請至少選取 2 個項目。',
+    'stackEditor.idUnavailable': 'Locus 無法準備這個堆疊，請再試一次。',
+    'stackEditor.recoveryRequired': 'Locus 無法確認這項變更是否已儲存。請重新載入最新資料後再繼續。',
+    'stackEditor.batchDescription': '將 {count} 個所選項目移至「{group}」群組中的新堆疊。',
+    'stackEditor.createHistory': '新增堆疊「{name}」',
+    'stackEditor.created': '已新增堆疊「{name}」',
+    'stackEditor.editHistory': '更新堆疊「{name}」',
+    'stackEditor.updated': '已更新堆疊「{name}」',
+    'stackEditor.batchHistory': '將 {count} 個項目整理為堆疊「{name}」',
+    'stackEditor.stacked': '已將 {count} 個項目整理為堆疊「{name}」',
+    'stackAction.edit': '編輯堆疊…',
+    'stackAction.editFor': '編輯堆疊「{name}」',
+    'stackAction.editIntention': '編輯用途…',
+    'stackAction.expand': '展開',
+    'stackAction.collapse': '收合',
+    'stackAction.expandFor': '展開堆疊「{name}」',
+    'stackAction.collapseFor': '收合堆疊「{name}」',
+    'stackAction.archive': '封存',
+    'stackAction.aria': '堆疊「{name}」',
+    'selection.selected': '個已選取',
+    'selection.open': '開啟',
+    'selection.openTitle': '開啟所選分頁',
+    'selection.move': '移動',
+    'selection.moveTitle': '移動所選項目',
+    'selection.stack': '建立堆疊',
+    'selection.stackTitle': '將所選項目建立為堆疊',
+    'selection.archive': '封存',
+    'selection.archiveTitle': '封存所選項目',
+    'selection.clearTitle': '清除選取',
+    'itemAction.details': '詳細資料…',
+    'itemAction.editColor': '編輯顏色',
+    'itemAction.setReminder': '設定提醒…',
+    'itemAction.clearReminder': '清除提醒',
+    'itemAction.archive': '封存',
+    'groupAction.new': '新增群組',
+    'groupAction.edit': '編輯群組…',
+    'groupAction.editFor': '編輯群組「{name}」',
+    'groupAction.more': '更多群組操作',
+    'groupAction.moreFor': '「{name}」群組的操作',
+    'groupAction.editIntention': '編輯用途…',
+    'groupAction.setReminder': '設定提醒…',
+    'groupAction.expand': '展開',
+    'groupAction.collapse': '收合',
+    'groupAction.expandFor': '展開群組「{name}」',
+    'groupAction.collapseFor': '收合群組「{name}」',
+    'groupAction.openAll': '開啟所有分頁',
+    'groupAction.openAsPage': '以頁面開啟',
+    'groupAction.duplicate': '建立群組副本…',
+    'groupAction.addStack': '新增堆疊…',
+    'groupAction.archive': '封存',
+    'groupAction.oneItem': '1 個項目',
+    'groupAction.items': '{count} 個項目',
+    'groupAction.aria': '群組「{name}」',
+    'emojiPicker.title': '選擇圖示',
+    'emojiPicker.search': '搜尋圖示…',
+    'emojiPicker.categories': '圖示分類',
+    'emojiPicker.loading': '圖示載入中…',
+    'emojiPicker.empty': '找不到圖示',
+    'emojiPicker.error': '無法載入圖示。請關閉選擇器後再試一次。',
+    'emojiPicker.choose': '選擇 {symbol}',
+    'emojiPicker.current': '選擇圖示，目前為 {symbol}',
+    'emojiPicker.category.recent': '最近使用',
+    'emojiPicker.category.smileys': '表情',
+    'emojiPicker.category.people': '人物',
+    'emojiPicker.category.objects': '物品',
+    'emojiPicker.category.symbols': '符號',
+    'emojiPicker.category.food': '食物',
+    'emojiPicker.category.activity': '活動',
+    'emojiPicker.category.places': '地點',
+    'emojiPicker.category.nature': '自然',
+    'organization.space.createHistory': '新增空間「{name}」',
+    'organization.space.created': '已新增空間「{name}」',
+    'organization.space.createAndMoveHistory': '新增空間「{space}」並移動群組「{group}」',
+    'organization.space.createdAndMoved': '已新增空間「{space}」並移動群組「{group}」',
+    'organization.space.renameHistory': '空間「{from}」改名為「{to}」',
+    'organization.space.renamed': '空間名稱已改為「{name}」',
+    'organization.space.confirmTitle': '刪除空的空間？',
+    'organization.space.confirmEmpty': '「{name}」已沒有群組、已儲存項目或提醒。刪除後，這個空間及其檢視設定會從此工作區移除，其他空間不受影響。如要復原，請先在這個頁面使用「復原」，再重新載入或關閉 Locus。',
+    'organization.space.blockedTitle': '空間仍有可保留的內容',
+    'organization.space.blockedBody': '請先封存或移動所有群組，再移除此空間的提醒。這次沒有刪除任何內容。',
+    'organization.space.delete': '刪除空間',
+    'organization.space.deleteHistory': '刪除空間「{name}」',
+    'organization.space.deleted': '已刪除空間',
+    'history.undid': '已復原：{action}',
+    'history.redid': '已重做',
+    'history.undoStale': '因為已有較新的變更，現在無法復原這項操作。',
+    'history.undoPending': '這項儲存仍在完成中，完成後才能復原。',
+    'history.undoInterrupted': '已有較新的變更，因此暫停復原。請先復原較新的變更，再試一次。',
+    'history.undoFailed': '無法復原。已儲存的資料未被變更。',
+    'history.redoInterrupted': '已有較新的變更，因此暫停重做。請重新載入最新的已儲存資料後再試一次。',
+    'history.redoFailed': '無法重做。已儲存的資料未被變更。',
+    'history.reminderReconcileWarning': '變更已儲存，但部分提醒無法更新。請重新啟動瀏覽器，再到「行事曆」確認。',
     'trash.today': '今天',
     'trash.yesterday': '昨天',
     'trash.thisWeek': '本週',
@@ -696,11 +1238,18 @@ const I18N = {
     'home.items': '{n} 個項目',
     'home.empty': '空的 — 拖一個分頁進來開始',
     'home.emptyTitle': '尚無空間',
-    'home.emptyBody': '建立分類即可開始整理你的分頁。',
+    'home.emptyBody': '新增空間，開始整理已儲存的項目。',
     'home.inboxZone': '收件匣',
     'home.inboxHint': '先儲存一個頁面，再從這裡找回它。',
     'home.openInbox': '開啟收件匣',
     'home.recentSpaces': '你的空間',
+    'home.previewOpen': '開啟已儲存的{type}：「{title}」',
+    'home.previewUnavailable': '目前無法從首頁開啟這個已儲存項目。請重新整理首頁後再試一次。',
+    'home.previewType.tab': '連結',
+    'home.previewType.note': '筆記',
+    'home.previewType.todo': '待辦',
+    'home.previewType.stack': '堆疊',
+    'home.previewType.item': '項目',
     'empty.addSave': '新增／儲存',
     'empty.addNote': '新增筆記',
     'empty.importBookmarks': '匯入書籤',
@@ -790,7 +1339,94 @@ const I18N = {
     'search.tipExclude': '在文字或運算子前加上 - 即可排除。',
     'search.resultAria': '搜尋結果：{title}',
     'search.stackItems': '{count} 個巢狀項目',
-    'search.unknownDate': '沒有日期'
+    'search.unknownDate': '沒有日期',
+    'detail.close': '關閉項目詳細資料',
+    'detail.closeTitle': '關閉詳細資料（Esc）',
+    'detail.open': '開啟連結',
+    'detail.emptyNote': '這則筆記目前是空的，請回到看板編輯。',
+    'detail.title': '標題',
+    'detail.url': '網址',
+    'detail.task': '待辦內容',
+    'detail.stackName': '堆疊名稱',
+    'detail.markComplete': '標示為完成',
+    'detail.markIncomplete': '標示為未完成',
+    'detail.whySaved': '儲存原因',
+    'detail.notesPlaceholder': '補上背景、引用內容或下一步…',
+    'detail.reminder': '提醒',
+    'detail.pastDue': '已逾期',
+    'detail.repeats': '重複：{schedule}',
+    'detail.daily': '每天',
+    'detail.weekly': '每週',
+    'detail.monthly': '每月',
+    'detail.everyDays': '每 {count} 天',
+    'detail.everyWeeks': '每 {count} 週',
+    'detail.everyMonths': '每 {count} 個月',
+    'detail.changeReminder': '變更',
+    'detail.clearReminder': '清除',
+    'detail.setReminder': '設定提醒…',
+    'detail.closeReminderDialog': '關閉提醒視窗',
+    'reminder.setTitle': '設定提醒',
+    'reminder.editTitle': '編輯提醒',
+    'reminder.label': '提醒名稱',
+    'reminder.labelOptional': '提醒名稱（選填）',
+    'reminder.reviewExample': '例如：檢視「{name}」',
+    'reminder.routineExample': '例如：「{name}」例行事項',
+    'reminder.inOneHour': '1 小時後',
+    'reminder.inThreeHours': '3 小時後',
+    'reminder.tomorrow': '明天',
+    'reminder.nextWeek': '下週',
+    'reminder.pickDate': '或選擇日期',
+    'reminder.repeat': '重複',
+    'reminder.none': '不重複',
+    'reminder.daily': '每天',
+    'reminder.weekly': '每週',
+    'reminder.monthly': '每月',
+    'reminder.clear': '清除',
+    'reminder.remove': '移除',
+    'reminder.update': '更新',
+    'reminder.set': '設定',
+    'reminder.futureTime': '請選擇未來的時間',
+    'reminder.saving': '正在儲存提醒…',
+    'reminder.changed': '這個項目已變更或移動。請關閉這個視窗，重新開啟項目後再試一次。',
+    'reminder.saveFailed': 'Locus 無法確認提醒是否已儲存。請重新載入最新資料後再繼續。',
+    'reminder.setSuccess': '提醒已儲存',
+    'reminder.clearSuccess': '提醒已清除',
+    'reminder.scheduleWarning': '提醒已儲存，但目前可能不會通知。請重新啟動瀏覽器，再到「行事曆」確認。',
+    'reminder.clearScheduleWarning': '提醒已清除，但原本的通知可能仍會出現。請重新啟動瀏覽器，再到「行事曆」確認。',
+    'reminder.setHistory': '設定提醒',
+    'reminder.updateHistory': '更新提醒',
+    'reminder.clearHistory': '清除提醒',
+    'detail.tags': '標籤',
+    'detail.addTag': '新增標籤…',
+    'detail.removeTag': '移除標籤「{tag}」',
+    'detail.more': '更多詳細資料',
+    'detail.cover': '封面',
+    'detail.coverColor': '使用封面色彩 {color}',
+    'detail.coverEmoji': '封面表情符號',
+    'detail.clearCover': '清除封面',
+    'detail.checklist': '檢查清單',
+    'detail.checklistItem': '清單項目',
+    'detail.toggleChecklist': '切換清單項目「{item}」的完成狀態',
+    'detail.removeChecklist': '移除清單項目「{item}」',
+    'detail.addChecklist': '新增清單項目…',
+    'detail.customFields': '自訂欄位',
+    'detail.fieldLabel': '欄位名稱',
+    'detail.fieldValue': '內容',
+    'detail.removeField': '移除自訂欄位「{label}」',
+    'detail.addField': '新增欄位',
+    'detail.saving': '正在儲存變更…',
+    'detail.saved': '變更已儲存',
+    'detail.changed': '這個項目已變更或移動。請重新開啟詳細資料後再試一次。',
+    'detail.saveFailed': 'Locus 無法確認這項變更是否已儲存。請重新載入最新資料後再繼續。',
+    'detail.history.editTitle': '編輯項目標題',
+    'detail.history.editUrl': '編輯項目網址',
+    'detail.history.updateTask': '更新待辦',
+    'detail.history.renameStack': '重新命名堆疊',
+    'detail.history.updateCover': '更新封面',
+    'detail.history.editNotes': '編輯儲存原因',
+    'detail.history.updateTags': '更新標籤',
+    'detail.history.updateChecklist': '更新檢查清單',
+    'detail.history.updateFields': '更新自訂欄位'
   }
 };
 
@@ -821,6 +1457,22 @@ function applyLocale() {
   document.querySelectorAll('#seg-language button').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.val === lang);
   });
+  const organizationName = document.getElementById('organization-name-overlay');
+  if (organizationName && !organizationName.classList.contains('hidden')) {
+    paintOrganizationNameDialog();
+  }
+  const organization = document.getElementById('organization-delete-overlay');
+  if (organization && !organization.classList.contains('hidden')) {
+    paintOrganizationDeleteDialog();
+  }
+  const identityEditor = document.getElementById('modal-overlay');
+  if (identityEditor && !identityEditor.classList.contains('hidden')) {
+    paintIdentityEditor();
+  }
+  const emojiPicker = document.getElementById('emoji-picker');
+  if (emojiPicker && !emojiPicker.classList.contains('hidden')) {
+    paintEmojiPicker();
+  }
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -943,7 +1595,7 @@ const State = (() => {
   const receiverRetryMs = Number.isFinite(configuredReceiverRetryMs) && configuredReceiverRetryMs >= 0
     ? Math.min(configuredReceiverRetryMs, 1000)
     : 150;
-  async function sendStateWriteMessage(candidate, retryAllowed = () => true) {
+  async function sendStateWriteMessage(candidate, retryAllowed = () => true, { reconcileReminders = false } = {}) {
     let missingReceiver = null;
     for (let attempt = 0; attempt < 3; attempt++) {
       if (attempt > 0) {
@@ -954,7 +1606,11 @@ const State = (() => {
         if (!retryAllowed()) throw missingReceiver;
       }
       try {
-        return await chrome.runtime.sendMessage({ type: 'locus-state-write', state: candidate });
+        return await chrome.runtime.sendMessage({
+          type: 'locus-state-write',
+          state: candidate,
+          ...(reconcileReminders ? { reconcileReminders: true } : {}),
+        });
       } catch (error) {
         // This exact rejection means no listener accepted the message, so a
         // bounded retry cannot duplicate a committed write. Every other channel
@@ -968,7 +1624,7 @@ const State = (() => {
     error.receiverError = String(missingReceiver?.message || missingReceiver || '');
     throw error;
   }
-  async function requestStateWrite(candidate) {
+  async function requestStateWrite(candidate, { reconcileReminders = false } = {}) {
     const localRevision = storedRevision(state);
     if (localRevision == null) {
       const error = new Error('Locus found an invalid local state revision. Reload before making more changes.');
@@ -995,7 +1651,7 @@ const State = (() => {
         }, receiptTimeoutMs);
       });
       const response = await Promise.race([
-        sendStateWriteMessage(candidate, () => receiverRetryOpen),
+        sendStateWriteMessage(candidate, () => receiverRetryOpen, { reconcileReminders }),
         receiptTimeout,
       ]);
       if (!response?.ok) {
@@ -1017,6 +1673,7 @@ const State = (() => {
       // may already have reported a still-newer graph. Keep the capture/source
       // effects fail-closed until that authoritative graph is reloaded.
       if (recoveryRequired) throw recoveryError();
+      return response;
     } catch (error) {
       // An exhausted missing-receiver sequence leaves authority unchanged but
       // still leaves this local graph unsaved. Every other transport failure,
@@ -1034,13 +1691,14 @@ const State = (() => {
       inFlightExpectedStateJson = '';
     }
   }
-  function writeState() {
+  function writeState({ reconcileReminders = false } = {}) {
     if (recoveryRequired) return Promise.reject(recoveryError());
     // Each call owns an immutable candidate. If any earlier queued write fails,
     // every candidate already waiting behind it is invalid because its graph may
     // include optimistic state that a capture failure is about to roll back.
     const candidate = deepClone(state);
     const enqueuedFailureEpoch = stateWriteFailureEpoch;
+    const reconcileRemindersAfterWrite = reconcileReminders === true;
     const requestWrite = () => {
       if (recoveryRequired) throw recoveryError();
       if (enqueuedFailureEpoch !== stateWriteFailureEpoch) {
@@ -1048,7 +1706,7 @@ const State = (() => {
         error.code = 'LOCUS_STATE_QUEUE_INVALIDATED';
         throw error;
       }
-      return requestStateWrite(candidate);
+      return requestStateWrite(candidate, { reconcileReminders: reconcileRemindersAfterWrite });
     };
     pendingStateWrites++;
     const run = stateWriteQueue.then(requestWrite);
@@ -1218,13 +1876,13 @@ const State = (() => {
           .catch(err => recoverAfterOrdinaryWriteFailure(err));
       }, 180);
     },
-    persistNow({ recordMutation = true } = {}) {
+    persistNow({ recordMutation = true, reconcileReminders = false } = {}) {
       if (recordMutation) {
         mutationEpoch++;
         dataMutationEpoch++;
       }
       cancelPersistTimer();
-      const p = writeState();
+      const p = writeState({ reconcileReminders });
       p.then(() => { try { refreshStorageUsage(); } catch {} })
        .catch(err => {
          handleStorageError(err);
@@ -1279,6 +1937,10 @@ const State = (() => {
       state = previous.data;
       future.length = 0;
       return true;
+    },
+    clearUndoHistory() {
+      history.length = 0;
+      future.length = 0;
     },
     async undo(expectedActionId = null) {
       if (!history.length) return null;
@@ -1559,6 +2221,26 @@ function findItem(itemId) {
   return null;
 }
 
+// A routed detail id is valid only inside the surface named by that route.
+// This prevents a moved item or stale copied URL from borrowing the wrong
+// workspace/category/group heading. Library eligibility mirrors its live rows.
+function validDetailItemIdForSurface(itemId, surface) {
+  surface = surface || {};
+  if (!itemId) return null;
+  const info = findItem(itemId);
+  if (!info) return null;
+  if (surface.wsId && info.ws.id !== surface.wsId) return null;
+  if (surface.groupId && info.group.id !== surface.groupId) return null;
+  if (surface.catId && info.cat.id !== surface.catId) return null;
+  if (surface.libraryMode) {
+    if (info.item.type !== 'tab') return null;
+    if (surface.libraryMode === 'favorites' && !info.item.favorite) return null;
+    if (surface.libraryMode === 'read-later' && !info.item.readLaterAt) return null;
+    if (!['all', 'favorites', 'read-later'].includes(surface.libraryMode)) return null;
+  }
+  return String(itemId);
+}
+
 // ════════════════════════════════════════════════════════════════
 // HASH ROUTER (§2.1)
 // ════════════════════════════════════════════════════════════════
@@ -1632,11 +2314,12 @@ function searchRouteQuery(state = activeSearch) {
   return query;
 }
 
-// The item whose detail pane (§4.2) is open on the *board* surface, mirrored
-// into the board route as `?item=<id>` so it survives reload / back-forward.
-// On a group page the open detail item lives in activeGroupPage.itemId instead
-// (that surface owns the `…/group/<id>/item/<id>` path shape); the two never
-// apply at once. currentDetailItemId() resolves whichever is active.
+// The item whose detail sheet (§4.2) is open on Home, a board, or a Library
+// surface, mirrored into that route as `?item=<id>` so it survives
+// reload/back-forward. On a group page the open detail item lives in
+// activeGroupPage.itemId instead (that surface owns the
+// `…/group/<id>/item/<id>` path shape); the two never apply at once.
+// currentDetailItemId() resolves whichever is active.
 let boardDetailItemId = null;
 
 // Explorer layout (§3.1) selection: the drilled-into group and the stack path
@@ -1720,7 +2403,10 @@ const Router = (() => {
   function currentRoute() {
     const ws = activeWs();
     if (!ws) return null;
-    if (activeLibraryMode) return { type: 'library', wsId: ws.id, mode: activeLibraryMode, query: {} };
+    if (activeLibraryMode) {
+      const query = boardDetailItemId ? { item: boardDetailItemId } : {};
+      return { type: 'library', wsId: ws.id, mode: activeLibraryMode, query };
+    }
     if (activeSearch) return { type: 'search', wsId: ws.id, query: searchRouteQuery(activeSearch) };
     if (activeCalendar) {
       // Only the view is durable in the URL; a bare `…/calendar` means month.
@@ -1731,7 +2417,8 @@ const Router = (() => {
       return { type: 'group', wsId: ws.id, groupId: activeGroupPage.groupId, itemId: activeGroupPage.itemId || null, query: {} };
     }
     if (activeHome) {
-      return { type: 'home', wsId: ws.id, query: {} };
+      const query = boardDetailItemId ? { item: boardDetailItemId } : {};
+      return { type: 'home', wsId: ws.id, query };
     }
     const cat = activeCat();
     const query = {};
@@ -1753,11 +2440,14 @@ const Router = (() => {
 
     if (route.type === 'library') {
       const mode = ['all', 'favorites', 'read-later', 'archive', 'trash'].includes(route.mode) ? route.mode : 'all';
+      const routeItem = (route.query && route.query.item) || null;
+      const routeWs = activeWs();
+      const wantItem = validDetailItemIdForSurface(routeItem, { wsId: routeWs?.id, libraryMode: mode });
       if (activeSearch) { activeSearch = null; changed = true; }
       if (activeHome) { activeHome = false; changed = true; }
       if (activeGroupPage) { activeGroupPage = null; changed = true; }
       if (activeCalendar) { activeCalendar = null; changed = true; }
-      if (boardDetailItemId) { boardDetailItemId = null; changed = true; }
+      if (boardDetailItemId !== wantItem) { boardDetailItemId = wantItem; changed = true; }
       if (activeLibraryMode !== mode) { activeLibraryMode = mode; changed = true; }
       return changed;
     }
@@ -1777,10 +2467,15 @@ const Router = (() => {
     if (activeSearch) { activeSearch = null; changed = true; }
 
     if (route.type === 'home') {
-      // Home is the workspace overview; it leaves every other surface behind.
+      // Home is the workspace overview. Its real-item preview opens the shared
+      // detail sheet over Home instead of selecting/rendering the owning Space,
+      // so recovery cannot rewrite active Space or initialize an advanced
+      // layout merely by being viewed.
       if (activeGroupPage) { activeGroupPage = null; changed = true; }
       if (activeCalendar) { activeCalendar = null; changed = true; }
-      if (boardDetailItemId) { boardDetailItemId = null; changed = true; }
+      const routeItem = (route.query && route.query.item) || null;
+      const wantItem = resolveUniqueHomePreviewItem(route.wsId, routeItem)?.item?.id || null;
+      if (boardDetailItemId !== wantItem) { boardDetailItemId = wantItem; changed = true; }
       if (!activeHome) { activeHome = true; changed = true; }
       return changed;
     }
@@ -1812,7 +2507,7 @@ const Router = (() => {
       if (info) {
         if (s.activeWsId !== info.ws.id) { s.activeWsId = info.ws.id; changed = true; }
         if (info.ws.activeCatId !== info.cat.id) { info.ws.activeCatId = info.cat.id; changed = true; }
-        const itemId = route.itemId || null;
+        const itemId = validDetailItemIdForSurface(route.itemId, { wsId: info.ws.id, groupId: info.group.id });
         if (!activeGroupPage || activeGroupPage.groupId !== info.group.id || activeGroupPage.itemId !== itemId) {
           activeGroupPage = { groupId: info.group.id, itemId };
           changed = true;
@@ -1851,15 +2546,74 @@ const Router = (() => {
     // Board-surface item detail pane (§4.2): `?item=<id>`. A stale id renders
     // nothing (renderItemDetail resolves it and closes gracefully), so a dead
     // deep link never wedges the app.
-    const wantItem = (route.query && route.query.item) || null;
+    const routeItem = (route.query && route.query.item) || null;
+    const routeCat = activeW?.categories.find(cat => cat.id === activeW.activeCatId) || null;
+    const wantItem = validDetailItemIdForSurface(routeItem, { wsId: activeW?.id, catId: routeCat?.id });
     if (boardDetailItemId !== wantItem) { boardDetailItemId = wantItem; changed = true; }
     return changed;
   }
 
   function handleLocationChange() {
+    const recovery = document.getElementById('state-recovery-overlay');
+    const identityEditor = document.getElementById('modal-overlay');
+    const identityOpen = !!(identityEditor && !identityEditor.classList.contains('hidden'));
+    const restoreStableRoute = () => {
+      const stable = build(currentRoute());
+      if (stable !== location.hash.replace(/^#/, '')) {
+        history.pushState(null, '', '#' + stable);
+      }
+    };
+    const foregroundBlocksNavigation = !!(recovery && !recovery.classList.contains('hidden'))
+      || (identityOpen && identityEditor.getAttribute('aria-busy') === 'true')
+      || isItemDetailMutationPending();
+    if (foregroundBlocksNavigation) {
+      // A history event can arrive while recovery or a foreground state receipt owns
+      // the foreground. Keep the reviewed route stable without applying or
+      // persisting a second graph. pushState preserves the attempted history entry
+      // so the user can navigate to it after the foreground transaction settles.
+      restoreStableRoute();
+      return;
+    }
+    if (identityOpen) {
+      // A non-pending draft does not own browser history. Discard it before the
+      // requested route is applied so its frozen source context cannot survive.
+      closeIdentityEditor({ restoreFocus: false });
+    }
+    flushActiveItemDetailEditor();
+    // A dirty editor can synchronously start an acknowledged write from blur.
+    // Recheck before parsing or applying the browser's requested history entry.
+    if (isItemDetailMutationPending()) {
+      restoreStableRoute();
+      return;
+    }
+    // Route application mixes ephemeral surface state with the few selections
+    // that actually live in the user graph. Browser Back/Forward should only
+    // write when one of those durable selections changed; opening or closing a
+    // Home detail sheet must remain a read-only recovery action.
+    const durableSelection = () => {
+      const state = State.get();
+      return JSON.stringify({
+        activeWsId: state.activeWsId || null,
+        viewMode: state.settings?.viewMode || null,
+        workspaces: (state.workspaces || []).map(workspace => ({
+          id: workspace.id,
+          activeCatId: workspace.activeCatId || null,
+          layouts: (workspace.categories || []).map(category => [category.id, category.layout || null]),
+        })),
+      });
+    };
+    const durableBefore = durableSelection();
     const route = parse(location.hash);
     const changed = apply(route);
-    if (changed) { State.persist(); renderAll(); }
+    const durableChanged = durableBefore !== durableSelection();
+    const canonical = build(currentRoute());
+    if (canonical !== location.hash.replace(/^#/, '')) {
+      history.replaceState(null, '', '#' + canonical);
+    }
+    if (changed) {
+      if (durableChanged) State.persist();
+      renderAll();
+    }
   }
 
   return {
@@ -1879,11 +2633,18 @@ const Router = (() => {
     },
     // Deep-link navigation used by future surfaces; replace avoids a history
     // entry when appropriate.
-    navigate(route, { replace = false } = {}) {
+    navigate(route, { replace = false, persist = true } = {}) {
+      if (isItemDetailMutationPending()) return false;
+      flushActiveItemDetailEditor();
+      if (isItemDetailMutationPending()) return false;
       const hash = '#' + build(route);
       if (replace) history.replaceState(null, '', hash);
       else history.pushState(null, '', hash);
-      if (apply(route)) { State.persist(); renderAll(); }
+      if (apply(route)) {
+        if (persist) State.persist();
+        renderAll();
+      }
+      return true;
     },
     // Called once after migrate/ensureDefault, before the first render.
     init() {
@@ -1896,6 +2657,7 @@ const Router = (() => {
       history.replaceState(null, '', '#' + build(currentRoute()));
       window.addEventListener('popstate', handleLocationChange);
       window.addEventListener('hashchange', handleLocationChange);
+      window.addEventListener('pagehide', flushItemDetailBeforePageHide);
       _ready = true;
     },
   };
@@ -1982,7 +2744,7 @@ function initAfterLoad() {
   startStateStorageSync();
   // Returning users may opt into the calm landing. First run owns one task and
   // never hands off into a second full-screen layer.
-  if (ensureOnboarding(State.get().settings).welcomeSeen && activeHome) showLandingLayer();
+  if (ensureOnboarding(State.get().settings).welcomeSeen && activeHome && !currentDetailItemId()) showLandingLayer();
 
   // Reveal the app once the first frame paints (avoids any layout flash).
   requestAnimationFrame(() => {
@@ -2025,17 +2787,75 @@ function initAfterLoad() {
 let _stateStorageSyncStarted = false;
 let _authoritativeRefreshPromise = null;
 
+// `inert` can be owned by more than one stacked surface. Keep independent owner
+// tokens so closing a detail sheet cannot unlock the app while recovery is still
+// fail-closed (and vice versa). A pre-existing unmanaged inert state is restored.
+function setElementInertOwner(element, owner, enabled) {
+  if (!element || !owner) return;
+  const owners = new Set(String(element.dataset.locusInertOwners || '').split(' ').filter(Boolean));
+  if (!enabled && !owners.has(owner)) return;
+  if (enabled) {
+    if (!owners.size && element.inert) element.dataset.locusInertBase = '1';
+    owners.add(owner);
+  } else {
+    owners.delete(owner);
+  }
+  if (owners.size) element.dataset.locusInertOwners = [...owners].join(' ');
+  else delete element.dataset.locusInertOwners;
+  element.inert = owners.size > 0 || element.dataset.locusInertBase === '1';
+  if (!owners.size) delete element.dataset.locusInertBase;
+}
+
+// Body-level surfaces can be mounted lazily. If a fail-closed recovery,
+// reminder dialog, or organization decision is already open, the new surface
+// must join that interlock immediately instead of becoming an interactive
+// escape hatch behind it.
+function inheritActiveBodyInterlocks(element) {
+  if (!element) return;
+  const recovery = document.getElementById('state-recovery-overlay');
+  const reminder = document.getElementById('reminder-overlay');
+  const workspaceGrid = document.getElementById('ws-grid-overlay');
+  const organizationName = document.getElementById('organization-name-overlay');
+  const organization = document.getElementById('organization-delete-overlay');
+  const identityEditor = document.getElementById('modal-overlay');
+  if (element !== recovery) {
+    setElementInertOwner(element, 'recovery', !!(recovery && !recovery.classList.contains('hidden')));
+  }
+  // Recovery is always the top fail-closed layer. A reminder may make every
+  // lower surface inert, but it must never make recovery itself unfocusable.
+  if (element !== reminder && element !== recovery) {
+    setElementInertOwner(element, 'reminder', !!(reminder && !reminder.classList.contains('hidden')));
+  }
+  const workspaceGridExempt = [
+    workspaceGrid,
+    recovery,
+    organizationName,
+    organization,
+    document.getElementById('context-menu'),
+    document.getElementById('emoji-picker'),
+  ];
+  if (!workspaceGridExempt.includes(element)) {
+    setElementInertOwner(element, 'workspace-grid', !!(workspaceGrid && !workspaceGrid.classList.contains('hidden')));
+  }
+  if (element !== organizationName && element !== recovery) {
+    setElementInertOwner(element, 'organization-name', !!(organizationName && !organizationName.classList.contains('hidden')));
+  }
+  // Recovery always outranks an organization decision. Never transfer the
+  // organization owner to the recovery layer or a failed write would display
+  // a recovery dialog that cannot receive focus or input.
+  if (element !== organization && element !== recovery) {
+    setElementInertOwner(element, 'organization', !!(organization && !organization.classList.contains('hidden')));
+  }
+  if (element !== identityEditor && element !== recovery && element !== document.getElementById('emoji-picker')) {
+    setElementInertOwner(element, 'identity-editor', !!(identityEditor && !identityEditor.classList.contains('hidden')));
+  }
+}
+
 function setStateRecoveryInterlock(enabled) {
   const overlay = document.getElementById('state-recovery-overlay');
   for (const child of document.body.children) {
     if (child === overlay) continue;
-    if (enabled) {
-      if (!child.inert) child.dataset.locusRecoveryInert = '1';
-      child.inert = true;
-    } else if (child.dataset.locusRecoveryInert === '1') {
-      child.inert = false;
-      delete child.dataset.locusRecoveryInert;
-    }
+    setElementInertOwner(child, 'recovery', enabled);
   }
 }
 
@@ -2084,7 +2904,12 @@ function showStateRecoveryRequired(error) {
   if (overlayWasHidden) rememberOpener(overlay);
   setStateRecoveryInterlock(true);
   overlay.classList.remove('hidden');
-  setTimeout(() => document.getElementById('state-recovery-reload')?.focus(), 50);
+  const reload = document.getElementById('state-recovery-reload');
+  try { reload?.focus({ preventScroll: true }); } catch { try { reload?.focus(); } catch {} }
+  // Reassert after the opening frame in case layout was not focus-ready yet.
+  setTimeout(() => {
+    try { reload?.focus({ preventScroll: true }); } catch { try { reload?.focus(); } catch {} }
+  }, 50);
 }
 
 function reloadLocusRuntime() {
@@ -2939,7 +3764,7 @@ function applySettings() {
     const key = id === 'seg-size' ? 'size' : id === 'seg-width' ? 'width' : 'font';
     document.querySelectorAll(`#${id} button`).forEach(b => b.classList.toggle('active', b.dataset.val === s[key]));
   });
-  const togs = [['tog-hibernate','hibernate'],['tog-urls','showUrls'],['tog-anim','animate'],['tog-confirm','confirmDelete'],['tog-blur','blurPrivacy'],['tog-autoswitch','autoSwitchWorkspace'],['tog-landing','showLanding']];
+  const togs = [['tog-hibernate','hibernate'],['tog-urls','showUrls'],['tog-anim','animate'],['tog-blur','blurPrivacy'],['tog-autoswitch','autoSwitchWorkspace'],['tog-landing','showLanding']];
   togs.forEach(([id, key]) => { const el = document.getElementById(id); if (el) el.checked = !!s[key]; });
   const captureTogs = [
     ['tog-capture-ask','captureAskEveryTime', true],
@@ -2969,10 +3794,17 @@ function rememberOpener(el) {
 }
 function restoreOpener(el) {
   const opener = _overlayOpeners.get(el);
-  if (opener && typeof opener.focus === 'function') {
-    try { opener.focus(); } catch {}
+  let restored = false;
+  if (opener && opener.isConnected !== false && typeof opener.focus === 'function') {
+    try {
+      opener.focus({ preventScroll: true });
+      restored = document.activeElement === opener;
+    } catch {
+      try { opener.focus(); restored = document.activeElement === opener; } catch {}
+    }
   }
   _overlayOpeners.delete(el);
+  return restored;
 }
 const FOCUSABLE_SELECTOR = 'a[href],area[href],input:not([disabled]),button:not([disabled]),select:not([disabled]),textarea:not([disabled]),[contenteditable="true"],[tabindex]:not([tabindex="-1"])';
 function visibleFocusableElements(container) {
@@ -2993,8 +3825,8 @@ function trapTabKey(e, container) {
   if (!items.length) return;
   const first = items[0], last = items[items.length - 1];
   const active = document.activeElement;
-  if (e.shiftKey && (active === first || !container.contains(active))) { e.preventDefault(); last.focus(); }
-  else if (!e.shiftKey && (active === last || !container.contains(active))) { e.preventDefault(); first.focus(); }
+  if (e.shiftKey && (active === container || active === first || !container.contains(active))) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && (active === container || active === last || !container.contains(active))) { e.preventDefault(); first.focus(); }
 }
 
 // Ref-counted body-scroll lock. Nested overlays open/close independently
@@ -3015,6 +3847,7 @@ function enableKeyboardClick(el) {
   if (!el.hasAttribute('role')) el.setAttribute('role', 'button');
   if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0');
   el.addEventListener('keydown', e => {
+    if (e.target !== el) return;
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); }
   });
   el.dataset.kbReady = '1';
@@ -3043,20 +3876,47 @@ function toast(msg, opts = {}) {
 async function performUndo(expectedActionId = null) {
   try {
     const label = await State.undo(expectedActionId);
-    if (label) { renderAll(); toast(`Undid: ${label}`); }
+    if (label) {
+      renderAll();
+      toast(tr('history.undid', { action: label }));
+      reconcileRemindersAfterHistoryChange();
+    }
   } catch (error) {
     renderAll();
-    toast(error?.message || 'Undo failed. Your saved data was left unchanged.', { danger: true, duration: 7000 });
+    const key = {
+      LOCUS_UNDO_STALE: 'history.undoStale',
+      LOCUS_UNDO_PENDING: 'history.undoPending',
+      LOCUS_UNDO_INTERRUPTED: 'history.undoInterrupted',
+    }[error?.code] || 'history.undoFailed';
+    toast(tr(key), { danger: true, duration: 7000 });
   }
 }
 async function performRedo() {
   try {
     const label = await State.redo();
-    if (label) { renderAll(); toast('Redid'); }
+    if (label) {
+      renderAll();
+      toast(tr('history.redid'));
+      reconcileRemindersAfterHistoryChange();
+    }
   } catch (error) {
     renderAll();
-    toast(error?.message || 'Redo failed. Your saved data was left unchanged.', { danger: true, duration: 7000 });
+    const key = error?.code === 'LOCUS_REDO_INTERRUPTED'
+      ? 'history.redoInterrupted'
+      : 'history.redoFailed';
+    toast(tr(key), { danger: true, duration: 7000 });
   }
+}
+
+function reconcileRemindersAfterHistoryChange() {
+  Promise.resolve()
+    .then(() => chrome.runtime.sendMessage({ type: 'reconcile-reminders' }))
+    .then(result => {
+      if (result?.ok !== true) throw new Error('Reminder reconciliation failed');
+    })
+    .catch(() => {
+      toast(tr('history.reminderReconcileWarning'), { danger: true, duration: 8000 });
+    });
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -3166,14 +4026,133 @@ async function openAllHibernated(urls, items) {
 //   { kind:'group',    id:groupId, index }   index absent → adding a new one
 //   { kind:'category', id:catId,   index }
 let reminderCtx = null;
-function openReminderPicker(itemId) {
-  const info = findItem(itemId);
+function setReminderInterlock(enabled) {
+  const overlay = document.getElementById('reminder-overlay');
+  const recovery = document.getElementById('state-recovery-overlay');
+  for (const child of document.body.children) {
+    if (child === overlay || child === recovery) continue;
+    setElementInertOwner(child, 'reminder', enabled);
+  }
+}
+function isItemDetailReminderMutationPending() {
+  return !!itemReminderMutationPending;
+}
+function handleReminderGlobalKey(event) {
+  const overlay = document.getElementById('reminder-overlay');
+  if (!overlay || overlay.classList.contains('hidden')) return false;
+  const inside = overlay.contains(event.target);
+  if (isItemDetailReminderMutationPending()) {
+    if (inside && event.key === 'Tab') return true;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    if (!inside) document.getElementById('rm-x')?.focus({ preventScroll: true });
+    return true;
+  }
+  // Events inside the modal keep their native input/select behavior, but they
+  // never fall through to app-wide Undo, search, Calendar, or palette shortcuts.
+  if (inside) return true;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  if (event.key === 'Escape') closeReminderPicker();
+  else document.getElementById('rm-datetime')?.focus({ preventScroll: true });
+  return true;
+}
+function setReminderMutationStatus(key = '', tone = '') {
+  const status = document.getElementById('rm-status');
+  if (!status) return;
+  status.textContent = key ? tr(key) : '';
+  if (tone) status.dataset.tone = tone;
+  else delete status.dataset.tone;
+}
+function showReminderTimeError() {
+  const input = document.getElementById('rm-datetime');
+  if (input) input.setAttribute('aria-invalid', 'true');
+  setReminderMutationStatus('reminder.futureTime', 'error');
+  input?.focus({ preventScroll: true });
+}
+function clearReminderTimeError() {
+  document.getElementById('rm-datetime')?.removeAttribute('aria-invalid');
+  if (!isItemDetailReminderMutationPending()) setReminderMutationStatus();
+}
+function setReminderMutationBusy(busy) {
+  const overlay = document.getElementById('reminder-overlay');
+  if (!overlay || overlay.classList.contains('hidden')) return;
+  const busyRegion = overlay.querySelector('.modal-bd');
+  overlay.classList.toggle('rm-mutation-pending', busy);
+  if (busyRegion) busyRegion.setAttribute('aria-busy', String(busy));
+  const controls = overlay.querySelectorAll('button, input, select');
+  if (busy) {
+    controls.forEach(control => {
+      if (control.dataset.rmBusyControl === 'true') return;
+      control.dataset.rmBusyControl = 'true';
+      control.dataset.rmPreviousAriaDisabled = control.hasAttribute('aria-disabled')
+        ? String(control.getAttribute('aria-disabled'))
+        : '__missing__';
+      control.setAttribute('aria-disabled', 'true');
+      if ('readOnly' in control) {
+        control.dataset.rmPreviousReadonly = String(!!control.readOnly);
+        control.readOnly = true;
+      }
+    });
+    setReminderMutationStatus('reminder.saving', 'pending');
+    return;
+  }
+  overlay.querySelectorAll('[data-rm-busy-control="true"]').forEach(control => {
+    if (control.dataset.rmPreviousAriaDisabled === '__missing__') control.removeAttribute('aria-disabled');
+    else control.setAttribute('aria-disabled', control.dataset.rmPreviousAriaDisabled);
+    if ('readOnly' in control && control.dataset.rmPreviousReadonly != null) {
+      control.readOnly = control.dataset.rmPreviousReadonly === 'true';
+    }
+    delete control.dataset.rmBusyControl;
+    delete control.dataset.rmPreviousAriaDisabled;
+    delete control.dataset.rmPreviousReadonly;
+  });
+}
+function resetReminderMutationUi() {
+  const overlay = document.getElementById('reminder-overlay');
+  if (!overlay) return;
+  setReminderMutationBusy(false);
+  overlay.querySelectorAll('[data-rm-unavailable="true"]').forEach(control => {
+    control.disabled = false;
+    delete control.dataset.rmUnavailable;
+  });
+  const busyRegion = overlay.querySelector('.modal-bd');
+  if (busyRegion) busyRegion.setAttribute('aria-busy', 'false');
+  overlay.classList.remove('rm-mutation-pending', 'rm-mutation-unavailable');
+  document.getElementById('rm-datetime')?.removeAttribute('aria-invalid');
+  setReminderMutationStatus();
+}
+function setReminderMutationUnavailable() {
+  const overlay = document.getElementById('reminder-overlay');
+  if (!overlay || overlay.classList.contains('hidden')) return;
+  if (reminderCtx) reminderCtx.unavailable = true;
+  overlay.classList.add('rm-mutation-unavailable');
+  overlay.querySelectorAll('#rm-label, #rm-datetime, #rm-recur, #rm-clear, #rm-save, .rm-quick button').forEach(control => {
+    control.disabled = true;
+    control.dataset.rmUnavailable = 'true';
+  });
+  setReminderMutationStatus('reminder.changed', 'error');
+  document.getElementById('rm-x')?.focus({ preventScroll: true });
+}
+function openReminderPicker(itemId, detailContext = undefined) {
+  const fromDetail = detailContext !== undefined;
+  const info = fromDetail ? resolveItemDetailMutationTarget(detailContext) : findItem(itemId);
+  if (!info) {
+    if (fromDetail) {
+      clearItemDetailStatusTimer();
+      setItemDetailMutationStatus(document.getElementById('item-detail'), 'detail.changed', 'error');
+    }
+    return false;
+  }
   const existing = info?.item?.reminder || null;
   const projectedAt = pendingReminderTime(existing);
   const displayReminder = projectedAt != null && projectedAt !== Number(existing?.at)
     ? Object.assign({}, existing, { at: projectedAt })
     : existing;
-  openReminderOverlay({ kind: 'item', id: itemId }, displayReminder, { title: 'Set reminder' });
+  openReminderOverlay({ kind: 'item', id: itemId, detailContext }, displayReminder, {
+    title: tr(existing ? 'reminder.editTitle' : 'reminder.setTitle'),
+  });
+  return true;
 }
 function openEntityReminderPicker(kind, entId, index) {
   const ent = findEntity(kind, entId);
@@ -3184,10 +4163,10 @@ function openEntityReminderPicker(kind, entId, index) {
     : existing;
   const name = ent?.name || '';
   openReminderOverlay({ kind, id: entId, index }, displayReminder, {
-    title: existing ? 'Edit reminder' : 'Set reminder',
+    title: tr(existing ? 'reminder.editTitle' : 'reminder.setTitle'),
     showLabel: true,
     label: existing?.label || '',
-    labelPlaceholder: kind === 'group' ? `e.g. Review ${name}` : `e.g. ${name} routine`,
+    labelPlaceholder: tr(kind === 'group' ? 'reminder.reviewExample' : 'reminder.routineExample', { name }),
   });
 }
 // A datetime-local wants a wall-clock string; convert from an epoch through the
@@ -3198,17 +4177,33 @@ function toLocalDatetimeValue(ts) {
 }
 function openReminderOverlay(ctx, existing, opts = {}) {
   reminderCtx = ctx;
+  const overlay = document.getElementById('reminder-overlay');
+  if (!overlay) return;
+  resetReminderMutationUi();
+  if (overlay.classList.contains('hidden')) rememberOpener(overlay);
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-labelledby', 'reminder-dialog-title');
+  setReminderInterlock(true);
   const dflt = new Date(); dflt.setHours(dflt.getHours() + 1, 0, 0, 0);
   document.getElementById('rm-datetime').value =
     toLocalDatetimeValue(existing?.at != null ? existing.at : dflt.getTime());
 
+  const titleKey = existing ? 'reminder.editTitle' : 'reminder.setTitle';
   const h = document.querySelector('#reminder-overlay .modal-hd h2');
-  if (h) h.textContent = opts.title || 'Set reminder';
+  if (h) { h.id = 'reminder-dialog-title'; h.dataset.i18n = titleKey; h.textContent = opts.title || tr(titleKey); }
+  const closeButton = document.getElementById('rm-x');
+  if (closeButton) closeButton.setAttribute('aria-label', tr('detail.closeReminderDialog'));
 
   const labelField = document.getElementById('rm-label-field');
   const labelInput = document.getElementById('rm-label');
   if (labelField) labelField.classList.toggle('hidden', !opts.showLabel);
-  if (labelInput) { labelInput.value = opts.label || ''; labelInput.placeholder = opts.labelPlaceholder || 'Label (optional)'; }
+  if (labelInput) {
+    labelInput.value = opts.label || '';
+    labelInput.placeholder = opts.labelPlaceholder || tr('reminder.labelOptional');
+    if (opts.labelPlaceholder) delete labelInput.dataset.i18nPlaceholder;
+    else labelInput.dataset.i18nPlaceholder = 'reminder.labelOptional';
+  }
 
   const recurSel = document.getElementById('rm-recur');
   if (recurSel) recurSel.value = existing?.recur?.every || '';
@@ -3217,14 +4212,26 @@ function openReminderOverlay(ctx, existing, opts = {}) {
   const clearBtn = document.getElementById('rm-clear');
   if (clearBtn) {
     clearBtn.classList.toggle('hidden', !existing);
-    clearBtn.textContent = ctx.kind === 'item' ? 'Clear' : 'Remove';
+    const clearKey = ctx.kind === 'item' ? 'reminder.clear' : 'reminder.remove';
+    clearBtn.dataset.i18n = clearKey;
+    clearBtn.textContent = tr(clearKey);
   }
-  document.getElementById('rm-save').textContent = existing ? 'Update' : 'Set';
-  document.getElementById('reminder-overlay').classList.remove('hidden');
+  const saveButton = document.getElementById('rm-save');
+  const saveKey = existing ? 'reminder.update' : 'reminder.set';
+  saveButton.dataset.i18n = saveKey;
+  saveButton.textContent = tr(saveKey);
+  overlay.classList.remove('hidden');
+  setTimeout(() => document.getElementById('rm-datetime')?.focus({ preventScroll: true }), 0);
 }
 function closeReminderPicker() {
-  document.getElementById('reminder-overlay').classList.add('hidden');
+  if (isItemDetailReminderMutationPending()) return false;
+  const overlay = document.getElementById('reminder-overlay');
+  if (!overlay) return false;
+  overlay.classList.add('hidden');
+  setReminderInterlock(false);
   reminderCtx = null;
+  restoreOpener(overlay);
+  return true;
 }
 function readRecurControl() {
   const every = document.getElementById('rm-recur')?.value || '';
@@ -3252,6 +4259,145 @@ async function clearReminder(itemId) {
   renderBoard();
   refreshDetailPane();
   toast('Reminder cleared');
+}
+
+// Item reminders opened from the saved-item detail sheet share its exact
+// route/owner/item resolver, but keep their pending token until both durability
+// and the post-receipt alarm effect have settled. The service worker reads the
+// acknowledged state and remains the only authority that reconciles alarm names.
+async function commitItemDetailReminderMutation(context, reminder, opts = {}) {
+  if (isItemDetailMutationPending()) return false;
+  const root = document.getElementById('item-detail');
+  const fromPicker = opts.fromPicker === true;
+  if (State.isRecoveryRequired?.()) {
+    setItemDetailMutationStatus(root, 'detail.saveFailed', 'error');
+    if (fromPicker) setReminderMutationStatus('reminder.saveFailed', 'error');
+    return false;
+  }
+  const target = resolveItemDetailMutationTarget(context);
+  if (!root?.classList.contains('open') || !target) {
+    clearItemDetailStatusTimer();
+    setItemDetailMutationStatus(root, 'detail.changed', 'error');
+    if (fromPicker) setReminderMutationUnavailable();
+    return false;
+  }
+
+  let nextReminder = null;
+  if (reminder != null) {
+    const at = Number(reminder.at);
+    if (!Number.isFinite(at) || at <= Date.now()) {
+      if (fromPicker) showReminderTimeError();
+      return false;
+    }
+    // Preserve extension/import fields that this editor does not own. The
+    // controller changes only schedule, recurrence, and delivery state.
+    nextReminder = isItemDetailRecord(target.item.reminder)
+      ? cloneItemDetailJson(target.item.reminder)
+      : {};
+    nextReminder.at = at;
+    nextReminder.notified = false;
+    delete nextReminder.recur;
+    if (['day', 'week', 'month'].includes(reminder.recur?.every)) {
+      nextReminder.recur = { every: reminder.recur.every, interval: 1 };
+    }
+  }
+
+  const existingFingerprint = itemDetailValueFingerprint(target.item.reminder);
+  if (existingFingerprint === itemDetailValueFingerprint(nextReminder)) {
+    if (fromPicker) closeReminderPicker();
+    return true;
+  }
+
+  const hadReminder = !!target.item.reminder;
+  const historyKey = nextReminder
+    ? (hadReminder ? 'reminder.updateHistory' : 'reminder.setHistory')
+    : 'reminder.clearHistory';
+  const transaction = { context, itemId: context.itemId };
+  itemReminderMutationPending = transaction;
+  clearItemDetailStatusTimer();
+  setItemDetailMutationBusy(root, true);
+  if (fromPicker) setReminderMutationBusy(true);
+
+  let actionId;
+  try {
+    actionId = State.snapshot(tr(historyKey));
+    if (nextReminder) target.item.reminder = nextReminder;
+    else delete target.item.reminder;
+  } catch (error) {
+    if (itemReminderMutationPending === transaction) itemReminderMutationPending = null;
+    setItemDetailMutationBusy(root, false);
+    setItemDetailMutationStatus(root, 'detail.saveFailed', 'error');
+    if (fromPicker) {
+      setReminderMutationBusy(false);
+      setReminderMutationStatus('reminder.saveFailed', 'error');
+    }
+    State.requireRecovery?.();
+    if (typeof showStateRecoveryRequired === 'function') showStateRecoveryRequired(error);
+    return false;
+  }
+
+  let writeReceipt;
+  try {
+    writeReceipt = await State.persistNow({ reconcileReminders: true });
+  } catch (error) {
+    if (itemReminderMutationPending === transaction) itemReminderMutationPending = null;
+    setItemDetailMutationBusy(root, false);
+    setItemDetailMutationStatus(root, 'detail.saveFailed', 'error');
+    if (fromPicker) {
+      setReminderMutationBusy(false);
+      setReminderMutationStatus('reminder.saveFailed', 'error');
+    }
+    if (State.isRecoveryRequired?.() && typeof showStateRecoveryRequired === 'function') {
+      showStateRecoveryRequired(error);
+    }
+    return false;
+  }
+
+  context.itemFingerprint = itemDetailValueFingerprint(target.item);
+  context.locationFingerprint = itemDetailLocationFingerprint(target);
+  const alarmsReconciled = writeReceipt?.reminderReconciliation?.ok === true;
+
+  if (itemReminderMutationPending !== transaction) return false;
+  itemReminderMutationPending = null;
+  setItemDetailMutationBusy(root, false);
+  if (fromPicker) {
+    setReminderMutationBusy(false);
+    closeReminderPicker();
+  }
+
+  renderBoard();
+  renderItemDetail();
+  const liveRoot = document.getElementById('item-detail');
+  if (liveRoot?.classList.contains('open') && liveRoot.dataset.itemId === context.itemId) {
+    setItemDetailMutationStatus(liveRoot, 'detail.saved', 'success');
+    itemDetailStatusTimer = setTimeout(() => {
+      if (!isItemDetailMutationPending()
+          && liveRoot.classList.contains('open')
+          && liveRoot.dataset.itemId === context.itemId) {
+        setItemDetailMutationStatus(liveRoot);
+      }
+      itemDetailStatusTimer = null;
+    }, 2400);
+    const focusKey = nextReminder ? 'reminder-change' : 'reminder-set';
+    setTimeout(() => {
+      if (!isItemDetailMutationPending()
+          && liveRoot.classList.contains('open')
+          && liveRoot.dataset.itemId === context.itemId) {
+        focusItemDetailTarget(liveRoot.querySelector(`[data-idp-focus="${focusKey}"]`));
+      }
+    }, 0);
+  }
+
+  if (alarmsReconciled) {
+    toast(tr(nextReminder ? 'reminder.setSuccess' : 'reminder.clearSuccess'), { undo: actionId });
+  } else {
+    toast(tr(nextReminder ? 'reminder.scheduleWarning' : 'reminder.clearScheduleWarning'), {
+      danger: true,
+      duration: 8000,
+      undo: actionId,
+    });
+  }
+  return true;
 }
 
 // ── Group / category reminders (§6) ──────────────────────────────
@@ -3536,6 +4682,8 @@ function collectPendingReminders(options = {}, now = Date.now()) {
 let emojiPickerCtx = null;
 let _emojiDataPromise = null;
 let _emojiPickerBuilt = false;
+let _emojiOutsideCleanup = null;
+let _emojiActiveCategory = 'smileys';
 // emoji-data.js is ~17KB and only needed when the picker opens. Defer to
 // keep first-paint fast.
 function loadEmojiData() {
@@ -3552,28 +4700,58 @@ function loadEmojiData() {
 }
 function buildEmojiPicker() {
   if (typeof EMOJI_DATA === 'undefined') return; // deferred; will be built on first open
-  if (_emojiPickerBuilt) return;
   const tabs = document.getElementById('ep-tabs');
   if (!tabs) return;
+  if (_emojiPickerBuilt) {
+    paintEmojiPicker();
+    return;
+  }
   _emojiPickerBuilt = true;
   tabs.innerHTML = '';
   EMOJI_DATA.categories.forEach((cat, i) => {
     const b = document.createElement('button');
-    b.className = 'ep-tab' + (i === 1 ? ' active' : '');
+    b.type = 'button';
+    b.className = 'ep-tab' + (cat.id === _emojiActiveCategory ? ' active' : '');
+    b.dataset.categoryId = cat.id;
+    b.setAttribute('role', 'tab');
+    b.setAttribute('aria-selected', String(cat.id === _emojiActiveCategory));
+    b.tabIndex = cat.id === _emojiActiveCategory ? 0 : -1;
     b.textContent = cat.label.split(' ')[0];
-    b.title = cat.label;
     b.onclick = () => {
-      document.querySelectorAll('.ep-tab').forEach(t => t.classList.remove('active'));
-      b.classList.add('active');
+      _emojiActiveCategory = cat.id;
+      document.querySelectorAll('.ep-tab').forEach(t => {
+        const active = t === b;
+        t.classList.toggle('active', active);
+        t.setAttribute('aria-selected', String(active));
+        t.tabIndex = active ? 0 : -1;
+      });
       document.getElementById('ep-search-input').value = '';
       renderEmojiGrid(cat.id);
     };
     tabs.appendChild(b);
   });
-  renderEmojiGrid('smileys');
+  paintEmojiPicker();
+  renderEmojiGrid(_emojiActiveCategory);
+}
+function paintEmojiPicker() {
+  const picker = document.getElementById('emoji-picker');
+  const input = document.getElementById('ep-search-input');
+  const tabs = document.getElementById('ep-tabs');
+  if (picker) picker.setAttribute('aria-label', tr('emojiPicker.title'));
+  if (input) {
+    input.placeholder = tr('emojiPicker.search');
+    input.setAttribute('aria-label', tr('emojiPicker.search'));
+  }
+  if (tabs) tabs.setAttribute('aria-label', tr('emojiPicker.categories'));
+  document.querySelectorAll('.ep-tab').forEach(tab => {
+    const id = tab.dataset.categoryId;
+    tab.title = tr(`emojiPicker.category.${id}`);
+    tab.setAttribute('aria-label', tr(`emojiPicker.category.${id}`));
+  });
 }
 function renderEmojiGrid(catId, search) {
   const grid = document.getElementById('ep-grid');
+  if (!grid || typeof EMOJI_DATA === 'undefined') return;
   grid.innerHTML = '';
   let emojis = [];
   if (search) {
@@ -3583,67 +4761,202 @@ function renderEmojiGrid(catId, search) {
     const cat = EMOJI_DATA.categories.find(c => c.id === catId);
     if (cat) emojis = catId === 'recent' ? State.get().recentEmoji.map(e => ({ e, k:'' })) : cat.emojis;
   }
-  if (!emojis.length) { grid.innerHTML = `<div class="ep-empty">No emojis</div>`; return; }
+  if (!emojis.length) {
+    const empty = document.createElement('div');
+    empty.className = 'ep-empty';
+    empty.setAttribute('role', 'status');
+    empty.textContent = tr('emojiPicker.empty');
+    grid.appendChild(empty);
+    return;
+  }
   emojis.slice(0, 200).forEach(em => {
     const b = document.createElement('button');
-    b.className = 'ep-item'; b.textContent = em.e; b.title = em.k || '';
+    b.type = 'button';
+    b.className = 'ep-item';
+    b.textContent = em.e;
+    b.title = em.k || em.e;
+    b.setAttribute('aria-label', tr('emojiPicker.choose', { symbol: em.e }));
     b.onclick = () => selectEmoji(em.e);
     grid.appendChild(b);
   });
 }
-function openEmojiPicker(target, anchor) {
-  emojiPickerCtx = { target, anchor };
+function positionEmojiPicker(anchor) {
   const ep = document.getElementById('emoji-picker');
-  ep.classList.remove('hidden');
+  if (!ep || !anchor || typeof anchor.getBoundingClientRect !== 'function') return;
   const r = anchor.getBoundingClientRect();
-  let left = r.left, top = r.bottom + 6;
-  if (left + 340 > window.innerWidth) left = window.innerWidth - 350;
-  if (top + 340 > window.innerHeight) top = r.top - 346;
-  ep.style.left = left + 'px'; ep.style.top = top + 'px';
+  const width = ep.offsetWidth || Math.min(340, window.innerWidth - 16);
+  const height = ep.offsetHeight || Math.min(340, window.innerHeight - 16);
+  const maxLeft = Math.max(8, window.innerWidth - width - 8);
+  const maxTop = Math.max(8, window.innerHeight - height - 8);
+  const left = Math.min(Math.max(8, r.left), maxLeft);
+  const preferredTop = r.bottom + 6;
+  const top = preferredTop + height <= window.innerHeight - 8
+    ? preferredTop
+    : Math.min(Math.max(8, r.top - height - 6), maxTop);
+  ep.style.left = `${left}px`;
+  ep.style.top = `${top}px`;
+}
+function closeEmojiPicker({ restoreFocus = true } = {}) {
+  const ep = document.getElementById('emoji-picker');
+  if (!ep || ep.classList.contains('hidden')) return false;
+  ep.classList.add('hidden');
+  ep.setAttribute('aria-busy', 'false');
+  if (_emojiOutsideCleanup) { _emojiOutsideCleanup(); _emojiOutsideCleanup = null; }
+  const trigger = emojiPickerCtx?.anchor;
+  if (trigger) trigger.setAttribute('aria-expanded', 'false');
+  emojiPickerCtx = null;
+  if (restoreFocus) restoreOpener(ep);
+  else _overlayOpeners.delete(ep);
+  return true;
+}
+function openEmojiPicker(target, anchor) {
+  const ep = document.getElementById('emoji-picker');
+  const recovery = document.getElementById('state-recovery-overlay');
+  if (!ep || !anchor || (recovery && !recovery.classList.contains('hidden'))) return false;
+  if (!ep.classList.contains('hidden')) closeEmojiPicker({ restoreFocus: false });
+  focusDialogOpener(anchor);
+  rememberOpener(ep);
+  emojiPickerCtx = { target, anchor };
+  anchor.setAttribute('aria-expanded', 'true');
+  ep.classList.remove('hidden');
+  paintEmojiPicker();
+  positionEmojiPicker(anchor);
   document.getElementById('ep-search-input').value = '';
   const grid = document.getElementById('ep-grid');
+  const openingCtx = emojiPickerCtx;
   // Show placeholder while emoji-data.js loads (first open only).
   if (typeof EMOJI_DATA === 'undefined') {
-    if (grid) grid.innerHTML = `<div class="ep-empty">Loading…</div>`;
+    ep.setAttribute('aria-busy', 'true');
+    if (grid) {
+      grid.textContent = '';
+      const loading = document.createElement('div');
+      loading.className = 'ep-empty';
+      loading.setAttribute('role', 'status');
+      loading.textContent = tr('emojiPicker.loading');
+      grid.appendChild(loading);
+    }
   }
   loadEmojiData()
-    .then(() => { buildEmojiPicker(); renderEmojiGrid('smileys'); })
-    .catch(() => { if (grid) grid.innerHTML = `<div class="ep-empty">Failed to load emojis</div>`; });
+    .then(() => {
+      if (emojiPickerCtx !== openingCtx) return;
+      ep.setAttribute('aria-busy', 'false');
+      buildEmojiPicker();
+      const search = document.getElementById('ep-search-input')?.value.trim() || '';
+      renderEmojiGrid(search ? null : _emojiActiveCategory, search);
+      positionEmojiPicker(anchor);
+    })
+    .catch(() => {
+      if (emojiPickerCtx !== openingCtx || !grid) return;
+      ep.setAttribute('aria-busy', 'false');
+      grid.textContent = '';
+      const error = document.createElement('div');
+      error.className = 'ep-empty';
+      error.setAttribute('role', 'alert');
+      error.textContent = tr('emojiPicker.error');
+      grid.appendChild(error);
+    });
   setTimeout(() => {
-    const close = e => { if (!ep.contains(e.target)) { ep.classList.add('hidden'); document.removeEventListener('click', close); emojiPickerCtx = null; } };
-    document.addEventListener('click', close);
-  }, 50);
-  setTimeout(() => document.getElementById('ep-search-input')?.focus(), 80);
+    if (emojiPickerCtx !== openingCtx) return;
+    const close = event => {
+      if (!ep.contains(event.target) && !anchor.contains(event.target)) closeEmojiPicker();
+    };
+    document.addEventListener('pointerdown', close);
+    _emojiOutsideCleanup = () => document.removeEventListener('pointerdown', close);
+  }, 0);
+  setTimeout(() => {
+    if (emojiPickerCtx === openingCtx) document.getElementById('ep-search-input')?.focus({ preventScroll: true });
+  }, 0);
+  return true;
 }
-function selectEmoji(e) {
-  if (!emojiPickerCtx) return;
-  const { target } = emojiPickerCtx;
+function rememberRecentEmoji(e) {
   const recent = State.get().recentEmoji;
   const idx = recent.indexOf(e);
   if (idx > -1) recent.splice(idx, 1);
   recent.unshift(e);
   if (recent.length > 24) recent.length = 24;
-  EMOJI_DATA.categories[0].emojis = recent.map(x => ({ e: x, k: '' }));
-
-  if (target.kind === 'modal') {
+  if (typeof EMOJI_DATA !== 'undefined') {
+    EMOJI_DATA.categories[0].emojis = recent.map(value => ({ e: value, k: '' }));
+  }
+}
+function selectEmoji(e) {
+  if (!emojiPickerCtx) return;
+  const { target } = emojiPickerCtx;
+  let draftOnly = false;
+  let mutated = false;
+  if (target.kind === 'identity-editor') {
+    if (!modalCtx) return closeEmojiPicker();
+    modalCtx.draftSymbol = e;
+    modalCtx.symbolChosen = true;
     document.getElementById('emoji-trigger-val').textContent = e;
+    clearIdentityEditorError();
+    paintIdentityEditor();
+    draftOnly = true;
   } else if (target.kind === 'sub-modal') {
-    document.getElementById('sub-icon-val').textContent = e;
+    const icon = document.getElementById('sub-icon-val');
+    icon.textContent = e;
+    icon.dataset.emojiChosen = 'true';
+    draftOnly = true;
   } else if (target.kind === 'habit-icon') {
-    document.getElementById('habit-new-icon-val').textContent = e;
-  } else if (target.kind === 'group') {
-    const info = findGroup(target.id);
-    if (info) { State.snapshot('Change symbol'); info.group.symbol = e; State.persist(); renderBoard(); }
+    const icon = document.getElementById('habit-new-icon-val');
+    icon.textContent = e;
+    icon.dataset.emojiChosen = 'true';
+    draftOnly = true;
   } else if (target.kind === 'workspace') {
     const ws = State.get().workspaces.find(w => w.id === target.id);
-    if (ws) { State.snapshot('Change symbol'); ws.symbol = e; State.persist(); renderAll(); }
-  } else if (target.kind === 'stack') {
-    const info = findItem(target.id);
-    if (info) { State.snapshot('Change symbol'); info.item.symbol = e; State.persist(); renderBoard(); }
+    if (ws) {
+      State.snapshot('Change symbol');
+      ws.symbol = e;
+      mutated = true;
+      closeEmojiPicker({ restoreFocus: false });
+      renderAll();
+      requestAnimationFrame(() => focusWorkspaceGridFallback(target.id));
+    }
   }
-  State.persist();
-  document.getElementById('emoji-picker').classList.add('hidden');
-  emojiPickerCtx = null;
+  if (!draftOnly && mutated) {
+    rememberRecentEmoji(e);
+    State.persist();
+  }
+  if (emojiPickerCtx) closeEmojiPicker();
+}
+
+function handleEmojiPickerKeydown(event) {
+  const picker = document.getElementById('emoji-picker');
+  if (!picker || picker.classList.contains('hidden')) return false;
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    event.stopPropagation();
+    closeEmojiPicker();
+    return true;
+  }
+  const tab = event.target.closest?.('.ep-tab');
+  if (tab && ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) {
+    const tabs = [...picker.querySelectorAll('.ep-tab')];
+    const index = Math.max(0, tabs.indexOf(tab));
+    let next = index;
+    if (event.key === 'Home') next = 0;
+    else if (event.key === 'End') next = tabs.length - 1;
+    else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (index - 1 + tabs.length) % tabs.length;
+    else next = (index + 1) % tabs.length;
+    event.preventDefault();
+    event.stopPropagation();
+    tabs[next]?.click();
+    tabs[next]?.focus({ preventScroll: true });
+    return true;
+  }
+  if (event.key === 'Tab') trapTabKey(event, picker);
+  event.stopPropagation();
+  return true;
+}
+
+function handleEmojiPickerGlobalKey(event) {
+  const picker = document.getElementById('emoji-picker');
+  if (!picker || picker.classList.contains('hidden') || picker.contains(event.target)) return false;
+  const recovery = document.getElementById('state-recovery-overlay');
+  if (recovery && !recovery.classList.contains('hidden') && recovery.contains(event.target)) return false;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  if (event.key === 'Escape') closeEmojiPicker();
+  return true;
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -3687,10 +5000,20 @@ function showContextMenu(x, y, items, opts) {
     const entries = [...menu.querySelectorAll('.cm-item')];
     if (!entries.length) return;
     const cur = entries.indexOf(document.activeElement);
+    if (['ArrowDown', 'ArrowUp', 'Home', 'End', 'Enter', ' ', 'Tab', 'Escape'].includes(e.key)) {
+      e.stopPropagation();
+    }
     if (e.key === 'ArrowDown') { e.preventDefault(); entries[(cur + 1 + entries.length) % entries.length].focus(); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); entries[(cur - 1 + entries.length) % entries.length].focus(); }
     else if (e.key === 'Home') { e.preventDefault(); entries[0].focus(); }
     else if (e.key === 'End') { e.preventDefault(); entries[entries.length - 1].focus(); }
+    else if (e.key === 'Tab') {
+      e.preventDefault();
+      const next = e.shiftKey
+        ? (cur <= 0 ? entries.length - 1 : cur - 1)
+        : (cur < 0 || cur === entries.length - 1 ? 0 : cur + 1);
+      entries[next].focus();
+    }
     else if (e.key === 'Enter' || e.key === ' ') {
       if (cur >= 0) { e.preventDefault(); entries[cur].click(); }
     } else if (e.key === 'Escape') {
@@ -3720,6 +5043,29 @@ function showContextMenu(x, y, items, opts) {
 function hideContextMenu() {
   document.getElementById('context-menu').classList.add('hidden');
   if (_cmCleanup) { _cmCleanup(); _cmCleanup = null; }
+}
+
+function showAnchoredContextMenu(anchor, items) {
+  if (!anchor || typeof anchor.getBoundingClientRect !== 'function') return false;
+  const rect = anchor.getBoundingClientRect();
+  showContextMenu(rect.left, rect.bottom + 6, items, { focusFirst: true });
+  return true;
+}
+
+function bindAnchoredContextMenu(anchor, getItems) {
+  if (!anchor || typeof getItems !== 'function') return;
+  anchor.addEventListener('contextmenu', event => {
+    event.preventDefault();
+    event.stopPropagation();
+    showAnchoredContextMenu(anchor, getItems());
+  });
+  anchor.addEventListener('keydown', event => {
+    if (event.target !== anchor) return;
+    if (event.key !== 'ContextMenu' && !(event.shiftKey && event.key === 'F10')) return;
+    event.preventDefault();
+    event.stopPropagation();
+    showAnchoredContextMenu(anchor, getItems());
+  });
 }
 
 const cmIcons = {
@@ -3897,84 +5243,1578 @@ function moveArchiveEntriesToTrash(entries) {
   toast(tr('archive.movedToTrash'), { undo: true });
 }
 
+let trashDeleteEntries = [];
+let trashDeleteBusy = false;
+
+function setTrashDeleteBusy(busy) {
+  const overlay = document.getElementById('trash-delete-overlay');
+  const cancel = document.getElementById('trash-delete-cancel');
+  const confirmButton = document.getElementById('trash-delete-confirm');
+  trashDeleteBusy = !!busy;
+  if (overlay) overlay.setAttribute('aria-busy', String(trashDeleteBusy));
+  if (cancel) cancel.disabled = trashDeleteBusy;
+  if (confirmButton) {
+    confirmButton.disabled = trashDeleteBusy;
+    confirmButton.textContent = tr(trashDeleteBusy ? 'trash.deleting' : 'trash.deleteForever');
+  }
+}
+
+function focusTrashDeleteFallback() {
+  const target = document.querySelector('.trash-shell input[type="search"], .archive-shell input[type="search"]')
+    || document.getElementById('nav-trash');
+  if (target && typeof target.focus === 'function') {
+    try { target.focus({ preventScroll: true }); } catch { try { target.focus(); } catch {} }
+  }
+}
+
+function closeTrashDeleteDialog({ restoreFocus = true } = {}) {
+  const overlay = document.getElementById('trash-delete-overlay');
+  if (!overlay || overlay.classList.contains('hidden') || trashDeleteBusy) return false;
+  overlay.classList.add('hidden');
+  unlockBodyScroll();
+  trashDeleteEntries = [];
+  setTrashDeleteBusy(false);
+  if (restoreFocus && !restoreOpener(overlay)) setTimeout(focusTrashDeleteFallback, 0);
+  else if (!restoreFocus) restoreOpener(overlay);
+  return true;
+}
+
 function permanentlyDeleteTrashEntries(entries) {
   const s = State.get();
-  const valid = (entries || []).filter(entry => s.trash.includes(entry));
-  if (!valid.length) return;
+  const valid = [...new Set((entries || []).filter(entry => s.trash.includes(entry)))];
+  if (!valid.length) return false;
+  const overlay = document.getElementById('trash-delete-overlay');
+  if (!overlay || !overlay.classList.contains('hidden')) return false;
+  trashDeleteEntries = valid;
   const message = valid.length === 1
     ? tr('trash.confirmOne', { title: archiveEntryTitle(valid[0]) })
     : tr('trash.confirmMany', { count: valid.length });
-  if (!confirm(message)) return;
+  document.getElementById('trash-delete-message').textContent = message;
+  rememberOpener(overlay);
+  setTrashDeleteBusy(false);
+  overlay.classList.remove('hidden');
+  lockBodyScroll();
+  setTimeout(() => document.getElementById('trash-delete-cancel')?.focus({ preventScroll: true }), 0);
+  return true;
+}
+
+async function confirmTrashDelete() {
+  if (trashDeleteBusy) return false;
+  const s = State.get();
+  const valid = trashDeleteEntries.filter(entry => s.trash.includes(entry));
+  if (!valid.length) {
+    closeTrashDeleteDialog();
+    return false;
+  }
+  setTrashDeleteBusy(true);
   valid.forEach(entry => s.trash.splice(s.trash.indexOf(entry), 1));
-  State.persist();
+  try {
+    await State.persistNow();
+  } catch {
+    // persistNow routes the failure through the fail-closed recovery overlay.
+    // Do not show a durable-success toast for an unconfirmed deletion.
+    setTrashDeleteBusy(false);
+    return false;
+  }
+  // A confirmed permanent deletion must not remain recoverable through an
+  // older in-memory Undo or Redo snapshot.
+  State.clearUndoHistory();
   renderBoard();
+  renderHeader();
   updateNavChrome();
+  setTrashDeleteBusy(false);
+  closeTrashDeleteDialog();
   toast(tr('trash.deleted'), { danger: true });
+  return true;
+}
+
+function bindTrashDeleteDialog() {
+  const overlay = document.getElementById('trash-delete-overlay');
+  if (!overlay) return;
+  document.getElementById('trash-delete-cancel').onclick = () => closeTrashDeleteDialog();
+  document.getElementById('trash-delete-confirm').onclick = confirmTrashDelete;
+  overlay.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      closeTrashDeleteDialog();
+      return;
+    }
+    trapTabKey(event, overlay);
+  });
+}
+
+let organizationNameCtx = null;
+let organizationNameBusy = false;
+
+function organizationNameTarget(kind, id) {
+  const state = State.get();
+  if (kind === 'workspace') {
+    const matches = state.workspaces.filter(workspace => workspace.id === id);
+    if (matches.length !== 1) return null;
+    return { kind, id, name: matches[0].name, entity: matches[0] };
+  }
+  if (kind === 'space') {
+    const matches = [];
+    state.workspaces.forEach(workspace => {
+      workspace.categories.forEach(space => {
+        if (space.id === id) matches.push({ workspace, space });
+      });
+    });
+    if (matches.length !== 1) return null;
+    return {
+      kind,
+      id,
+      name: matches[0].space.name,
+      workspaceId: matches[0].workspace.id,
+      entity: matches[0].space,
+    };
+  }
+  return null;
+}
+
+function organizationWorkspaceTarget(id) {
+  const matches = State.get().workspaces.filter(workspace => workspace.id === id);
+  return matches.length === 1 ? matches[0] : null;
+}
+
+function organizationGroupTarget(id) {
+  const matches = [];
+  State.get().workspaces.forEach(workspace => {
+    workspace.categories.forEach(space => {
+      space.groups.forEach(group => {
+        if (group.id === id) matches.push({ workspace, space, group });
+      });
+    });
+  });
+  return matches.length === 1 ? matches[0] : null;
+}
+
+function createOrganizationIdAllocator() {
+  const state = State.get();
+  const used = LocusImportUtils.collectEntityIds(state);
+  const reserve = value => {
+    if (typeof value === 'string' && value) used.add(value);
+  };
+  // Archive and Trash envelopes retain the last active destination IDs outside
+  // their payload. Reserving those hints prevents a newly created entity from
+  // silently becoming the restore destination for unrelated stored content.
+  for (const collection of [state.archive || [], state.trash || []]) {
+    for (const entry of collection) {
+      reserve(entry?.wsId);
+      reserve(entry?.catId);
+      reserve(entry?.groupId);
+    }
+  }
+  for (const key of ['columnSizes', 'columnWidths']) {
+    const record = state[key];
+    if (record && typeof record === 'object' && !Array.isArray(record)) {
+      Object.keys(record).forEach(reserve);
+    }
+  }
+  for (const workspace of state.workspaces || []) {
+    for (const space of workspace.categories || []) {
+      const positions = space?.canvasPositions;
+      if (positions && typeof positions === 'object' && !Array.isArray(positions)) {
+        Object.keys(positions).forEach(reserve);
+      }
+    }
+  }
+  const remembered = state.settings?.captureLastTarget;
+  reserve(remembered?.workspaceId);
+  reserve(remembered?.categoryId);
+  reserve(remembered?.groupId);
+  reserve(state.settings?.captureDefaultCategoryId);
+  return () => {
+    for (let attempts = 0; attempts < 10000; attempts += 1) {
+      const id = String(uid());
+      if (id && !used.has(id)) {
+        used.add(id);
+        return id;
+      }
+    }
+    throw new Error('Could not allocate a unique organization id');
+  };
+}
+
+function organizationGroupMoveOptions(source) {
+  if (!source) return null;
+  const workspace = organizationWorkspaceTarget(source.workspace.id);
+  const parent = identitySpaceTarget(source.workspace.id, source.space.id);
+  if (workspace !== source.workspace || parent?.space !== source.space) return null;
+
+  const options = [];
+  const seen = new Set();
+  for (let workspaceIndex = 0; workspaceIndex < source.workspace.categories.length; workspaceIndex += 1) {
+    const space = source.workspace.categories[workspaceIndex];
+    const id = String(space.id);
+    const exact = identitySpaceTarget(source.workspace.id, id);
+    if (seen.has(id) || exact?.workspace !== source.workspace || exact?.space !== space) return null;
+    seen.add(id);
+    if (space === source.space) continue;
+    options.push({
+      id,
+      name: space.name,
+      groupCount: space.groups.length,
+      workspaceIndex: workspaceIndex + 1,
+      workspaceCount: source.workspace.categories.length,
+      duplicateName: source.workspace.categories
+        .filter(candidate => candidate.name === space.name).length > 1,
+    });
+  }
+  return options;
+}
+
+function organizationMoveSpaceLabel(option) {
+  if (!option?.duplicateName) return option?.name || '';
+  const position = tr('organization.space.position', {
+    position: option.workspaceIndex,
+    count: option.workspaceCount,
+  });
+  return tr('organization.space.duplicateLabel', { name: option.name, position });
+}
+
+function organizationGroupMoveFingerprint(source, options) {
+  return JSON.stringify({
+    workspaceName: source.workspace.name,
+    sourceSpaceName: source.space.name,
+    groupName: source.group.name,
+    destinations: options.map(option => ({
+      id: option.id,
+      name: option.name,
+      groupCount: option.groupCount,
+      workspaceIndex: option.workspaceIndex,
+      workspaceCount: option.workspaceCount,
+      duplicateName: option.duplicateName,
+    })),
+  });
+}
+
+function organizationGroupItemIds(group) {
+  const ids = new Set();
+  const walk = items => (items || []).forEach(item => {
+    ids.add(String(item.id));
+    if (item.type === 'stack') walk(item.items);
+  });
+  walk(group?.items);
+  return ids;
+}
+
+function organizationMoveOptionButton(spaceId) {
+  return [...document.querySelectorAll('#organization-move-options .organization-move-option')]
+    .find(button => button.dataset.spaceId === String(spaceId));
+}
+
+function selectOrganizationMoveDestination(spaceId, { focus = false } = {}) {
+  if (!organizationNameCtx
+    || organizationNameCtx.operation !== 'move-group'
+    || organizationNameBusy
+    || organizationNameCtx.unavailable) return false;
+  const option = (organizationNameCtx.moveOptions || [])
+    .find(candidate => candidate.id === String(spaceId));
+  if (!option) return false;
+  organizationNameCtx.destinationSpaceId = option.id;
+  organizationNameCtx.errorKey = null;
+  const host = document.getElementById('organization-move-options');
+  host?.setAttribute('aria-invalid', 'false');
+  document.querySelectorAll('#organization-move-options .organization-move-option')
+    .forEach(button => {
+      const selected = button.dataset.spaceId === option.id;
+      button.setAttribute('aria-checked', String(selected));
+      button.tabIndex = selected ? 0 : -1;
+    });
+  const error = document.getElementById('organization-name-error');
+  if (error) {
+    error.hidden = true;
+    error.textContent = '';
+  }
+  const confirm = document.getElementById('organization-name-confirm');
+  if (confirm) {
+    const confirmLabel = tr('organization.group.moveHistory', {
+      group: organizationNameCtx.groupName,
+      space: organizationMoveSpaceLabel(option),
+    });
+    confirm.dataset.i18n = 'organization.group.move';
+    confirm.textContent = tr('organization.group.move');
+    confirm.disabled = false;
+    confirm.setAttribute('aria-disabled', 'false');
+    confirm.setAttribute('aria-label', confirmLabel);
+    confirm.title = confirmLabel;
+  }
+  if (focus) {
+    const button = organizationMoveOptionButton(option.id);
+    try { button?.focus({ preventScroll: true }); } catch { try { button?.focus(); } catch {} }
+    try { button?.scrollIntoView({ block: 'nearest' }); } catch {}
+  }
+  return true;
+}
+
+function paintOrganizationMoveOptions() {
+  const host = document.getElementById('organization-move-options');
+  if (!host) return;
+  const focusedId = host.contains(document.activeElement)
+    ? document.activeElement?.dataset?.spaceId
+    : null;
+  const previousScrollTop = host.scrollTop;
+  host.textContent = '';
+  if (!organizationNameCtx || organizationNameCtx.operation !== 'move-group') return;
+
+  const options = organizationNameCtx.moveOptions || [];
+  const selectedId = organizationNameCtx.destinationSpaceId;
+  const invalidSelection = [
+    'organization.group.moveRequired',
+    'organization.group.moveDestinationUnavailable',
+  ].includes(organizationNameCtx.errorKey);
+  host.setAttribute('aria-invalid', String(invalidSelection));
+  host.setAttribute('aria-describedby', 'organization-name-error');
+  options.forEach((option, index) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'organization-move-option';
+    button.dataset.spaceId = option.id;
+    button.setAttribute('role', 'radio');
+    button.setAttribute('aria-checked', String(option.id === selectedId));
+    const groupCount = option.groupCount === 1
+      ? tr('organization.group.moveOptionOne')
+      : tr('organization.group.moveOptionMany', { count: option.groupCount });
+    const duplicateName = option.duplicateName;
+    const position = duplicateName
+      ? tr('organization.space.position', {
+        position: option.workspaceIndex,
+        count: option.workspaceCount,
+      })
+      : '';
+    button.setAttribute('aria-label', tr(
+      duplicateName ? 'organization.group.moveOptionDuplicate' : 'organization.group.moveOption',
+      { space: option.name, groups: groupCount, position },
+    ));
+    button.title = option.name;
+    button.tabIndex = selectedId ? (option.id === selectedId ? 0 : -1) : (index === 0 ? 0 : -1);
+    button.disabled = organizationNameBusy || !!organizationNameCtx.unavailable;
+
+    const copy = document.createElement('span');
+    copy.className = 'organization-move-option-copy';
+    const name = document.createElement('span');
+    name.className = 'organization-move-option-name';
+    name.textContent = option.name;
+    const meta = document.createElement('span');
+    meta.className = 'organization-move-option-meta';
+    meta.textContent = duplicateName ? `${groupCount} · ${position}` : groupCount;
+    copy.append(name, meta);
+    const check = document.createElement('span');
+    check.className = 'organization-move-option-check';
+    check.setAttribute('aria-hidden', 'true');
+    check.textContent = '✓';
+    button.append(copy, check);
+
+    button.addEventListener('click', () => {
+      selectOrganizationMoveDestination(option.id, { focus: true });
+    });
+    button.addEventListener('keydown', event => {
+      const keys = ['ArrowDown', 'ArrowRight', 'ArrowUp', 'ArrowLeft', 'Home', 'End', ' ', 'Enter'];
+      if (!keys.includes(event.key)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      let nextIndex = index;
+      if (event.key === 'ArrowDown' || event.key === 'ArrowRight') nextIndex = (index + 1) % options.length;
+      else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') nextIndex = (index - 1 + options.length) % options.length;
+      else if (event.key === 'Home') nextIndex = 0;
+      else if (event.key === 'End') nextIndex = options.length - 1;
+      selectOrganizationMoveDestination(options[nextIndex].id, { focus: true });
+    });
+    host.appendChild(button);
+  });
+  host.scrollTop = previousScrollTop;
+  if (focusedId && !organizationNameBusy && !organizationNameCtx.unavailable) {
+    const target = organizationMoveOptionButton(focusedId);
+    try { target?.focus({ preventScroll: true }); } catch { try { target?.focus(); } catch {} }
+    try { target?.scrollIntoView({ block: 'nearest' }); } catch {}
+  }
+}
+
+function paintOrganizationNameDialog() {
+  if (!organizationNameCtx) return;
+  const { kind, errorKey, unavailable } = organizationNameCtx;
+  const operation = organizationNameCtx.operation || 'rename';
+  const isRename = operation === 'rename';
+  const isCreateAndMove = operation === 'create-space-and-move-group';
+  const isExistingMove = operation === 'move-group';
+  const titleKey = isRename
+    ? `organization.${kind}.renameTitle`
+    : isCreateAndMove
+      ? 'organization.space.createForGroupTitle'
+      : isExistingMove
+        ? 'organization.group.moveTitle'
+        : `organization.${kind}.createTitle`;
+  const titleVars = (isCreateAndMove || isExistingMove) ? { group: organizationNameCtx.groupName } : {};
+  const labelKey = isExistingMove
+    ? 'organization.group.moveListLabel'
+    : `organization.${kind}.nameLabel`;
+  const title = document.getElementById('organization-name-title');
+  const label = document.getElementById('organization-name-label');
+  const input = document.getElementById('organization-name-input');
+  const description = document.getElementById('organization-name-description');
+  const moveField = document.getElementById('organization-move-field');
+  const moveLabel = document.getElementById('organization-move-label');
+  const error = document.getElementById('organization-name-error');
+  const close = document.getElementById('organization-name-close');
+  const cancel = document.getElementById('organization-name-cancel');
+  const confirm = document.getElementById('organization-name-confirm');
+  title.dataset.i18n = titleKey;
+  title.textContent = tr(titleKey, titleVars);
+  label.hidden = isExistingMove;
+  input.hidden = isExistingMove;
+  label.dataset.i18n = labelKey;
+  label.textContent = tr(labelKey);
+  const closeKey = isExistingMove ? 'organization.group.moveClose' : 'organization.close';
+  close.dataset.i18nAriaLabel = closeKey;
+  close.setAttribute('aria-label', tr(closeKey));
+  cancel.dataset.i18n = 'organization.cancel';
+  cancel.textContent = tr('organization.cancel');
+  const confirmKey = organizationNameBusy
+    ? (isRename
+      ? 'organization.renaming'
+      : isExistingMove
+        ? 'organization.group.moving'
+        : 'organization.creating')
+    : (isRename
+      ? 'organization.rename'
+      : isExistingMove
+        ? 'organization.group.move'
+        : 'organization.create');
+  confirm.dataset.i18n = confirmKey;
+  confirm.textContent = tr(confirmKey);
+  let confirmLabel = confirm.textContent;
+  if (isExistingMove && !organizationNameBusy && organizationNameCtx.destinationSpaceId) {
+    const destination = (organizationNameCtx.moveOptions || [])
+      .find(option => option.id === organizationNameCtx.destinationSpaceId);
+    if (destination) {
+      confirmLabel = tr('organization.group.moveHistory', {
+        group: organizationNameCtx.groupName,
+        space: organizationMoveSpaceLabel(destination),
+      });
+    }
+  }
+  confirm.setAttribute('aria-label', confirmLabel);
+  confirm.title = confirmLabel;
+  if (description) {
+    description.hidden = !(isCreateAndMove || isExistingMove);
+    description.textContent = isCreateAndMove
+      ? tr('organization.space.createForGroupBody')
+      : isExistingMove
+        ? tr('organization.group.moveBody', {
+          source: organizationNameCtx.sourceSpaceName,
+          workspace: organizationNameCtx.workspaceName,
+        })
+        : '';
+    input.setAttribute('aria-describedby', isCreateAndMove
+      ? 'organization-name-description organization-name-error'
+      : 'organization-name-error');
+  }
+  if (moveField) moveField.hidden = !isExistingMove;
+  if (moveLabel) {
+    moveLabel.dataset.i18n = 'organization.group.moveListLabel';
+    moveLabel.textContent = tr('organization.group.moveListLabel');
+  }
+  paintOrganizationMoveOptions();
+  error.hidden = !errorKey;
+  error.textContent = errorKey ? tr(errorKey) : '';
+  input.setAttribute('aria-invalid', String(!isExistingMove && !!errorKey));
+  input.disabled = organizationNameBusy || !!unavailable;
+  close.disabled = organizationNameBusy;
+  cancel.disabled = organizationNameBusy;
+  confirm.disabled = !!unavailable || (isExistingMove && !organizationNameCtx.destinationSpaceId);
+  confirm.setAttribute('aria-disabled', String(organizationNameBusy || confirm.disabled));
+  document.getElementById('organization-name-overlay')
+    .setAttribute('aria-busy', String(organizationNameBusy));
+}
+
+function setOrganizationNameBusy(busy) {
+  organizationNameBusy = !!busy;
+  paintOrganizationNameDialog();
+  if (organizationNameBusy) {
+    const confirm = document.getElementById('organization-name-confirm');
+    try { confirm?.focus({ preventScroll: true }); } catch { try { confirm?.focus(); } catch {} }
+  }
+}
+
+function setOrganizationNameError(errorKey, { unavailable = false } = {}) {
+  if (!organizationNameCtx) return;
+  organizationNameCtx.errorKey = errorKey || null;
+  organizationNameCtx.unavailable = !!unavailable;
+  paintOrganizationNameDialog();
+}
+
+function setOrganizationNameInterlock(enabled) {
+  const overlay = document.getElementById('organization-name-overlay');
+  const recovery = document.getElementById('state-recovery-overlay');
+  for (const child of document.body.children) {
+    if (child === overlay || child === recovery) continue;
+    setElementInertOwner(child, 'organization-name', enabled);
+  }
+}
+
+function focusOrganizationNameFallback(ctx) {
+  const candidates = [];
+  const targetId = ctx?.createdId || ctx?.id;
+  if (ctx?.operation === 'move-group') {
+    const spaces = [...document.querySelectorAll('.space-item')];
+    candidates.push(spaces.find(element => element.dataset.catId === ctx.destinationSpaceId));
+    candidates.push(spaces.find(element => element.dataset.catId === ctx.sourceSpaceId));
+    candidates.push(document.getElementById('add-cat-btn'));
+    candidates.push(document.getElementById('ws-menu-btn'));
+  } else if (ctx?.kind === 'workspace') {
+    const gridCards = [...document.querySelectorAll('.wsg-card')];
+    const chips = [...document.querySelectorAll('.ws-chip')];
+    if (ctx.workspaceGridOpen) {
+      candidates.push(gridCards.find(element => element.dataset.wsId === targetId));
+      candidates.push(document.getElementById('wsg-close'));
+    }
+    candidates.push(chips.find(element => element.dataset.wsid === targetId));
+    candidates.push(document.getElementById('ws-menu-btn'));
+    candidates.push(document.getElementById('add-ws-btn'));
+  } else if (ctx?.kind === 'space') {
+    const spaces = [...document.querySelectorAll('.space-item')];
+    const homeActions = [...document.querySelectorAll('.home-card-more')];
+    candidates.push(spaces.find(element => element.dataset.catId === targetId));
+    candidates.push(homeActions.find(element => element.dataset.catId === targetId));
+    candidates.push(document.getElementById('add-cat-btn'));
+    candidates.push(document.getElementById('ws-menu-btn'));
+  }
+  for (const target of candidates) {
+    if (!target || typeof target.focus !== 'function') continue;
+    try { target.focus({ preventScroll: true }); } catch { try { target.focus(); } catch {} }
+    if (document.activeElement === target) {
+      if (ctx?.operation === 'move-group') {
+        try { target.scrollIntoView({ block: 'nearest' }); } catch {}
+      }
+      return true;
+    }
+  }
+  return false;
+}
+
+function closeOrganizationNameDialog({ preferTarget = false } = {}) {
+  const overlay = document.getElementById('organization-name-overlay');
+  if (!overlay || overlay.classList.contains('hidden') || organizationNameBusy) return false;
+  const closingCtx = organizationNameCtx;
+  overlay.classList.add('hidden');
+  unlockBodyScroll();
+  setOrganizationNameBusy(false);
+  setOrganizationNameInterlock(false);
+  organizationNameCtx = null;
+  const restored = restoreOpener(overlay);
+  if (preferTarget || !restored) {
+    setTimeout(() => focusOrganizationNameFallback(closingCtx), 0);
+  }
+  return true;
+}
+
+function openOrganizationName(kind, id, opener) {
+  const overlay = document.getElementById('organization-name-overlay');
+  const recovery = document.getElementById('state-recovery-overlay');
+  const deleteOverlay = document.getElementById('organization-delete-overlay');
+  const trashOverlay = document.getElementById('trash-delete-overlay');
+  const legacyModal = document.getElementById('modal-overlay');
+  if (!overlay || !overlay.classList.contains('hidden')) return false;
+  if ([recovery, deleteOverlay, trashOverlay, legacyModal].some(layer => layer && !layer.classList.contains('hidden'))) return false;
+  const target = organizationNameTarget(kind, id);
+  if (!target) return false;
+  organizationNameCtx = {
+    operation: 'rename',
+    kind,
+    id,
+    workspaceId: target.workspaceId || null,
+    originalName: target.name,
+    errorKey: null,
+    unavailable: false,
+    workspaceGridOpen: !document.getElementById('ws-grid-overlay')?.classList.contains('hidden'),
+  };
+  focusDialogOpener(opener);
+  rememberOpener(overlay);
+  const input = document.getElementById('organization-name-input');
+  input.value = target.name;
+  setOrganizationNameBusy(false);
+  setOrganizationNameInterlock(true);
+  overlay.classList.remove('hidden');
+  lockBodyScroll();
+  setTimeout(() => {
+    input.focus({ preventScroll: true });
+    input.select();
+  }, 0);
+  return true;
+}
+
+function openOrganizationGroupMove(groupId, opener) {
+  const overlay = document.getElementById('organization-name-overlay');
+  const recovery = document.getElementById('state-recovery-overlay');
+  const deleteOverlay = document.getElementById('organization-delete-overlay');
+  const trashOverlay = document.getElementById('trash-delete-overlay');
+  const legacyModal = document.getElementById('modal-overlay');
+  if (!overlay || !overlay.classList.contains('hidden')) return false;
+  if ([recovery, deleteOverlay, trashOverlay, legacyModal]
+    .some(layer => layer && !layer.classList.contains('hidden'))) return false;
+
+  const source = identityGroupTarget(String(groupId));
+  const options = organizationGroupMoveOptions(source);
+  if (!source
+    || !options
+    || State.get().activeWsId !== source.workspace.id
+    || source.workspace.activeCatId !== source.space.id) return false;
+  organizationNameCtx = {
+    operation: 'move-group',
+    kind: 'group',
+    id: source.group.id,
+    workspaceId: source.workspace.id,
+    sourceSpaceId: source.space.id,
+    groupId: source.group.id,
+    workspaceName: source.workspace.name,
+    sourceSpaceName: source.space.name,
+    groupName: source.group.name,
+    destinationSpaceId: null,
+    moveOptions: options,
+    reviewFingerprint: organizationGroupMoveFingerprint(source, options),
+    errorKey: options.length ? null : 'organization.group.moveNoDestination',
+    unavailable: !options.length,
+    workspaceGridOpen: !document.getElementById('ws-grid-overlay')?.classList.contains('hidden'),
+  };
+  focusDialogOpener(opener);
+  rememberOpener(overlay);
+  document.getElementById('organization-name-input').value = '';
+  setOrganizationNameBusy(false);
+  setOrganizationNameInterlock(true);
+  overlay.classList.remove('hidden');
+  lockBodyScroll();
+  setTimeout(() => {
+    const initial = organizationMoveOptionButton(options[0]?.id)
+      || document.getElementById('organization-name-cancel');
+    try { initial?.focus({ preventScroll: true }); } catch { try { initial?.focus(); } catch {} }
+    try { initial?.scrollIntoView({ block: 'nearest' }); } catch {}
+  }, 0);
+  return true;
+}
+
+function organizationGroupMoveMenuItems(groupId, opener) {
+  const source = identityGroupTarget(String(groupId));
+  const options = organizationGroupMoveOptions(source);
+  if (!source || !options) return [];
+  const items = [];
+  if (options.length) {
+    items.push({
+      text: tr('organization.space.moveMenuLabel'),
+      icon: cmIcons.move,
+      action: () => openOrganizationGroupMove(source.group.id, opener),
+    });
+  }
+  items.push({
+    text: tr('organization.space.newAndMoveMenu'),
+    icon: cmIcons.move,
+    action: () => openOrganizationCreate('space', { groupId: source.group.id }, opener),
+  });
+  return items;
+}
+
+function openOrganizationCreate(kind, options = {}, opener) {
+  const overlay = document.getElementById('organization-name-overlay');
+  const recovery = document.getElementById('state-recovery-overlay');
+  const deleteOverlay = document.getElementById('organization-delete-overlay');
+  const trashOverlay = document.getElementById('trash-delete-overlay');
+  const legacyModal = document.getElementById('modal-overlay');
+  if (!overlay || !overlay.classList.contains('hidden')) return false;
+  if ([recovery, deleteOverlay, trashOverlay, legacyModal].some(layer => layer && !layer.classList.contains('hidden'))) return false;
+
+  let context = null;
+  if (kind === 'workspace') {
+    context = { operation: 'create-workspace', kind };
+  } else if (kind === 'space' && options.groupId) {
+    const source = organizationGroupTarget(options.groupId);
+    const exactWorkspace = source ? organizationWorkspaceTarget(source.workspace.id) : null;
+    const exactSpace = source ? organizationNameTarget('space', source.space.id) : null;
+    if (!source || exactWorkspace !== source.workspace || exactSpace?.entity !== source.space) return false;
+    context = {
+      operation: 'create-space-and-move-group',
+      kind,
+      workspaceId: source.workspace.id,
+      sourceSpaceId: source.space.id,
+      groupId: source.group.id,
+      groupName: source.group.name,
+    };
+  } else if (kind === 'space') {
+    const workspaceId = options.workspaceId || State.get().activeWsId;
+    if (!organizationWorkspaceTarget(workspaceId)) return false;
+    context = { operation: 'create-space', kind, workspaceId };
+  }
+  if (!context) return false;
+
+  organizationNameCtx = {
+    ...context,
+    errorKey: null,
+    unavailable: false,
+    workspaceGridOpen: !document.getElementById('ws-grid-overlay')?.classList.contains('hidden'),
+  };
+  focusDialogOpener(opener);
+  rememberOpener(overlay);
+  const input = document.getElementById('organization-name-input');
+  input.value = '';
+  setOrganizationNameBusy(false);
+  setOrganizationNameInterlock(true);
+  overlay.classList.remove('hidden');
+  lockBodyScroll();
+  setTimeout(() => input.focus({ preventScroll: true }), 0);
+  return true;
+}
+
+async function confirmOrganizationCreate() {
+  if (!organizationNameCtx || organizationNameBusy || organizationNameCtx.unavailable) return false;
+  const input = document.getElementById('organization-name-input');
+  const desiredName = input.value.trim();
+  const dialogCtx = { ...organizationNameCtx };
+  if (!desiredName) {
+    setOrganizationNameError(`organization.${dialogCtx.kind}.nameRequired`);
+    input.focus({ preventScroll: true });
+    return false;
+  }
+
+  let workspace = null;
+  let source = null;
+  if (dialogCtx.operation === 'create-space') {
+    workspace = organizationWorkspaceTarget(dialogCtx.workspaceId);
+    if (!workspace) {
+      setOrganizationNameError('organization.space.parentUnavailable', { unavailable: true });
+      document.getElementById('organization-name-cancel').focus({ preventScroll: true });
+      return false;
+    }
+  } else if (dialogCtx.operation === 'create-space-and-move-group') {
+    source = organizationGroupTarget(dialogCtx.groupId);
+    const exactWorkspace = organizationWorkspaceTarget(dialogCtx.workspaceId);
+    const exactSpace = organizationNameTarget('space', dialogCtx.sourceSpaceId);
+    if (!source
+      || exactWorkspace !== source.workspace
+      || exactSpace?.entity !== source.space
+      || source.workspace.id !== dialogCtx.workspaceId
+      || source.space.id !== dialogCtx.sourceSpaceId) {
+      setOrganizationNameError('organization.group.unavailable', { unavailable: true });
+      document.getElementById('organization-name-cancel').focus({ preventScroll: true });
+      return false;
+    }
+    if (source.group.name !== dialogCtx.groupName) {
+      organizationNameCtx.groupName = source.group.name;
+      setOrganizationNameError('organization.group.nameChanged');
+      input.focus({ preventScroll: true });
+      return false;
+    }
+    workspace = source.workspace;
+  }
+
+  let created;
+  try {
+    const allocateId = createOrganizationIdAllocator();
+    if (dialogCtx.operation === 'create-workspace') {
+      const space = { id: allocateId(), name: tr('organization.space.defaultName'), groups: [] };
+      created = {
+        id: allocateId(),
+        name: desiredName,
+        symbol: '🏠',
+        categories: [space],
+        activeCatId: space.id,
+      };
+    } else {
+      created = { id: allocateId(), name: desiredName, groups: source ? [source.group] : [] };
+      if (source?.space?.canvasPositions
+        && Object.prototype.hasOwnProperty.call(source.space.canvasPositions, source.group.id)) {
+        created.canvasPositions = { [source.group.id]: source.space.canvasPositions[source.group.id] };
+      }
+    }
+  } catch {
+    setOrganizationNameError('organization.idUnavailable');
+    input.focus({ preventScroll: true });
+    return false;
+  }
+
+  let actionId;
+  let successKey;
+  let successVars;
+  if (dialogCtx.operation === 'create-workspace') {
+    actionId = State.snapshot(tr('organization.workspace.createHistory', { name: desiredName }));
+    State.get().workspaces.push(created);
+    State.get().activeWsId = created.id;
+    successKey = 'organization.workspace.created';
+    successVars = { name: desiredName };
+  } else if (dialogCtx.operation === 'create-space') {
+    actionId = State.snapshot(tr('organization.space.createHistory', { name: desiredName }));
+    workspace.categories.push(created);
+    workspace.activeCatId = created.id;
+    State.get().activeWsId = workspace.id;
+    successKey = 'organization.space.created';
+    successVars = { name: desiredName };
+  } else {
+    const sourceIndex = source.space.groups.findIndex(group => group.id === source.group.id);
+    if (sourceIndex < 0) {
+      setOrganizationNameError('organization.group.unavailable', { unavailable: true });
+      document.getElementById('organization-name-cancel').focus({ preventScroll: true });
+      return false;
+    }
+    actionId = State.snapshot(tr('organization.space.createAndMoveHistory', {
+      space: desiredName,
+      group: source.group.name,
+    }));
+    source.space.groups.splice(sourceIndex, 1);
+    if (source.space.canvasPositions) delete source.space.canvasPositions[source.group.id];
+    workspace.categories.push(created);
+    workspace.activeCatId = created.id;
+    State.get().activeWsId = workspace.id;
+    const remembered = State.get().settings?.captureLastTarget;
+    if (remembered?.groupId === source.group.id) {
+      remembered.workspaceId = workspace.id;
+      remembered.categoryId = created.id;
+    }
+    successKey = 'organization.space.createdAndMoved';
+    successVars = { space: desiredName, group: source.group.name };
+  }
+
+  organizationNameCtx.createdId = created.id;
+  dialogCtx.createdId = created.id;
+  setOrganizationNameBusy(true);
+  try {
+    await State.persistNow();
+  } catch {
+    // persistNow owns fail-closed recovery. Keep the one dirty transaction and
+    // do not render, close, retry, roll back, or claim success.
+    setOrganizationNameBusy(false);
+    return false;
+  }
+
+  const headerReady = renderAll();
+  if (dialogCtx.workspaceGridOpen) {
+    try { await openWsGrid(); } catch {}
+  } else if (dialogCtx.kind === 'workspace') {
+    try { await headerReady; } catch {}
+  }
+  setOrganizationNameBusy(false);
+  closeOrganizationNameDialog({ preferTarget: true });
+  toast(tr(successKey, successVars), { undo: actionId });
+  return true;
+}
+
+async function confirmOrganizationGroupMove() {
+  if (!organizationNameCtx
+    || organizationNameCtx.operation !== 'move-group'
+    || organizationNameBusy
+    || organizationNameCtx.unavailable) return false;
+
+  const dialogCtx = organizationNameCtx;
+  if (State.get().activeWsId !== dialogCtx.workspaceId) {
+    setOrganizationNameError('organization.group.moveContextChanged', { unavailable: true });
+    document.getElementById('organization-name-cancel').focus({ preventScroll: true });
+    return false;
+  }
+  const source = identityGroupTarget(dialogCtx.groupId);
+  if (source && source.workspace.activeCatId !== dialogCtx.sourceSpaceId) {
+    setOrganizationNameError('organization.group.moveContextChanged', { unavailable: true });
+    document.getElementById('organization-name-cancel').focus({ preventScroll: true });
+    return false;
+  }
+  const exactWorkspace = organizationWorkspaceTarget(dialogCtx.workspaceId);
+  const exactSourceSpace = identitySpaceTarget(dialogCtx.workspaceId, dialogCtx.sourceSpaceId);
+  if (!source
+    || exactWorkspace !== source.workspace
+    || exactSourceSpace?.workspace !== source.workspace
+    || exactSourceSpace?.space !== source.space
+    || source.workspace.id !== dialogCtx.workspaceId
+    || source.space.id !== dialogCtx.sourceSpaceId) {
+    setOrganizationNameError('organization.group.unavailable', { unavailable: true });
+    document.getElementById('organization-name-cancel').focus({ preventScroll: true });
+    return false;
+  }
+
+  const options = organizationGroupMoveOptions(source);
+  if (!options) {
+    setOrganizationNameError('organization.group.unavailable', { unavailable: true });
+    document.getElementById('organization-name-cancel').focus({ preventScroll: true });
+    return false;
+  }
+  const reviewFingerprint = organizationGroupMoveFingerprint(source, options);
+  if (reviewFingerprint !== dialogCtx.reviewFingerprint) {
+    const destinationAvailable = options.some(option => option.id === dialogCtx.destinationSpaceId);
+    dialogCtx.workspaceName = source.workspace.name;
+    dialogCtx.sourceSpaceName = source.space.name;
+    dialogCtx.groupName = source.group.name;
+    dialogCtx.moveOptions = options;
+    dialogCtx.reviewFingerprint = reviewFingerprint;
+    dialogCtx.destinationSpaceId = destinationAvailable ? dialogCtx.destinationSpaceId : null;
+    dialogCtx.unavailable = !options.length;
+    dialogCtx.errorKey = !options.length
+      ? 'organization.group.moveNoDestination'
+      : destinationAvailable
+        ? 'organization.group.moveChanged'
+        : 'organization.group.moveDestinationUnavailable';
+    paintOrganizationNameDialog();
+    const focusTarget = dialogCtx.destinationSpaceId
+      ? organizationMoveOptionButton(dialogCtx.destinationSpaceId)
+      : organizationMoveOptionButton(options[0]?.id) || document.getElementById('organization-name-cancel');
+    try { focusTarget?.focus({ preventScroll: true }); } catch { try { focusTarget?.focus(); } catch {} }
+    try { focusTarget?.scrollIntoView({ block: 'nearest' }); } catch {}
+    return false;
+  }
+
+  if (!dialogCtx.destinationSpaceId) {
+    setOrganizationNameError('organization.group.moveRequired');
+    const firstOption = organizationMoveOptionButton(options[0]?.id);
+    try { firstOption?.focus({ preventScroll: true }); } catch { try { firstOption?.focus(); } catch {} }
+    try { firstOption?.scrollIntoView({ block: 'nearest' }); } catch {}
+    return false;
+  }
+
+  const destination = identitySpaceTarget(dialogCtx.workspaceId, dialogCtx.destinationSpaceId);
+  const destinationOption = options.find(option => option.id === dialogCtx.destinationSpaceId);
+  if (!destination
+    || destination.workspace !== source.workspace
+    || destination.space === source.space
+    || !destinationOption
+    || destinationOption.id !== destination.space.id) {
+    dialogCtx.destinationSpaceId = null;
+    dialogCtx.moveOptions = options;
+    setOrganizationNameError('organization.group.moveDestinationUnavailable');
+    const firstOption = organizationMoveOptionButton(options[0]?.id);
+    try { firstOption?.focus({ preventScroll: true }); } catch { try { firstOption?.focus(); } catch {} }
+    try { firstOption?.scrollIntoView({ block: 'nearest' }); } catch {}
+    return false;
+  }
+
+  const sourceIndex = source.space.groups.findIndex(group => group === source.group);
+  if (sourceIndex < 0) {
+    setOrganizationNameError('organization.group.unavailable', { unavailable: true });
+    document.getElementById('organization-name-cancel').focus({ preventScroll: true });
+    return false;
+  }
+
+  const state = State.get();
+  const movedItemIds = organizationGroupItemIds(source.group);
+  const destinationLabel = organizationMoveSpaceLabel(destinationOption);
+  const actionId = State.snapshot(tr('organization.group.moveHistory', {
+    group: source.group.name,
+    space: destinationLabel,
+  }));
+  source.space.groups.splice(sourceIndex, 1);
+  destination.space.groups.push(source.group);
+
+  if (source.space.canvasPositions
+    && Object.prototype.hasOwnProperty.call(source.space.canvasPositions, source.group.id)) {
+    if (!destination.space.canvasPositions
+      || typeof destination.space.canvasPositions !== 'object'
+      || Array.isArray(destination.space.canvasPositions)) {
+      destination.space.canvasPositions = {};
+    }
+    destination.space.canvasPositions[source.group.id] = source.space.canvasPositions[source.group.id];
+    delete source.space.canvasPositions[source.group.id];
+  }
+
+  const remembered = state.settings?.captureLastTarget;
+  if (remembered
+    && remembered.workspaceId === source.workspace.id
+    && remembered.categoryId === source.space.id
+    && remembered.groupId === source.group.id) {
+    remembered.workspaceId = source.workspace.id;
+    remembered.categoryId = destination.space.id;
+  }
+
+  for (const collection of [state.archive, state.trash]) {
+    if (!Array.isArray(collection)) continue;
+    collection.forEach(entry => {
+      if (entry?.kind !== 'item'
+        || entry.wsId !== source.workspace.id
+        || entry.catId !== source.space.id
+        || entry.groupId !== source.group.id) return;
+      entry.wsId = source.workspace.id;
+      entry.catId = destination.space.id;
+      entry.catName = destination.space.name;
+      entry.groupName = source.group.name;
+    });
+  }
+
+  const successVars = { group: source.group.name, space: destinationLabel };
+  setOrganizationNameBusy(true);
+  try {
+    await State.persistNow();
+  } catch {
+    // persistNow owns fail-closed recovery. The lower dialog remains as an
+    // unavailable receipt record; do not retry, roll back, render, close, or
+    // claim success for an outcome the storage boundary did not acknowledge.
+    organizationNameBusy = false;
+    dialogCtx.errorKey = 'organization.group.moveRecoveryRequired';
+    dialogCtx.unavailable = true;
+    paintOrganizationNameDialog();
+    return false;
+  }
+
+  let selectionChanged = false;
+  movedItemIds.forEach(itemId => {
+    if (selectedItemIds.delete(itemId)) selectionChanged = true;
+  });
+  if (lastSelectedItemId && movedItemIds.has(String(lastSelectedItemId))) {
+    lastSelectedItemId = null;
+    selectionChanged = true;
+  }
+  if (selectionChanged) syncItemSelMode();
+  renderAll();
+  renderItemSelToolbar();
+  setOrganizationNameBusy(false);
+  closeOrganizationNameDialog({ preferTarget: true });
+  toast(tr('organization.group.moved', successVars), { undo: actionId });
+  return true;
+}
+
+async function confirmOrganizationName() {
+  if (!organizationNameCtx || organizationNameBusy || organizationNameCtx.unavailable) return false;
+  if (organizationNameCtx.operation === 'move-group') {
+    return confirmOrganizationGroupMove();
+  }
+  if (organizationNameCtx.operation && organizationNameCtx.operation !== 'rename') {
+    return confirmOrganizationCreate();
+  }
+  const input = document.getElementById('organization-name-input');
+  const desiredName = input.value.trim();
+  const dialogCtx = { ...organizationNameCtx };
+  if (!desiredName) {
+    setOrganizationNameError(`organization.${dialogCtx.kind}.nameRequired`);
+    input.focus({ preventScroll: true });
+    return false;
+  }
+  const target = organizationNameTarget(dialogCtx.kind, dialogCtx.id);
+  if (!target || (dialogCtx.kind === 'space' && target.workspaceId !== dialogCtx.workspaceId)) {
+    setOrganizationNameError(`organization.${dialogCtx.kind}.unavailable`, { unavailable: true });
+    document.getElementById('organization-name-cancel').focus({ preventScroll: true });
+    return false;
+  }
+  if (target.name !== dialogCtx.originalName) {
+    organizationNameCtx.originalName = target.name;
+    organizationNameCtx.workspaceId = target.workspaceId || null;
+    input.value = target.name;
+    setOrganizationNameError('organization.nameChanged');
+    input.focus({ preventScroll: true });
+    input.select();
+    return false;
+  }
+  if (desiredName === target.name) {
+    closeOrganizationNameDialog();
+    return true;
+  }
+
+  const actionId = State.snapshot(tr(`organization.${dialogCtx.kind}.renameHistory`, {
+    from: target.name,
+    to: desiredName,
+  }));
+  target.entity.name = desiredName;
+  setOrganizationNameBusy(true);
+  try {
+    await State.persistNow();
+  } catch {
+    // persistNow owns fail-closed recovery. Keep the dirty local graph and do
+    // not render, close, retry, or claim success for an unknown outcome.
+    setOrganizationNameBusy(false);
+    return false;
+  }
+
+  const headerReady = renderAll();
+  if (dialogCtx.workspaceGridOpen) {
+    try { await openWsGrid(); } catch {}
+  } else if (dialogCtx.kind === 'workspace') {
+    // Workspace chips are rebuilt only after asynchronous Chrome window queries.
+    // Wait for that actual render boundary before restoring focus; a fixed delay
+    // can focus a chip that renderWsChips() subsequently removes.
+    try { await headerReady; } catch {}
+  }
+  setOrganizationNameBusy(false);
+  closeOrganizationNameDialog({ preferTarget: true });
+  toast(tr(`organization.${dialogCtx.kind}.renamed`, { name: desiredName }), { undo: actionId });
+  return true;
+}
+
+function bindOrganizationNameDialog() {
+  const overlay = document.getElementById('organization-name-overlay');
+  if (!overlay) return;
+  const input = document.getElementById('organization-name-input');
+  document.getElementById('organization-name-close').onclick = () => closeOrganizationNameDialog();
+  document.getElementById('organization-name-cancel').onclick = () => closeOrganizationNameDialog();
+  document.getElementById('organization-name-confirm').onclick = confirmOrganizationName;
+  overlay.onclick = event => {
+    if (event.target === overlay) closeOrganizationNameDialog();
+  };
+  input.addEventListener('input', () => {
+    if (organizationNameCtx && !organizationNameCtx.unavailable && organizationNameCtx.errorKey) {
+      setOrganizationNameError(null);
+    }
+  });
+  overlay.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      closeOrganizationNameDialog();
+      return;
+    }
+    if (event.key === 'Enter' && event.target === input) {
+      event.preventDefault();
+      event.stopPropagation();
+      confirmOrganizationName();
+      return;
+    }
+    if (event.key === 'Tab') {
+      trapTabKey(event, overlay);
+      event.stopPropagation();
+      return;
+    }
+    event.stopPropagation();
+  });
+}
+
+function handleOrganizationNameGlobalKey(event) {
+  const overlay = document.getElementById('organization-name-overlay');
+  if (!overlay || overlay.classList.contains('hidden') || overlay.contains(event.target)) return false;
+  const recovery = document.getElementById('state-recovery-overlay');
+  const recoveryActive = !!(recovery && !recovery.classList.contains('hidden'));
+  // The fail-closed recovery layer outranks naming. Do not cancel native
+  // keyboard activation of its Reload action as the event reaches document.
+  if (recoveryActive && recovery.contains(event.target)) return false;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  if (event.key === 'Escape' && !recoveryActive) closeOrganizationNameDialog();
+  return true;
+}
+
+let organizationDeleteCtx = null;
+let organizationDeleteBusy = false;
+
+function organizationDeleteOccupancy(entity) {
+  const occupancy = { groups: 0, items: 0, reminders: 0 };
+  const walk = items => (items || []).forEach(item => {
+    occupancy.items += 1;
+    if (item?.type === 'stack') walk(item.items);
+  });
+  const categories = Array.isArray(entity?.categories) ? entity.categories : [entity];
+  categories.forEach(category => {
+    occupancy.reminders += Array.isArray(category?.reminders) ? category.reminders.length : 0;
+    (category?.groups || []).forEach(group => {
+      occupancy.groups += 1;
+      occupancy.reminders += Array.isArray(group?.reminders) ? group.reminders.length : 0;
+      walk(group.items);
+    });
+  });
+  return occupancy;
+}
+
+function organizationDeleteTarget(kind, id) {
+  const state = State.get();
+  if (kind === 'workspace') {
+    if (state.workspaces.length <= 1) return null;
+    const workspace = state.workspaces.find(candidate => candidate.id === id);
+    if (!workspace) return null;
+    const occupancy = organizationDeleteOccupancy(workspace);
+    return {
+      kind, id, name: workspace.name, occupancy,
+      blocked: occupancy.groups > 0 || occupancy.items > 0 || occupancy.reminders > 0,
+      fingerprint: JSON.stringify(workspace),
+    };
+  }
+  if (kind === 'space') {
+    const info = findCategory(id);
+    if (!info || info.ws.categories.length <= 1) return null;
+    const occupancy = organizationDeleteOccupancy(info.cat);
+    return {
+      kind, id, name: info.cat.name, occupancy,
+      blocked: occupancy.groups > 0 || occupancy.items > 0 || occupancy.reminders > 0,
+      fingerprint: JSON.stringify(info.cat), workspaceId: info.ws.id,
+    };
+  }
+  return null;
+}
+
+function paintOrganizationDeleteDialog() {
+  if (!organizationDeleteCtx) return;
+  const { kind, name, blocked } = organizationDeleteCtx;
+  const titleKey = `organization.${kind}.${blocked ? 'blockedTitle' : 'confirmTitle'}`;
+  const title = document.getElementById('organization-delete-title');
+  title.dataset.i18n = titleKey;
+  title.textContent = tr(titleKey);
+  document.getElementById('organization-delete-message').textContent = tr(
+    `organization.${kind}.${blocked ? 'blockedBody' : 'confirmEmpty'}`,
+    { name }
+  );
+  const cancelKey = blocked ? 'organization.close' : 'organization.cancel';
+  const cancelButton = document.getElementById('organization-delete-cancel');
+  cancelButton.dataset.i18n = cancelKey;
+  cancelButton.textContent = tr(cancelKey);
+  const confirmButton = document.getElementById('organization-delete-confirm');
+  confirmButton.hidden = blocked;
+  const confirmKey = organizationDeleteBusy ? 'organization.deleting' : `organization.${kind}.delete`;
+  confirmButton.dataset.i18n = confirmKey;
+  confirmButton.textContent = tr(confirmKey);
+}
+
+function setOrganizationDeleteBusy(busy) {
+  const overlay = document.getElementById('organization-delete-overlay');
+  const cancel = document.getElementById('organization-delete-cancel');
+  const confirmButton = document.getElementById('organization-delete-confirm');
+  organizationDeleteBusy = !!busy;
+  if (overlay) overlay.setAttribute('aria-busy', String(organizationDeleteBusy));
+  if (cancel) cancel.disabled = organizationDeleteBusy;
+  if (confirmButton) confirmButton.disabled = organizationDeleteBusy || !!organizationDeleteCtx?.blocked;
+  paintOrganizationDeleteDialog();
+}
+
+function setOrganizationDeleteInterlock(enabled) {
+  const overlay = document.getElementById('organization-delete-overlay');
+  const recovery = document.getElementById('state-recovery-overlay');
+  for (const child of document.body.children) {
+    if (child === overlay || child === recovery) continue;
+    setElementInertOwner(child, 'organization', enabled);
+  }
+}
+
+function focusOrganizationDeleteFallback(ctx) {
+  const state = State.get();
+  const workspace = state.workspaces.find(candidate => candidate.id === state.activeWsId);
+  const activeCategoryId = workspace?.activeCatId;
+  const visibleSpace = ctx?.kind === 'space' && activeCategoryId
+    ? [...document.querySelectorAll('.space-item')].find(element => element.dataset.catId === activeCategoryId)
+    : null;
+  const candidates = ctx?.kind === 'workspace'
+    ? [
+        ctx.workspaceGridOpen ? document.getElementById('wsg-close') : null,
+        document.getElementById('ws-menu-btn'),
+        document.getElementById('add-ws-btn'),
+      ]
+    : [visibleSpace, document.getElementById('add-cat-btn'), document.getElementById('ws-menu-btn')];
+  for (const target of candidates) {
+    if (!target || typeof target.focus !== 'function') continue;
+    try { target.focus({ preventScroll: true }); } catch { try { target.focus(); } catch {} }
+    if (document.activeElement === target) return true;
+  }
+  return false;
+}
+
+function closeOrganizationDeleteDialog() {
+  const overlay = document.getElementById('organization-delete-overlay');
+  if (!overlay || overlay.classList.contains('hidden') || organizationDeleteBusy) return false;
+  const closingCtx = organizationDeleteCtx;
+  overlay.classList.add('hidden');
+  unlockBodyScroll();
+  setOrganizationDeleteBusy(false);
+  setOrganizationDeleteInterlock(false);
+  organizationDeleteCtx = null;
+  if (!restoreOpener(overlay)) setTimeout(() => focusOrganizationDeleteFallback(closingCtx), 0);
+  return true;
+}
+
+function focusDialogOpener(opener) {
+  if (!opener || opener.isConnected === false || typeof opener.focus !== 'function') return;
+  try { opener.focus({ preventScroll: true }); } catch { try { opener.focus(); } catch {} }
+}
+
+function openOrganizationDelete(kind, id, opener) {
+  const overlay = document.getElementById('organization-delete-overlay');
+  if (!overlay || !overlay.classList.contains('hidden')) return false;
+  const namingOverlay = document.getElementById('organization-name-overlay');
+  if (namingOverlay && !namingOverlay.classList.contains('hidden')) return false;
+  const target = organizationDeleteTarget(kind, id);
+  if (!target) return false;
+  focusDialogOpener(opener);
+  rememberOpener(overlay);
+  organizationDeleteCtx = {
+    ...target,
+    workspaceGridOpen: !document.getElementById('ws-grid-overlay')?.classList.contains('hidden'),
+  };
+  setOrganizationDeleteBusy(false);
+  setOrganizationDeleteInterlock(true);
+  overlay.classList.remove('hidden');
+  lockBodyScroll();
+  setTimeout(() => document.getElementById('organization-delete-cancel')?.focus({ preventScroll: true }), 0);
+  return true;
+}
+
+async function confirmOrganizationDelete() {
+  if (organizationDeleteBusy || !organizationDeleteCtx) return false;
+  const current = organizationDeleteTarget(organizationDeleteCtx.kind, organizationDeleteCtx.id);
+  if (!current) {
+    closeOrganizationDeleteDialog();
+    return false;
+  }
+  if (current.fingerprint !== organizationDeleteCtx.fingerprint) {
+    organizationDeleteCtx = { ...organizationDeleteCtx, ...current };
+    setOrganizationDeleteBusy(false);
+    document.getElementById('organization-delete-cancel')?.focus({ preventScroll: true });
+    return false;
+  }
+  if (current.blocked) {
+    organizationDeleteCtx = { ...organizationDeleteCtx, ...current };
+    setOrganizationDeleteBusy(false);
+    document.getElementById('organization-delete-cancel')?.focus({ preventScroll: true });
+    return false;
+  }
+
+  const dialogCtx = organizationDeleteCtx;
+  setOrganizationDeleteBusy(true);
+  const actionId = State.snapshot(tr(`organization.${dialogCtx.kind}.deleteHistory`, { name: dialogCtx.name }));
+  const state = State.get();
+  if (dialogCtx.kind === 'workspace') {
+    state.workspaces = state.workspaces.filter(workspace => workspace.id !== dialogCtx.id);
+    if (state.activeWsId === dialogCtx.id) state.activeWsId = state.workspaces[0].id;
+  } else {
+    const info = findCategory(dialogCtx.id);
+    info.ws.categories = info.ws.categories.filter(category => category.id !== dialogCtx.id);
+    if (info.ws.activeCatId === dialogCtx.id) info.ws.activeCatId = info.ws.categories[0].id;
+  }
+
+  try {
+    await State.persistNow();
+  } catch {
+    // persistNow owns the fail-closed recovery overlay. Do not render or claim
+    // success until browser storage has acknowledged this recoverable change.
+    setOrganizationDeleteBusy(false);
+    return false;
+  }
+
+  renderAll();
+  if (dialogCtx.workspaceGridOpen) {
+    try { await openWsGrid(); } catch {}
+  }
+  setOrganizationDeleteBusy(false);
+  closeOrganizationDeleteDialog();
+  toast(tr(`organization.${dialogCtx.kind}.deleted`), { undo: actionId });
+  return true;
+}
+
+function bindOrganizationDeleteDialog() {
+  const overlay = document.getElementById('organization-delete-overlay');
+  if (!overlay) return;
+  document.getElementById('organization-delete-cancel').onclick = closeOrganizationDeleteDialog;
+  document.getElementById('organization-delete-confirm').onclick = confirmOrganizationDelete;
+  overlay.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      closeOrganizationDeleteDialog();
+      return;
+    }
+    if (event.key === 'Tab') {
+      trapTabKey(event, overlay);
+      return;
+    }
+    // Preserve native button activation while preventing document-level
+    // shortcuts from opening a second surface above this decision.
+    event.stopPropagation();
+  });
+}
+
+function handleOrganizationDeleteGlobalKey(event) {
+  const overlay = document.getElementById('organization-delete-overlay');
+  if (!overlay || overlay.classList.contains('hidden') || overlay.contains(event.target)) return false;
+  const recovery = document.getElementById('state-recovery-overlay');
+  const recoveryActive = !!(recovery && !recovery.classList.contains('hidden'));
+  if (recoveryActive && recovery.contains(event.target)) return false;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  if (event.key === 'Escape' && !recoveryActive) closeOrganizationDeleteDialog();
+  return true;
 }
 
 // ════════════════════════════════════════════════════════════════
 // CRUD
 // ════════════════════════════════════════════════════════════════
-function createGroup({ name, symbol, color }) {
-  const cat = activeCat(); if (!cat) return;
-  State.snapshot('Create group');
-  cat.groups.push({ id: uid(), name: name || 'New Group', symbol: symbol || '📁', color: color || '#6366f1', collapsed: false, items: [] });
-  State.persist(); renderBoard();
-}
-function deleteGroup(gId, skipConfirm) {
-  const info = findGroup(gId);
-  if (!info) return;
-  if (!skipConfirm && State.get().settings.confirmDelete && !confirm(`Delete "${info.group.name}"? (It will be archived)`)) return;
-  archiveGroup(gId);
-}
-function duplicateGroup(gId) {
-  const info = findGroup(gId);
-  if (!info) return;
-  State.snapshot('Duplicate group');
-  const copy = JSON.parse(JSON.stringify(info.group));
-  copy.id = uid(); copy.name = info.group.name + ' (copy)';
-  const reassign = (items) => items.forEach(it => {
-    it.id = uid();
-    if (it.type === 'stack' && it.items) reassign(it.items);
+function identitySpaceTarget(workspaceId, spaceId) {
+  const workspaces = State.get().workspaces.filter(workspace => workspace.id === workspaceId);
+  const spaces = [];
+  State.get().workspaces.forEach(workspace => {
+    workspace.categories.forEach(space => {
+      if (space.id === spaceId) spaces.push({ workspace, space });
+    });
   });
-  reassign(copy.items);
-  const idx = info.cat.groups.findIndex(x => x.id === gId);
-  info.cat.groups.splice(idx + 1, 0, copy);
-  State.persist(); renderBoard();
+  if (workspaces.length !== 1 || spaces.length !== 1 || spaces[0].workspace !== workspaces[0]) return null;
+  return spaces[0];
 }
 
-function moveGroupToCategory(gId, catId) {
-  const info = findGroup(gId);
-  if (!info) return;
-  const ws = activeWs();
-  const targetCat = ws.categories.find(c => c.id === catId);
-  if (!targetCat) return;
-  State.snapshot('Move group to category');
-  const idx = info.cat.groups.findIndex(g => g.id === gId);
-  const [g] = info.cat.groups.splice(idx, 1);
-  targetCat.groups.push(g);
-  State.persist();
-  renderAll();
-  toast(`Moved to ${targetCat.name}`, { undo: true });
+function identityGroupTarget(groupId) {
+  const target = organizationGroupTarget(groupId);
+  if (!target) return null;
+  const parent = identitySpaceTarget(target.workspace.id, target.space.id);
+  if (!parent || parent.workspace !== target.workspace || parent.space !== target.space) return null;
+  return { workspace: target.workspace, space: target.space, group: target.group };
 }
 
-function moveGroupToNewCategory(gId) {
-  const name = prompt('New category name:', '');
-  if (!name || !name.trim()) return;
-  const ws = activeWs(); if (!ws) return;
-  State.snapshot('New category + move');
-  const newCat = { id: uid(), name: name.trim(), groups: [] };
-  ws.categories.push(newCat);
-  const info = findGroup(gId);
-  if (info) {
-    const idx = info.cat.groups.findIndex(g => g.id === gId);
-    const [g] = info.cat.groups.splice(idx, 1);
-    newCat.groups.push(g);
+// Resolve item IDs exhaustively instead of trusting findItem's first match.
+// Imported duplicate IDs, selected ancestors/descendants, and moved parents
+// therefore fail closed before the identity transaction takes a snapshot.
+function identityItemTargets(itemIds) {
+  const ids = [...new Set((itemIds || []).map(String))];
+  const wanted = new Set(ids);
+  const matches = new Map(ids.map(id => [id, []]));
+  let order = 0;
+  const walk = (items, ctx, parentStack, ancestorStackIds) => {
+    for (let index = 0; index < items.length; index += 1) {
+      const item = items[index];
+      const id = String(item.id);
+      const itemOrder = order++;
+      if (wanted.has(id)) {
+        matches.get(id).push({
+          ...ctx,
+          item,
+          parentItems: items,
+          parentStack,
+          parentKey: parentStack ? `stack:${parentStack.id}` : `group:${ctx.group.id}`,
+          ancestorStackIds: [...ancestorStackIds],
+          index,
+          order: itemOrder,
+        });
+      }
+      if (item.type === 'stack' && Array.isArray(item.items)) {
+        walk(item.items, ctx, item, [...ancestorStackIds, id]);
+      }
+    }
+  };
+  State.get().workspaces.forEach(workspace => {
+    workspace.categories.forEach(space => {
+      space.groups.forEach(group => {
+        walk(group.items || [], { workspace, space, group }, null, []);
+      });
+    });
+  });
+  if (ids.some(id => matches.get(id).length !== 1)) return null;
+  const targets = ids.map(id => matches.get(id)[0]).sort((a, b) => a.order - b.order);
+  const nested = targets.some(target => target.ancestorStackIds.some(id => wanted.has(String(id))));
+  return { targets, nested };
+}
+
+function identityStackTarget(stackId) {
+  const resolved = identityItemTargets([stackId]);
+  const target = resolved?.targets[0];
+  if (target?.item?.type !== 'stack') return null;
+  const group = identityGroupTarget(target.group.id);
+  if (!group || group.group !== target.group) return null;
+  for (const ancestorId of target.ancestorStackIds) {
+    const ancestor = identityItemTargets([ancestorId])?.targets[0];
+    if (!ancestor || ancestor.item.type !== 'stack') return null;
   }
-  State.persist();
-  renderAll();
-  toast(`Moved to "${name.trim()}"`, { undo: true });
+  return target;
 }
+
+function identityFields(entity) {
+  return {
+    name: String(entity?.name || ''),
+    symbol: String(entity?.symbol || ''),
+    color: String(entity?.color || '#6366f1'),
+  };
+}
+
+function identityFieldsFingerprint(entity) {
+  return JSON.stringify(identityFields(entity));
+}
+
+function identitySelectionFingerprint(targets) {
+  return JSON.stringify(targets.map(target => ({
+    id: String(target.item.id),
+    workspaceId: String(target.workspace.id),
+    spaceId: String(target.space.id),
+    groupId: String(target.group.id),
+    parentKey: target.parentKey,
+  })));
+}
+
+function identityGroupDuplicateFingerprint(target) {
+  return JSON.stringify({
+    workspaceId: target?.workspace?.id,
+    spaceId: target?.space?.id,
+    spaceName: target?.space?.name,
+    group: target?.group,
+  });
+}
+
+function cloneGroupForDuplicate(source, allocateId) {
+  const copy = JSON.parse(JSON.stringify(source));
+  const rekeyItems = items => (items || []).forEach(item => {
+    item.id = allocateId();
+    if (item.type === 'stack' && Array.isArray(item.items)) rekeyItems(item.items);
+  });
+  copy.id = allocateId();
+  rekeyItems(copy.items);
+  return copy;
+}
+
+function groupContainsReminderData(group) {
+  if (Array.isArray(group?.reminders) && group.reminders.length) return true;
+  const visit = items => (items || []).some(item => (
+    !!item?.reminder || (item?.type === 'stack' && visit(item.items))
+  ));
+  return visit(group?.items);
+}
+
+function cloneGroupLayoutValue(value) {
+  if (value == null) return value;
+  return JSON.parse(JSON.stringify(value));
+}
+
+function prepareGroupDuplicateLayout(state, space, duplicate) {
+  const layout = { keyed: [] };
+  for (const key of ['columnSizes', 'columnWidths']) {
+    const record = state[key];
+    if (!record || typeof record !== 'object' || Array.isArray(record)
+        || !Object.prototype.hasOwnProperty.call(record, duplicate.sourceId)) continue;
+    layout.keyed.push({ key, value: cloneGroupLayoutValue(record[duplicate.sourceId]) });
+  }
+  const positions = space.canvasPositions;
+  if (positions && typeof positions === 'object' && !Array.isArray(positions)) {
+    const legacySizes = state.columnWidths && typeof state.columnWidths === 'object' && !Array.isArray(state.columnWidths)
+      ? state.columnWidths
+      : {};
+    const currentSizes = state.columnSizes && typeof state.columnSizes === 'object' && !Array.isArray(state.columnSizes)
+      ? state.columnSizes
+      : {};
+    const effectiveSizes = { ...legacySizes };
+    for (const [groupId, savedSize] of Object.entries(currentSizes)) {
+      // Rendering uses columnSizes[id] ?? columnWidths[id]; keep placement on
+      // that same per-ID contract when imported current records are nullish.
+      if (savedSize != null) effectiveSizes[groupId] = savedSize;
+    }
+    layout.canvasPosition = findOpenCanvasPosition(
+      duplicate.group,
+      [...space.groups, duplicate.group],
+      positions,
+      effectiveSizes[duplicate.sourceId],
+      effectiveSizes,
+    );
+  }
+  return layout;
+}
+
+function applyGroupDuplicateLayout(state, space, duplicate, layout) {
+  for (const entry of layout.keyed) {
+    if (!state[entry.key] || typeof state[entry.key] !== 'object' || Array.isArray(state[entry.key])) {
+      state[entry.key] = {};
+    }
+    state[entry.key][duplicate.group.id] = entry.value;
+  }
+  if (layout.canvasPosition) space.canvasPositions[duplicate.group.id] = layout.canvasPosition;
+}
+
+function reconcileDuplicatedGroupReminders(group, name, actionId) {
+  if (!groupContainsReminderData(group)) return;
+  Promise.resolve()
+    .then(() => chrome.runtime.sendMessage({ type: 'reconcile-reminders' }))
+    .then(result => {
+      if (result?.ok !== true) throw new Error('Reminder reconciliation failed');
+    })
+    .catch(() => {
+      const current = identityGroupTarget(group.id);
+      if (current?.group === group && State.latestActionId() === actionId) {
+        toast(tr('groupEditor.duplicateReminderWarning', { name }), {
+          danger: true,
+          duration: 8000,
+          undo: actionId,
+        });
+      } else {
+        toast(tr('history.reminderReconcileWarning'), { danger: true, duration: 8000 });
+      }
+    });
+}
+
 function openGroupAll(gId) {
   const info = findGroup(gId);
   if (!info) return;
@@ -3988,46 +6828,433 @@ function openGroupAll(gId) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// MODAL (group create/edit)
+// GROUP / STACK IDENTITY EDITOR
 // ════════════════════════════════════════════════════════════════
 let modalCtx = null;
+let modalBusy = false;
 let intentEditorCtx = null;
-function openModal(kind, ctx) {
-  modalCtx = { kind, ctx };
-  const $t = document.getElementById('modal-title');
-  const $ok = document.getElementById('modal-ok');
-  const $inp = document.getElementById('modal-input');
-  const $cLbl = document.getElementById('lbl-color');
-  const $sLbl = document.getElementById('lbl-symbol');
-  const $cRow = document.getElementById('color-row');
-  const $sym = document.getElementById('emoji-trigger-val');
-  const emTrig = document.getElementById('emoji-trigger');
 
-  const showColor = true, showSym = true;
-  $cLbl.style.display = showColor ? '' : 'none';
-  $cRow.style.display = showColor ? '' : 'none';
-  $sLbl.style.display = showSym ? '' : 'none';
-  emTrig.style.display = showSym ? '' : 'none';
-
-  if (kind === 'new-group') { $t.textContent = 'New Group'; $ok.textContent = 'Create'; $inp.value = ''; $sym.textContent = '📁'; selColor('#6366f1'); }
-  else if (kind === 'edit-group') { $t.textContent = 'Edit Group'; $ok.textContent = 'Save'; $inp.value = ctx.name; $sym.textContent = ctx.symbol || '📁'; selColor(ctx.color || '#6366f1'); }
-  else if (kind === 'new-ws') { $t.textContent = 'New Workspace'; $ok.textContent = 'Create'; $inp.value = ''; $sym.textContent = '🏠'; $cLbl.style.display = 'none'; $cRow.style.display = 'none'; }
-  else if (kind === 'new-cat') { $t.textContent = 'New Category'; $ok.textContent = 'Create'; $inp.value = ''; $sLbl.style.display = 'none'; emTrig.style.display = 'none'; $cLbl.style.display = 'none'; $cRow.style.display = 'none'; }
-  else if (kind === 'new-stack') { $t.textContent = 'New Stack'; $ok.textContent = 'Create'; $inp.value = ''; $sym.textContent = '📚'; selColor('#6366f1'); }
-
-  const overlay = document.getElementById('modal-overlay');
-  rememberOpener(overlay);
-  overlay.classList.remove('hidden');
-  setTimeout(() => $inp.focus(), 50);
+function identityEditorPrefix() {
+  return modalCtx?.entityKind === 'stack' ? 'stackEditor' : 'groupEditor';
 }
-function selColor(c) {
-  document.querySelectorAll('.csw').forEach(x => x.classList.toggle('active', x.dataset.c === c));
-}
-function closeModal() {
+
+function paintIdentityEditor() {
+  if (!modalCtx) return;
+  const prefix = identityEditorPrefix();
+  const operation = modalCtx.operation;
+  const isEdit = operation === 'edit';
+  const isBatch = operation === 'batch-create';
+  const isDuplicate = operation === 'duplicate';
+  const titleKey = `${prefix}.${isBatch ? 'batchTitle' : isDuplicate ? 'duplicateTitle' : isEdit ? 'editTitle' : 'createTitle'}`;
+  const confirmKey = `${prefix}.${modalBusy
+    ? (isEdit ? 'saving' : isDuplicate ? 'duplicating' : 'creating')
+    : (isEdit ? 'save' : isDuplicate ? 'duplicate' : 'create')}`;
+  const title = document.getElementById('modal-title');
+  const close = document.getElementById('modal-x');
+  const symbolLabel = document.getElementById('lbl-symbol');
+  const symbolHint = document.getElementById('emoji-trigger-hint');
+  const symbolTrigger = document.getElementById('emoji-trigger');
+  const nameLabel = document.getElementById('modal-name-label');
+  const input = document.getElementById('modal-input');
+  const colorLabel = document.getElementById('lbl-color');
+  const description = document.getElementById('modal-description');
+  const error = document.getElementById('modal-error');
+  const cancel = document.getElementById('modal-cancel');
+  const confirm = document.getElementById('modal-ok');
   const overlay = document.getElementById('modal-overlay');
+
+  // An untouched generated copy name follows a live locale change. Once the
+  // user types, their draft is canonical and must never be translated.
+  if (isDuplicate && !modalBusy && !modalCtx.nameTouched) {
+    modalCtx.draftName = tr('groupEditor.duplicateDefaultName', { name: modalCtx.sourceName });
+    input.value = modalCtx.draftName;
+  }
+
+  title.dataset.i18n = titleKey;
+  title.textContent = tr(titleKey);
+  const closeKey = isDuplicate ? 'groupEditor.duplicateClose' : `${prefix}.close`;
+  close.dataset.i18nAriaLabel = closeKey;
+  close.setAttribute('aria-label', tr(closeKey));
+  symbolLabel.dataset.i18n = `${prefix}.symbolLabel`;
+  symbolLabel.textContent = tr(`${prefix}.symbolLabel`);
+  symbolHint.dataset.i18n = `${prefix}.symbolHint`;
+  symbolHint.textContent = tr(`${prefix}.symbolHint`);
+  symbolTrigger.setAttribute('aria-label', tr('emojiPicker.current', { symbol: modalCtx.draftSymbol }));
+  nameLabel.dataset.i18n = `${prefix}.nameLabel`;
+  nameLabel.textContent = tr(`${prefix}.nameLabel`);
+  input.dataset.i18nPlaceholder = `${prefix}.namePlaceholder`;
+  input.placeholder = tr(`${prefix}.namePlaceholder`);
+  colorLabel.dataset.i18n = `${prefix}.colorLabel`;
+  colorLabel.textContent = tr(`${prefix}.colorLabel`);
+  cancel.dataset.i18n = 'organization.cancel';
+  cancel.textContent = tr('organization.cancel');
+  confirm.dataset.i18n = confirmKey;
+  confirm.textContent = tr(confirmKey);
+
+  description.hidden = !isBatch && !isDuplicate;
+  description.textContent = isBatch
+    ? tr('stackEditor.batchDescription', { count: modalCtx.batchIds.length, group: modalCtx.groupName })
+    : (isDuplicate
+      ? tr('groupEditor.duplicateDescription', { group: modalCtx.sourceName, space: modalCtx.spaceName })
+      : '');
+  error.hidden = !modalCtx.errorKey;
+  error.textContent = modalCtx.errorKey ? tr(modalCtx.errorKey) : '';
+  const nameInvalid = modalCtx.errorKey === `${prefix}.nameRequired`;
+  input.setAttribute('aria-invalid', String(nameInvalid));
+  if (nameInvalid) input.setAttribute('aria-describedby', 'modal-error');
+  else input.removeAttribute('aria-describedby');
+  const disabled = modalBusy || !!modalCtx.unavailable;
+  input.disabled = disabled;
+  symbolTrigger.disabled = disabled;
+  document.querySelectorAll('#color-row .csw').forEach(button => {
+    button.disabled = disabled;
+    const colorName = tr(`groupEditor.color.${button.dataset.colorKey}`);
+    button.setAttribute('aria-label', tr('groupEditor.colorOption', { color: colorName }));
+    button.title = colorName;
+  });
+  close.disabled = modalBusy;
+  cancel.disabled = modalBusy;
+  confirm.disabled = !!modalCtx.unavailable;
+  confirm.setAttribute('aria-disabled', String(disabled));
+  overlay.setAttribute('aria-busy', String(modalBusy));
+}
+
+function setIdentityEditorBusy(busy) {
+  modalBusy = !!busy;
+  paintIdentityEditor();
+  if (modalBusy) document.getElementById('modal-ok')?.focus({ preventScroll: true });
+}
+
+function setIdentityEditorError(errorKey, { unavailable = false } = {}) {
+  if (!modalCtx) return;
+  modalCtx.errorKey = errorKey || '';
+  modalCtx.unavailable = !!unavailable;
+  paintIdentityEditor();
+  const recovery = document.getElementById('state-recovery-overlay');
+  const recoveryOwnsForeground = !!(recovery && !recovery.classList.contains('hidden'))
+    || !!State.isRecoveryRequired?.();
+  if (modalCtx.unavailable && !recoveryOwnsForeground) {
+    const target = document.getElementById('modal-cancel') || document.getElementById('modal-x');
+    try { target?.focus({ preventScroll: true }); } catch { try { target?.focus(); } catch {} }
+  }
+}
+
+function clearIdentityEditorError() {
+  if (!modalCtx || modalCtx.unavailable || !modalCtx.errorKey) return;
+  if (modalCtx.errorKey === `${identityEditorPrefix()}.nameRequired` &&
+      !document.getElementById('modal-input')?.value.trim()) return;
+  modalCtx.errorKey = '';
+  paintIdentityEditor();
+}
+
+function selectIdentityColor(color, { focus = false, chosen = false } = {}) {
+  const requested = String(color || '#6366f1');
+  const allButtons = [...document.querySelectorAll('#color-row .csw')];
+  const custom = document.getElementById('identity-custom-color');
+  let selected = allButtons.find(button => button !== custom && button.dataset.c === requested);
+  let represented = !!selected;
+  if (!selected && custom) {
+    custom.hidden = false;
+    custom.dataset.c = requested;
+    custom.style.setProperty('--identity-custom-color', requested);
+    selected = custom;
+    represented = true;
+  } else if (custom) {
+    custom.hidden = true;
+    custom.classList.remove('active');
+    custom.setAttribute('aria-checked', 'false');
+    custom.tabIndex = -1;
+    custom.style.removeProperty('--identity-custom-color');
+  }
+  const buttons = allButtons.filter(button => !button.hidden);
+  if (!selected) selected = buttons[0];
+  buttons.forEach(button => {
+    const active = button === selected;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-checked', String(active));
+    button.tabIndex = active ? 0 : -1;
+  });
+  if (modalCtx) {
+    modalCtx.draftColor = represented ? selected.dataset.c : requested;
+    if (chosen) modalCtx.colorChosen = true;
+  }
+  if (focus && selected) selected.focus({ preventScroll: true });
+  clearIdentityEditorError();
+}
+
+function handleIdentityColorKeydown(event) {
+  if (!event.target.matches?.('#color-row .csw')) return false;
+  const buttons = [...document.querySelectorAll('#color-row .csw')].filter(button => !button.hidden);
+  const index = Math.max(0, buttons.indexOf(event.target));
+  let next = index;
+  if (event.key === 'Home') next = 0;
+  else if (event.key === 'End') next = buttons.length - 1;
+  else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (index - 1 + buttons.length) % buttons.length;
+  else if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (index + 1) % buttons.length;
+  else return false;
+  event.preventDefault();
+  event.stopPropagation();
+  selectIdentityColor(buttons[next].dataset.c, { focus: true, chosen: true });
+  return true;
+}
+
+function setIdentityEditorInterlock(enabled) {
+  const overlay = document.getElementById('modal-overlay');
+  const recovery = document.getElementById('state-recovery-overlay');
+  const emoji = document.getElementById('emoji-picker');
+  for (const child of document.body.children) {
+    if (child === overlay || child === recovery || child === emoji) continue;
+    setElementInertOwner(child, 'identity-editor', enabled);
+  }
+}
+
+function focusIdentityTarget(kind, id) {
+  const value = typeof CSS !== 'undefined' && CSS.escape ? CSS.escape(String(id)) : String(id).replace(/["\\]/g, '\\$&');
+  const detail = document.getElementById('item-detail');
+  const selectors = kind === 'group'
+    ? [`.gcol[data-gid="${value}"] .gcol-toggle`, `.lv-group[data-gid="${value}"] .lv-group-toggle`]
+    : [
+        detail?.dataset.itemId === String(id) ? '#item-detail [data-idp-focus="stack-identity"]' : '',
+        `.item.stack[data-id="${value}"] .stack-toggle`,
+        `.lv-stack[data-id="${value}"] .lv-stack-toggle`,
+      ];
+  for (const selector of selectors) {
+    if (!selector) continue;
+    const target = document.querySelector(selector);
+    if (!target || typeof target.focus !== 'function') continue;
+    try { target.focus({ preventScroll: true }); } catch { try { target.focus(); } catch {} }
+    if (document.activeElement === target) {
+      try { target.scrollIntoView?.({ block: 'nearest', inline: 'nearest' }); } catch {}
+      return true;
+    }
+  }
+  return false;
+}
+
+function focusIdentityFallback(ctx) {
+  if (ctx?.operation === 'edit' || ctx?.operation === 'duplicate') {
+    if (focusIdentityTarget(ctx.entityKind, ctx.entityId)) return true;
+  }
+  const batchAction = ctx?.operation === 'batch-create'
+    ? document.querySelector('#item-sel-toolbar [data-act="stack"]')
+    : null;
+  if (batchAction) {
+    try { batchAction.focus({ preventScroll: true }); } catch { try { batchAction.focus(); } catch {} }
+    if (document.activeElement === batchAction) return true;
+  }
+  if (ctx?.entityKind === 'stack' && ctx.groupId && focusIdentityTarget('group', ctx.groupId)) return true;
+  const candidates = [
+    document.querySelector('.lv-add-row'),
+    document.querySelector('.add-col-btn'),
+    document.getElementById('board'),
+  ];
+  for (const target of candidates) {
+    if (!target || typeof target.focus !== 'function') continue;
+    try { target.focus({ preventScroll: true }); } catch { try { target.focus(); } catch {} }
+    if (document.activeElement === target) return true;
+  }
+  return false;
+}
+
+function closeIdentityEditor({ restoreFocus = true } = {}) {
+  const overlay = document.getElementById('modal-overlay');
+  if (!overlay || overlay.classList.contains('hidden') || modalBusy) return false;
+  const closingCtx = modalCtx;
+  if (emojiPickerCtx?.target?.kind === 'identity-editor') closeEmojiPicker({ restoreFocus: false });
   overlay.classList.add('hidden');
-  restoreOpener(overlay);
+  unlockBodyScroll();
+  setIdentityEditorInterlock(false);
   modalCtx = null;
+  modalBusy = false;
+  const restored = restoreFocus ? restoreOpener(overlay) : (_overlayOpeners.delete(overlay), false);
+  if (restoreFocus && !restored) setTimeout(() => focusIdentityFallback(closingCtx), 0);
+  return true;
+}
+
+function closeModal() {
+  return closeIdentityEditor();
+}
+
+function prepareIdentityBatch(itemIds) {
+  const ids = [...new Set((itemIds || []).map(String))];
+  if (ids.length < 2) return { errorKey: 'stackEditor.minimumSelection' };
+  const resolved = identityItemTargets(ids);
+  if (!resolved) return { errorKey: 'stackEditor.selectionUnavailable' };
+  const uniqueParents = resolved.targets.every(target => {
+    const group = identityGroupTarget(target.group.id);
+    if (!group || group.group !== target.group) return false;
+    return target.ancestorStackIds.every(ancestorId => {
+      const ancestor = identityItemTargets([ancestorId])?.targets[0];
+      return !!ancestor && ancestor.item.type === 'stack';
+    });
+  });
+  if (!uniqueParents) return { errorKey: 'stackEditor.selectionUnavailable' };
+  if (resolved.nested) return { errorKey: 'stackEditor.selectionNested' };
+  const spaces = new Set(resolved.targets.map(target => `${target.workspace.id}:${target.space.id}`));
+  if (spaces.size !== 1) return { errorKey: 'stackEditor.selectionScope' };
+  const destination = resolved.targets.find(target => String(target.item.id) === ids[0]);
+  return { resolved, destination };
+}
+
+function rejectIdentityEditorOpen(errorKey, fallbackCtx = null) {
+  toast(tr(errorKey), { danger: true, duration: 6000 });
+  if (fallbackCtx) setTimeout(() => focusIdentityFallback(fallbackCtx), 0);
+  return false;
+}
+
+function openIdentityEditor(entityKind, operation, params = {}, opener) {
+  const overlay = document.getElementById('modal-overlay');
+  const recovery = document.getElementById('state-recovery-overlay');
+  const organizationName = document.getElementById('organization-name-overlay');
+  const organizationDelete = document.getElementById('organization-delete-overlay');
+  if (!overlay || !overlay.classList.contains('hidden')) return false;
+  if ((recovery && !recovery.classList.contains('hidden')) ||
+      (organizationName && !organizationName.classList.contains('hidden')) ||
+      (organizationDelete && !organizationDelete.classList.contains('hidden'))) return false;
+
+  // Context-menu items disappear before their action runs. Move focus back to
+  // the durable surface opener even when validation rejects the requested edit.
+  focusDialogOpener(opener);
+  const rejectionFallback = opener && (opener.isConnected === false || document.activeElement !== opener)
+    ? {
+        entityKind,
+        operation,
+        entityId: params.groupId || params.stackId || '',
+        groupId: params.groupId || '',
+      }
+    : null;
+  let next = null;
+  if (entityKind === 'group' && operation === 'create') {
+    const target = identitySpaceTarget(params.workspaceId, params.spaceId);
+    if (!target) return rejectIdentityEditorOpen('groupEditor.parentUnavailable', rejectionFallback);
+    next = {
+      entityKind, operation,
+      workspaceId: target.workspace.id,
+      spaceId: target.space.id,
+      draftName: '', draftSymbol: '📁', draftColor: '#6366f1', nameTouched: false, colorChosen: false,
+    };
+  } else if (entityKind === 'group' && operation === 'duplicate') {
+    const target = identityGroupTarget(params.groupId);
+    const state = State.get();
+    if (!target || (params.workspaceId && target.workspace.id !== params.workspaceId) ||
+        (params.spaceId && target.space.id !== params.spaceId) ||
+        state.activeWsId !== target.workspace.id || target.workspace.activeCatId !== target.space.id) {
+      return rejectIdentityEditorOpen('groupEditor.unavailable', rejectionFallback);
+    }
+    const fields = identityFields(target.group);
+    next = {
+      entityKind, operation, entityId: target.group.id,
+      workspaceId: target.workspace.id, spaceId: target.space.id,
+      sourceName: fields.name, spaceName: String(target.space.name || ''),
+      openedFromGroupPage: typeof activeGroupPage !== 'undefined'
+        && activeGroupPage?.groupId === target.group.id,
+      baseline: identityGroupDuplicateFingerprint(target),
+      draftName: tr('groupEditor.duplicateDefaultName', { name: fields.name }),
+      draftSymbol: fields.symbol || '??', draftColor: fields.color,
+      nameTouched: false, colorChosen: false,
+    };
+  } else if (entityKind === 'group' && operation === 'edit') {
+    const target = identityGroupTarget(params.groupId);
+    if (!target || (params.workspaceId && target.workspace.id !== params.workspaceId) ||
+        (params.spaceId && target.space.id !== params.spaceId)) return rejectIdentityEditorOpen('groupEditor.unavailable', rejectionFallback);
+    const fields = identityFields(target.group);
+    next = {
+      entityKind, operation, entityId: target.group.id,
+      workspaceId: target.workspace.id, spaceId: target.space.id,
+      baseline: identityFieldsFingerprint(target.group),
+      draftName: fields.name, draftSymbol: fields.symbol || '📁', draftColor: fields.color, nameTouched: false, colorChosen: false,
+    };
+  } else if (entityKind === 'stack' && operation === 'create') {
+    const target = identityGroupTarget(params.groupId);
+    if (!target || (params.workspaceId && target.workspace.id !== params.workspaceId) ||
+        (params.spaceId && target.space.id !== params.spaceId)) return rejectIdentityEditorOpen('stackEditor.parentUnavailable', rejectionFallback);
+    next = {
+      entityKind, operation,
+      workspaceId: target.workspace.id, spaceId: target.space.id, groupId: target.group.id,
+      draftName: '', draftSymbol: '📚', draftColor: '#6366f1', nameTouched: false, colorChosen: false,
+    };
+  } else if (entityKind === 'stack' && operation === 'edit') {
+    const target = identityStackTarget(params.stackId);
+    if (!target || (params.workspaceId && target.workspace.id !== params.workspaceId) ||
+        (params.spaceId && target.space.id !== params.spaceId) ||
+        (params.groupId && target.group.id !== params.groupId)) return rejectIdentityEditorOpen('stackEditor.unavailable', rejectionFallback);
+    const fields = identityFields(target.item);
+    next = {
+      entityKind, operation, entityId: target.item.id,
+      workspaceId: target.workspace.id, spaceId: target.space.id, groupId: target.group.id,
+      parentKey: target.parentKey,
+      baseline: identityFieldsFingerprint(target.item),
+      draftName: fields.name, draftSymbol: fields.symbol || '📚', draftColor: fields.color, nameTouched: false, colorChosen: false,
+    };
+  } else if (entityKind === 'stack' && operation === 'batch-create') {
+    const prepared = prepareIdentityBatch(params.itemIds);
+    if (prepared.errorKey) {
+      return rejectIdentityEditorOpen(prepared.errorKey, rejectionFallback);
+    }
+    const targets = prepared.resolved.targets;
+    const first = prepared.destination;
+    next = {
+      entityKind, operation,
+      workspaceId: first.workspace.id, spaceId: first.space.id, groupId: first.group.id,
+      groupName: first.group.name,
+      batchIds: targets.map(target => String(target.item.id)),
+      batchBaseline: identitySelectionFingerprint(targets),
+      draftName: '', draftSymbol: '📚', draftColor: '#6366f1', nameTouched: false, colorChosen: false,
+    };
+  }
+  if (!next) return false;
+
+  rememberOpener(overlay);
+  modalCtx = next;
+  modalBusy = false;
+  document.getElementById('modal-input').value = next.draftName;
+  document.getElementById('emoji-trigger-val').textContent = next.draftSymbol;
+  selectIdentityColor(next.draftColor);
+  paintIdentityEditor();
+  setIdentityEditorInterlock(true);
+  overlay.classList.remove('hidden');
+  lockBodyScroll();
+  setTimeout(() => {
+    const target = params.focusField === 'symbol'
+      ? document.getElementById('emoji-trigger')
+      : document.getElementById('modal-input');
+    target?.focus({ preventScroll: true });
+    if (operation === 'duplicate' && target === document.getElementById('modal-input')
+        && typeof target.select === 'function') target.select();
+  }, 0);
+  return true;
+}
+
+function handleIdentityEditorKeydown(event) {
+  const overlay = document.getElementById('modal-overlay');
+  if (!overlay || overlay.classList.contains('hidden')) return false;
+  if (handleIdentityColorKeydown(event)) return true;
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!modalBusy) closeIdentityEditor();
+    return true;
+  }
+  if (event.key === 'Tab') trapTabKey(event, overlay);
+  if (event.key === 'Enter' && event.target === document.getElementById('modal-input')) {
+    event.preventDefault();
+    void confirmIdentityEditor();
+  }
+  event.stopPropagation();
+  return true;
+}
+
+function handleIdentityEditorGlobalKey(event) {
+  const overlay = document.getElementById('modal-overlay');
+  if (!overlay || overlay.classList.contains('hidden') || overlay.contains(event.target)) return false;
+  const emoji = document.getElementById('emoji-picker');
+  const recovery = document.getElementById('state-recovery-overlay');
+  if ((emoji && !emoji.classList.contains('hidden') && emoji.contains(event.target)) ||
+      (recovery && !recovery.classList.contains('hidden') && recovery.contains(event.target))) return false;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  if (event.key === 'Escape' && !modalBusy) closeIdentityEditor();
+  return true;
 }
 function openIntentEditor(targetKind, targetId) {
   let entity = null;
@@ -4097,44 +7324,266 @@ function clearIntentEditor() {
   closeIntentEditor();
   toast('Intention cleared', { undo: true });
 }
-function confirmModal() {
-  if (!modalCtx) return;
-  const name = document.getElementById('modal-input').value.trim();
-  const sym = document.getElementById('emoji-trigger-val').textContent || '📁';
-  const cEl = document.querySelector('.csw.active');
-  const color = cEl ? cEl.dataset.c : '#6366f1';
-  const { kind, ctx } = modalCtx;
+async function confirmIdentityEditor() {
+  if (!modalCtx || modalBusy) return false;
+  const ctx = modalCtx;
+  const prefix = identityEditorPrefix();
+  const input = document.getElementById('modal-input');
+  let name = input.value.trim();
+  const symbol = String(ctx.draftSymbol || (ctx.entityKind === 'stack' ? '📚' : '📁'));
+  const color = String(ctx.draftColor || '#6366f1');
+  ctx.draftName = input.value;
+  if (!name && (ctx.operation !== 'edit' || ctx.nameTouched)) {
+    setIdentityEditorError(`${prefix}.nameRequired`);
+    input.focus({ preventScroll: true });
+    return false;
+  }
 
-  if (kind === 'new-group') createGroup({ name: name || 'New Group', symbol: sym, color });
-  else if (kind === 'edit-group') {
-    State.snapshot('Edit group');
-    ctx.name = name || ctx.name; ctx.symbol = sym; ctx.color = color;
-    State.persist(); renderBoard();
-  } else if (kind === 'new-ws') {
-    State.snapshot('New workspace');
-    const ws = { id: uid(), name: name || 'New Workspace', symbol: sym, categories: [{ id: uid(), name:'Quicklinks', groups:[] }] };
-    ws.activeCatId = ws.categories[0].id;
-    State.get().workspaces.push(ws);
-    State.get().activeWsId = ws.id;
-    State.persist(); renderAll();
-  } else if (kind === 'new-cat') {
-    State.snapshot('New category');
-    const ws = activeWs();
-    const nc = { id: uid(), name: name || 'New Category', groups: [] };
-    ws.categories.push(nc);
-    ws.activeCatId = nc.id;
-    State.persist(); renderAll();
-  } else if (kind === 'new-stack') {
-    State.snapshot('New stack');
-    if (ctx && ctx.groupId) {
-      const info = findGroup(ctx.groupId);
-      if (info) {
-        info.group.items.push(stampNew({ id: uid(), type:'stack', name: name || 'New Stack', symbol: sym, color, expanded: true, items: [] }));
-        State.persist(); renderBoard();
+  let target = null;
+  let batchTargets = null;
+  let duplicatedGroup = null;
+  let duplicateLayout = null;
+  let sourceIndex = -1;
+  if (ctx.entityKind === 'group' && ctx.operation === 'create') {
+    target = identitySpaceTarget(ctx.workspaceId, ctx.spaceId);
+    if (!target) {
+      setIdentityEditorError('groupEditor.parentUnavailable', { unavailable: true });
+      return false;
+    }
+  } else if (ctx.entityKind === 'group' && ctx.operation === 'duplicate') {
+    target = identityGroupTarget(ctx.entityId);
+    const state = State.get();
+    if (!target || target.workspace.id !== ctx.workspaceId || target.space.id !== ctx.spaceId ||
+        state.activeWsId !== ctx.workspaceId || target.workspace.activeCatId !== ctx.spaceId) {
+      setIdentityEditorError('groupEditor.unavailable', { unavailable: true });
+      return false;
+    }
+    sourceIndex = target.space.groups.indexOf(target.group);
+    if (sourceIndex < 0) {
+      setIdentityEditorError('groupEditor.unavailable', { unavailable: true });
+      return false;
+    }
+    const currentBaseline = identityGroupDuplicateFingerprint(target);
+    if (currentBaseline !== ctx.baseline) {
+      const fields = identityFields(target.group);
+      ctx.baseline = currentBaseline;
+      ctx.sourceName = fields.name;
+      ctx.spaceName = String(target.space.name || '');
+      if (!ctx.nameTouched) {
+        ctx.draftName = tr('groupEditor.duplicateDefaultName', { name: fields.name });
+        input.value = ctx.draftName;
+      } else {
+        ctx.draftName = input.value;
       }
+      if (!ctx.symbolChosen) ctx.draftSymbol = fields.symbol || '??';
+      if (!ctx.colorChosen) ctx.draftColor = fields.color;
+      document.getElementById('emoji-trigger-val').textContent = ctx.draftSymbol;
+      selectIdentityColor(ctx.draftColor);
+      setIdentityEditorError('groupEditor.duplicateChanged');
+      input.focus({ preventScroll: true });
+      return false;
+    }
+  } else if (ctx.entityKind === 'group' && ctx.operation === 'edit') {
+    target = identityGroupTarget(ctx.entityId);
+    if (!target || target.workspace.id !== ctx.workspaceId || target.space.id !== ctx.spaceId) {
+      setIdentityEditorError('groupEditor.unavailable', { unavailable: true });
+      return false;
+    }
+    const currentBaseline = identityFieldsFingerprint(target.group);
+    if (currentBaseline !== ctx.baseline) {
+      const fields = identityFields(target.group);
+      ctx.baseline = currentBaseline;
+      ctx.draftName = fields.name;
+      ctx.draftSymbol = fields.symbol || '📁';
+      ctx.draftColor = fields.color;
+      ctx.nameTouched = false;
+      ctx.symbolChosen = false;
+      ctx.colorChosen = false;
+      input.value = ctx.draftName;
+      document.getElementById('emoji-trigger-val').textContent = ctx.draftSymbol;
+      selectIdentityColor(ctx.draftColor);
+      setIdentityEditorError('groupEditor.changed');
+      input.focus({ preventScroll: true });
+      return false;
+    }
+    if (!ctx.nameTouched) name = String(target.group.name || '');
+    const nameUnchanged = !ctx.nameTouched || name === String(target.group.name || '');
+    const symbolUnchanged = !ctx.symbolChosen || symbol === String(target.group.symbol || '');
+    const colorUnchanged = !ctx.colorChosen || color === String(target.group.color || '');
+    if (nameUnchanged && symbolUnchanged && colorUnchanged) {
+      closeIdentityEditor();
+      return true;
+    }
+  } else if (ctx.entityKind === 'stack' && ctx.operation === 'create') {
+    target = identityGroupTarget(ctx.groupId);
+    if (!target || target.workspace.id !== ctx.workspaceId || target.space.id !== ctx.spaceId) {
+      setIdentityEditorError('stackEditor.parentUnavailable', { unavailable: true });
+      return false;
+    }
+  } else if (ctx.entityKind === 'stack' && ctx.operation === 'edit') {
+    target = identityStackTarget(ctx.entityId);
+    if (!target || target.workspace.id !== ctx.workspaceId || target.space.id !== ctx.spaceId ||
+        target.group.id !== ctx.groupId || target.parentKey !== ctx.parentKey) {
+      setIdentityEditorError('stackEditor.unavailable', { unavailable: true });
+      return false;
+    }
+    const currentBaseline = identityFieldsFingerprint(target.item);
+    if (currentBaseline !== ctx.baseline) {
+      const fields = identityFields(target.item);
+      ctx.baseline = currentBaseline;
+      ctx.draftName = fields.name;
+      ctx.draftSymbol = fields.symbol || '📚';
+      ctx.draftColor = fields.color;
+      ctx.nameTouched = false;
+      ctx.symbolChosen = false;
+      ctx.colorChosen = false;
+      input.value = ctx.draftName;
+      document.getElementById('emoji-trigger-val').textContent = ctx.draftSymbol;
+      selectIdentityColor(ctx.draftColor);
+      setIdentityEditorError('stackEditor.changed');
+      input.focus({ preventScroll: true });
+      return false;
+    }
+    if (!ctx.nameTouched) name = String(target.item.name || '');
+    const nameUnchanged = !ctx.nameTouched || name === String(target.item.name || '');
+    const symbolUnchanged = !ctx.symbolChosen || symbol === String(target.item.symbol || '');
+    const colorUnchanged = !ctx.colorChosen || color === String(target.item.color || '');
+    if (nameUnchanged && symbolUnchanged && colorUnchanged) {
+      closeIdentityEditor();
+      return true;
+    }
+  } else if (ctx.entityKind === 'stack' && ctx.operation === 'batch-create') {
+    const prepared = prepareIdentityBatch(ctx.batchIds);
+    batchTargets = prepared.resolved?.targets || null;
+    if (prepared.errorKey || !batchTargets || identitySelectionFingerprint(batchTargets) !== ctx.batchBaseline) {
+      setIdentityEditorError('stackEditor.selectionUnavailable', { unavailable: true });
+      return false;
+    }
+    target = identityGroupTarget(ctx.groupId);
+    if (!target || target.workspace.id !== ctx.workspaceId || target.space.id !== ctx.spaceId) {
+      setIdentityEditorError('stackEditor.parentUnavailable', { unavailable: true });
+      return false;
+    }
+  } else {
+    return false;
+  }
+
+  let entityId = ctx.entityId || null;
+  if (ctx.operation !== 'edit') {
+    try {
+      const allocateId = createOrganizationIdAllocator();
+      if (ctx.operation === 'duplicate') {
+        duplicatedGroup = cloneGroupForDuplicate(target.group, allocateId);
+        entityId = duplicatedGroup.id;
+        duplicatedGroup.name = name;
+        if (ctx.symbolChosen) duplicatedGroup.symbol = symbol;
+        if (ctx.colorChosen) duplicatedGroup.color = color;
+        duplicateLayout = prepareGroupDuplicateLayout(State.get(), target.space, {
+          sourceId: target.group.id,
+          group: duplicatedGroup,
+        });
+      } else {
+        entityId = allocateId();
+      }
+    } catch {
+      setIdentityEditorError(ctx.operation === 'duplicate'
+        ? 'groupEditor.duplicateIdUnavailable'
+        : `${prefix}.idUnavailable`);
+      return false;
     }
   }
-  closeModal();
+
+  const count = batchTargets?.length || 0;
+  const historyKey = ctx.operation === 'batch-create'
+    ? 'stackEditor.batchHistory'
+    : (ctx.operation === 'duplicate'
+      ? 'groupEditor.duplicateHistory'
+      : `${prefix}.${ctx.operation === 'edit' ? 'editHistory' : 'createHistory'}`);
+  setIdentityEditorBusy(true);
+  const actionId = State.snapshot(tr(historyKey, { name, count, source: ctx.sourceName }));
+  const state = State.get();
+  state.activeWsId = ctx.workspaceId;
+  const workspace = state.workspaces.find(candidate => candidate.id === ctx.workspaceId);
+  if (workspace) workspace.activeCatId = ctx.spaceId;
+
+  if (ctx.entityKind === 'group' && ctx.operation === 'create') {
+    target.space.groups.push({
+      id: entityId, name, symbol, color, collapsed: false, items: [],
+    });
+  } else if (ctx.entityKind === 'group' && ctx.operation === 'duplicate') {
+    target.space.groups.splice(sourceIndex + 1, 0, duplicatedGroup);
+    applyGroupDuplicateLayout(state, target.space, {
+      sourceId: target.group.id,
+      group: duplicatedGroup,
+    }, duplicateLayout);
+  } else if (ctx.entityKind === 'group' && ctx.operation === 'edit') {
+    if (ctx.nameTouched) target.group.name = name;
+    if (ctx.symbolChosen) target.group.symbol = symbol;
+    if (ctx.colorChosen) target.group.color = color;
+  } else if (ctx.entityKind === 'stack' && ctx.operation === 'create') {
+    target.group.items.push(stampNew({
+      id: entityId, type: 'stack', name, symbol, color, expanded: true, items: [],
+    }));
+  } else if (ctx.entityKind === 'stack' && ctx.operation === 'edit') {
+    if (ctx.nameTouched) target.item.name = name;
+    if (ctx.symbolChosen) target.item.symbol = symbol;
+    if (ctx.colorChosen) target.item.color = color;
+  } else if (ctx.operation === 'batch-create') {
+    const moved = [];
+    for (let index = ctx.batchIds.length - 1; index >= 0; index -= 1) {
+      const current = identityItemTargets([ctx.batchIds[index]])?.targets[0];
+      if (current) moved.unshift(...current.parentItems.splice(current.index, 1));
+    }
+    target.group.items.unshift(stampNew({
+      id: entityId, type: 'stack', name, symbol, color, expanded: true, items: moved,
+    }));
+  }
+  if (ctx.symbolChosen) rememberRecentEmoji(symbol);
+
+  try {
+    await State.persistNow();
+  } catch (error) {
+    // The persistence layer owns fail-closed recovery. Keep the dirty graph
+    // behind it, and do not render, close, retry, or claim success here.
+    if (State.isRecoveryRequired?.() && typeof showStateRecoveryRequired === 'function') {
+      showStateRecoveryRequired(error);
+    }
+    setIdentityEditorBusy(false);
+    setIdentityEditorError(ctx.operation === 'duplicate'
+      ? 'groupEditor.duplicateRecoveryRequired'
+      : `${prefix}.recoveryRequired`, { unavailable: true });
+    return false;
+  }
+
+  if (ctx.operation === 'batch-create') {
+    selectedItemIds.clear();
+    explicitSelMode = false;
+    lastSelectedItemId = null;
+    syncItemSelMode();
+    document.getElementById('item-sel-toolbar')?.remove();
+  }
+  if (ctx.operation === 'duplicate' && ctx.openedFromGroupPage && typeof Router !== 'undefined') {
+    Router.navigate({
+      type: 'group', wsId: ctx.workspaceId, groupId: entityId, itemId: null, query: {},
+    }, { persist: false });
+  } else {
+    renderAll();
+  }
+  modalBusy = false;
+  closeIdentityEditor({ restoreFocus: false });
+  requestAnimationFrame(() => {
+    if (!focusIdentityTarget(ctx.entityKind, entityId)) focusIdentityFallback(ctx);
+  });
+  const successKey = ctx.operation === 'batch-create'
+    ? 'stackEditor.stacked'
+    : (ctx.operation === 'duplicate'
+      ? 'groupEditor.duplicated'
+      : `${prefix}.${ctx.operation === 'edit' ? 'updated' : 'created'}`);
+  toast(tr(successKey, { name, count, source: ctx.sourceName }), { undo: actionId });
+  if (ctx.operation === 'duplicate') {
+    reconcileDuplicatedGroupReminders(duplicatedGroup, name, actionId);
+  }
+  return true;
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -4624,7 +8073,15 @@ async function saveAllTabs() {
 // ════════════════════════════════════════════════════════════════
 // RENDER (diff-based for items)
 // ════════════════════════════════════════════════════════════════
-function renderAll() { renderHeader(); renderWsList(); renderCategoryTabs(); renderBoard(); renderItemDetail(); Router.sync(); }
+function renderAll() {
+  const headerReady = renderHeader();
+  renderWsList();
+  renderCategoryTabs();
+  renderBoard();
+  renderItemDetail();
+  Router.sync();
+  return headerReady;
+}
 
 async function renderHeader() {
   const ws = activeWs(); if (!ws) return;
@@ -4681,7 +8138,7 @@ async function renderWsChips() {
     more.className = 'ws-chip ws-chip-more';
     more.title = `${otherCount} saved workspace${otherCount > 1 ? 's' : ''}`;
     more.innerHTML = `<span>+${otherCount}</span>`;
-    more.onclick = () => openWsGrid();
+    more.onclick = event => openWsGrid(event.currentTarget);
     $stack.appendChild(more);
   }
 }
@@ -4701,17 +8158,17 @@ function buildWsChip(ws, { live }) {
     renderAll();
     if (ws.windowId) { try { await chrome.windows.update(ws.windowId, { focused: true }); } catch {} }
   };
-  chip.oncontextmenu = e => {
-    e.preventDefault();
+  const workspaceMenuItems = () => {
     const items = [
-      { text:'Rename', icon: cmIcons.edit, action: () => { const n = prompt('Rename:', ws.name); if (n) { State.snapshot('Rename ws'); ws.name = n; State.persist(); renderAll(); } } },
-      { text:'Change symbol…', icon: cmIcons.symbol, action: () => openEmojiPicker({ kind:'workspace', id: ws.id }, chip) },
+      { text: tr('organization.renameMenu'), icon: cmIcons.edit, action: () => openOrganizationName('workspace', ws.id, chip) },
+      { text: tr('organization.changeSymbol'), icon: cmIcons.symbol, action: () => openEmojiPicker({ kind:'workspace', id: ws.id }, chip) },
       { sep: true }
     ];
     if (ws.windowId) items.push({ text:'Unbind from window', icon: cmIcons.move, action: () => { State.snapshot('Unbind'); delete ws.windowId; State.persist(); renderAll(); } });
-    if (State.get().workspaces.length > 1) items.push({ text:'Delete workspace', icon: cmIcons.delete, danger: true, action: () => { if (confirm(`Delete "${ws.name}"?`)) { State.snapshot('Delete ws'); State.get().workspaces = State.get().workspaces.filter(x => x.id !== ws.id); if (State.get().activeWsId === ws.id) State.get().activeWsId = State.get().workspaces[0].id; State.persist(); renderAll(); } } });
-    showContextMenu(e.pageX, e.pageY, items);
+    if (State.get().workspaces.length > 1) items.push({ text: tr('organization.workspace.delete'), icon: cmIcons.delete, danger: true, action: () => openOrganizationDelete('workspace', ws.id, chip) });
+    return items;
   };
+  bindAnchoredContextMenu(chip, workspaceMenuItems);
   return chip;
 }
 
@@ -4728,6 +8185,18 @@ function renderWsList() {
   });
 }
 
+function categoryReminderMenuItem(cat) {
+  // Reopen existing reminders before offering another one. This keeps delivered
+  // and legacy multi-reminder records reachable through the picker's Remove
+  // action, which is required before an otherwise-empty Space can be deleted.
+  const hasReminder = Array.isArray(cat?.reminders) && cat.reminders.length > 0;
+  return {
+    text: `${tr(hasReminder ? 'reminder.editTitle' : 'reminder.setTitle')}…`,
+    icon: cmIcons.clock,
+    action: () => openEntityReminderPicker('category', cat.id, hasReminder ? 0 : undefined),
+  };
+}
+
 let _catTabsInitialized = false;
 function renderCategoryTabs() {
   const ws = activeWs(); if (!ws) return;
@@ -4742,16 +8211,11 @@ function renderCategoryTabs() {
     b.dataset.cid = cat.id;
     b.textContent = cat.name;
     b.onclick = () => openCategory(cat.id);
-    b.ondblclick = () => {
-      const nn = prompt('Rename category:', cat.name);
-      if (nn && nn.trim()) { State.snapshot('Rename cat'); cat.name = nn.trim(); State.persist(); renderCategoryTabs(); }
-    };
     b.oncontextmenu = e => {
       e.preventDefault();
       showContextMenu(e.pageX, e.pageY, [
-        { text:'Rename', icon: cmIcons.edit, action: () => { const nn = prompt('Rename category:', cat.name); if (nn && nn.trim()) { State.snapshot('Rename cat'); cat.name = nn.trim(); State.persist(); renderCategoryTabs(); } } },
-        { text:'Set reminder…', icon: cmIcons.clock, action: () => openEntityReminderPicker('category', cat.id) },
-        ws.categories.length > 1 ? { text:'Delete', icon: cmIcons.delete, danger: true, action: () => { if (confirm(`Delete "${cat.name}"?`)) { State.snapshot('Delete cat'); ws.categories = ws.categories.filter(c => c.id !== cat.id); if (ws.activeCatId === cat.id) ws.activeCatId = ws.categories[0].id; State.persist(); renderAll(); } } } : null
+        categoryReminderMenuItem(cat),
+        ws.categories.length > 1 ? { text: tr('organization.space.delete'), icon: cmIcons.delete, danger: true, action: () => openOrganizationDelete('space', cat.id, b) } : null
       ].filter(Boolean));
     };
 
@@ -5282,7 +8746,7 @@ function buildSystemEmptyState({ kind = 'library', title, body, actions = [], no
     button.onclick = async () => {
       if (button.disabled) return;
       try {
-        const outcome = action.run();
+        const outcome = action.run(button);
         if (outcome && typeof outcome.then === 'function') {
           button.disabled = true;
           await outcome;
@@ -5298,7 +8762,15 @@ function buildSystemEmptyState({ kind = 'library', title, body, actions = [], no
 }
 
 function buildEmptySpaceState(cat) {
-  const createGroup = { label: tr('empty.createGroup'), icon: '+', run: () => openModal('new-group') };
+  const workspace = activeWs();
+  const createGroup = {
+    label: tr('empty.createGroup'),
+    icon: '+',
+    run: opener => openIdentityEditor('group', 'create', {
+      workspaceId: workspace?.id,
+      spaceId: cat?.id,
+    }, opener),
+  };
   const addSave = { label: tr('empty.addSave'), icon: '↗', run: () => openCommandPalette() };
   return buildSystemEmptyState({
     kind: 'space',
@@ -5404,7 +8876,7 @@ function renderLibrarySurface() {
         { text: 'Open', icon: cmIcons.open, action: () => openTabMaybeHibernated(item.url, { focus: true }) },
         { text: item.favorite ? 'Remove from Favorites' : 'Add to Favorites', icon: cmIcons.favorite, action: () => toggleFavorite(item) },
         { text: item.readLaterAt ? 'Remove from Read Later' : 'Save to Read Later', icon: cmIcons.readLater, action: () => toggleReadLater(item) },
-        { text: 'Details', icon: cmIcons.detail, action: () => { boardDetailItemId = item.id; renderItemDetail(); } },
+        { text: 'Details', icon: cmIcons.detail, action: () => openItemDetail(item.id) },
         { sep: true },
         { text: 'Archive', icon: cmIcons.archive, action: () => archiveItem(item.id) }
       ]);
@@ -5567,7 +9039,7 @@ function renderReadLaterSurface() {
         { text: item.readAt ? 'Mark unread' : 'Mark read', icon: cmIcons.readLater, action: () => toggleReadStatus(item) },
         { text: 'Remove from Read Later', icon: cmIcons.delete, action: () => toggleReadLater(item) },
         { sep: true },
-        { text: 'Details', icon: cmIcons.detail, action: () => { boardDetailItemId = item.id; renderItemDetail(); } },
+        { text: 'Details', icon: cmIcons.detail, action: () => openItemDetail(item.id) },
         { text: 'Archive', icon: cmIcons.archive, action: () => archiveItem(item.id) }
       ]);
       list.appendChild(row);
@@ -6031,35 +9503,89 @@ function homeSubtitle() {
   return _homeSubtitle;
 }
 
-// A single preview row inside a category card (favicon+title for tabs, a glyph
-// for notes / to-dos / stacks). Read-only — the whole card routes to the board.
-// Tabs render a two-line row (title + domain) to echo the Waypoint bento; other
-// item types are single-line with a glyph.
-function buildHomePreviewRow(it) {
-  const row = document.createElement('div');
+// Home previews show real saved records and route directly into their existing
+// recovery sheet. They keep only primitive identity across the Home render.
+function resolveUniqueHomePreviewItem(workspaceId, itemId) {
+  if (!workspaceId || !itemId) return null;
+  const state = State.get();
+  const workspaces = (state.workspaces || []).filter(workspace => workspace.id === workspaceId);
+  if (workspaces.length !== 1) return null;
+  const matches = (state.workspaces || []).flatMap(workspace =>
+    collectWorkspaceItems(workspace)
+      .filter(row => row.item?.id === itemId)
+      .map(row => ({ ws: workspace, ...row }))
+  );
+  if (matches.length !== 1 || matches[0].ws !== workspaces[0]) return null;
+  const target = matches[0];
+  const spaces = (target.ws.categories || []).filter(space => space.id === target.cat?.id);
+  return spaces.length === 1 ? target : null;
+}
+
+function homePreviewFocusKey(workspaceId, origin, itemId) {
+  return [workspaceId, origin, itemId].map(value => encodeURIComponent(String(value || ''))).join(':');
+}
+
+function homePreviewRoute(target) {
+  if (!target?.ws?.id || !target?.cat?.id || !target?.item?.id) return null;
+  return { type: 'home', wsId: target.ws.id, query: { item: target.item.id } };
+}
+
+function openHomePreviewItem(workspaceId, itemId, returnFocusKey, opener) {
+  focusDialogOpener(opener);
+  const target = resolveUniqueHomePreviewItem(workspaceId, itemId);
+  const route = homePreviewRoute(target);
+  if (!target || !route) {
+    toast(tr('home.previewUnavailable'), { danger: true, duration: 5000 });
+    return false;
+  }
+  prepareItemDetailOpen(target.item.id, returnFocusKey);
+  // The hash is the navigation record. Keeping the detail over Home avoids
+  // selecting or rendering its owning Space, so a recovery view cannot create
+  // an incidental whole-state or advanced-layout write.
+  Router.navigate(route, { persist: false });
+  return true;
+}
+
+function homePreviewTypeKey(type) {
+  return `home.previewType.${['tab', 'note', 'todo', 'stack'].includes(type) ? type : 'item'}`;
+}
+
+function buildHomePreviewRow(it, { workspaceId, origin }) {
+  const row = document.createElement('button');
+  row.type = 'button';
   row.className = 'home-prow';
+  row.dataset.itemId = String(it?.id || '');
+  const returnFocusKey = homePreviewFocusKey(workspaceId, origin, it?.id);
+  row.dataset.homePreviewKey = returnFocusKey;
   let icon, label, sub = '';
   if (it.type === 'tab') {
     icon = `<img class="home-prow-fav" src="${esc(favUrl(it.url) || BLANK_FAV)}" alt="" loading="lazy" decoding="async">`;
-    label = it.title || it.url || 'Untitled';
+    label = _searchItemTitle(it);
     try { sub = new URL(it.url).hostname.replace(/^www\./, ''); } catch {}
   } else if (it.type === 'note') {
     icon = `<span class="home-prow-glyph">📝</span>`;
-    label = (it.html ? String(it.html).replace(/<[^>]*>/g, ' ') : '').trim() || 'Note';
+    label = _searchItemTitle(it);
   } else if (it.type === 'todo') {
     icon = `<span class="home-prow-glyph">${it.done ? '☑' : '☐'}</span>`;
-    label = it.text || it.title || 'To-do';
+    label = _searchItemTitle(it);
   } else if (it.type === 'stack') {
     icon = `<span class="home-prow-glyph">📚</span>`;
-    label = it.name || 'Stack';
+    label = _searchItemTitle(it);
   } else {
     icon = `<span class="home-prow-glyph">•</span>`;
-    label = it.title || it.name || '';
+    label = _searchItemTitle(it) || tr('home.previewType.item');
   }
   const text = sub
     ? `<span class="home-prow-text"><span class="home-prow-title">${esc(label)}</span><span class="home-prow-domain">${esc(sub)}</span></span>`
     : `<span class="home-prow-text"><span class="home-prow-title">${esc(label)}</span></span>`;
   row.innerHTML = `${icon}${text}`;
+  row.setAttribute('aria-label', tr('home.previewOpen', {
+    type: tr(homePreviewTypeKey(it.type)),
+    title: label,
+  }));
+  row.addEventListener('click', event => {
+    openHomePreviewItem(workspaceId, it.id, returnFocusKey, event.currentTarget);
+  });
   return row;
 }
 
@@ -6120,6 +9646,7 @@ function newestHomeItems(items, limit = 3) {
 }
 
 function buildHomeInboxZone() {
+  const ws = activeWs();
   const cat = activeCat();
   const inbox = cat?.groups?.find(group => group.name === 'Inbox') || null;
   const items = inbox?.items || [];
@@ -6139,7 +9666,10 @@ function buildHomeInboxZone() {
 
   const preview = document.createElement('div');
   preview.className = 'home-loop-preview';
-  if (items.length) newestHomeItems(items).forEach(item => preview.appendChild(buildHomePreviewRow(item)));
+  if (items.length) newestHomeItems(items).forEach(item => preview.appendChild(buildHomePreviewRow(item, {
+    workspaceId: ws?.id,
+    origin: `inbox:${cat?.id || ''}`,
+  })));
   else {
     const empty = document.createElement('p');
     empty.className = 'home-card-empty';
@@ -6223,7 +9753,7 @@ function renderHome() {
   if (!ws.categories.length) {
     grid.appendChild(buildSystemEmptyState({
       kind: 'space', title: tr('home.emptyTitle'), body: tr('home.emptyBody'),
-      actions: [{ label: tr('palette.newSpace'), icon: '+', run: () => openModal('new-cat') }],
+      actions: [{ label: tr('palette.newSpace'), icon: '+', run: () => openOrganizationCreate('space') }],
       note: tr('empty.localNote'),
     }));
   }
@@ -6236,6 +9766,7 @@ function renderHome() {
     const items = cat.groups.reduce((acc, g) => acc.concat(g.items), []);
     const card = document.createElement('article');
     card.className = 'home-card';
+    card.dataset.catId = cat.id;
     card.style.setProperty('--home-accent', homeAccentColor(cat));
 
     const hd = document.createElement('div');
@@ -6249,12 +9780,17 @@ function renderHome() {
       <button class="home-card-more" title="More" aria-label="More actions">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="1.3" fill="currentColor"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="12" cy="8" r="1.3" fill="currentColor"/></svg>
       </button>`;
-    hd.querySelector('.home-card-more').addEventListener('click', e => {
+    const homeMore = hd.querySelector('.home-card-more');
+    homeMore.dataset.catId = cat.id;
+    homeMore.title = tr('organization.space.actions', { name: cat.name });
+    homeMore.setAttribute('aria-label', tr('organization.space.actions', { name: cat.name }));
+    homeMore.addEventListener('click', e => {
       e.stopPropagation();
-      showContextMenu(e.pageX, e.pageY, [
+      showAnchoredContextMenu(homeMore, [
         { text: 'Open', icon: cmIcons.open, action: () => openCategory(cat.id) },
-        { text: 'Rename', icon: cmIcons.edit, action: () => { const nn = prompt('Rename category:', cat.name); if (nn && nn.trim()) { State.snapshot('Rename cat'); cat.name = nn.trim(); State.persist(); renderCategoryTabs(); renderBoard(); } } },
-        ws.categories.length > 1 ? { text: 'Delete', icon: cmIcons.delete, danger: true, action: () => { if (confirm(`Delete "${cat.name}"?`)) { State.snapshot('Delete cat'); ws.categories = ws.categories.filter(c => c.id !== cat.id); if (ws.activeCatId === cat.id) ws.activeCatId = ws.categories[0].id; State.persist(); renderAll(); } } } : null,
+        { text: tr('organization.renameMenu'), icon: cmIcons.edit, action: () => openOrganizationName('space', cat.id, homeMore) },
+        categoryReminderMenuItem(cat),
+        ws.categories.length > 1 ? { text: tr('organization.space.delete'), icon: cmIcons.delete, danger: true, action: () => openOrganizationDelete('space', cat.id, homeMore) } : null,
       ].filter(Boolean));
     });
     card.appendChild(hd);
@@ -6269,7 +9805,10 @@ function renderHome() {
       em.textContent = tr('home.empty');
       body.appendChild(em);
     } else {
-      newestHomeItems(items).forEach(it => body.appendChild(buildHomePreviewRow(it)));
+      newestHomeItems(items).forEach(it => body.appendChild(buildHomePreviewRow(it, {
+        workspaceId: ws.id,
+        origin: `space:${cat.id}`,
+      })));
     }
     main.appendChild(body);
     // Derived accent panel: a category-tinted gradient with the category glyph —
@@ -6371,28 +9910,37 @@ function renderSpaceNav() {
   const $nav = document.getElementById('space-nav');
   if ($nav && ws) {
     $nav.innerHTML = '';
-    ws.categories.forEach(cat => {
+    ws.categories.forEach((cat, categoryIndex) => {
       const count = cat.groups.reduce((n, g) => n + g.items.length, 0);
       const el = document.createElement('button');
       const inbox = cat.groups.find(g => g.name === 'Inbox');
       const showingInbox = !!activeGroupPage && activeGroupPage.groupId === inbox?.id;
       el.className = 'space-item' + (!activeSearch && !activeHome && !activeLibraryMode && !activeCalendar && !showingInbox && cat.id === ws.activeCatId ? ' active' : '');
       el.dataset.catId = cat.id;
-      el.setAttribute('aria-label', cat.name);
+      const duplicateName = ws.categories.some((candidate, candidateIndex) => (
+        candidateIndex !== categoryIndex && candidate.name === cat.name
+      ));
+      const position = duplicateName
+        ? tr('organization.space.position', {
+          position: categoryIndex + 1,
+          count: ws.categories.length,
+        })
+        : '';
+      el.setAttribute('aria-label', duplicateName
+        ? tr('organization.space.duplicateLabel', { name: cat.name, position })
+        : cat.name);
       el.innerHTML =
         `<span class="space-sym">${esc(cat.symbol || '🗂')}</span>` +
         `<span class="space-name">${esc(cat.name)}</span>` +
         `<span class="nav-count">${count}</span>`;
       el.onclick = () => openCategory(cat.id);
-      el.ondblclick = () => { const nn = prompt('Rename category:', cat.name); if (nn && nn.trim()) { State.snapshot('Rename cat'); cat.name = nn.trim(); State.persist(); renderCategoryTabs(); } };
-      el.oncontextmenu = e => {
-        e.preventDefault();
-        showContextMenu(e.pageX, e.pageY, [
+      enableKeyboardClick(el);
+      bindAnchoredContextMenu(el, () => [
           { text: 'Open', icon: cmIcons.open, action: () => openCategory(cat.id) },
-          { text: 'Rename', icon: cmIcons.edit, action: () => { const nn = prompt('Rename category:', cat.name); if (nn && nn.trim()) { State.snapshot('Rename cat'); cat.name = nn.trim(); State.persist(); renderCategoryTabs(); } } },
-          ws.categories.length > 1 ? { text: 'Delete', icon: cmIcons.delete, danger: true, action: () => { if (confirm(`Delete "${cat.name}"?`)) { State.snapshot('Delete cat'); ws.categories = ws.categories.filter(c => c.id !== cat.id); if (ws.activeCatId === cat.id) ws.activeCatId = ws.categories[0].id; State.persist(); renderAll(); } } } : null
+          { text: tr('organization.renameMenu'), icon: cmIcons.edit, action: () => openOrganizationName('space', cat.id, el) },
+          categoryReminderMenuItem(cat),
+          ws.categories.length > 1 ? { text: tr('organization.space.delete'), icon: cmIcons.delete, danger: true, action: () => openOrganizationDelete('space', cat.id, el) } : null
         ].filter(Boolean));
-      };
       // Drop a dragged tab onto a space to save it into that category's Inbox.
       el.ondragover = e => { if (drag?.kind === 'tab' || drag?.kind === 'tabs-multi') { e.preventDefault(); el.classList.add('drop-target'); } };
       el.ondragleave = () => el.classList.remove('drop-target');
@@ -6477,26 +10025,16 @@ function renderBoardView() {
   cat.groups.forEach(g => $b.appendChild(buildGroupCol(g)));
 
   // Add group placeholder
-  const add = document.createElement('div');
+  const add = document.createElement('button');
+  add.type = 'button';
   add.className = 'add-col-btn';
-  add.innerHTML = `<svg width="15" height="15" viewBox="0 0 15 15"><path d="M7.5 2v11M2 7.5h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> Add Group`;
-  add.onclick = () => openModal('new-group');
-  add.ondragover = e => { if (drag?.kind === 'tab' || drag?.kind === 'tabs-multi') { e.preventDefault(); add.style.borderColor = 'var(--accent)'; add.style.color = 'var(--accent)'; } };
-  add.ondragleave = () => { add.style.borderColor = ''; add.style.color = ''; };
-  add.ondrop = async e => {
-    e.preventDefault();
-    add.style.borderColor = ''; add.style.color = '';
-    if (drag?.kind === 'tab') {
-      const name = drag.data.title?.slice(0, 30) || 'New Group';
-      State.snapshot('Create from tab');
-      cat.groups.push({ id: uid(), name, symbol:'📁', color:'#6366f1', collapsed: false, items: [] });
-      await handleTabDropIntoGroup(drag.data, cat.groups[cat.groups.length - 1]);
-    } else if (drag?.kind === 'tabs-multi') {
-      State.snapshot('Create from tabs');
-      const g = { id: uid(), name: `${drag.data.length} tabs`, symbol:'📂', color:'#6366f1', collapsed:false, items:[] };
-      cat.groups.push(g);
-      for (const t of drag.data) await handleTabDropIntoGroup(t, g);
-    }
+  add.innerHTML = `<svg width="15" height="15" viewBox="0 0 15 15" aria-hidden="true"><path d="M7.5 2v11M2 7.5h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> <span>${esc(tr('groupAction.new'))}</span>`;
+  add.onclick = event => {
+    const workspace = activeWs();
+    openIdentityEditor('group', 'create', {
+      workspaceId: workspace?.id,
+      spaceId: cat.id,
+    }, event.currentTarget);
   };
   $b.appendChild(add);
   applySearchFilter();
@@ -6515,27 +10053,27 @@ function buildGroupCol(g) {
 
   const itemCnt = g.items.length;
   col.innerHTML = `
-    <div class="gcol-hd" role="button" tabindex="0" aria-expanded="${!g.collapsed}" aria-label="Group ${esc(g.name)}">
-      <div class="gcol-sym-wrap" style="background:${esc(g.color)}22">
+    <div class="gcol-hd" role="group" aria-label="${esc(tr('groupAction.aria', { name: g.name }))}">
+      <button class="gcol-sym-wrap" type="button" style="background:${esc(g.color)}22" aria-label="${esc(tr('groupAction.editFor', { name: g.name }))}">
         <span>${esc(g.symbol || '📁')}</span>
-      </div>
+      </button>
       <div class="gcol-info">
-        <input class="gcol-name" value="${esc(g.name)}" title="${esc(g.name)}" spellcheck="false">
+        <span class="gcol-name" title="${esc(g.name)}">${esc(g.name)}</span>
         <div class="gcol-meta">
-          <span class="chev"><svg width="8" height="8" viewBox="0 0 8 8"><path d="M2 3l2 2 2-2" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg></span>
-          <span>${itemCnt} ${itemCnt === 1 ? 'item' : 'items'}</span>
+          <button class="chev gcol-toggle" type="button" aria-expanded="${!g.collapsed}" aria-label="${esc(tr(g.collapsed ? 'groupAction.expandFor' : 'groupAction.collapseFor', { name: g.name }))}"><svg width="8" height="8" viewBox="0 0 8 8" aria-hidden="true"><path d="M2 3l2 2 2-2" stroke="currentColor" stroke-width="1.3" fill="none" stroke-linecap="round"/></svg></button>
+          <span>${esc(itemCnt === 1 ? tr('groupAction.oneItem') : tr('groupAction.items', { count: itemCnt }))}</span>
           ${todoStr}
         </div>
         ${renderIntentPills(g)}
       </div>
       <div class="gcol-acts">
-        <button class="gcol-btn go" data-act="open-all" title="Open all tabs" aria-label="Open all tabs">
+        <button class="gcol-btn go" data-act="open-all" title="${esc(tr('groupAction.openAll'))}" aria-label="${esc(tr('groupAction.openAll'))}">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2.5H2a1 1 0 00-1 1v6.5A1 1 0 002 11h6.5a1 1 0 001-1V8M7 1h4m0 0v4M11 1L5.5 6.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-        <button class="gcol-btn focus" data-act="focus" title="Open as page" aria-label="Open as page">
+        <button class="gcol-btn focus" data-act="focus" title="${esc(tr('groupAction.openAsPage'))}" aria-label="${esc(tr('groupAction.openAsPage'))}">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 4V2h2M10 4V2H8M2 8v2h2M10 8v2H8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-        <button class="gcol-btn" data-act="more" title="More…" aria-label="More group actions" aria-haspopup="menu">
+        <button class="gcol-btn" data-act="more" title="${esc(tr('groupAction.more'))}" aria-label="${esc(tr('groupAction.moreFor', { name: g.name }))}" aria-haspopup="menu">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="2.5" cy="6" r="1" fill="currentColor"/><circle cx="6" cy="6" r="1" fill="currentColor"/><circle cx="9.5" cy="6" r="1" fill="currentColor"/></svg>
         </button>
       </div>
@@ -6556,9 +10094,9 @@ function buildGroupCol(g) {
         <svg width="10" height="10" viewBox="0 0 11 11" fill="none"><rect x="1.5" y="1.5" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M3.5 5.5l1.5 1.5 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span>To-do</span>
       </button>
-      <button data-act="add-stack" title="Add stack" aria-label="Add stack">
+      <button data-act="add-stack" title="${esc(tr('groupAction.addStack'))}" aria-label="${esc(tr('groupAction.addStack'))}">
         <svg width="10" height="10" viewBox="0 0 11 11" fill="none"><path d="M2 3l3.5-1.5L9 3 5.5 4.5 2 3zM2 5.5L5.5 7 9 5.5M2 8L5.5 9.5 9 8" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
-        <span>Stack</span>
+        <span>${esc(tr('groupAction.addStack').replace(/…$/, ''))}</span>
       </button>
     </div>
     <div class="gcol-resize"></div>
@@ -6567,71 +10105,65 @@ function buildGroupCol(g) {
 
   // Header
   const hd = col.querySelector('.gcol-hd');
+  const toggleButton = col.querySelector('.gcol-toggle');
   const toggleCollapse = () => {
     State.snapshot('Toggle collapse');
     g.collapsed = !g.collapsed;
     col.classList.toggle('collapsed');
-    hd.setAttribute('aria-expanded', String(!g.collapsed));
+    toggleButton.setAttribute('aria-expanded', String(!g.collapsed));
+    toggleButton.setAttribute('aria-label', tr(g.collapsed ? 'groupAction.expandFor' : 'groupAction.collapseFor', { name: g.name }));
     State.persist();
   };
   hd.addEventListener('click', e => {
-    if (e.target.closest('input') || e.target.closest('button') || e.target.closest('.gcol-sym-wrap') || e.target.closest('.gcol-acts')) return;
+    if (e.target.closest('button') || e.target.closest('.gcol-sym-wrap') || e.target.closest('.gcol-acts')) return;
     toggleCollapse();
   });
-  hd.addEventListener('keydown', e => {
-    if ((e.key === 'Enter' || e.key === ' ') && e.target === hd) { e.preventDefault(); toggleCollapse(); }
-  });
+  toggleButton.addEventListener('click', e => { e.stopPropagation(); toggleCollapse(); });
   // Group menu — shared by right-click and the header's compact "More…" button,
   // so every group action stays reachable even though the hover row now shows
   // only the two most-used shortcuts (Open all / Open as page).
-  const openGroupMenu = (x, y) => {
-    const ws = activeWs();
-    const otherCats = ws ? ws.categories.filter(c => c.id !== ws.activeCatId) : [];
+  const openGroupMenu = (x, y, opener = toggleButton) => {
+    const identity = identityGroupTarget(g.id);
+    const identityParams = {
+      workspaceId: identity?.workspace.id,
+      spaceId: identity?.space.id,
+      groupId: g.id,
+    };
     const items = [
-      { text:'Edit group…', icon: cmIcons.edit, action: () => openModal('edit-group', g) },
-      { text:'Change symbol…', icon: cmIcons.symbol, action: () => openEmojiPicker({ kind:'group', id: g.id }, hd.querySelector('.gcol-sym-wrap')) },
-      { text:'Edit intention…', icon: cmIcons.edit, action: () => openIntentEditor('group', g.id) },
-      { text:'Set reminder…', icon: cmIcons.clock, action: () => openEntityReminderPicker('group', g.id) },
-      { text: g.collapsed ? 'Expand' : 'Collapse', icon: cmIcons.edit, action: () => { State.snapshot('Toggle'); g.collapsed = !g.collapsed; State.persist(); renderBoard(); } },
+      { text: tr('groupAction.edit'), icon: cmIcons.edit, action: () => openIdentityEditor('group', 'edit', identityParams, opener) },
+      { text: tr('groupAction.editIntention'), icon: cmIcons.edit, action: () => openIntentEditor('group', g.id) },
+      { text: tr('groupAction.setReminder'), icon: cmIcons.clock, action: () => openEntityReminderPicker('group', g.id) },
+      { text: tr(g.collapsed ? 'groupAction.expand' : 'groupAction.collapse'), icon: cmIcons.edit, action: () => { State.snapshot('Toggle'); g.collapsed = !g.collapsed; State.persist(); renderBoard(); } },
       { sep: true },
-      { text:'Open all', icon: cmIcons.open, action: () => openGroupAll(g.id) },
-      { text:'Open as page', icon: cmIcons.expand || cmIcons.open, action: () => openGroupPage(g.id) },
-      { text:'Duplicate', icon: cmIcons.copy, action: () => duplicateGroup(g.id) },
-      { text:'Add new stack…', icon: cmIcons.stack, action: () => openModal('new-stack', { groupId: g.id }) },
+      { text: tr('groupAction.openAll'), icon: cmIcons.open, action: () => openGroupAll(g.id) },
+      { text: tr('groupAction.openAsPage'), icon: cmIcons.expand || cmIcons.open, action: () => openGroupPage(g.id) },
+      { text: tr('groupAction.duplicate'), icon: cmIcons.copy, action: () => openIdentityEditor('group', 'duplicate', identityParams, opener) },
+      { text: tr('groupAction.addStack'), icon: cmIcons.stack, action: () => openIdentityEditor('stack', 'create', identityParams, opener) },
     ];
-    if (otherCats.length) {
-      items.push({ sep: true });
-      items.push({ label: 'MOVE TO CATEGORY' });
-      otherCats.forEach(c => {
-        items.push({ text: c.name, icon: cmIcons.move, action: () => moveGroupToCategory(g.id, c.id) });
-      });
-      items.push({ text: '+ New category…', icon: cmIcons.move, action: () => moveGroupToNewCategory(g.id) });
-    }
     items.push({ sep: true });
-    items.push({ text:'Archive', icon: cmIcons.archive, action: () => archiveGroup(g.id) });
-    items.push({ text:'Delete', icon: cmIcons.delete, danger:true, action: () => deleteGroup(g.id) });
-    showContextMenu(x, y, items);
+    items.push(...organizationGroupMoveMenuItems(g.id, opener));
+    items.push({ sep: true });
+    items.push({ text: tr('groupAction.archive'), icon: cmIcons.archive, action: () => archiveGroup(g.id) });
+    showContextMenu(x, y, items, { focusFirst: true });
   };
   // Right-click on group
   hd.addEventListener('contextmenu', e => {
     e.preventDefault();
-    openGroupMenu(e.pageX, e.pageY);
+    focusDialogOpener(toggleButton);
+    openGroupMenu(e.pageX, e.pageY, toggleButton);
   });
 
   // Symbol
   col.querySelector('.gcol-sym-wrap').addEventListener('click', (e) => {
     e.stopPropagation();
-    openEmojiPicker({ kind:'group', id: g.id }, e.currentTarget);
+    const identity = identityGroupTarget(g.id);
+    openIdentityEditor('group', 'edit', {
+      workspaceId: identity?.workspace.id,
+      spaceId: identity?.space.id,
+      groupId: g.id,
+      focusField: 'symbol',
+    }, e.currentTarget);
   });
-
-  // Rename
-  const nm = col.querySelector('.gcol-name');
-  nm.addEventListener('click', e => e.stopPropagation());
-  nm.addEventListener('blur', () => {
-    const v = nm.value.trim() || g.name;
-    if (v !== g.name) { State.snapshot('Rename'); g.name = v; nm.title = v; State.persist(); }
-  });
-  nm.addEventListener('keydown', e => { if (e.key === 'Enter') nm.blur(); if (e.key === 'Escape') { nm.value = g.name; nm.blur(); } });
 
   // Action buttons
   col.querySelectorAll('.gcol-acts .gcol-btn').forEach(btn => {
@@ -6642,14 +10174,14 @@ function buildGroupCol(g) {
       else if (act === 'focus') openGroupPage(g.id);
       else if (act === 'more') {
         const r = btn.getBoundingClientRect();
-        openGroupMenu(r.left, r.bottom + 6);
+        openGroupMenu(r.left, r.bottom + 6, btn);
       }
     });
   });
 
   // Add-buttons
   col.querySelectorAll('.gcol-ft button').forEach(btn => {
-    btn.addEventListener('click', async () => {
+    btn.addEventListener('click', async event => {
       const act = btn.dataset.act;
       if (act === 'add-tab') {
         await addSidebarOrActiveTabToGroup(g);
@@ -6663,7 +10195,14 @@ function buildGroupCol(g) {
         const t = stampNew({ id: uid(), type:'todo', text:'', done:false });
         g.items.push(t); State.persist(); renderBoard();
         setTimeout(() => { const el = document.querySelector(`[data-id="${t.id}"] .todo-text`); if (el) el.focus(); }, 30);
-      } else if (act === 'add-stack') openModal('new-stack', { groupId: g.id });
+      } else if (act === 'add-stack') {
+        const identity = identityGroupTarget(g.id);
+        openIdentityEditor('stack', 'create', {
+          workspaceId: identity?.workspace.id,
+          spaceId: identity?.space.id,
+          groupId: g.id,
+        }, event.currentTarget);
+      }
     });
   });
 
@@ -6738,7 +10277,7 @@ function buildGroupCol(g) {
   col.draggable = true;
 
   // Apply saved size
-  const savedSize = (State.get().columnSizes || State.get().columnWidths || {})[g.id];
+  const savedSize = State.get().columnSizes?.[g.id] ?? State.get().columnWidths?.[g.id];
   if (savedSize) {
     if (typeof savedSize === 'number') col.style.width = savedSize + 'px';
     else {
@@ -6811,23 +10350,15 @@ function buildItem(it, parentItems, group) {
 
 function commonActs(it, extra = []) {
   const acts = [
-    { text:'Details…', icon: cmIcons.detail, action: () => openItemDetail(it.id) },
+    { text: tr('itemAction.details'), icon: cmIcons.detail, action: () => openItemDetail(it.id) },
     ...(it.type === 'tab' ? [{ text: it.favorite ? 'Remove from Favorites' : 'Add to Favorites', icon: cmIcons.favorite, action: () => toggleFavorite(it) }] : []),
     ...(it.type === 'tab' ? [{ text: it.readLaterAt ? 'Remove from Read Later' : 'Save to Read Later', icon: cmIcons.readLater, action: () => toggleReadLater(it) }] : []),
-    { text:'Edit color', icon: cmIcons.color, action: () => showColorMenu(null, it) },
-    { text:'Set reminder…', icon: cmIcons.clock, action: () => openReminderPicker(it.id) },
-    ...(it.reminder ? [{ text:'Clear reminder', icon: cmIcons.clock, action: () => clearReminder(it.id) }] : []),
+    ...(it.type === 'stack' ? [] : [{ text: tr('itemAction.editColor'), icon: cmIcons.color, action: () => showColorMenu(null, it) }]),
+    { text: tr('itemAction.setReminder'), icon: cmIcons.clock, action: () => openReminderPicker(it.id) },
+    ...(it.reminder ? [{ text: tr('itemAction.clearReminder'), icon: cmIcons.clock, action: () => clearReminder(it.id) }] : []),
     ...extra,
     { sep: true },
-    { text:'Archive', icon: cmIcons.archive, action: () => archiveItem(it.id) },
-    { text:'Delete permanently', icon: cmIcons.delete, danger: true, action: () => {
-      if (!State.get().settings.confirmDelete || confirm('Delete permanently?')) {
-        State.snapshot('Delete');
-        const info = findItem(it.id);
-        if (info) info.parent.splice(info.index, 1);
-        State.persist(); renderBoard();
-      }
-    } }
+    { text: tr('itemAction.archive'), icon: cmIcons.archive, action: () => archiveItem(it.id) }
   ];
   return acts;
 }
@@ -7146,18 +10677,18 @@ function buildStack(it, parentItems, group) {
   const el = document.createElement('div');
   el.className = 'item stack' + (it.expanded ? ' expanded' : '');
   el.dataset.id = it.id;
-  el.tabIndex = 0;
+  el.tabIndex = -1;
   if (it.color) el.dataset.color = it.color;
   el.draggable = true;
 
   const cnt = (it.items || []).length;
   el.innerHTML = `
-    <div class="stack-hd">
-      <span class="stack-chev"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M3 4l2 2 2-2" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></span>
-      <span class="stack-sym">${esc(it.symbol || '📚')}</span>
-      <input class="stack-name" value="${esc(it.name || 'Stack')}" spellcheck="false">
+    <div class="stack-hd" role="group" aria-label="${esc(tr('stackAction.aria', { name: it.name || tr('stackEditor.defaultName') }))}">
+      <button class="stack-chev stack-toggle" type="button" aria-expanded="${!!it.expanded}" aria-label="${esc(tr(it.expanded ? 'stackAction.collapseFor' : 'stackAction.expandFor', { name: it.name || tr('stackEditor.defaultName') }))}"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M3 4l2 2 2-2" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg></button>
+      <button class="stack-sym" type="button" aria-label="${esc(tr('stackAction.editFor', { name: it.name || tr('stackEditor.defaultName') }))}">${esc(it.symbol || '📚')}</button>
+      <span class="stack-name">${esc(it.name || tr('stackEditor.defaultName'))}</span>
       <span class="stack-cnt">${cnt}</span>
-      <button class="stack-intent-btn" title="Edit intention">
+      <button class="stack-intent-btn" type="button" title="${esc(tr('stackAction.editIntention'))}" aria-label="${esc(tr('stackAction.editIntention'))}">
         <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M6 1.5a3.6 3.6 0 013.6 3.6c0 2.2-1.5 3.2-3.1 3.8l-.2.1v1.5M6 10.8h.01" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
       </button>
     </div>
@@ -7165,30 +10696,51 @@ function buildStack(it, parentItems, group) {
     <div class="stack-items"></div>`;
 
   const hd = el.querySelector('.stack-hd');
-  hd.addEventListener('click', e => {
-    if (e.target.closest('input') || e.target.closest('.stack-sym')) return;
+  const toggleButton = el.querySelector('.stack-toggle');
+  const toggleStack = () => {
     State.snapshot('Toggle stack');
     it.expanded = !it.expanded;
     el.classList.toggle('expanded');
+    toggleButton.setAttribute('aria-expanded', String(!!it.expanded));
+    toggleButton.setAttribute('aria-label', tr(it.expanded ? 'stackAction.collapseFor' : 'stackAction.expandFor', { name: it.name || tr('stackEditor.defaultName') }));
     State.persist();
+  };
+  const openStackIdentity = (opener, focusField) => {
+    const identity = identityStackTarget(it.id);
+    return openIdentityEditor('stack', 'edit', {
+      workspaceId: identity?.workspace.id,
+      spaceId: identity?.space.id,
+      groupId: identity?.group.id,
+      stackId: it.id,
+      focusField,
+    }, opener);
+  };
+  const openStackMenu = (x, y, opener = toggleButton) => showContextMenu(x, y, [
+    { text: tr('stackAction.edit'), icon: cmIcons.edit, action: () => openStackIdentity(opener) },
+    { text: tr('stackAction.editIntention'), icon: cmIcons.edit, action: () => openIntentEditor('stack', it.id) },
+    { text: tr(it.expanded ? 'stackAction.collapse' : 'stackAction.expand'), icon: cmIcons.edit, action: () => { toggleStack(); renderBoard(); } },
+    { sep: true },
+    ...commonActs(it),
+  ], { focusFirst: true });
+  hd.addEventListener('click', e => {
+    if (e.target.closest('button') || e.target.closest('.stack-sym')) return;
+    toggleStack();
+  });
+  toggleButton.addEventListener('click', e => { e.stopPropagation(); toggleStack(); });
+  toggleButton.addEventListener('keydown', event => {
+    if (event.key !== 'ContextMenu' && !(event.shiftKey && event.key === 'F10')) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const rect = toggleButton.getBoundingClientRect();
+    openStackMenu(rect.left, rect.bottom + 6, toggleButton);
   });
   hd.addEventListener('contextmenu', e => {
     e.preventDefault();
-    showContextMenu(e.pageX, e.pageY, [
-      { text:'Rename stack', icon: cmIcons.edit, action: () => { const n = prompt('Name:', it.name); if (n) { State.snapshot('Rename stack'); it.name = n; State.persist(); renderBoard(); } } },
-      { text:'Change symbol…', icon: cmIcons.symbol, action: () => openEmojiPicker({ kind:'stack', id: it.id }, hd.querySelector('.stack-sym')) },
-      { text:'Edit intention…', icon: cmIcons.edit, action: () => openIntentEditor('stack', it.id) },
-      { text: it.expanded ? 'Collapse' : 'Expand', icon: cmIcons.edit, action: () => { State.snapshot('Toggle'); it.expanded = !it.expanded; State.persist(); renderBoard(); } },
-      { sep: true },
-      ...commonActs(it)
-    ]);
+    focusDialogOpener(toggleButton);
+    openStackMenu(e.pageX, e.pageY, toggleButton);
   });
-  el.querySelector('.stack-sym').addEventListener('click', e => { e.stopPropagation(); openEmojiPicker({ kind:'stack', id: it.id }, e.currentTarget); });
+  el.querySelector('.stack-sym').addEventListener('click', e => { e.stopPropagation(); openStackIdentity(e.currentTarget, 'symbol'); });
   el.querySelector('.stack-intent-btn').addEventListener('click', e => { e.stopPropagation(); openIntentEditor('stack', it.id); });
-  const nm = el.querySelector('.stack-name');
-  nm.addEventListener('click', e => e.stopPropagation());
-  nm.addEventListener('blur', () => { if (nm.value.trim() && nm.value.trim() !== it.name) { State.snapshot('Rename stack'); it.name = nm.value.trim(); State.persist(); } });
-  nm.addEventListener('keydown', e => { if (e.key === 'Enter') nm.blur(); });
 
   const inner = el.querySelector('.stack-items');
   (it.items || []).forEach(sub => inner.appendChild(buildItem(sub, it.items, group)));
@@ -7341,29 +10893,29 @@ function renderItemSelToolbar() {
   const count = selectedItemIds.size;
   bar.innerHTML = `
     <span class="isl-count">${count}</span>
-    <span class="isl-lbl">selected</span>
+    <span class="isl-lbl">${esc(tr('selection.selected'))}</span>
     <div class="isl-sep"></div>
-    <button data-act="open" title="Open all tabs">
+    <button data-act="open" title="${esc(tr('selection.openTitle'))}">
       <svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M4 2.5H2a1 1 0 00-1 1v6.5A1 1 0 002 11h6.5a1 1 0 001-1V8M7 1h4m0 0v4M11 1L5.5 6.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Open
+      ${esc(tr('selection.open'))}
     </button>
-    <button data-act="move" title="Move to group">
+    <button data-act="move" title="${esc(tr('selection.moveTitle'))}">
       <svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M6 2v8M2 6h8M4 4l-2 2 2 2M8 4l2 2-2 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Move
+      ${esc(tr('selection.move'))}
     </button>
-    <button data-act="stack" title="Group into stack">
+    <button data-act="stack" title="${esc(tr('selection.stackTitle'))}">
       <svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 3l4-2 4 2-4 2-4-2zM2 6l4 2 4-2M2 9l4 2 4-2" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-      Stack
+      ${esc(tr('selection.stack'))}
     </button>
-    <button data-act="archive" title="Archive">
+    <button data-act="archive" title="${esc(tr('selection.archiveTitle'))}">
       <svg width="13" height="13" viewBox="0 0 12 12" fill="none"><rect x="1.5" y="2" width="9" height="2" stroke="currentColor" stroke-width="1.3"/><path d="M2.5 4v6h7V4M5 7h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-      Archive
+      ${esc(tr('selection.archive'))}
     </button>
-    <button data-act="clear" title="Clear selection (Esc)">
+    <button data-act="clear" title="${esc(tr('selection.clearTitle'))}" aria-label="${esc(tr('selection.clearTitle'))}">
       <svg width="11" height="11" viewBox="0 0 10 10"><path d="M2 2l6 6M8 2l-6 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
     </button>`;
   bar.querySelectorAll('button').forEach(b => {
-    b.onclick = () => runBatchAction(b.dataset.act);
+    b.onclick = event => runBatchAction(b.dataset.act, event.currentTarget);
   });
 }
 
@@ -7376,10 +10928,14 @@ function getSelectedItemsInfo() {
   return out;
 }
 
-function runBatchAction(act) {
+function runBatchAction(act, opener) {
+  if (act === 'clear') { clearItemSelection(); return; }
+  if (act === 'stack') {
+    openIdentityEditor('stack', 'batch-create', { itemIds: [...selectedItemIds] }, opener);
+    return;
+  }
   const infos = getSelectedItemsInfo();
   if (!infos.length) return;
-  if (act === 'clear') { clearItemSelection(); return; }
   if (act === 'open') {
     const urls = [];
     infos.forEach(i => {
@@ -7412,43 +10968,6 @@ function runBatchAction(act) {
   }
   if (act === 'move') {
     openMoveTargetPicker(infos);
-    return;
-  }
-  if (act === 'stack') {
-    if (infos.length < 2) return toast('Select at least 2 items');
-    // Stack at the location of the first selected item's group
-    const first = infos[0];
-    State.snapshot(`Stack ${infos.length} items`);
-    const moved = [];
-    // Collect in original order within same group
-    const ids = new Set(selectedItemIds);
-    // Remove each in descending order by index to keep indices stable, collect in original order
-    const orderedIds = [];
-    const seen = new Set();
-    // Walk in doc order
-    const walk = (list) => {
-      for (const it of list) {
-        if (ids.has(it.id)) orderedIds.push(it.id);
-        if (it.type === 'stack' && it.items) walk(it.items);
-      }
-    };
-    State.get().workspaces.forEach(ws => ws.categories.forEach(cat => cat.groups.forEach(g => walk(g.items))));
-    // Remove in reverse order so splicing stays safe
-    for (let i = orderedIds.length - 1; i >= 0; i--) {
-      const info = findItem(orderedIds[i]);
-      if (info) moved.unshift(...info.parent.splice(info.index, 1));
-    }
-    const stack = stampNew({
-      id: uid(), type:'stack',
-      name: prompt('Stack name:', 'New stack') || 'New stack',
-      symbol: '📚', color: '#6366f1', expanded: true,
-      items: moved
-    });
-    // Insert at first item's original position within first.group
-    first.group.items.unshift(stack);
-    State.persist();
-    clearItemSelection();
-    toast(`Stacked ${moved.length} items`, { undo: true });
     return;
   }
 }
@@ -7846,8 +11365,8 @@ function applySearchFilter() {
     const names = [];
     const add = v => { if (v) names.push(v.toLowerCase()); };
     let bs = node.parentElement?.closest('.item.stack');
-    while (bs) { add(bs.querySelector(':scope > .stack-hd > .stack-name')?.value); bs = bs.parentElement?.closest('.item.stack'); }
-    add(node.closest('.gcol')?.querySelector(':scope > .gcol-hd .gcol-name')?.value);
+    while (bs) { add(bs.querySelector(':scope > .stack-hd > .stack-name')?.textContent); bs = bs.parentElement?.closest('.item.stack'); }
+    add(node.closest('.gcol')?.querySelector(':scope > .gcol-hd .gcol-name')?.textContent);
     let ls = node.parentElement?.closest('.lv-stack');
     while (ls) { add(ls.querySelector(':scope > .lv-stack-hd > .lv-stack-name')?.textContent); ls = ls.parentElement?.closest('.lv-stack'); }
     add(node.closest('.lv-group')?.querySelector(':scope > .lv-group-hd > .lv-group-name')?.textContent);
@@ -7862,18 +11381,10 @@ function applySearchFilter() {
   // Lowercased text to match an element against. For a board/canvas stack, use ONLY its own
   // header/name — not descendant cards, which surface on their own as .item matches and
   // reveal their parent. This keeps results consistent with list view (which evaluates
-  // just .lv-stack-hd) and avoids type:stack false positives. The name lives in a
-  // .stack-name <input> whose value isn't in textContent, so fold it in explicitly.
+  // just .lv-stack-hd) and avoids type:stack false positives.
   const elemText = el => {
     const hd = el.querySelector(':scope > .stack-hd');
-    let t;
-    if (hd) {
-      t = hd.textContent;
-      const nameInput = hd.querySelector(':scope > .stack-name');
-      if (nameInput) t += ' ' + nameInput.value;
-    } else {
-      t = el.textContent;
-    }
+    const t = hd ? hd.textContent : el.textContent;
     return t.toLowerCase();
   };
   const matchText = el => { const t = elemText(el); return textNeedles.every(n => t.includes(n)); };
@@ -8199,6 +11710,8 @@ function closeSearchSurface() {
 
 function _searchOpenDetails(row) {
   if (!row?.item || !row.cat) return;
+  if (!validDetailItemIdForSurface(row.item.id, { wsId: activeWs()?.id, catId: row.cat.id })) return;
+  prepareItemDetailOpen(row.item.id);
   Router.navigate({ type: 'board', wsId: activeWs()?.id, catId: row.cat.id, query: { item: row.item.id } });
 }
 
@@ -8515,7 +12028,55 @@ function renderSearchSurface() {
 // ════════════════════════════════════════════════════════════════
 // WORKSPACE GRID
 // ════════════════════════════════════════════════════════════════
-async function openWsGrid() {
+function setWorkspaceGridInterlock(enabled) {
+  const allowed = new Set([
+    'ws-grid-overlay',
+    'state-recovery-overlay',
+    'organization-name-overlay',
+    'organization-delete-overlay',
+    'context-menu',
+    'emoji-picker',
+  ]);
+  for (const child of document.body.children) {
+    if (allowed.has(child.id)) continue;
+    setElementInertOwner(child, 'workspace-grid', enabled);
+  }
+}
+
+function focusWorkspaceGridFallback(workspaceId) {
+  const chip = [...document.querySelectorAll('.ws-chip')]
+    .find(element => element.dataset.wsid === workspaceId);
+  const candidates = [chip, document.getElementById('ws-menu-btn'), document.getElementById('add-ws-btn')];
+  for (const target of candidates) {
+    if (!target || typeof target.focus !== 'function') continue;
+    try { target.focus({ preventScroll: true }); } catch { try { target.focus(); } catch {} }
+    if (document.activeElement === target) return true;
+  }
+  return false;
+}
+
+function closeWsGrid() {
+  const overlay = document.getElementById('ws-grid-overlay');
+  if (!overlay || overlay.classList.contains('hidden')) return false;
+  overlay.classList.add('hidden');
+  setWorkspaceGridInterlock(false);
+  unlockBodyScroll();
+  if (!restoreOpener(overlay)) setTimeout(() => focusWorkspaceGridFallback(State.get().activeWsId), 0);
+  return true;
+}
+
+async function openWsGrid(opener) {
+  const overlay = document.getElementById('ws-grid-overlay');
+  const wasOpen = !overlay.classList.contains('hidden');
+  if (!wasOpen) {
+    const explicitOpener = opener?.currentTarget || opener;
+    if (explicitOpener && typeof explicitOpener.focus === 'function') {
+      focusDialogOpener(explicitOpener);
+    } else if (document.activeElement?.closest?.('#context-menu')) {
+      focusDialogOpener(document.getElementById('ws-menu-btn'));
+    }
+    rememberOpener(overlay);
+  }
   const s = State.get();
   const g = document.getElementById('wsg-grid');
   g.innerHTML = '';
@@ -8523,98 +12084,41 @@ async function openWsGrid() {
     const count = ws.categories.reduce((a, c) => a + c.groups.reduce((b, gp) => b + gp.items.length, 0), 0);
     const card = document.createElement('div');
     card.className = 'wsg-card' + (ws.id === s.activeWsId ? ' active' : '');
+    card.dataset.wsId = ws.id;
+    card.setAttribute('aria-label', tr('palette.workspace', { name: ws.name }));
     card.innerHTML = `
-      ${s.workspaces.length > 1 ? `<button class="del" title="Delete"><svg width="10" height="10" viewBox="0 0 11 11"><path d="M1.5 1.5l8 8M9.5 1.5l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>` : ''}
+      ${s.workspaces.length > 1 ? `<button class="del" title="${esc(tr('organization.workspace.delete'))}" aria-label="${esc(tr('organization.workspace.delete'))}"><svg width="10" height="10" viewBox="0 0 11 11"><path d="M1.5 1.5l8 8M9.5 1.5l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>` : ''}
       <span class="sym">${esc(ws.symbol||'🏠')}</span>
       <div class="nm">${esc(ws.name)}</div>
-      <div class="cnt">${count} items</div>`;
-    card.onclick = e => {
+      <div class="cnt">${esc(tr('workspaceManager.items', { count }))}</div>`;
+    card.onclick = async e => {
       if (e.target.closest('.del')) {
-        if (confirm(`Delete "${ws.name}"?`)) {
-          State.snapshot('Delete workspace');
-          s.workspaces = s.workspaces.filter(w => w.id !== ws.id);
-          if (s.activeWsId === ws.id) s.activeWsId = s.workspaces[0].id;
-          State.persist(); renderAll(); openWsGrid();
-        }
+        openOrganizationDelete('workspace', ws.id, e.target.closest('.del'));
         return;
       }
       s.activeWsId = ws.id;
-      State.persist(); renderAll();
-      document.getElementById('ws-grid-overlay').classList.add('hidden');
+      State.persist();
+      const headerReady = renderAll();
+      closeWsGrid();
+      try { await headerReady; } catch {}
+      focusWorkspaceGridFallback(ws.id);
     };
-    card.oncontextmenu = e => {
-      e.preventDefault();
-      showContextMenu(e.pageX, e.pageY, [
-        { text:'Rename', icon: cmIcons.edit, action: () => { const n = prompt('Rename workspace:', ws.name); if (n) { State.snapshot('Rename ws'); ws.name = n; State.persist(); openWsGrid(); renderAll(); } } },
-        { text:'Change symbol…', icon: cmIcons.symbol, action: () => openEmojiPicker({ kind:'workspace', id: ws.id }, card.querySelector('.sym')) }
+    enableKeyboardClick(card);
+    bindAnchoredContextMenu(card, () => [
+        { text: tr('organization.renameMenu'), icon: cmIcons.edit, action: () => openOrganizationName('workspace', ws.id, card) }
       ]);
-    };
     g.appendChild(card);
   });
-
-  // ── Browser windows as quick-save sources ──
-  try {
-    const wins = await chrome.windows.getAll({ populate: true });
-    const winsPanel = document.getElementById('wsg-windows');
-    if (winsPanel) {
-      winsPanel.innerHTML = '';
-      const currentWin = await chrome.windows.getCurrent();
-      wins.forEach((w, i) => {
-        const tabs = (w.tabs || []).filter(t => !isProto(t.url));
-        if (!tabs.length) return;
-        const card = document.createElement('div');
-        card.className = 'wsg-win-card';
-        const isCur = w.id === currentWin.id;
-        // Mini stack of favicons
-        const favs = tabs.slice(0, 5).map(t => {
-          const f = favUrl(t.url) || BLANK_FAV;
-          return `<img src="${esc(f)}" loading="lazy" decoding="async">`;
-        }).join('');
-        card.innerHTML = `
-          <div class="wsg-win-label">
-            <span class="wg-dot"></span>
-            <span>${isCur ? '★ This window' : `Window ${i + 1}`}</span>
-            <span class="wsg-win-cnt">${tabs.length} tabs</span>
-          </div>
-          <div class="wsg-win-favs">${favs}</div>
-          <button class="wsg-win-save">
-            <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 2h7l2 2v7H2V2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-            Save as workspace
-          </button>`;
-        card.querySelector('.wsg-win-save').onclick = () => {
-          document.getElementById('ws-grid-overlay').classList.add('hidden');
-          saveWindowAsWorkspace(w);
-        };
-        // Card click: focus that window
-        card.onclick = (e) => {
-          if (e.target.closest('.wsg-win-save')) return;
-          chrome.windows.update(w.id, { focused: true }).catch(()=>{});
-        };
-        winsPanel.appendChild(card);
-      });
-    }
-  } catch {}
-
-  document.getElementById('ws-grid-overlay').classList.remove('hidden');
-}
-
-async function saveWindowAsWorkspace(win) {
-  const tabs = (win.tabs || []).filter(t => !isProto(t.url));
-  if (!tabs.length) return toast('No saveable tabs');
-  State.snapshot('Save window as workspace');
-  const ws = {
-    id: uid(), name: `Window ${new Date().toLocaleDateString(appLocale(), { month:'short', day:'numeric' })}`, symbol:'🪟',
-    categories: [{ id: uid(), name:'Quicklinks', groups: [{
-      id: uid(), name:'Tabs', symbol:'📁', color:'#06b6d4', collapsed:false,
-      items: tabs.map(t => stampNew({ id: uid(), type:'tab', title:t.title||'Untitled', url:t.url, fav:t.favIconUrl||'' }))
-    }] }]
-  };
-  ws.activeCatId = ws.categories[0].id;
-  State.get().workspaces.push(ws);
-  State.get().activeWsId = ws.id;
-  State.persist();
-  renderAll();
-  toast(`Saved window as workspace`, { undo: true });
+  if (!wasOpen) {
+    overlay.classList.remove('hidden');
+    setWorkspaceGridInterlock(true);
+    lockBodyScroll();
+    setTimeout(() => {
+      const activeCard = [...document.querySelectorAll('.wsg-card')]
+        .find(element => element.dataset.wsId === s.activeWsId);
+      (activeCard || document.getElementById('wsg-close'))?.focus({ preventScroll: true });
+    }, 0);
+  }
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -9202,6 +12706,9 @@ function bindPasteImportUI() {
 // (entities only) and the chosen recurrence.
 function commitReminderSet(ts, recur) {
   const c = reminderCtx; if (!c) return;
+  if (c.kind === 'item' && c.detailContext) {
+    return commitItemDetailReminderMutation(c.detailContext, { at: ts, recur }, { fromPicker: true });
+  }
   if (c.kind === 'item') setReminder(c.id, ts, { recur });
   else {
     const label = (document.getElementById('rm-label')?.value || '').trim();
@@ -9210,30 +12717,71 @@ function commitReminderSet(ts, recur) {
 }
 function commitReminderClear() {
   const c = reminderCtx; if (!c) return;
+  if (c.kind === 'item' && c.detailContext) {
+    return commitItemDetailReminderMutation(c.detailContext, null, { fromPicker: true });
+  }
   if (c.kind === 'item') clearReminder(c.id);
   else if (c.index != null) removeEntityReminder(c.kind, c.id, c.index);
 }
 function bindReminderUI() {
+  const overlay = document.getElementById('reminder-overlay');
   document.getElementById('rm-x').onclick = closeReminderPicker;
-  document.getElementById('rm-clear').onclick = () => { commitReminderClear(); closeReminderPicker(); };
+  document.getElementById('rm-clear').onclick = () => {
+    if (reminderCtx?.unavailable) return;
+    clearReminderTimeError();
+    const detailCommit = reminderCtx?.kind === 'item' && !!reminderCtx.detailContext;
+    const result = commitReminderClear();
+    if (detailCommit) void result;
+    else closeReminderPicker();
+  };
   document.getElementById('rm-save').onclick = () => {
-    if (!reminderCtx) return;
+    if (!reminderCtx || reminderCtx.unavailable) return;
     const dt = document.getElementById('rm-datetime').value;
-    if (!dt) return;
+    if (!dt) { showReminderTimeError(); return; }
     const ts = new Date(dt).getTime();
-    if (isNaN(ts)) return;
-    if (ts < Date.now()) { toast('Time is in the past', { danger: true }); return; }
-    commitReminderSet(ts, readRecurControl());
-    closeReminderPicker();
+    if (isNaN(ts) || ts <= Date.now()) { showReminderTimeError(); return; }
+    clearReminderTimeError();
+    const detailCommit = reminderCtx.kind === 'item' && !!reminderCtx.detailContext;
+    const result = commitReminderSet(ts, readRecurControl());
+    if (detailCommit) void result;
+    else closeReminderPicker();
   };
   document.querySelectorAll('.rm-quick button').forEach(b => {
     b.onclick = () => {
-      if (!reminderCtx) return;
-      commitReminderSet(Date.now() + (+b.dataset.offset), readRecurControl());
-      closeReminderPicker();
+      if (!reminderCtx || reminderCtx.unavailable) return;
+      clearReminderTimeError();
+      const detailCommit = reminderCtx.kind === 'item' && !!reminderCtx.detailContext;
+      const result = commitReminderSet(Date.now() + (+b.dataset.offset), readRecurControl());
+      if (detailCommit) void result;
+      else closeReminderPicker();
     };
   });
-  document.getElementById('reminder-overlay').addEventListener('click', e => { if (e.target === document.getElementById('reminder-overlay')) closeReminderPicker(); });
+  document.getElementById('rm-datetime').addEventListener('input', clearReminderTimeError);
+  overlay.addEventListener('keydown', e => {
+    if (e.key === 'Tab') {
+      trapTabKey(e, overlay);
+      return;
+    }
+    if (isItemDetailReminderMutationPending()) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      return;
+    }
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeReminderPicker(); }
+  }, true);
+  overlay.addEventListener('click', e => {
+    if (isItemDetailReminderMutationPending()) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      return;
+    }
+    if (e.target === overlay) closeReminderPicker();
+  }, true);
+  overlay.addEventListener('pointerdown', e => {
+    if (!isItemDetailReminderMutationPending()) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  }, true);
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -9437,7 +12985,9 @@ function openSubForm(existing) {
   document.getElementById('sub-notes').value = existing?.notes || '';
   document.getElementById('sub-remind').checked = existing?.remind !== false;
   document.getElementById('sub-paused').checked = !!existing?.paused;
-  document.getElementById('sub-icon-val').textContent = existing?.icon || SUB_CAT_META[existing?.category || 'entertainment'].icon;
+  const icon = document.getElementById('sub-icon-val');
+  icon.textContent = existing?.icon || SUB_CAT_META[existing?.category || 'entertainment'].icon;
+  delete icon.dataset.emojiChosen;
   document.querySelectorAll('#sub-color-row .csw').forEach(c => c.classList.toggle('active', c.dataset.c === (existing?.color || '#6366f1')));
   document.getElementById('sub-form-delete').style.display = existing ? '' : 'none';
   document.getElementById('sub-form').classList.remove('hidden');
@@ -9462,7 +13012,8 @@ async function saveSubForm() {
   const notes = document.getElementById('sub-notes').value.trim();
   const remind = document.getElementById('sub-remind').checked;
   const paused = document.getElementById('sub-paused').checked;
-  const icon = document.getElementById('sub-icon-val').textContent;
+  const iconElement = document.getElementById('sub-icon-val');
+  const icon = iconElement.textContent;
   const color = document.querySelector('#sub-color-row .csw.active')?.dataset.c || '#6366f1';
 
   State.snapshot(subEditingId ? 'Edit sub' : 'Add sub');
@@ -9485,6 +13036,8 @@ async function saveSubForm() {
       if (d.getTime() > Date.now()) await chrome.alarms.create('te-sub-' + sub.id, { when: d.getTime() });
     }
   } catch {}
+  if (iconElement.dataset.emojiChosen === 'true') rememberRecentEmoji(icon);
+  delete iconElement.dataset.emojiChosen;
   State.persist();
   closeSubForm();
   renderSubs();
@@ -9544,7 +13097,9 @@ function bindSubs() {
   // Auto-icon when category changes (only if not manually set)
   document.getElementById('sub-cat').onchange = e => {
     if (!subEditingId) {
-      document.getElementById('sub-icon-val').textContent = SUB_CAT_META[e.target.value].icon;
+      const icon = document.getElementById('sub-icon-val');
+      icon.textContent = SUB_CAT_META[e.target.value].icon;
+      delete icon.dataset.emojiChosen;
     }
   };
 }
@@ -9570,16 +13125,25 @@ function closeGroupPage() {
   Router.navigate({ type: 'board', wsId: ws ? ws.id : null, catId: cat ? cat.id : null, query: {} });
 }
 
-// Open the per-item detail pane (§4.2). On a group page the open item lives in
-// the group route (`…/group/<gid>/item/<id>`); on the board it rides the board
-// route as `?item=<id>`. Both are deep-linkable and survive reload because the
-// selection is reflected into the URL by Router.sync.
+// Open the per-item detail sheet (§4.2). Group pages use an item path; Home,
+// board, and library surfaces carry `?item=<id>`. Each form is deep-linkable and
+// survives reload because Router.sync reflects the active selection into the URL.
 function openItemDetail(id) {
-  if (!findItem(id)) return;
+  const ws = activeWs();
+  const surface = activeGroupPage
+    ? { wsId: ws?.id, groupId: activeGroupPage.groupId }
+    : activeLibraryMode
+      ? { wsId: ws?.id, libraryMode: activeLibraryMode }
+      : { wsId: ws?.id, catId: activeCat()?.id };
+  if (!validDetailItemIdForSurface(id, surface)) return;
+  prepareItemDetailOpen(id);
   if (activeGroupPage) {
     Router.navigate({ type: 'group', wsId: State.get().activeWsId, groupId: activeGroupPage.groupId, itemId: id, query: {} });
+  } else if (activeLibraryMode) {
+    if (!ws) return;
+    Router.navigate({ type: 'library', wsId: ws.id, mode: activeLibraryMode, query: { item: id } });
   } else {
-    const ws = activeWs(); if (!ws) return;
+    if (!ws) return;
     const cat = activeCat();
     const query = {};
     const mode = getViewMode();
@@ -9588,18 +13152,25 @@ function openItemDetail(id) {
     Router.navigate({ type: 'board', wsId: ws.id, catId: cat ? cat.id : null, query });
   }
 }
-// Close the detail pane, staying on whatever surface (board or group page) it
-// was docked over. A route change so back/forward and the URL stay consistent.
+// Close the detail sheet without leaving its Home, board, group, or Library surface.
+// A route change keeps Back/Forward and reload semantics consistent.
 function closeItemDetail() {
+  if (isItemDetailMutationPending()) return false;
   if (activeGroupPage) {
-    Router.navigate({ type: 'group', wsId: State.get().activeWsId, groupId: activeGroupPage.groupId, itemId: null, query: {} });
+    return Router.navigate({ type: 'group', wsId: State.get().activeWsId, groupId: activeGroupPage.groupId, itemId: null, query: {} });
+  } else if (activeLibraryMode) {
+    const ws = activeWs();
+    return Router.navigate({ type: 'library', wsId: ws ? ws.id : null, mode: activeLibraryMode, query: {} });
+  } else if (activeHome) {
+    const ws = activeWs();
+    return Router.navigate({ type: 'home', wsId: ws ? ws.id : null, query: {} }, { persist: false });
   } else {
     const ws = activeWs();
     const cat = activeCat();
     const query = {};
     const mode = getViewMode();
     if (mode && mode !== 'board') query.view = mode;
-    Router.navigate({ type: 'board', wsId: ws ? ws.id : null, catId: cat ? cat.id : null, query });
+    return Router.navigate({ type: 'board', wsId: ws ? ws.id : null, catId: cat ? cat.id : null, query });
   }
 }
 
@@ -9757,48 +13328,559 @@ function renderGroupReminders(container, g) {
 // ════════════════════════════════════════════════════════════════
 // ITEM DETAIL PANE (§4.2 — per-link content)
 // ════════════════════════════════════════════════════════════════
-// A right-docked, non-blocking panel that hangs the additive item metadata off
-// any item: a rich-text annotation (notes), tags, custom fields, a checklist, a
-// cover, and inline reminder editing. It's addressable via the route (board
-// `?item=<id>` or group-page `…/item/<id>`) so it deep-links and survives
-// reload. renderAll() paints it; card edits keep the board in sync.
+// A right-docked modal context sheet for recovering a saved item: real title
+// and location, open action, save context, reminder, and tags lead; cover,
+// checklist, and custom fields stay progressive. It is addressable via board,
+// library, or group routes so deep links and browser history remain coherent.
 const DETAIL_COVER_COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#6366f1', '#a855f7', '#ec4899'];
 // Normalize a typed tag: trimmed, single-spaced, comma-free (commas delimit the
 // dataset.tags blob the tag: operator reads), lowercased for case-insensitive
 // matching.
 const normalizeTag = s => String(s || '').trim().replace(/\s+/g, ' ').replace(/,/g, '').toLowerCase();
 
-// The editable "primary" field(s) per item kind — the one thing the pane lets
-// you rename in place; the note body itself is still edited on the card.
+// Detail edits share one acknowledged-write boundary. The pending token is set
+// before the graph changes, so blur, route, page-hide, and repeated activation
+// all see the same transaction synchronously.
+let itemDetailMutationPending = null;
+let itemReminderMutationPending = null;
+let itemDetailStatusTimer = null;
+
+function isItemDetailMutationPending() {
+  return !!itemDetailMutationPending || !!itemReminderMutationPending;
+}
+
+function itemDetailValueFingerprint(value) {
+  try { return JSON.stringify(value); } catch { return ''; }
+}
+
+function itemDetailSurfaceFingerprint() {
+  const ws = activeWs();
+  const itemId = currentDetailItemId() || null;
+  if (activeGroupPage) {
+    return itemDetailValueFingerprint({ kind: 'group', wsId: ws?.id || null, groupId: activeGroupPage.groupId, itemId });
+  }
+  if (activeLibraryMode) {
+    return itemDetailValueFingerprint({ kind: 'library', wsId: ws?.id || null, mode: activeLibraryMode, itemId });
+  }
+  if (activeHome) {
+    return itemDetailValueFingerprint({ kind: 'home', wsId: ws?.id || null, itemId });
+  }
+  return itemDetailValueFingerprint({ kind: 'board', wsId: ws?.id || null, spaceId: activeCat()?.id || null, itemId });
+}
+
+function itemDetailLocationFingerprint(target) {
+  return itemDetailValueFingerprint({
+    workspace: { id: target.ws?.id || null, name: target.ws?.name || '' },
+    space: { id: target.cat?.id || null, name: target.cat?.name || '' },
+    group: { id: target.group?.id || null, name: target.group?.name || '' },
+    parents: (target.parents || []).map(parent => ({
+      id: parent?.id || null,
+      type: parent?.type || null,
+      name: parent?.name || '',
+    })),
+  });
+}
+
+// Capture both primitive identity and runtime references. Primitive IDs make
+// exhaustive re-resolution deterministic; references additionally reject an
+// indistinguishable object replacement until the user reopens the sheet.
+function createItemDetailMutationContext(info) {
+  if (!info?.ws || !info?.item || !info?.cat || !info?.group) return null;
+  let rows = [];
+  try { rows = collectWorkspaceItems(info.ws).filter(row => row.item === info.item); } catch { return null; }
+  if (rows.length !== 1) return null;
+  const row = rows[0];
+  const workspaceId = String(info.ws.id || '');
+  const spaceId = String(row.cat?.id || '');
+  const groupId = String(row.group?.id || '');
+  const parentIds = (row.parents || []).map(parent => String(parent?.id || ''));
+  const itemId = String(row.item.id || '');
+  const itemType = String(row.item.type || '');
+  if (!workspaceId || !spaceId || !groupId || !itemId || !itemType || parentIds.some(id => !id)) return null;
+  return {
+    workspaceId,
+    spaceId,
+    groupId,
+    parentIds,
+    itemId,
+    itemType,
+    itemFingerprint: itemDetailValueFingerprint(row.item),
+    locationFingerprint: itemDetailLocationFingerprint({ ws: info.ws, ...row }),
+    surfaceFingerprint: itemDetailSurfaceFingerprint(),
+    workspaceRef: info.ws,
+    spaceRef: row.cat,
+    groupRef: row.group,
+    parentRefs: [...(row.parents || [])],
+    itemRef: row.item,
+  };
+}
+
+function resolveItemDetailMutationTarget(context) {
+  if (!context || context.surfaceFingerprint !== itemDetailSurfaceFingerprint()) return null;
+  const state = State.get();
+  const workspaces = (state.workspaces || []).filter(workspace => String(workspace?.id || '') === context.workspaceId);
+  if (workspaces.length !== 1 || workspaces[0] !== context.workspaceRef) return null;
+  const ws = workspaces[0];
+  const spaces = (state.workspaces || []).flatMap(workspace => workspace.categories || [])
+    .filter(space => String(space?.id || '') === context.spaceId);
+  if (spaces.length !== 1 || spaces[0] !== context.spaceRef) return null;
+  const cat = spaces[0];
+  const groups = (state.workspaces || []).flatMap(workspace => workspace.categories || [])
+    .flatMap(space => space.groups || [])
+    .filter(group => String(group?.id || '') === context.groupId);
+  if (groups.length !== 1 || groups[0] !== context.groupRef) return null;
+  const group = groups[0];
+
+  let rows = [];
+  try {
+    rows = (state.workspaces || []).flatMap(workspace =>
+      collectWorkspaceItems(workspace).map(row => ({ ws: workspace, ...row }))
+    );
+  } catch { return null; }
+  const matches = rows.filter(row => String(row.item?.id || '') === context.itemId);
+  if (matches.length !== 1) return null;
+  const target = matches[0];
+  const parentIds = (target.parents || []).map(parent => String(parent?.id || ''));
+  if (target.ws !== ws || target.cat !== cat || target.group !== group || target.item !== context.itemRef) return null;
+  if (String(target.item?.type || '') !== context.itemType) return null;
+  if (parentIds.length !== context.parentIds.length || parentIds.some((id, index) => id !== context.parentIds[index])) return null;
+  if ((target.parents || []).some((parent, index) => parent !== context.parentRefs[index])) return null;
+  for (let index = 0; index < context.parentIds.length; index += 1) {
+    const ancestorMatches = rows.filter(row => String(row.item?.id || '') === context.parentIds[index]);
+    if (ancestorMatches.length !== 1 || ancestorMatches[0].item !== target.parents[index] || target.parents[index]?.type !== 'stack') return null;
+  }
+  if (itemDetailValueFingerprint(target.item) !== context.itemFingerprint) return null;
+  if (itemDetailLocationFingerprint(target) !== context.locationFingerprint) return null;
+  return target;
+}
+
+function clearItemDetailStatusTimer() {
+  if (itemDetailStatusTimer == null) return;
+  clearTimeout(itemDetailStatusTimer);
+  itemDetailStatusTimer = null;
+}
+
+function setItemDetailMutationStatus(root, key = '', tone = '') {
+  const status = root?.querySelector?.('[data-idp-save-status]');
+  if (!status) return;
+  status.textContent = key ? tr(key) : '';
+  if (tone) status.dataset.tone = tone;
+  else delete status.dataset.tone;
+}
+
+function setItemDetailMutationBusy(root, busy) {
+  if (!root) return;
+  root.classList.toggle('idp-mutation-pending', busy);
+  // Keep the live status outside the busy subtree so assistive technology can
+  // announce “Saving…” immediately instead of deferring it until completion.
+  const busyRegion = root.querySelector('.idp-body');
+  if (busyRegion) busyRegion.setAttribute('aria-busy', String(busy));
+  const selector = '.idp-actions button, .idp-body button, .idp-body input, .idp-body textarea, .idp-body select, .idp-body summary, .idp-body [contenteditable]';
+  if (busy) {
+    root.querySelectorAll(selector).forEach(control => {
+      if (control.dataset.idpBusyControl === 'true') return;
+      control.dataset.idpBusyControl = 'true';
+      control.dataset.idpPreviousAriaDisabled = control.hasAttribute('aria-disabled')
+        ? String(control.getAttribute('aria-disabled'))
+        : '__missing__';
+      control.setAttribute('aria-disabled', 'true');
+      if ('readOnly' in control) {
+        control.dataset.idpPreviousReadonly = String(!!control.readOnly);
+        control.readOnly = true;
+      }
+      if (control.hasAttribute('contenteditable')) {
+        control.dataset.idpPreviousContenteditable = String(control.getAttribute('contenteditable'));
+        control.setAttribute('contenteditable', 'false');
+      }
+    });
+    setItemDetailMutationStatus(root, 'detail.saving', 'pending');
+    return;
+  }
+  root.querySelectorAll('[data-idp-busy-control="true"]').forEach(control => {
+    if (control.dataset.idpPreviousAriaDisabled === '__missing__') control.removeAttribute('aria-disabled');
+    else control.setAttribute('aria-disabled', control.dataset.idpPreviousAriaDisabled);
+    if ('readOnly' in control && control.dataset.idpPreviousReadonly != null) {
+      control.readOnly = control.dataset.idpPreviousReadonly === 'true';
+    }
+    if (control.dataset.idpPreviousContenteditable != null) {
+      control.setAttribute('contenteditable', control.dataset.idpPreviousContenteditable);
+    }
+    delete control.dataset.idpBusyControl;
+    delete control.dataset.idpPreviousAriaDisabled;
+    delete control.dataset.idpPreviousReadonly;
+    delete control.dataset.idpPreviousContenteditable;
+  });
+}
+
+function handleItemDetailPendingClick(event) {
+  if (!isItemDetailMutationPending()) return;
+  const interactive = event.target?.closest?.('.idp-scrim, button, input, textarea, select, summary, [contenteditable]');
+  if (!interactive) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}
+
+function handleItemDetailPendingKeydownCapture(event) {
+  if (!isItemDetailMutationPending() || event.key === 'Tab') return;
+  // Capture phase prevents target-level formatting/add-item handlers from running
+  // against the immutable candidate while the receipt is unresolved.
+  event.preventDefault();
+  event.stopImmediatePropagation();
+}
+
+function cloneItemDetailJson(value) {
+  if (value === undefined) return undefined;
+  return JSON.parse(JSON.stringify(value));
+}
+
+function isItemDetailRecord(value) {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+// Apply only the JSON slots changed by the detached candidate. Same-length
+// checklist/custom-field arrays retain their live row objects, which lets a
+// pane-preserving text edit keep its existing DOM closures and focus.
+function applyItemDetailCandidate(target, before, candidate) {
+  if (Array.isArray(before) && Array.isArray(candidate)) {
+    if (!Array.isArray(target)) throw new Error('Item detail candidate no longer matches the live array.');
+    if (before.length !== candidate.length || target.length !== before.length) {
+      target.splice(0, target.length, ...candidate.map(cloneItemDetailJson));
+      return;
+    }
+    for (let index = 0; index < candidate.length; index += 1) {
+      const beforeValue = before[index];
+      const candidateValue = candidate[index];
+      if (itemDetailValueFingerprint(beforeValue) === itemDetailValueFingerprint(candidateValue)) continue;
+      if (Array.isArray(beforeValue) && Array.isArray(candidateValue) && Array.isArray(target[index])) {
+        applyItemDetailCandidate(target[index], beforeValue, candidateValue);
+      } else if (isItemDetailRecord(beforeValue) && isItemDetailRecord(candidateValue) && isItemDetailRecord(target[index])) {
+        applyItemDetailCandidate(target[index], beforeValue, candidateValue);
+      } else {
+        target[index] = cloneItemDetailJson(candidateValue);
+      }
+    }
+    return;
+  }
+  if (!isItemDetailRecord(before) || !isItemDetailRecord(candidate) || !isItemDetailRecord(target)) {
+    throw new Error('Item detail candidate no longer matches the live item.');
+  }
+  const keys = new Set([...Object.keys(before), ...Object.keys(candidate)]);
+  keys.forEach(key => {
+    const beforeHas = Object.prototype.hasOwnProperty.call(before, key);
+    const candidateHas = Object.prototype.hasOwnProperty.call(candidate, key);
+    if (beforeHas === candidateHas
+        && itemDetailValueFingerprint(before[key]) === itemDetailValueFingerprint(candidate[key])) return;
+    if (!candidateHas) {
+      delete target[key];
+      return;
+    }
+    if (Array.isArray(before[key]) && Array.isArray(candidate[key]) && Array.isArray(target[key])) {
+      applyItemDetailCandidate(target[key], before[key], candidate[key]);
+    } else if (isItemDetailRecord(before[key]) && isItemDetailRecord(candidate[key]) && isItemDetailRecord(target[key])) {
+      applyItemDetailCandidate(target[key], before[key], candidate[key]);
+    } else {
+      target[key] = cloneItemDetailJson(candidate[key]);
+    }
+  });
+}
+
+async function commitItemDetailMutation(context, label, mutate, opts = {}) {
+  if (isItemDetailMutationPending()) return false;
+  const root = document.getElementById('item-detail');
+  if (State.isRecoveryRequired?.()) {
+    setItemDetailMutationStatus(root, 'detail.saveFailed', 'error');
+    return false;
+  }
+  const target = resolveItemDetailMutationTarget(context);
+  if (!root?.classList.contains('open') || !target) {
+    clearItemDetailStatusTimer();
+    setItemDetailMutationStatus(root, 'detail.changed', 'error');
+    return false;
+  }
+
+  // User-supplied field logic runs against a detached JSON candidate first. A
+  // synchronous bug therefore cannot leave a partial live graph or phantom
+  // history entry; the candidate diff is the only live mutation below.
+  let before;
+  let candidate;
+  try {
+    const beforeJson = JSON.stringify(target.item);
+    before = JSON.parse(beforeJson);
+    candidate = JSON.parse(beforeJson);
+    mutate(candidate);
+  } catch {
+    clearItemDetailStatusTimer();
+    setItemDetailMutationStatus(root, 'detail.saveFailed', 'error');
+    return false;
+  }
+  if (itemDetailValueFingerprint(before) === itemDetailValueFingerprint(candidate)) return true;
+
+  const transaction = { itemId: context.itemId };
+  itemDetailMutationPending = transaction;
+  clearItemDetailStatusTimer();
+  setItemDetailMutationBusy(root, true);
+  try {
+    State.snapshot(label);
+    applyItemDetailCandidate(target.item, before, candidate);
+  } catch (error) {
+    itemDetailMutationPending = null;
+    setItemDetailMutationBusy(root, false);
+    setItemDetailMutationStatus(root, 'detail.saveFailed', 'error');
+    State.requireRecovery?.();
+    if (typeof showStateRecoveryRequired === 'function') showStateRecoveryRequired(error);
+    return false;
+  }
+
+  try {
+    await State.persistNow();
+  } catch (error) {
+    if (itemDetailMutationPending === transaction) itemDetailMutationPending = null;
+    setItemDetailMutationBusy(root, false);
+    setItemDetailMutationStatus(root, 'detail.saveFailed', 'error');
+    if (State.isRecoveryRequired?.() && typeof showStateRecoveryRequired === 'function') {
+      showStateRecoveryRequired(error);
+    }
+    return false;
+  }
+
+  if (itemDetailMutationPending !== transaction) return false;
+  itemDetailMutationPending = null;
+  context.itemFingerprint = itemDetailValueFingerprint(target.item);
+  context.locationFingerprint = itemDetailLocationFingerprint(target);
+  setItemDetailMutationBusy(root, false);
+  renderBoard();
+  if (opts.pane !== false) renderItemDetail();
+  else {
+    syncItemDetailHeading(target.item);
+    if (typeof opts.afterSuccess === 'function') opts.afterSuccess(target.item);
+  }
+
+  const liveRoot = document.getElementById('item-detail');
+  if (liveRoot?.classList.contains('open') && liveRoot.dataset.itemId === context.itemId) {
+    setItemDetailMutationStatus(liveRoot, 'detail.saved', 'success');
+    itemDetailStatusTimer = setTimeout(() => {
+      if (!isItemDetailMutationPending() && liveRoot.classList.contains('open') && liveRoot.dataset.itemId === context.itemId) {
+        setItemDetailMutationStatus(liveRoot);
+      }
+      itemDetailStatusTimer = null;
+    }, 2400);
+  }
+  return true;
+}
+
+function ensureItemDetailRoot() {
+  let root = document.getElementById('item-detail');
+  if (!root) {
+    root = document.createElement('div');
+    root.id = 'item-detail';
+    document.body.appendChild(root);
+    inheritActiveBodyInterlocks(root);
+  }
+  if (!root.__itemDetailPendingGuardBound) {
+    root.addEventListener('click', handleItemDetailPendingClick, true);
+    root.addEventListener('keydown', handleItemDetailPendingKeydownCapture, true);
+    root.__itemDetailPendingGuardBound = true;
+  }
+  return root;
+}
+
+// Capture the invoking control before routed navigation rebuilds its surface.
+// The item id is the fallback when that exact node no longer exists afterward.
+function prepareItemDetailOpen(id, returnFocusKey = '') {
+  const root = ensureItemDetailRoot();
+  if (!root.classList.contains('open') || root.dataset.itemId !== String(id)) {
+    rememberOpener(root);
+    root.dataset.returnItemId = String(id);
+    if (returnFocusKey) root.dataset.returnFocusKey = String(returnFocusKey);
+    else delete root.dataset.returnFocusKey;
+  }
+}
+
+function setItemDetailBackgroundInert(enabled) {
+  ['app', 'landing-layer'].forEach(id => {
+    const el = document.getElementById(id);
+    setElementInertOwner(el, 'detail', enabled);
+  });
+}
+
+function focusItemDetailTarget(el, scroll = false) {
+  if (!el || typeof el.focus !== 'function') return false;
+  if (!el.matches(FOCUSABLE_SELECTOR) && !el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
+  try {
+    el.focus({ preventScroll: !scroll });
+    if (scroll && typeof el.scrollIntoView === 'function') el.scrollIntoView({ block: 'nearest' });
+  } catch {
+    try { el.focus(); } catch {}
+  }
+  return document.activeElement === el;
+}
+
+function restoreItemDetailFocus(root, itemId, returnFocusKey = '') {
+  if (restoreOpener(root)) return;
+  const escaped = itemId && typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
+    ? CSS.escape(String(itemId))
+    : String(itemId || '').replace(/["\\]/g, '\\$&');
+  const escapedReturnKey = returnFocusKey && typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
+    ? CSS.escape(String(returnFocusKey))
+    : String(returnFocusKey || '').replace(/["\\]/g, '\\$&');
+  const selectors = [
+    ...(escapedReturnKey ? [`.home-prow[data-home-preview-key="${escapedReturnKey}"]`] : []),
+    ...(escaped ? [
+      `.home-prow[data-item-id="${escaped}"]`,
+      `.library-row[data-id="${escaped}"] .library-more`,
+      `.read-later-row[data-id="${escaped}"] .library-more`,
+      `.item[data-id="${escaped}"]`,
+      `[data-item-id="${escaped}"][tabindex]`,
+      `[data-id="${escaped}"] button`,
+      `[data-id="${escaped}"]`,
+    ] : []),
+  ];
+  const target = selectors.map(selector => document.querySelector(selector)).find(Boolean);
+  if (focusItemDetailTarget(target, true)) return;
+  const board = document.getElementById('board');
+  focusItemDetailTarget(board?.querySelector('h1, [role="heading"]') || board);
+}
+
+function isItemDetailEditor(target) {
+  if (!target || target.nodeType !== Node.ELEMENT_NODE) return false;
+  if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return true;
+  return !!target.closest('[contenteditable="true"]');
+}
+
+function flushActiveItemDetailEditor() {
+  const root = document.getElementById('item-detail');
+  const active = document.activeElement;
+  if (!root?.classList.contains('open') || !root.contains(active) || !isItemDetailEditor(active)) return false;
+  const editor = active.closest('[contenteditable="true"]') || active;
+  try { editor.blur(); } catch { return false; }
+  return true;
+}
+
+function flushItemDetailBeforePageHide() {
+  if (isItemDetailMutationPending() || State.isRecoveryRequired?.()) return true;
+  flushActiveItemDetailEditor();
+  if (isItemDetailMutationPending() || State.isRecoveryRequired?.()) return true;
+  // An editor may have blurred just before teardown, leaving its ordinary
+  // debounce pending even though focus is now elsewhere or the sheet is closed.
+  // Replace any dirty-state timer with an immediate write attempt;
+  // recordMutation:false avoids counting the same edit twice.
+  if (!State.needsPersistence()) return false;
+  try { void State.persistNow({ recordMutation: false }); } catch {}
+  return true;
+}
+
+function handleItemDetailKeydown(event, root) {
+  if (event.key === 'Tab') {
+    trapTabKey(event, root.querySelector('.idp-panel'));
+    return;
+  }
+  const recovery = document.getElementById('state-recovery-overlay');
+  if (recovery && !recovery.classList.contains('hidden')) return;
+  if (isItemDetailMutationPending()) {
+    event.preventDefault();
+    event.stopPropagation();
+    return;
+  }
+  if (event.key !== 'Escape') return;
+  const reminder = document.getElementById('reminder-overlay');
+  if (reminder && !reminder.classList.contains('hidden')) {
+    event.preventDefault();
+    event.stopPropagation();
+    closeReminderPicker();
+    return;
+  }
+  event.preventDefault();
+  event.stopPropagation();
+  if (isItemDetailEditor(event.target)) {
+    const editor = event.target.closest('[contenteditable="true"]') || event.target;
+    try { editor.blur(); } catch {}
+    focusItemDetailTarget(root.querySelector('.idp-panel'));
+    return;
+  }
+  closeItemDetail();
+}
+
+function detailRecurLabel(recur) {
+  const interval = Math.max(1, Number(recur?.interval) || 1);
+  if (recur?.every === 'day') return interval === 1 ? tr('detail.daily') : tr('detail.everyDays', { count: interval });
+  if (recur?.every === 'week') return interval === 1 ? tr('detail.weekly') : tr('detail.everyWeeks', { count: interval });
+  if (recur?.every === 'month') return interval === 1 ? tr('detail.monthly') : tr('detail.everyMonths', { count: interval });
+  return '';
+}
+
+function syncItemDetailHeading(it) {
+  const heading = document.getElementById('idp-heading');
+  if (heading) heading.textContent = _searchItemTitle(it) || _searchTypeLabel(it.type);
+}
+
+// The primary field(s) per item kind. Stack identity routes through the shared
+// receipt-gated editor; the note body itself is still edited on the card.
 function detailPrimaryEditor(it, commit) {
   const wrap = document.createElement('div');
   wrap.className = 'idp-primary';
   if (it.type === 'note') {
-    wrap.innerHTML = `<div class="idp-note-preview">${sanitizeHtml(it.html || '') || '<span class="idp-muted">Empty note — edit it on the board</span>'}</div>`;
+    wrap.innerHTML = `<div class="idp-note-preview">${sanitizeHtml(it.html || '') || `<span class="idp-muted">${esc(tr('detail.emptyNote'))}</span>`}</div>`;
     return wrap;
   }
-  const mk = (cls, val, ph) => { const i = document.createElement('input'); i.className = cls; i.value = val || ''; i.placeholder = ph; i.spellcheck = false; return i; };
+  const mk = (cls, val, label, focusKey) => {
+    const input = document.createElement('input');
+    input.className = cls;
+    input.value = val || '';
+    input.placeholder = label;
+    input.setAttribute('aria-label', label);
+    input.dataset.idpFocus = focusKey;
+    input.spellcheck = false;
+    return input;
+  };
   if (it.type === 'tab') {
-    const t = mk('idp-title-input', it.title, 'Title');
-    const u = mk('idp-url-input', it.url, 'https://…');
-    t.addEventListener('change', () => { if (t.value !== it.title) commit('Edit title', () => { it.title = t.value; }, { pane: false }); });
-    u.addEventListener('change', () => { if (u.value !== it.url) commit('Edit URL', () => { it.url = u.value; }, { pane: false }); });
+    const t = mk('idp-title-input', it.title, tr('detail.title'), 'title');
+    const u = mk('idp-url-input', it.url, tr('detail.url'), 'url');
+    t.addEventListener('change', () => {
+      if (t.value !== it.title) {
+        void commit(tr('detail.history.editTitle'), live => { live.title = t.value; }, { pane: false });
+      }
+    });
+    u.addEventListener('change', () => {
+      if (u.value !== it.url) {
+        void commit(tr('detail.history.editUrl'), live => { live.url = u.value; }, { pane: false });
+      }
+    });
     wrap.appendChild(t); wrap.appendChild(u);
     return wrap;
   }
   if (it.type === 'todo') {
     const row = document.createElement('div'); row.className = 'idp-todo-row';
-    const chk = document.createElement('button'); chk.type = 'button'; chk.className = 'idp-todo-check' + (it.done ? ' done' : ''); chk.setAttribute('aria-label', 'Toggle done');
-    chk.onclick = () => commit(it.done ? 'Mark not done' : 'Mark done', () => { it.done = !it.done; });
-    const t = mk('idp-title-input', it.text, 'Task');
-    t.addEventListener('change', () => { if (t.value !== it.text) commit('Edit todo', () => { it.text = t.value; }, { pane: false }); });
+    const chk = document.createElement('button'); chk.type = 'button'; chk.className = 'idp-todo-check' + (it.done ? ' done' : '');
+    chk.dataset.idpFocus = 'todo-toggle';
+    chk.setAttribute('aria-label', tr(it.done ? 'detail.markIncomplete' : 'detail.markComplete'));
+    chk.setAttribute('aria-pressed', String(!!it.done));
+    chk.onclick = () => { void commit(tr('detail.history.updateTask'), live => { live.done = !live.done; }); };
+    const t = mk('idp-title-input', it.text, tr('detail.task'), 'task');
+    t.addEventListener('change', () => {
+      if (t.value !== it.text) {
+        void commit(tr('detail.history.updateTask'), live => { live.text = t.value; }, { pane: false });
+      }
+    });
     row.appendChild(chk); row.appendChild(t); wrap.appendChild(row);
     return wrap;
   }
   // stack
-  const t = mk('idp-title-input', it.name, 'Stack name');
-  t.addEventListener('change', () => { if (t.value !== it.name) commit('Rename stack', () => { it.name = t.value; }, { pane: false }); });
-  wrap.appendChild(t);
+  const edit = document.createElement('button');
+  edit.type = 'button';
+  edit.className = 'idp-title-input idp-identity-button';
+  edit.textContent = it.name || tr('stackEditor.defaultName');
+  edit.dataset.idpFocus = 'stack-identity';
+  edit.setAttribute('aria-label', tr('stackAction.editFor', { name: it.name || tr('stackEditor.defaultName') }));
+  edit.onclick = event => {
+    const identity = identityStackTarget(it.id);
+    openIdentityEditor('stack', 'edit', {
+      workspaceId: identity?.workspace.id,
+      spaceId: identity?.space.id,
+      groupId: identity?.group.id,
+      stackId: it.id,
+    }, event.currentTarget);
+  };
+  wrap.appendChild(edit);
   return wrap;
 }
 
@@ -9809,59 +13891,106 @@ function refreshDetailPane() { renderItemDetail(); }
 function renderItemDetail() {
   let root = document.getElementById('item-detail');
   const id = currentDetailItemId();
-  const info = id ? findItem(id) : null;
+  const ws = activeWs();
+  const surface = activeGroupPage
+    ? { wsId: ws?.id, groupId: activeGroupPage.groupId }
+    : activeLibraryMode
+      ? { wsId: ws?.id, libraryMode: activeLibraryMode }
+      : activeHome
+        ? { wsId: ws?.id }
+        : (!activeSearch && !activeCalendar ? { wsId: ws?.id, catId: activeCat()?.id } : null);
+  const homeTarget = activeHome ? resolveUniqueHomePreviewItem(ws?.id, id) : null;
+  const validId = activeHome
+    ? (homeTarget?.item?.id || null)
+    : (surface ? validDetailItemIdForSurface(id, surface) : null);
+  const info = activeHome ? homeTarget : (validId ? findItem(validId) : null);
+  const wasOpen = !!root?.classList.contains('open');
+  const previousItemId = root?.dataset.itemId || '';
+  const returnItemId = root?.dataset.returnItemId || previousItemId || id || '';
+  const returnFocusKey = root?.dataset.returnFocusKey || '';
 
   // Nothing open, or a stale/deleted id in the URL → tear the pane down and drop
   // the dead id so Router.sync() normalizes the address bar on the next tick.
   if (!info) {
-    if (root) { root.classList.remove('open'); root.innerHTML = ''; delete root.dataset.itemId; }
+    if (wasOpen) flushActiveItemDetailEditor();
+    clearItemDetailStatusTimer();
+    const reminderOverlay = document.getElementById('reminder-overlay');
+    if (reminderOverlay && !reminderOverlay.classList.contains('hidden')) closeReminderPicker();
+    if (root) {
+      root.classList.remove('open');
+      setElementInertOwner(root, 'reminder', false);
+      root.onkeydown = null;
+      root.innerHTML = '';
+      delete root.dataset.itemId;
+      delete root.dataset.advancedItemId;
+      delete root.dataset.advancedOpen;
+      delete root.dataset.returnFocusKey;
+    }
     document.body.classList.remove('detail-open');
+    setItemDetailBackgroundInert(false);
     if (id) { if (activeGroupPage) activeGroupPage.itemId = null; else boardDetailItemId = null; }
+    if (wasOpen && root) {
+      setTimeout(() => {
+        if (!root.classList.contains('open')) restoreItemDetailFocus(root, returnItemId, returnFocusKey);
+      }, 0);
+    }
     return;
   }
   const it = info.item;
+  root = root || ensureItemDetailRoot();
+  const sameItem = wasOpen && previousItemId === String(id);
+  const focusOwner = sameItem && root.contains(document.activeElement)
+    ? document.activeElement.closest('[data-idp-focus]')
+    : null;
+  const focusKey = focusOwner?.dataset.idpFocus || '';
+  const savedAdvancedOpen = root.dataset.advancedItemId === String(id) ? root.dataset.advancedOpen : null;
 
-  if (!root) {
-    root = document.createElement('div');
-    root.id = 'item-detail';
-    document.body.appendChild(root);
-  }
-  root.dataset.itemId = id;
+  root.dataset.itemId = String(id);
+  if (!sameItem) root.dataset.returnItemId = String(id);
   root.classList.add('open');
+  const reminderOverlay = document.getElementById('reminder-overlay');
+  setElementInertOwner(root, 'reminder', !!(reminderOverlay && !reminderOverlay.classList.contains('hidden')));
+  root.onkeydown = event => handleItemDetailKeydown(event, root);
   document.body.classList.add('detail-open');
+  setItemDetailBackgroundInert(true);
 
-  // Snapshot → mutate → persist → refresh card, and (unless suppressed) rebuild
-  // the pane. Text fields commit on blur/change and pass { pane:false } so the
-  // caret isn't yanked mid-edit; structural clicks rebuild the pane.
-  const commit = (label, fn, opts = {}) => {
-    State.snapshot(label);
-    fn();
-    State.persist();
-    renderBoard();
-    if (opts.pane !== false) renderItemDetail();
-  };
+  // Freeze the rendered owner/path/item before wiring fields. Every direct
+  // detail edit re-resolves this context and crosses the shared receipt gate.
+  const mutationContext = createItemDetailMutationContext(info);
+  const commit = (label, fn, opts = {}) => commitItemDetailMutation(mutationContext, label, fn, opts);
 
+  const heading = _searchItemTitle(it) || _searchTypeLabel(it.type);
+  const locationLabel = [info.cat?.name, info.group?.name].filter(Boolean).join(' · ');
   root.innerHTML = `
-    <div class="idp-scrim"></div>
-    <aside class="idp-panel" role="dialog" aria-label="Item details" aria-modal="false">
+    <div class="idp-scrim" aria-hidden="true"></div>
+    <aside class="idp-panel" role="dialog" aria-modal="true" aria-labelledby="idp-heading" aria-describedby="idp-location" tabindex="-1">
       <header class="idp-hd">
-        <span class="idp-type idp-type-${it.type}">${esc(it.type)}</span>
-        <div class="idp-hd-sp"></div>
-        <button class="idp-close" type="button" title="Close (Esc)" aria-label="Close details">
-          <svg width="12" height="12" viewBox="0 0 12 12"><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        </button>
+        <div class="idp-hd-copy">
+          <span class="idp-type idp-type-${esc(it.type)}">${esc(_searchTypeLabel(it.type))}</span>
+          <h2 class="idp-heading" id="idp-heading">${esc(heading)}</h2>
+          <p class="idp-location" id="idp-location">${esc(locationLabel)}</p>
+          <span class="idp-save-status" data-idp-save-status role="status" aria-live="polite" aria-atomic="true"></span>
+        </div>
+        <div class="idp-actions">
+          ${it.type === 'tab' && it.url ? `<button class="idp-open idp-btn primary" type="button" data-idp-focus="open">${esc(tr('detail.open'))}</button>` : ''}
+          <button class="idp-close" type="button" data-idp-focus="close" title="${esc(tr('detail.closeTitle'))}" aria-label="${esc(tr('detail.close'))}">
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+        </div>
       </header>
       <div class="idp-body"></div>
     </aside>`;
   root.querySelector('.idp-scrim').onclick = closeItemDetail;
   root.querySelector('.idp-close').onclick = closeItemDetail;
+  const openButton = root.querySelector('.idp-open');
+  if (openButton) openButton.onclick = () => openTabMaybeHibernated(it.url, { focus: true });
   const body = root.querySelector('.idp-body');
 
-  const section = (title) => {
+  const section = (title, parent = body) => {
     const s = document.createElement('section');
     s.className = 'idp-sec';
-    if (title) { const h = document.createElement('div'); h.className = 'idp-sec-t'; h.textContent = title; s.appendChild(h); }
-    body.appendChild(s);
+    if (title) { const h = document.createElement('h3'); h.className = 'idp-sec-t'; h.textContent = title; s.appendChild(h); }
+    parent.appendChild(s);
     return s;
   };
 
@@ -9869,56 +13998,79 @@ function renderItemDetail() {
   section().appendChild(detailPrimaryEditor(it, commit));
 
   // ── Cover ────────────────────────────────────────────────────────
-  const cov = section('Cover');
+  const cov = section(tr('detail.cover'));
   const covRow = document.createElement('div'); covRow.className = 'idp-cover-row';
-  DETAIL_COVER_COLORS.forEach(c => {
+  DETAIL_COVER_COLORS.forEach((c, index) => {
     const b = document.createElement('button'); b.type = 'button';
     b.className = 'idp-swatch' + (it.cover && it.cover.color === c ? ' sel' : '');
-    b.style.background = c; b.title = c;
-    b.onclick = () => commit('Set cover', () => { it.cover = { color: c }; });
+    b.style.background = c;
+    b.dataset.idpFocus = `cover-color-${index}`;
+    b.setAttribute('aria-label', tr('detail.coverColor', { color: c }));
+    b.setAttribute('aria-pressed', String(it.cover?.color === c));
+    b.onclick = () => { void commit(tr('detail.history.updateCover'), live => { live.cover = { color: c }; }); };
     covRow.appendChild(b);
   });
   const emo = document.createElement('input'); emo.className = 'idp-cover-emoji'; emo.maxLength = 2; emo.placeholder = '😀';
   emo.value = (it.cover && it.cover.emoji) || '';
-  emo.addEventListener('change', () => { const v = emo.value.trim(); commit('Set cover', () => { if (v) it.cover = { emoji: v }; else delete it.cover; }); });
+  emo.dataset.idpFocus = 'cover-emoji';
+  emo.setAttribute('aria-label', tr('detail.coverEmoji'));
+  emo.addEventListener('change', () => {
+    const value = emo.value.trim();
+    void commit(tr('detail.history.updateCover'), live => {
+      if (value) live.cover = { emoji: value };
+      else delete live.cover;
+    });
+  });
   covRow.appendChild(emo);
-  const clr = document.createElement('button'); clr.type = 'button'; clr.className = 'idp-cover-clear'; clr.textContent = 'Clear';
-  clr.onclick = () => commit('Clear cover', () => { delete it.cover; });
+  const clr = document.createElement('button'); clr.type = 'button'; clr.className = 'idp-cover-clear'; clr.textContent = tr('detail.clearCover');
+  clr.dataset.idpFocus = 'cover-clear';
+  clr.onclick = () => { void commit(tr('detail.history.updateCover'), live => { delete live.cover; }); };
   covRow.appendChild(clr);
   cov.appendChild(covRow);
 
   // ── Reminder ─────────────────────────────────────────────────────
-  const rem = section('Reminder');
+  const rem = section(tr('detail.reminder'));
   const remWrap = document.createElement('div'); remWrap.className = 'idp-rem';
   if (it.reminder && it.reminder.at) {
     const past = it.reminder.at < Date.now();
     const when = document.createElement('span');
     when.className = 'idp-rem-when' + (past ? ' past' : '');
-    const recur = it.reminder.recur ? ` · repeats ${recurLabel(it.reminder.recur)}` : '';
-    when.textContent = `${new Date(it.reminder.at).toLocaleString(appLocale())} · ${fmtTimeRelative(it.reminder.at)}${recur}`;
+    const recur = it.reminder.recur ? detailRecurLabel(it.reminder.recur) : '';
+    when.textContent = [
+      past ? tr('detail.pastDue') : '',
+      new Date(it.reminder.at).toLocaleString(appLocale()),
+      fmtTimeRelative(it.reminder.at),
+      recur ? tr('detail.repeats', { schedule: recur }) : '',
+    ].filter(Boolean).join(' · ');
     remWrap.appendChild(when);
-    const change = document.createElement('button'); change.type = 'button'; change.className = 'idp-btn'; change.textContent = 'Change'; change.onclick = () => openReminderPicker(it.id);
-    const clr2 = document.createElement('button'); clr2.type = 'button'; clr2.className = 'idp-btn danger'; clr2.textContent = 'Clear'; clr2.onclick = () => clearReminder(it.id);
+    const change = document.createElement('button'); change.type = 'button'; change.className = 'idp-btn'; change.textContent = tr('detail.changeReminder'); change.dataset.idpFocus = 'reminder-change'; change.onclick = () => openReminderPicker(it.id, mutationContext);
+    const clr2 = document.createElement('button'); clr2.type = 'button'; clr2.className = 'idp-btn danger'; clr2.textContent = tr('detail.clearReminder'); clr2.dataset.idpFocus = 'reminder-clear'; clr2.onclick = () => { void commitItemDetailReminderMutation(mutationContext, null); };
     remWrap.appendChild(change); remWrap.appendChild(clr2);
   } else {
-    const set = document.createElement('button'); set.type = 'button'; set.className = 'idp-btn primary'; set.textContent = 'Set reminder…'; set.onclick = () => openReminderPicker(it.id);
+    const set = document.createElement('button'); set.type = 'button'; set.className = 'idp-btn primary'; set.textContent = tr('detail.setReminder'); set.dataset.idpFocus = 'reminder-set'; set.onclick = () => openReminderPicker(it.id, mutationContext);
     remWrap.appendChild(set);
   }
   rem.appendChild(remWrap);
 
   // ── Notes annotation (rich text, reuses the .note-text RT toolbar) ─
-  const nsec = section('Notes');
+  const nsec = section(tr('detail.whySaved'));
   const ned = document.createElement('div');
   ned.className = 'idp-notes note-text';
   ned.contentEditable = 'true'; ned.spellcheck = false;
-  ned.setAttribute('data-ph', 'Why did you save this? Context, quotes, next steps…');
+  ned.dataset.idpFocus = 'notes';
+  ned.setAttribute('aria-label', tr('detail.whySaved'));
+  ned.setAttribute('data-ph', tr('detail.notesPlaceholder'));
   ned.innerHTML = sanitizeHtml(it.notes || '');
   ned.addEventListener('blur', () => {
     const html = sanitizeHtml(ned.innerHTML);
-    if (html !== (it.notes || '')) commit('Edit notes', () => { it.notes = autoLinkify(html); }, { pane: false });
+    if (html !== (it.notes || '')) {
+      void commit(tr('detail.history.editNotes'), live => { live.notes = autoLinkify(html); }, {
+        pane: false,
+        afterSuccess: live => { ned.innerHTML = sanitizeHtml(live.notes || ''); },
+      });
+    }
   });
   ned.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { e.stopPropagation(); ned.blur(); }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') { e.preventDefault(); document.execCommand('bold'); }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'i') { e.preventDefault(); document.execCommand('italic'); }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'u') { e.preventDefault(); document.execCommand('underline'); }
@@ -9927,31 +14079,37 @@ function renderItemDetail() {
   nsec.appendChild(ned);
 
   // ── Tags (feed the tag: search operator) ──────────────────────────
-  const tsec = section('Tags');
+  const tsec = section(tr('detail.tags'));
   const chips = document.createElement('div'); chips.className = 'idp-tags';
   (it.tags || []).forEach((tg, i) => {
     const c = document.createElement('span'); c.className = 'idp-tag';
     c.innerHTML = `<span>${esc(tg)}</span>`;
-    const x = document.createElement('button'); x.type = 'button'; x.className = 'idp-tag-x'; x.setAttribute('aria-label', 'Remove tag'); x.textContent = '×';
-    x.onclick = () => commit('Remove tag', () => { it.tags.splice(i, 1); if (!it.tags.length) delete it.tags; });
+    const x = document.createElement('button'); x.type = 'button'; x.className = 'idp-tag-x'; x.setAttribute('aria-label', tr('detail.removeTag', { tag: tg })); x.textContent = '×';
+    x.dataset.idpFocus = `tag-remove-${i}`;
+    x.onclick = () => {
+      void commit(tr('detail.history.updateTags'), live => {
+        live.tags.splice(i, 1);
+        if (!live.tags.length) delete live.tags;
+      });
+    };
     c.appendChild(x); chips.appendChild(c);
   });
-  const tin = document.createElement('input'); tin.id = 'idp-tag-input'; tin.className = 'idp-tag-input'; tin.placeholder = 'Add tag…'; tin.spellcheck = false;
+  const tin = document.createElement('input'); tin.id = 'idp-tag-input'; tin.className = 'idp-tag-input'; tin.placeholder = tr('detail.addTag'); tin.spellcheck = false;
+  tin.dataset.idpFocus = 'tag-add';
+  tin.setAttribute('aria-label', tr('detail.addTag'));
   tin.addEventListener('keydown', e => {
     if (e.key === 'Enter') {
       e.preventDefault();
       const v = normalizeTag(tin.value);
-      tin.value = '';
       if (!v || (it.tags || []).includes(v)) return;
-      commit('Add tag', () => { (it.tags = it.tags || []).push(v); });
-      setTimeout(() => document.getElementById('idp-tag-input')?.focus(), 0);
-    } else if (e.key === 'Escape') { e.stopPropagation(); tin.blur(); }
+      void commit(tr('detail.history.updateTags'), live => { (live.tags = live.tags || []).push(v); });
+    }
   });
   chips.appendChild(tin);
   tsec.appendChild(chips);
 
   // ── Checklist (mini sub-todos on any item) ────────────────────────
-  const csec = section('Checklist');
+  const csec = section(tr('detail.checklist'));
   const list = it.checklist || [];
   if (list.length) {
     const cnt = document.createElement('span'); cnt.className = 'idp-sec-count';
@@ -9961,45 +14119,126 @@ function renderItemDetail() {
   const cl = document.createElement('div'); cl.className = 'idp-checklist';
   list.forEach((row, i) => {
     const r = document.createElement('div'); r.className = 'idp-cl-row' + (row.done ? ' done' : '');
-    const chk = document.createElement('button'); chk.type = 'button'; chk.className = 'idp-cl-check' + (row.done ? ' done' : ''); chk.setAttribute('aria-label', 'Toggle');
-    chk.onclick = () => commit('Toggle checklist item', () => { row.done = !row.done; });
-    const tx = document.createElement('input'); tx.className = 'idp-cl-text'; tx.value = row.text || ''; tx.placeholder = 'Item';
-    tx.addEventListener('change', () => { if (tx.value !== row.text) commit('Edit checklist item', () => { row.text = tx.value; }, { pane: false }); });
-    const x = document.createElement('button'); x.type = 'button'; x.className = 'idp-cl-x'; x.setAttribute('aria-label', 'Remove'); x.textContent = '×';
-    x.onclick = () => commit('Remove checklist item', () => { list.splice(i, 1); if (!list.length) delete it.checklist; });
+    const chk = document.createElement('button'); chk.type = 'button'; chk.className = 'idp-cl-check' + (row.done ? ' done' : ''); chk.setAttribute('aria-label', tr('detail.toggleChecklist', { item: row.text || tr('detail.checklistItem') }));
+    chk.dataset.idpFocus = `check-toggle-${i}`;
+    chk.setAttribute('aria-pressed', String(!!row.done));
+    chk.onclick = () => {
+      void commit(tr('detail.history.updateChecklist'), live => { live.checklist[i].done = !live.checklist[i].done; });
+    };
+    const tx = document.createElement('input'); tx.className = 'idp-cl-text'; tx.value = row.text || ''; tx.placeholder = tr('detail.checklistItem');
+    tx.dataset.idpFocus = `check-text-${i}`;
+    tx.setAttribute('aria-label', tr('detail.checklistItem'));
+    tx.addEventListener('change', () => {
+      if (tx.value !== row.text) {
+        void commit(tr('detail.history.updateChecklist'), live => { live.checklist[i].text = tx.value; }, { pane: false });
+      }
+    });
+    const x = document.createElement('button'); x.type = 'button'; x.className = 'idp-cl-x'; x.setAttribute('aria-label', tr('detail.removeChecklist', { item: row.text || tr('detail.checklistItem') })); x.textContent = '×';
+    x.dataset.idpFocus = `check-remove-${i}`;
+    x.onclick = () => {
+      void commit(tr('detail.history.updateChecklist'), live => {
+        live.checklist.splice(i, 1);
+        if (!live.checklist.length) delete live.checklist;
+      });
+    };
     r.appendChild(chk); r.appendChild(tx); r.appendChild(x); cl.appendChild(r);
   });
-  const addIn = document.createElement('input'); addIn.id = 'idp-cl-input'; addIn.className = 'idp-cl-add'; addIn.placeholder = 'Add checklist item…';
+  const addIn = document.createElement('input'); addIn.id = 'idp-cl-input'; addIn.className = 'idp-cl-add'; addIn.placeholder = tr('detail.addChecklist');
+  addIn.dataset.idpFocus = 'check-add';
+  addIn.setAttribute('aria-label', tr('detail.addChecklist'));
   addIn.addEventListener('keydown', e => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      const v = addIn.value.trim(); addIn.value = '';
+      const v = addIn.value.trim();
       if (!v) return;
-      commit('Add checklist item', () => { (it.checklist = it.checklist || []).push({ text: v, done: false }); });
-      setTimeout(() => document.getElementById('idp-cl-input')?.focus(), 0);
-    } else if (e.key === 'Escape') { e.stopPropagation(); addIn.blur(); }
+      void commit(tr('detail.history.updateChecklist'), live => {
+        (live.checklist = live.checklist || []).push({ text: v, done: false });
+      });
+    }
   });
   cl.appendChild(addIn);
   csec.appendChild(cl);
 
   // ── Custom fields (arbitrary label/value pairs) ───────────────────
-  const fsec = section('Custom fields');
+  const fsec = section(tr('detail.customFields'));
   const cfList = it.customFields || [];
   const cf = document.createElement('div'); cf.className = 'idp-fields';
   cfList.forEach((row, i) => {
     const r = document.createElement('div'); r.className = 'idp-cf-row';
-    const l = document.createElement('input'); l.className = 'idp-cf-label'; l.value = row.label || ''; l.placeholder = 'Label';
-    l.addEventListener('change', () => { if (l.value !== row.label) commit('Edit field', () => { row.label = l.value; }, { pane: false }); });
-    const v = document.createElement('input'); v.className = 'idp-cf-value'; v.value = row.value || ''; v.placeholder = 'Value';
-    v.addEventListener('change', () => { if (v.value !== row.value) commit('Edit field', () => { row.value = v.value; }, { pane: false }); });
-    const x = document.createElement('button'); x.type = 'button'; x.className = 'idp-cf-x'; x.setAttribute('aria-label', 'Remove'); x.textContent = '×';
-    x.onclick = () => commit('Remove field', () => { cfList.splice(i, 1); if (!cfList.length) delete it.customFields; });
+    const l = document.createElement('input'); l.className = 'idp-cf-label'; l.value = row.label || ''; l.placeholder = tr('detail.fieldLabel');
+    l.dataset.idpFocus = `field-label-${i}`;
+    l.setAttribute('aria-label', tr('detail.fieldLabel'));
+    l.addEventListener('change', () => {
+      if (l.value !== row.label) {
+        void commit(tr('detail.history.updateFields'), live => { live.customFields[i].label = l.value; }, { pane: false });
+      }
+    });
+    const v = document.createElement('input'); v.className = 'idp-cf-value'; v.value = row.value || ''; v.placeholder = tr('detail.fieldValue');
+    v.dataset.idpFocus = `field-value-${i}`;
+    v.setAttribute('aria-label', tr('detail.fieldValue'));
+    v.addEventListener('change', () => {
+      if (v.value !== row.value) {
+        void commit(tr('detail.history.updateFields'), live => { live.customFields[i].value = v.value; }, { pane: false });
+      }
+    });
+    const x = document.createElement('button'); x.type = 'button'; x.className = 'idp-cf-x'; x.setAttribute('aria-label', tr('detail.removeField', { label: row.label || tr('detail.fieldLabel') })); x.textContent = '×';
+    x.dataset.idpFocus = `field-remove-${i}`;
+    x.onclick = () => {
+      void commit(tr('detail.history.updateFields'), live => {
+        live.customFields.splice(i, 1);
+        if (!live.customFields.length) delete live.customFields;
+      });
+    };
     r.appendChild(l); r.appendChild(v); r.appendChild(x); cf.appendChild(r);
   });
-  const addBtn = document.createElement('button'); addBtn.type = 'button'; addBtn.className = 'idp-add-field'; addBtn.textContent = '+ Add field';
-  addBtn.onclick = () => commit('Add field', () => { (it.customFields = it.customFields || []).push({ label: '', value: '' }); });
+  const addBtn = document.createElement('button'); addBtn.type = 'button'; addBtn.className = 'idp-add-field'; addBtn.textContent = `+ ${tr('detail.addField')}`;
+  addBtn.dataset.idpFocus = 'field-add';
+  addBtn.onclick = () => {
+    void commit(tr('detail.history.updateFields'), live => {
+      (live.customFields = live.customFields || []).push({ label: '', value: '' });
+    });
+  };
   cf.appendChild(addBtn);
   fsec.appendChild(cf);
+
+  // Keep recovery context primary. Decoration, checklist, and arbitrary fields
+  // stay available without competing with the reason an item was saved.
+  body.appendChild(nsec);
+  body.appendChild(rem);
+  body.appendChild(tsec);
+  const advanced = document.createElement('details');
+  advanced.className = 'idp-advanced';
+  const hasAdvancedData = !!it.cover || !!it.checklist?.length || !!it.customFields?.length;
+  advanced.open = savedAdvancedOpen == null ? hasAdvancedData : savedAdvancedOpen === 'true';
+  const advancedSummary = document.createElement('summary');
+  advancedSummary.className = 'idp-advanced-summary';
+  advancedSummary.dataset.idpFocus = 'advanced';
+  advancedSummary.textContent = tr('detail.more');
+  const advancedBody = document.createElement('div');
+  advancedBody.className = 'idp-advanced-body';
+  advancedBody.appendChild(cov);
+  advancedBody.appendChild(csec);
+  advancedBody.appendChild(fsec);
+  advanced.appendChild(advancedSummary);
+  advanced.appendChild(advancedBody);
+  body.appendChild(advanced);
+  root.dataset.advancedItemId = String(id);
+  root.dataset.advancedOpen = String(advanced.open);
+  advanced.addEventListener('toggle', () => { root.dataset.advancedOpen = String(advanced.open); });
+
+  setTimeout(() => {
+    if (!root.classList.contains('open') || root.dataset.itemId !== String(id) || root.inert) return;
+    const panel = root.querySelector('.idp-panel');
+    if (!sameItem) {
+      focusItemDetailTarget(panel);
+      return;
+    }
+    if (focusKey) {
+      const escapedKey = typeof CSS !== 'undefined' && typeof CSS.escape === 'function' ? CSS.escape(focusKey) : focusKey;
+      if (focusItemDetailTarget(root.querySelector(`[data-idp-focus="${escapedKey}"]`))) return;
+    }
+    if (!root.contains(document.activeElement)) focusItemDetailTarget(panel);
+  }, 0);
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -10466,14 +14705,28 @@ function getCanvasGroupEl(gId) {
   return Array.from(document.querySelectorAll('.gcol.cv-group')).find(el => el.dataset.gid === gId);
 }
 
-function canvasGroupRect(g, positions, fallback) {
+function canvasGroupFootprint(savedSize, fallback) {
+  const width = typeof savedSize === 'number' ? savedSize : savedSize?.w;
+  const cardsHeight = typeof savedSize === 'object' ? savedSize?.h : null;
+  return {
+    w: Number.isFinite(Number(width)) && Number(width) > 0 ? Number(width) : fallback.w,
+    // Saved height belongs to the cards region; include conservative header,
+    // composer, and spacing chrome for the complete column footprint.
+    h: Number.isFinite(Number(cardsHeight)) && Number(cardsHeight) > 0
+      ? Math.max(fallback.h, Number(cardsHeight) + 150)
+      : fallback.h,
+  };
+}
+
+function canvasGroupRect(g, positions, fallback, savedSize = null) {
   const el = getCanvasGroupEl(g.id);
   const pos = positions[g.id] || { x: 0, y: 0 };
+  const footprint = canvasGroupFootprint(savedSize, fallback);
   return {
     x: Number(pos.x) || 0,
     y: Number(pos.y) || 0,
-    w: el?.offsetWidth || fallback.w,
-    h: el?.offsetHeight || fallback.h
+    w: el?.offsetWidth || footprint.w,
+    h: el?.offsetHeight || footprint.h,
   };
 }
 
@@ -10484,23 +14737,29 @@ function canvasRectsOverlap(a, b, gap = 24) {
     a.y + a.h + gap > b.y;
 }
 
-function findOpenCanvasPosition(group, groups, positions) {
+function findOpenCanvasPosition(group, groups, positions, preferredSize = null, groupSizes = null) {
   const board = document.getElementById('board');
   const colW = parseFloat(getComputedStyle(document.body).getPropertyValue('--gw')) || 290;
-  const fallback = { w: colW, h: 330 };
+  const viewportHeight = Number(window.innerHeight)
+    || Number(document.documentElement?.clientHeight)
+    || 720;
+  // Unsized cards may occupy the full CSS 60vh cap. Include the same
+  // conservative header/composer chrome used for saved card heights.
+  const fallback = { w: colW, h: Math.max(330, Math.round(viewportHeight * 0.6) + 150) };
+  const footprint = canvasGroupFootprint(preferredSize, fallback);
   const occupied = groups
     .filter(g => g.id !== group.id && positions[g.id])
-    .map(g => canvasGroupRect(g, positions, fallback));
+    .map(g => canvasGroupRect(g, positions, fallback, groupSizes?.[g.id]));
 
   const startX = Math.max(30, (board?.scrollLeft || 0) + 30);
   const startY = Math.max(30, (board?.scrollTop || 0) + 30);
-  const stepX = Math.max(fallback.w + 30, 320);
-  const stepY = Math.max(fallback.h + 36, 366);
+  const stepX = Math.max(footprint.w + 30, 320);
+  const stepY = Math.max(footprint.h + 36, 366);
   const columns = Math.max(3, Math.ceil((board?.clientWidth || 960) / stepX) + 1);
 
   for (let row = 0; row < 24; row++) {
     for (let col = 0; col < columns; col++) {
-      const candidate = { x: startX + col * stepX, y: startY + row * stepY, ...fallback };
+      const candidate = { x: startX + col * stepX, y: startY + row * stepY, ...footprint };
       if (!occupied.some(rect => canvasRectsOverlap(candidate, rect))) return { x: candidate.x, y: candidate.y };
     }
   }
@@ -10644,9 +14903,16 @@ function renderListView() {
   cat.groups.forEach(g => wrap.appendChild(buildLvGroup(g)));
 
   const add = document.createElement('button');
+  add.type = 'button';
   add.className = 'lv-add-row';
-  add.innerHTML = `<svg width="13" height="13" viewBox="0 0 13 13"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg> New group`;
-  add.onclick = () => openModal('new-group');
+  add.innerHTML = `<svg width="13" height="13" viewBox="0 0 13 13" aria-hidden="true"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg> ${esc(tr('groupAction.new'))}`;
+  add.onclick = event => {
+    const workspace = activeWs();
+    openIdentityEditor('group', 'create', {
+      workspaceId: workspace?.id,
+      spaceId: cat.id,
+    }, event.currentTarget);
+  };
   wrap.appendChild(add);
 
   $b.appendChild(wrap);
@@ -10668,40 +14934,44 @@ function buildLvGroup(g) {
 
   const hd = document.createElement('div');
   hd.className = 'lv-group-hd';
+  hd.setAttribute('role', 'group');
+  hd.setAttribute('aria-label', tr('groupAction.aria', { name: g.name }));
   hd.innerHTML = `
-    <span class="lv-chev"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M3.5 2.5l3 2.5-3 2.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-    <span class="lv-group-sym">${esc(g.symbol || '📁')}</span>
+    <button class="lv-chev lv-group-toggle" type="button" aria-expanded="${!g.collapsed}" aria-label="${esc(tr(g.collapsed ? 'groupAction.expandFor' : 'groupAction.collapseFor', { name: g.name }))}"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M3.5 2.5l3 2.5-3 2.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button class="lv-group-sym" type="button" aria-label="${esc(tr('groupAction.editFor', { name: g.name }))}">${esc(g.symbol || '📁')}</button>
     <span class="lv-group-name">${esc(g.name)}</span>
     <span class="lv-group-cnt">${g.items.length}</span>
     ${todoStat}
     <div class="lv-group-acts">
-      <button class="lv-act-btn" data-act="focus" title="Expand to full page"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 4V2h2M10 4V2H8M2 8v2h2M10 8v2H8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      <button class="lv-act-btn" data-act="open-all" title="Open all"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M4 2.5H2a1 1 0 00-1 1v6.5A1 1 0 002 11h6.5a1 1 0 001-1V8M7 1h4m0 0v4M11 1L5.5 6.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button class="lv-act-btn" data-act="focus" title="${esc(tr('groupAction.openAsPage'))}" aria-label="${esc(tr('groupAction.openAsPage'))}"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M2 4V2h2M10 4V2H8M2 8v2h2M10 8v2H8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button class="lv-act-btn" data-act="open-all" title="${esc(tr('groupAction.openAll'))}" aria-label="${esc(tr('groupAction.openAll'))}"><svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M4 2.5H2a1 1 0 00-1 1v6.5A1 1 0 002 11h6.5a1 1 0 001-1V8M7 1h4m0 0v4M11 1L5.5 6.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <button class="lv-act-btn" data-act="add-tab" title="Add selected sidebar tabs or the active browser tab"><svg width="11" height="11" viewBox="0 0 12 12"><path d="M6 2v8M2 6h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
-      <button class="lv-act-btn" data-act="more" title="More"><svg width="11" height="11" viewBox="0 0 12 12" fill="currentColor"><circle cx="3" cy="6" r="1"/><circle cx="6" cy="6" r="1"/><circle cx="9" cy="6" r="1"/></svg></button>
+      <button class="lv-act-btn" data-act="more" title="${esc(tr('groupAction.more'))}" aria-label="${esc(tr('groupAction.moreFor', { name: g.name }))}" aria-haspopup="menu"><svg width="11" height="11" viewBox="0 0 12 12" fill="currentColor"><circle cx="3" cy="6" r="1"/><circle cx="6" cy="6" r="1"/><circle cx="9" cy="6" r="1"/></svg></button>
     </div>`;
 
-  hd.addEventListener('click', e => {
-    if (e.target.closest('.lv-group-acts') || e.target.closest('.lv-group-name[contenteditable="true"]') || e.target.closest('.lv-group-sym')) return;
+  const toggleButton = hd.querySelector('.lv-group-toggle');
+  const toggleGroup = () => {
     State.snapshot('Toggle');
     g.collapsed = !g.collapsed;
     wrap.classList.toggle('collapsed');
+    toggleButton.setAttribute('aria-expanded', String(!g.collapsed));
+    toggleButton.setAttribute('aria-label', tr(g.collapsed ? 'groupAction.expandFor' : 'groupAction.collapseFor', { name: g.name }));
     State.persist();
+  };
+  hd.addEventListener('click', e => {
+    if (e.target.closest('button') || e.target.closest('.lv-group-acts') || e.target.closest('.lv-group-sym')) return;
+    toggleGroup();
   });
-  hd.querySelector('.lv-group-name').addEventListener('dblclick', (e) => {
-    const el = e.currentTarget;
-    el.contentEditable = 'true';
-    el.focus();
-    el.addEventListener('blur', () => {
-      el.contentEditable = 'false';
-      const v = el.textContent.trim() || g.name;
-      if (v !== g.name) { State.snapshot('Rename'); g.name = v; State.persist(); }
-    }, { once: true });
-    el.addEventListener('keydown', (kev) => { if (kev.key === 'Enter') { kev.preventDefault(); el.blur(); } if (kev.key === 'Escape') { el.textContent = g.name; el.blur(); } });
-  });
+  toggleButton.addEventListener('click', event => { event.stopPropagation(); toggleGroup(); });
   hd.querySelector('.lv-group-sym').addEventListener('click', (e) => {
     e.stopPropagation();
-    openEmojiPicker({ kind:'group', id: g.id }, e.currentTarget);
+    const identity = identityGroupTarget(g.id);
+    openIdentityEditor('group', 'edit', {
+      workspaceId: identity?.workspace.id,
+      spaceId: identity?.space.id,
+      groupId: g.id,
+      focusField: 'symbol',
+    }, e.currentTarget);
   });
   hd.querySelectorAll('.lv-act-btn').forEach(btn => btn.addEventListener('click', async (e) => {
     e.stopPropagation();
@@ -10711,24 +14981,35 @@ function buildLvGroup(g) {
     else if (act === 'add-tab') {
       await addSidebarOrActiveTabToGroup(g);
     }
-    else if (act === 'more') showContextMenu(e.pageX, e.pageY, [
-      { text:'Edit group…', icon: cmIcons.edit, action: () => openModal('edit-group', g) },
-      { text:'Duplicate', icon: cmIcons.copy, action: () => duplicateGroup(g.id) },
-      { text:'Add stack', icon: cmIcons.stack, action: () => openModal('new-stack', { groupId: g.id }) },
+    else if (act === 'more') {
+      const identity = identityGroupTarget(g.id);
+      const params = { workspaceId: identity?.workspace.id, spaceId: identity?.space.id, groupId: g.id };
+      const rect = btn.getBoundingClientRect();
+      showContextMenu(rect.left, rect.bottom + 6, [
+      { text: tr('groupAction.edit'), icon: cmIcons.edit, action: () => openIdentityEditor('group', 'edit', params, btn) },
+      { text: tr('groupAction.duplicate'), icon: cmIcons.copy, action: () => openIdentityEditor('group', 'duplicate', params, btn) },
+      { text: tr('groupAction.addStack'), icon: cmIcons.stack, action: () => openIdentityEditor('stack', 'create', params, btn) },
       { sep: true },
-      { text:'Archive group', icon: cmIcons.archive, action: () => archiveGroup(g.id) },
-      { text:'Delete', icon: cmIcons.delete, danger: true, action: () => deleteGroup(g.id) }
-    ]);
+      ...organizationGroupMoveMenuItems(g.id, btn),
+      { sep: true },
+      { text: tr('groupAction.archive'), icon: cmIcons.archive, action: () => archiveGroup(g.id) }
+    ], { focusFirst: true });
+    }
   }));
   hd.addEventListener('contextmenu', e => {
     e.preventDefault();
+    focusDialogOpener(toggleButton);
+    const identity = identityGroupTarget(g.id);
+    const params = { workspaceId: identity?.workspace.id, spaceId: identity?.space.id, groupId: g.id };
     showContextMenu(e.pageX, e.pageY, [
-      { text:'Edit group…', icon: cmIcons.edit, action: () => openModal('edit-group', g) },
-      { text:'Open all', icon: cmIcons.open, action: () => openGroupAll(g.id) },
-      { text:'Duplicate', icon: cmIcons.copy, action: () => duplicateGroup(g.id) },
-      { text:'Archive', icon: cmIcons.archive, action: () => archiveGroup(g.id) },
-      { text:'Delete', icon: cmIcons.delete, danger: true, action: () => deleteGroup(g.id) }
-    ]);
+      { text: tr('groupAction.edit'), icon: cmIcons.edit, action: () => openIdentityEditor('group', 'edit', params, toggleButton) },
+      { text: tr('groupAction.openAll'), icon: cmIcons.open, action: () => openGroupAll(g.id) },
+      { text: tr('groupAction.duplicate'), icon: cmIcons.copy, action: () => openIdentityEditor('group', 'duplicate', params, toggleButton) },
+      { sep: true },
+      ...organizationGroupMoveMenuItems(g.id, toggleButton),
+      { sep: true },
+      { text: tr('groupAction.archive'), icon: cmIcons.archive, action: () => archiveGroup(g.id) }
+    ], { focusFirst: true });
   });
   wrap.appendChild(hd);
 
@@ -10795,14 +15076,39 @@ function buildLvStack(it, parentItems, group, depth) {
   const hd = document.createElement('div');
   hd.className = 'lv-stack-hd';
   hd.style.paddingLeft = (16 + depth * 18) + 'px';
+  hd.setAttribute('role', 'group');
+  hd.setAttribute('aria-label', tr('stackAction.aria', { name: it.name || tr('stackEditor.defaultName') }));
   const cnt = (it.items || []).length;
   hd.innerHTML = `
-    <span class="lv-chev"><svg width="9" height="9" viewBox="0 0 10 10"><path d="M3.5 2.5l3 2.5-3 2.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-    <span class="lv-stack-sym">${esc(it.symbol || '📚')}</span>
-    <span class="lv-stack-name">${esc(it.name || 'Stack')}</span>
+    <button class="lv-chev lv-stack-toggle" type="button" aria-expanded="${!!it.expanded}" aria-label="${esc(tr(it.expanded ? 'stackAction.collapseFor' : 'stackAction.expandFor', { name: it.name || tr('stackEditor.defaultName') }))}"><svg width="9" height="9" viewBox="0 0 10 10" aria-hidden="true"><path d="M3.5 2.5l3 2.5-3 2.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button class="lv-stack-sym" type="button" aria-label="${esc(tr('stackAction.editFor', { name: it.name || tr('stackEditor.defaultName') }))}">${esc(it.symbol || '📚')}</button>
+    <span class="lv-stack-name">${esc(it.name || tr('stackEditor.defaultName'))}</span>
     <span class="lv-stack-cnt">${cnt}</span>`;
+  const toggleButton = hd.querySelector('.lv-stack-toggle');
+  const toggleStack = () => {
+    State.snapshot('Toggle stack');
+    it.expanded = !it.expanded;
+    wrap.classList.toggle('expanded');
+    toggleButton.setAttribute('aria-expanded', String(!!it.expanded));
+    toggleButton.setAttribute('aria-label', tr(it.expanded ? 'stackAction.collapseFor' : 'stackAction.expandFor', { name: it.name || tr('stackEditor.defaultName') }));
+    State.persist();
+  };
+  const openStackIdentity = (opener, focusField) => {
+    const identity = identityStackTarget(it.id);
+    return openIdentityEditor('stack', 'edit', {
+      workspaceId: identity?.workspace.id,
+      spaceId: identity?.space.id,
+      groupId: identity?.group.id,
+      stackId: it.id,
+      focusField,
+    }, opener);
+  };
+  const openStackMenu = (x, y, opener = toggleButton) => showContextMenu(x, y, [
+    { text: tr('stackAction.edit'), icon: cmIcons.edit, action: () => openStackIdentity(opener) },
+    { text: tr('stackAction.archive'), icon: cmIcons.archive, action: () => archiveItem(it.id) },
+  ], { focusFirst: true });
   hd.addEventListener('click', e => {
-    if (e.target.closest('.lv-stack-sym') || e.target.closest('.item-check')) return;
+    if (e.target.closest('button') || e.target.closest('.lv-stack-sym') || e.target.closest('.item-check')) return;
     if (itemSelMode || e.shiftKey) {
       e.stopPropagation();
       e.preventDefault();
@@ -10810,21 +15116,33 @@ function buildLvStack(it, parentItems, group, depth) {
       else toggleItemSelect(it.id);
       return;
     }
-    State.snapshot('Toggle stack');
-    it.expanded = !it.expanded;
-    wrap.classList.toggle('expanded');
-    State.persist();
+    toggleStack();
+  });
+  toggleButton.addEventListener('click', event => {
+    event.stopPropagation();
+    if (itemSelMode || event.shiftKey) {
+      if (event.shiftKey) selectRangeTo(it.id);
+      else toggleItemSelect(it.id);
+      return;
+    }
+    toggleStack();
+  });
+  toggleButton.addEventListener('keydown', event => {
+    if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) {
+      event.preventDefault();
+      event.stopPropagation();
+      const rect = toggleButton.getBoundingClientRect();
+      openStackMenu(rect.left, rect.bottom + 6, toggleButton);
+    }
   });
   hd.querySelector('.lv-stack-sym').addEventListener('click', (e) => {
     e.stopPropagation();
-    openEmojiPicker({ kind:'stack', id: it.id }, e.currentTarget);
+    openStackIdentity(e.currentTarget, 'symbol');
   });
   hd.addEventListener('contextmenu', e => {
     e.preventDefault();
-    showContextMenu(e.pageX, e.pageY, [
-      { text:'Rename', icon: cmIcons.edit, action: () => { const n = prompt('Name:', it.name); if (n) { State.snapshot('Rename'); it.name = n; State.persist(); renderBoard(); } } },
-      { text:'Archive', icon: cmIcons.archive, action: () => archiveItem(it.id) }
-    ]);
+    focusDialogOpener(toggleButton);
+    openStackMenu(e.pageX, e.pageY, toggleButton);
   });
   wrap.appendChild(hd);
 
@@ -11600,7 +15918,12 @@ function calGroupByDay(entries) {
 // to the calendar.
 function openReminderTarget(entry) {
   if (entry.source === 'item') {
-    if (!findItem(entry.refId)) { toast('Item no longer exists', { danger: true }); renderBoard(); return; }
+    if (!validDetailItemIdForSurface(entry.refId, { wsId: entry.wsId, groupId: entry.groupId })) {
+      toast('Item no longer exists', { danger: true });
+      renderBoard();
+      return;
+    }
+    prepareItemDetailOpen(entry.refId);
     Router.navigate({ type: 'group', wsId: entry.wsId, groupId: entry.groupId, itemId: entry.refId, query: {} });
   } else if (entry.source === 'group') {
     Router.navigate({ type: 'group', wsId: entry.wsId, groupId: entry.groupId, itemId: null, query: {} });
@@ -12044,9 +16367,6 @@ function renderCalendar() {
     if (fi) { fi.focus(); const p = _calFilterRestore.caret; if (p != null) { try { fi.setSelectionRange(p, p); } catch {} } }
     _calFilterRestore = null;
   }
-  // First calendar open: point out that the board's search language works here too.
-  setTimeout(() => coachMark('calendar', '#cal-filter-input',
-    'Filter by search', 'The calendar reads the same operators as the board search — try type:tab, in:work, or color:red to narrow what shows.'), 400);
   return true;
 }
 
@@ -12293,7 +16613,7 @@ function buildPaletteCommands() {
 
   add({ id: 'save-tab', section: 'quick', icon: PAL_ICONS.link, label: tr('palette.saveTab'), desc: tr('palette.saveTabDesc'), shortcut: [mod, '⇧', 'S'], run: _palSaveActiveTab });
   add({ id: 'create-note', section: 'quick', icon: PAL_ICONS.note, label: tr('palette.createNote'), desc: tr('palette.createNoteDesc'), run: _palCreateNote });
-  add({ id: 'new-space', section: 'quick', icon: PAL_ICONS.space, label: tr('palette.newSpace'), desc: tr('palette.newSpaceDesc'), run: () => openModal('new-cat') });
+  add({ id: 'new-space', section: 'quick', icon: PAL_ICONS.space, label: tr('palette.newSpace'), desc: tr('palette.newSpaceDesc'), run: () => openOrganizationCreate('space') });
   add({ id: 'save-window', section: 'quick', icon: PAL_ICONS.window, label: tr('palette.saveWindow'), desc: tr('palette.saveWindowDesc'), run: saveAllTabs });
   add({ id: 'import-bookmarks', section: 'quick', icon: PAL_ICONS.import, label: tr('palette.importBookmarks'), desc: tr('palette.importBookmarksDesc'), run: importBookmarks });
 
@@ -12375,6 +16695,7 @@ function _palEnsureDom() {
       `<div class="cmdp-footer"><span aria-hidden="true">✧</span><span></span></div>` +
     `</div>`;
   document.body.appendChild(ov);
+  inheritActiveBodyInterlocks(ov);
   const inp = ov.querySelector('#cmdp-input');
   ov.addEventListener('mousedown', e => { if (e.target === ov) closeCommandPalette(); });
   ov.addEventListener('keydown', e => {
@@ -12396,6 +16717,10 @@ function _palSyncLocale(ov) {
 }
 
 function openCommandPalette() {
+  const organizationName = document.getElementById('organization-name-overlay');
+  if (organizationName && !organizationName.classList.contains('hidden')) return false;
+  const organization = document.getElementById('organization-delete-overlay');
+  if (organization && !organization.classList.contains('hidden')) return false;
   const ov = _palEnsureDom();
   _palSyncLocale(ov);
   rememberOpener(ov);
@@ -12405,6 +16730,7 @@ function openCommandPalette() {
   inp.value = '';
   _palRender('');
   setTimeout(() => inp.focus(), 30);
+  return true;
 }
 
 function closeCommandPalette() {
@@ -12669,12 +16995,11 @@ const APP_MENU_ICONS = {
   workspaces: '<svg width="14" height="14" viewBox="0 0 13 13" fill="none"><rect x="1.5" y="1.5" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="7.5" y="1.5" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1.5" y="7.5" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="7.5" y="7.5" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>',
   guide: '<svg width="14" height="14" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.3"/><path d="M5 5.5a1.5 1.5 0 113 0c0 .8-1.5 1-1.5 2M6.5 9.5v.01" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
   about: '<svg width="14" height="14" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.3"/><path d="M6.5 5.6v3.4M6.5 3.9v.01" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
-  reset: '<svg width="14" height="14" viewBox="0 0 13 13" fill="none"><path d="M2.5 6.5a4 4 0 104-4M2.5 6.5V4M2.5 6.5H5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
 };
 
 // The top-bar app menu (replaces the fake avatar button). Every entry routes to
 // an existing surface so nothing here is decorative: Settings, Plugins (tools
-// hub), Calendar/reminders, Theme, Workspaces, Guide, About, Reset onboarding.
+// hub), Calendar/reminders, Theme, Workspaces, Guide, and About.
 function openAppMenu(btn) {
   const s = State.get();
   const ws = activeWs();
@@ -12687,11 +17012,9 @@ function openAppMenu(btn) {
     { text: tr('menu.calendar'), icon: APP_MENU_ICONS.calendar, sub: pending > 0 ? String(pending) : '', action: () => { if (!activeCalendar) openCalendar(); } },
     { text: tr('menu.theme'), icon: APP_MENU_ICONS.theme, sub: theme ? theme.label : '', action: () => openSettingsDrawer('appearance') },
     { sep: true },
-    { text: tr('menu.workspaces'), icon: APP_MENU_ICONS.workspaces, action: () => openWsGrid() },
+    { text: tr('menu.workspaces'), icon: APP_MENU_ICONS.workspaces, action: () => openWsGrid(btn) },
     { text: tr('menu.guide'), icon: APP_MENU_ICONS.guide, action: () => openWelcome() },
     { text: tr('menu.about'), icon: APP_MENU_ICONS.about, action: () => openAbout() },
-    { sep: true },
-    { text: tr('menu.resetOnboarding'), icon: APP_MENU_ICONS.reset, action: () => resetOnboarding() },
   ];
   const r = btn.getBoundingClientRect();
   // Anchor to the button's right edge so the menu hugs the corner (clamped to
@@ -12721,24 +17044,6 @@ function closeAbout() {
   ov.classList.add('hidden');
   unlockBodyScroll();
   restoreOpener(ov);
-}
-
-// Reset onboarding so a returning user can deliberately go through it again.
-// Clears the first-run gate + just-in-time hint flags, then relaunches the
-// welcome. Returning users are never auto-onboarded (welcomeSeen stays true
-// unless they trigger this), satisfying the "don't annoy" requirement.
-function resetOnboarding() {
-  if (!confirm(tr('menu.resetConfirm'))) return;
-  const s = State.get().settings;
-  const ob = ensureOnboarding(s);
-  ob.welcomeSeen = false;
-  ob.hintsSeen = {};
-  ob.disabled = false;
-  s.tourCompleted = false;
-  State.persist();
-  const d = document.getElementById('settings-drawer');
-  if (d) d.classList.add('hidden');
-  setTimeout(openWelcome, 250);
 }
 
 // ── Drag auto-scroll: when dragging near the top/bottom of any scrollable area, scroll it ──
@@ -13593,9 +17898,12 @@ function bindHabits() {
   document.getElementById('habit-add-btn').onclick = () => {
     const name = document.getElementById('habit-new-name').value.trim();
     if (!name) return toast('Enter a name', { danger: true });
-    const icon = document.getElementById('habit-new-icon-val').textContent || '✅';
+    const iconElement = document.getElementById('habit-new-icon-val');
+    const icon = iconElement.textContent || '✅';
     State.snapshot('Add habit');
     getHabits().push({ id: uid(), name, icon, dates: [] });
+    if (iconElement.dataset.emojiChosen === 'true') rememberRecentEmoji(icon);
+    delete iconElement.dataset.emojiChosen;
     State.persist();
     document.getElementById('habit-new-name').value = '';
     renderHabits();
@@ -14233,31 +18541,6 @@ function bindWorkout() {
 // ════════════════════════════════════════════════════════════════
 // ONBOARDING TOUR
 // ════════════════════════════════════════════════════════════════
-// Step shape:
-//   { target: '#sel'|null, title, body, pos?: 'left'|'right'|'above'|'below',
-//     center?: bool — render a centered card with no spotlight (welcome/finish) }
-// A short welcome — three cards, not a nine-step wall. Everything else is
-// taught just-in-time the first time you reach a surface (see coachMark).
-const TOUR_STEPS = [
-  {
-    center: true,
-    title: '👋 Welcome to Locus',
-    body: 'A calmer home for your tabs. Save what matters, group it your way, and find it again in seconds.'
-  },
-  {
-    target: '#tabrail',
-    title: 'Save a tab',
-    body: 'Your open tabs live in this rail. Drag one into a space on the left to keep it for later, or grab a few at once with the select checkbox.',
-    pos: 'left'
-  },
-  {
-    target: '#space-nav',
-    title: 'Find your way around',
-    body: 'Spaces are your categories — each opens the full board of groups, notes, and to-dos. Home gives you the overview. Press ⌘/Ctrl + K to search everything, or ? for shortcuts.',
-    pos: 'right'
-  }
-];
-
 // Onboarding record accessor. Returns the structured onboarding object,
 // creating it (and folding in the legacy tourCompleted flag) if an older
 // session never ran the schema-6 migration path.
@@ -14270,29 +18553,35 @@ function ensureOnboarding(settings) {
   return s.onboarding;
 }
 
-// ── Hidden legacy questionnaire residue ─────────────────────────────
-// Kept temporarily for migration-safe cleanup. The active first-run experience
-// is the focused first-save task in openWelcome()/bindWelcome(); these helpers
-// are not invoked by the current onboarding path.
-const WELCOME_STEPS = 6;
-const WELCOME_PLUGIN_KEYS = ['pomodoro', 'finance', 'habits', 'books', 'goals', 'water'];
-let wcIndex = 0;
-let wcAnswers = { name: '', purpose: '', workflow: '', plugins: [] };
 let welcomeCandidate = null;
 let welcomeRequestId = 0;
 
-async function openWelcome() {
+async function loadWelcomeCandidate() {
   const ov = document.getElementById('welcome');
-  if (!ov) return;
+  if (!ov || ov.classList.contains('hidden')) return;
   const requestId = ++welcomeRequestId;
-  rememberOpener(ov);
-  ov.classList.remove('hidden');
-  lockBodyScroll();
   const saveButton = document.getElementById('wc-save-first');
   const candidate = document.getElementById('wc-candidate');
   const empty = document.getElementById('wc-empty');
+  const error = document.getElementById('wc-error');
+  const retry = document.getElementById('wc-retry');
+  const candidateTitle = document.getElementById('wc-candidate-title');
+  const candidateUrl = document.getElementById('wc-candidate-url');
+  const candidateFav = document.getElementById('wc-candidate-fav');
+
+  candidate.classList.remove('hidden');
+  candidate.setAttribute('aria-busy', 'true');
+  candidateTitle.textContent = tr('welcome.looking');
+  candidateUrl.textContent = '';
+  candidateFav.src = BLANK_FAV;
+  empty.classList.add('hidden');
+  error.classList.add('hidden');
+  retry.classList.add('hidden');
+  saveButton.classList.remove('hidden');
   saveButton.disabled = true;
   welcomeCandidate = null;
+  focusFirstIn(ov);
+
   try {
     const tabs = (await chrome.tabs.query({ currentWindow: true }))
       .filter(tab => tab.url && !isProto(tab.url))
@@ -14301,18 +18590,38 @@ async function openWelcome() {
     welcomeCandidate = tabs[0] || null;
   } catch {
     if (requestId !== welcomeRequestId || ov.classList.contains('hidden')) return;
+    candidate.setAttribute('aria-busy', 'false');
+    candidate.classList.add('hidden');
+    error.classList.remove('hidden');
+    retry.classList.remove('hidden');
+    saveButton.classList.add('hidden');
+    retry.focus();
+    return;
   }
+
+  candidate.setAttribute('aria-busy', 'false');
   candidate.classList.toggle('hidden', !welcomeCandidate);
   empty.classList.toggle('hidden', !!welcomeCandidate);
   if (welcomeCandidate) {
-    document.getElementById('wc-candidate-title').textContent = welcomeCandidate.title || welcomeCandidate.url;
-    document.getElementById('wc-candidate-url').textContent = dispUrl(welcomeCandidate.url);
-    document.getElementById('wc-candidate-fav').src = favUrl(welcomeCandidate.url) || BLANK_FAV;
+    candidateTitle.textContent = welcomeCandidate.title || welcomeCandidate.url;
+    candidateUrl.textContent = dispUrl(welcomeCandidate.url);
+    candidateFav.src = favUrl(welcomeCandidate.url) || BLANK_FAV;
     saveButton.disabled = false;
     saveButton.focus();
   } else {
+    saveButton.classList.add('hidden');
     document.getElementById('wc-explore').focus();
   }
+}
+
+async function openWelcome() {
+  const ov = document.getElementById('welcome');
+  if (!ov) return;
+  rememberOpener(ov);
+  ov.classList.remove('hidden');
+  lockBodyScroll();
+  focusFirstIn(ov);
+  await loadWelcomeCandidate();
 }
 
 function closeWelcome() {
@@ -14330,68 +18639,11 @@ function closeWelcome() {
   State.persist();
 }
 
-function wcShow(i) {
-  wcIndex = Math.max(0, Math.min(WELCOME_STEPS - 1, i));
-  document.querySelectorAll('#welcome .wc-step').forEach(sec => {
-    const active = Number(sec.dataset.step) === wcIndex;
-    sec.classList.toggle('hidden', !active);
-    if (active) { sec.classList.remove('wc-in'); void sec.offsetWidth; sec.classList.add('wc-in'); }
-  });
-  const fill = document.getElementById('wc-progress-fill');
-  if (fill) fill.style.width = (wcIndex / (WELCOME_STEPS - 1)) * 100 + '%';
-  document.querySelectorAll('#wc-dots .wc-dot').forEach((d, idx) => d.classList.toggle('active', idx === wcIndex));
-  wcSyncSelections();
-  const next = document.getElementById('wc-next');
-  const skip = document.getElementById('wc-skip');
-  next.textContent = wcIndex === 0 ? "Let's go" : wcIndex === WELCOME_STEPS - 1 ? 'Start using Locus' : 'Continue';
-  skip.style.visibility = wcIndex === WELCOME_STEPS - 1 ? 'hidden' : 'visible';
-  if (wcIndex === 1) {
-    const n = document.getElementById('wc-name');
-    setTimeout(() => { n.value = wcAnswers.name; n.focus(); n.select(); }, 80);
-  } else {
-    setTimeout(() => next.focus(), 80);
-  }
-  if (wcIndex === WELCOME_STEPS - 1) {
-    document.getElementById('wc-done-name').textContent = wcAnswers.name ? ', ' + wcAnswers.name : '';
-  }
-}
-
-function wcSyncSelections() {
-  document.querySelectorAll('#welcome .wc-choices').forEach(group => {
-    const field = group.dataset.field;
-    const multi = group.dataset.multi === 'true';
-    group.querySelectorAll('.wc-chip').forEach(chip => {
-      const on = multi ? wcAnswers.plugins.includes(chip.dataset.val) : wcAnswers[field] === chip.dataset.val;
-      chip.classList.toggle('on', on);
-      chip.setAttribute('aria-pressed', on ? 'true' : 'false');
-    });
-  });
-}
-
-function wcNext() {
-  if (wcIndex === 1) { const n = document.getElementById('wc-name'); wcAnswers.name = (n.value || '').trim(); }
-  if (wcIndex >= WELCOME_STEPS - 1) { finishWelcome(); return; }
-  wcShow(wcIndex + 1);
-}
-
-function finishWelcome() {
-  const s = State.get().settings;
-  State.snapshot('Onboarding');
-  s.profile = { name: wcAnswers.name, purpose: wcAnswers.purpose, workflow: wcAnswers.workflow };
-  s.plugins = {};
-  WELCOME_PLUGIN_KEYS.forEach(k => { s.plugins[k] = wcAnswers.plugins.includes(k); });
-  // Real, visible effects: the profile name drives the greeting without
-  // renaming the workspace, and the workflow choice sets the default layout.
-  if (wcAnswers.workflow && typeof LAYOUTS !== 'undefined' && LAYOUTS[wcAnswers.workflow]) s.viewMode = wcAnswers.workflow;
-  closeWelcome();
-  try { renderAll(); } catch {}
-  toast(wcAnswers.name ? `You're all set, ${wcAnswers.name}` : "You're all set");
-}
-
 function bindWelcome() {
   const ov = document.getElementById('welcome');
   if (!ov) return;
   document.getElementById('wc-explore').onclick = closeWelcome;
+  document.getElementById('wc-retry').onclick = loadWelcomeCandidate;
   document.getElementById('wc-save-first').onclick = async () => {
     if (!welcomeCandidate) return;
     const saved = await saveTabToInbox(welcomeCandidate, { closeSource: true });
@@ -14401,237 +18653,33 @@ function bindWelcome() {
     setTimeout(() => focusItem(saved.id), 80);
   };
   ov.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { e.preventDefault(); closeWelcome(); }
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeWelcome(); }
     else trapTabKey(e, ov);
   });
 }
-
-let tourIndex = 0;
-
-function startTour() {
-  tourIndex = 0;
-  document.getElementById('tour-overlay').classList.remove('hidden');
-  // Entrance animation runs once on tour mount; subsequent steps glide
-  // (no fresh fade) so the content swap doesn't read as a flicker.
-  const b = document.getElementById('tour-bubble');
-  b.classList.remove('tour-bubble-in');
-  void b.offsetWidth;
-  b.classList.add('tour-bubble-in');
-  showTourStep();
-}
-function endTour(skipped) {
-  document.getElementById('tour-overlay').classList.add('hidden');
-  const s = State.get().settings;
-  s.tourCompleted = true;              // keep older builds from re-onboarding
-  ensureOnboarding(s).welcomeSeen = true;
-  State.persist();
-  if (!skipped) toast('You\'re all set');
-}
-function showTourStep() {
-  const step = TOUR_STEPS[tourIndex];
-  if (!step) return endTour(false);
-
-  const spotlight = document.getElementById('tour-spotlight');
-  const bubble = document.getElementById('tour-bubble');
-
-  // Centered intro/finish steps: no spotlight, bubble in the middle.
-  if (step.center || !step.target) {
-    spotlight.classList.add('tour-spotlight-off');
-    bubble.classList.add('center');
-    // Center based on measured size so the wider centered card stays middled.
-    requestAnimationFrame(() => {
-      const bw = bubble.offsetWidth || 420;
-      const bh = bubble.offsetHeight || 220;
-      bubble.style.top = Math.max(20, (window.innerHeight - bh) / 2) + 'px';
-      bubble.style.left = Math.max(20, (window.innerWidth - bw) / 2) + 'px';
-    });
-  } else {
-    const target = document.querySelector(step.target);
-    if (!target) {
-      // Skip silently if target missing in this view
-      tourIndex++;
-      return showTourStep();
-    }
-    spotlight.classList.remove('tour-spotlight-off');
-    bubble.classList.remove('center');
-
-    const r = target.getBoundingClientRect();
-    const pad = 6;
-    spotlight.style.top = (r.top - pad) + 'px';
-    spotlight.style.left = (r.left - pad) + 'px';
-    spotlight.style.width = (r.width + pad * 2) + 'px';
-    spotlight.style.height = (r.height + pad * 2) + 'px';
-
-    // Position bubble: respect pos hint, otherwise auto-fit below/above/side.
-    const bubbleW = 340, bubbleH = 200, gap = 16;
-    const vw = window.innerWidth, vh = window.innerHeight;
-    let top, left;
-    const clampLeft = x => Math.min(vw - bubbleW - 20, Math.max(20, x));
-    const clampTop = y => Math.min(vh - bubbleH - 20, Math.max(20, y));
-    const fitBelow = r.bottom + bubbleH + gap < vh;
-    const fitAbove = r.top - bubbleH - gap > 20;
-    const fitRight = r.right + bubbleW + gap < vw;
-    const fitLeft  = r.left  - bubbleW - gap > 20;
-    const place = step.pos
-      || (fitBelow ? 'below' : fitAbove ? 'above' : fitRight ? 'right' : fitLeft ? 'left' : 'center');
-    if (place === 'left') {
-      left = clampLeft(r.left - bubbleW - gap);
-      top = clampTop(r.top + r.height/2 - bubbleH/2);
-    } else if (place === 'right') {
-      left = clampLeft(r.right + gap);
-      top = clampTop(r.top + r.height/2 - bubbleH/2);
-    } else if (place === 'above') {
-      top = clampTop(r.top - bubbleH - gap);
-      left = clampLeft(r.left + r.width/2 - bubbleW/2);
-    } else if (place === 'center') {
-      top = (vh - bubbleH) / 2;
-      left = (vw - bubbleW) / 2;
-    } else {
-      top = clampTop(r.bottom + gap);
-      left = clampLeft(r.left + r.width/2 - bubbleW/2);
-    }
-    bubble.style.top = top + 'px';
-    bubble.style.left = left + 'px';
-  }
-
-  document.getElementById('tour-title').textContent = step.title;
-  document.getElementById('tour-body').textContent = step.body;
-
-  // Progress dots
-  const $prog = document.getElementById('tour-progress');
-  $prog.innerHTML = TOUR_STEPS.map((_, i) => `<div class="tour-dot ${i === tourIndex ? 'active' : ''}"></div>`).join('');
-  $prog.querySelectorAll('.tour-dot').forEach((d, i) => {
-    d.title = `Step ${i + 1} of ${TOUR_STEPS.length}`;
-    d.style.cursor = 'pointer';
-    d.onclick = () => { tourIndex = i; showTourStep(); };
-  });
-
-  // Step counter
-  const $count = document.getElementById('tour-count');
-  if ($count) $count.textContent = `${tourIndex + 1} / ${TOUR_STEPS.length}`;
-
-  // Buttons
-  const $prev = document.getElementById('tour-prev');
-  const $next = document.getElementById('tour-next');
-  $prev.disabled = tourIndex === 0;
-  $prev.style.visibility = tourIndex === 0 ? 'hidden' : 'visible';
-  $next.textContent = tourIndex === TOUR_STEPS.length - 1 ? 'Finish' : 'Next';
-  // Auto-focus the primary action so Enter advances.
-  $next.focus({ preventScroll: true });
-}
-
-function bindTour() {
-  document.getElementById('tour-skip').onclick = () => endTour(true);
-  document.getElementById('tour-prev').onclick = () => { if (tourIndex > 0) { tourIndex--; showTourStep(); } };
-  document.getElementById('tour-next').onclick = () => {
-    if (tourIndex < TOUR_STEPS.length - 1) { tourIndex++; showTourStep(); }
-    else endTour(false);
-  };
-  // Keyboard nav while the tour is visible — arrows step through,
-  // Enter/Space advances, Esc is already handled by the global key handler.
-  document.addEventListener('keydown', e => {
-    const ov = document.getElementById('tour-overlay');
-    if (!ov || ov.classList.contains('hidden')) return;
-    if (e.key === 'ArrowRight' || e.key === 'PageDown') {
-      e.preventDefault();
-      if (tourIndex < TOUR_STEPS.length - 1) { tourIndex++; showTourStep(); }
-      else endTour(false);
-    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
-      e.preventDefault();
-      if (tourIndex > 0) { tourIndex--; showTourStep(); }
-    }
-  });
-  // Reposition on resize — rAF-throttled so dragging the window doesn't
-  // recompute layout dozens of times per second.
-  window.addEventListener('resize', rafThrottle(() => {
-    if (!document.getElementById('tour-overlay').classList.contains('hidden')) showTourStep();
-  }));
-}
-
-// ── Just-in-time coach-marks ────────────────────────────────────────
-// One small hint, shown the first time a user reaches a surface — never a
-// queue. Fires at most once per key (persisted in onboarding.hintsSeen),
-// never while another coach-mark or the welcome is up, and only after the
-// welcome has been dismissed. This is how new surfaces onboard themselves
-// without re-inflating the upfront tour.
-let _coachActive = null;   // { key, el, target, reposition, dismiss }
-
-function coachMark(key, targetSel, title, body) {
-  const s = State.get().settings;
-  const ob = ensureOnboarding(s);
-  if (ob.disabled || !ob.welcomeSeen || ob.hintsSeen[key] || _coachActive) return;
-  const target = typeof targetSel === 'string' ? document.querySelector(targetSel) : targetSel;
-  if (!target || !target.getBoundingClientRect) return;
-  const el = document.getElementById('coach');
-  if (!el) return;
-
-  // Mark seen up front so a reload mid-hint doesn't replay it.
-  ob.hintsSeen[key] = true;
-  State.persist();
-
-  el.querySelector('.coach-title').textContent = title;
-  el.querySelector('.coach-body').textContent = body;
-  el.classList.remove('hidden');
-
-  const place = () => {
-    const r = target.getBoundingClientRect();
-    const cw = el.offsetWidth || 260, ch = el.offsetHeight || 96, gap = 12;
-    const vw = window.innerWidth, vh = window.innerHeight;
-    // Prefer below the target, flip above when there's no room.
-    let top = r.bottom + gap;
-    let arrow = 'up';
-    if (top + ch + 8 > vh) { top = r.top - ch - gap; arrow = 'down'; }
-    let left = r.left + r.width / 2 - cw / 2;
-    left = Math.min(vw - cw - 12, Math.max(12, left));
-    top = Math.min(vh - ch - 12, Math.max(12, top));
-    el.style.transform = `translate(${Math.round(left)}px, ${Math.round(top)}px)`;
-    el.dataset.arrow = arrow;
-    // Arrow x-offset so it points at the target centre even after clamping.
-    const ax = Math.min(cw - 20, Math.max(16, r.left + r.width / 2 - left));
-    el.style.setProperty('--coach-ax', ax + 'px');
-  };
-  place();
-  // Show on the next frame so the entrance transition runs from hidden.
-  requestAnimationFrame(() => el.classList.add('coach-in'));
-
-  const reposition = rafThrottle(place);
-  const dismiss = () => {
-    if (_coachActive && _coachActive.key !== key) return;
-    el.classList.remove('coach-in');
-    window.removeEventListener('resize', reposition);
-    window.removeEventListener('scroll', reposition, true);
-    document.removeEventListener('mousedown', onOutside, true);
-    clearTimeout(timer);
-    setTimeout(() => el.classList.add('hidden'), 200);
-    _coachActive = null;
-  };
-  const onOutside = e => { if (!el.contains(e.target)) dismiss(); };
-
-  window.addEventListener('resize', reposition);
-  window.addEventListener('scroll', reposition, true);
-  // Defer the outside-click binding a tick so the click that opened the
-  // surface doesn't immediately dismiss the hint.
-  setTimeout(() => document.addEventListener('mousedown', onOutside, true), 0);
-  el.querySelector('.coach-got').onclick = dismiss;
-  const timer = setTimeout(dismiss, 9000);
-
-  _coachActive = { key, el, target, reposition, dismiss };
-}
-
-// Close the active coach-mark (used by the global Esc handler).
-function dismissCoach() { if (_coachActive) _coachActive.dismiss(); }
 
 // ════════════════════════════════════════════════════════════════
 // BIND STATIC UI
 // ════════════════════════════════════════════════════════════════
 function bindStatic() {
-  document.getElementById('ws-menu-btn').onclick = openWsGrid;
-  document.getElementById('wsg-close').onclick = () => document.getElementById('ws-grid-overlay').classList.add('hidden');
-  document.getElementById('ws-grid-overlay').onclick = e => { if (e.target.id === 'ws-grid-overlay') document.getElementById('ws-grid-overlay').classList.add('hidden'); };
-  document.getElementById('wsg-add').onclick = () => { document.getElementById('ws-grid-overlay').classList.add('hidden'); openModal('new-ws'); };
-  document.getElementById('add-ws-btn').onclick = () => openModal('new-ws');
+  document.getElementById('ws-menu-btn').onclick = event => openWsGrid(event.currentTarget);
+  document.getElementById('wsg-close').onclick = closeWsGrid;
+  const workspaceGridOverlay = document.getElementById('ws-grid-overlay');
+  workspaceGridOverlay.onclick = event => { if (event.target === workspaceGridOverlay) closeWsGrid(); };
+  workspaceGridOverlay.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      closeWsGrid();
+      return;
+    }
+    if (event.key === 'Tab') trapTabKey(event, workspaceGridOverlay);
+    event.stopPropagation();
+  });
+  document.getElementById('wsg-add').onclick = event => openOrganizationCreate('workspace', {}, event.currentTarget);
+  document.getElementById('add-ws-btn').onclick = event => openOrganizationCreate('workspace', {}, event.currentTarget);
   document.getElementById('sidebar-toggle').onclick = () => { State.get().settings.sidebarCollapsed = !State.get().settings.sidebarCollapsed; applySettings(); State.persist(); };
-  document.getElementById('add-cat-btn').onclick = () => openModal('new-cat');
+  document.getElementById('add-cat-btn').onclick = event => openOrganizationCreate('space', {}, event.currentTarget);
 
   // ── Sidebar smart views ──
   document.getElementById('nav-home').onclick = goHome;
@@ -14682,7 +18730,7 @@ function bindStatic() {
     _about.addEventListener('keydown', e => trapTabKey(e, _about));
     document.getElementById('about-replay').onclick = () => { closeAbout(); setTimeout(openWelcome, 200); };
   }
-  document.getElementById('modal-overlay').addEventListener('keydown', e => trapTabKey(e, document.getElementById('modal-overlay')));
+  bindOrganizationNameDialog();
   document.getElementById('search-btn').onclick = () => openSearchSurface();
   const topSearch = document.getElementById('topbar-search');
   if (topSearch) topSearch.onclick = () => openCommandPalette();
@@ -14693,25 +18741,35 @@ function bindStatic() {
   document.getElementById('search-input').onkeydown = e => { if (e.key === 'Escape') toggleSearchBar(false); };
 
   // Modal
-  document.getElementById('modal-x').onclick = closeModal;
-  document.getElementById('modal-cancel').onclick = closeModal;
-  document.getElementById('modal-ok').onclick = confirmModal;
-  document.getElementById('modal-overlay').onclick = e => { if (e.target.id === 'modal-overlay') closeModal(); };
-  document.getElementById('modal-input').onkeydown = e => { if (e.key === 'Enter') confirmModal(); if (e.key === 'Escape') closeModal(); };
+  const identityOverlay = document.getElementById('modal-overlay');
+  document.getElementById('modal-x').onclick = () => closeIdentityEditor();
+  document.getElementById('modal-cancel').onclick = () => closeIdentityEditor();
+  document.getElementById('modal-ok').onclick = () => { void confirmIdentityEditor(); };
+  identityOverlay.onclick = e => { if (e.target === identityOverlay) closeIdentityEditor(); };
+  identityOverlay.addEventListener('keydown', handleIdentityEditorKeydown);
+  document.getElementById('modal-input').oninput = event => {
+    if (modalCtx) {
+      modalCtx.draftName = event.target.value;
+      modalCtx.nameTouched = true;
+    }
+    clearIdentityEditorError();
+  };
   document.getElementById('intent-x').onclick = closeIntentEditor;
   document.getElementById('intent-cancel').onclick = closeIntentEditor;
   document.getElementById('intent-save').onclick = saveIntentEditor;
   document.getElementById('intent-clear').onclick = clearIntentEditor;
   document.getElementById('intent-overlay').onclick = e => { if (e.target.id === 'intent-overlay') closeIntentEditor(); };
-  document.getElementById('emoji-trigger').onclick = e => { e.stopPropagation(); openEmojiPicker({ kind:'modal' }, e.currentTarget); };
-  document.querySelectorAll('.csw').forEach(c => {
-    c.onclick = () => { document.querySelectorAll('.csw').forEach(x => x.classList.remove('active')); c.classList.add('active'); };
-    c.setAttribute('aria-label', 'Color ' + (c.dataset.c || ''));
-    enableKeyboardClick(c);
+  document.getElementById('emoji-trigger').onclick = e => {
+    e.stopPropagation();
+    openEmojiPicker({ kind: 'identity-editor' }, e.currentTarget);
+  };
+  document.querySelectorAll('#color-row .csw').forEach(c => {
+    c.onclick = () => selectIdentityColor(c.dataset.c, { chosen: true });
   });
 
   // Emoji picker search
   document.getElementById('ep-search-input').oninput = e => renderEmojiGrid(null, e.target.value);
+  document.getElementById('emoji-picker').addEventListener('keydown', handleEmojiPickerKeydown);
 
   // Settings-page section nav (sidebar). Click switches the pane; Up/Down
   // arrows move between sections without leaving the keyboard.
@@ -14775,7 +18833,6 @@ function bindStatic() {
   document.getElementById('tog-hibernate').onchange = e => { State.get().settings.hibernate = e.target.checked; State.persist(); };
   document.getElementById('tog-urls').onchange = e => { State.get().settings.showUrls = e.target.checked; applySettings(); State.persist(); };
   document.getElementById('tog-anim').onchange = e => { State.get().settings.animate = e.target.checked; applySettings(); State.persist(); };
-  document.getElementById('tog-confirm').onchange = e => { State.get().settings.confirmDelete = e.target.checked; State.persist(); };
   document.getElementById('tog-blur').onchange = e => { State.get().settings.blurPrivacy = e.target.checked; applySettings(); State.persist(); };
   document.getElementById('tog-autoswitch').onchange = e => { State.get().settings.autoSwitchWorkspace = e.target.checked; State.persist(); renderHeader(); };
   const landingToggle = document.getElementById('tog-landing');
@@ -14821,11 +18878,20 @@ function bindStatic() {
   // Global keys
   document.addEventListener('keydown', e => {
     const recoveryOverlay = document.getElementById('state-recovery-overlay');
-    if (recoveryOverlay && !recoveryOverlay.classList.contains('hidden') && !recoveryOverlay.contains(e.target)) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
+    if (recoveryOverlay && !recoveryOverlay.classList.contains('hidden')) {
+      if (!recoveryOverlay.contains(e.target)) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+      }
+      // Recovery is the top layer. Keys inside it keep native dialog behavior
+      // and must never fall through to the lower reminder or app shortcuts.
       return;
     }
+    if (handleReminderGlobalKey(e)) return;
+    if (handleEmojiPickerGlobalKey(e)) return;
+    if (handleIdentityEditorGlobalKey(e)) return;
+    if (handleOrganizationDeleteGlobalKey(e)) return;
+    if (handleOrganizationNameGlobalKey(e)) return;
     const tag = document.activeElement?.tagName;
     const editable = document.activeElement?.isContentEditable;
     const inField = tag === 'INPUT' || tag === 'TEXTAREA' || editable;
@@ -14838,12 +18904,35 @@ function bindStatic() {
     else if (e.key.toLowerCase() === 'c' && !inField && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) { e.preventDefault(); if (activeCalendar) closeCalendar(); else openCalendar(); }
     else if (e.key === '?' && !inField && !e.ctrlKey && !e.metaKey) { e.preventDefault(); openCheatsheet(); }
     else if (e.key === 'Escape') {
-      // A one-time coach-mark is the lightest layer — dismiss it first.
-      if (_coachActive) { dismissCoach(); return; }
+      // The reminder picker is nested above saved-item detail. Its own handler
+      // normally owns Escape; this fallback covers programmatic focus outside it.
+      const reminderOverlay = document.getElementById('reminder-overlay');
+      if (reminderOverlay && !reminderOverlay.classList.contains('hidden')) {
+        e.preventDefault();
+        closeReminderPicker();
+        return;
+      }
+      // Organization deletion is a top-layer decision. Its own key handler
+      // normally owns Escape; this fallback also covers programmatic focus.
+      const organizationDeleteOverlay = document.getElementById('organization-delete-overlay');
+      if (organizationDeleteOverlay && !organizationDeleteOverlay.classList.contains('hidden')) {
+        e.preventDefault();
+        closeOrganizationDeleteDialog();
+        return;
+      }
+      // The Trash confirmation owns Escape even if focus was moved
+      // programmatically outside it. Its own key handler stops normal bubbling;
+      // this guard preserves last-opened-first-closed semantics as a fallback.
+      const trashDeleteOverlay = document.getElementById('trash-delete-overlay');
+      if (trashDeleteOverlay && !trashDeleteOverlay.classList.contains('hidden')) {
+        e.preventDefault();
+        closeTrashDeleteDialog();
+        return;
+      }
       // The launch layer is the base overlay. Dismiss it only when nothing is
       // open above it, so Escape from Welcome/Settings never pops two layers.
       const landingLayer = document.getElementById('landing-layer');
-      const higherLayerIds = ['state-recovery-overlay','cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','tour-overlay','welcome','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub','about-overlay','context-menu'];
+      const higherLayerIds = ['state-recovery-overlay','reminder-overlay','cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','trash-delete-overlay','organization-name-overlay','organization-delete-overlay','welcome','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub','about-overlay','context-menu'];
       const higherLayerOpen = higherLayerIds.some(id => { const el = document.getElementById(id); return el && !el.classList.contains('hidden'); });
       if (landingLayer && !landingLayer.classList.contains('hidden') && !higherLayerOpen) {
         e.preventDefault(); closeLandingLayer(); return;
@@ -14851,14 +18940,14 @@ function bindStatic() {
       // Snapshot which layered overlays were open *before* we start closing
       // them, so a single Escape only pops the topmost one — not the group page
       // sitting beneath a modal/menu/tool overlay.
-      const _escBlockers = ['state-recovery-overlay','landing-layer','cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','tour-overlay','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub'];
+      const _escBlockers = ['state-recovery-overlay','reminder-overlay','landing-layer','cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','trash-delete-overlay','organization-name-overlay','organization-delete-overlay','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub'];
       const _overlayWasOpen = _escBlockers.some(id => { const el = document.getElementById(id); return el && !el.classList.contains('hidden'); });
       closeCommandPalette();
       toggleSearchBar(false);
       closeModal();
       const _d = document.getElementById('settings-drawer');
       if (!_d.classList.contains('hidden')) { _d.classList.add('hidden'); restoreOpener(_d); }
-      document.getElementById('ws-grid-overlay').classList.add('hidden');
+      closeWsGrid();
       document.getElementById('ws-list').classList.add('hidden');
       document.getElementById('emoji-picker')?.classList.add('hidden');
       // Tool overlays — route through dedicated close fns so scroll-lock,
@@ -14885,8 +18974,6 @@ function bindStatic() {
       if (_cs && !_cs.classList.contains('hidden')) closeCheatsheet();
       const _qf = document.getElementById('quota-overlay');
       if (_qf && !_qf.classList.contains('hidden')) closeStorageFull();
-      const tourEl = document.getElementById('tour-overlay');
-      if (tourEl && !tourEl.classList.contains('hidden')) endTour(true);
       const wcEl = document.getElementById('welcome');
       if (wcEl && !wcEl.classList.contains('hidden')) closeWelcome();
       // The item detail pane sits above the board/group page: Escape pops it
@@ -14919,6 +19006,8 @@ function bindStatic() {
   bindImportUI();
   bindPasteImportUI();
   bindQuotaOverlay();
+  bindTrashDeleteDialog();
+  bindOrganizationDeleteDialog();
   bindCheatsheetOverlay();
   bindLandingLayer();
   bindBoardArrowNav();
@@ -14938,7 +19027,7 @@ function bindStatic() {
   document.getElementById('calendar-btn').onclick = () => { if (activeCalendar) closeCalendar(); else openCalendar(); };
   document.getElementById('more-btn').onclick = (e) => openMoreMenu(e.currentTarget);
   // Topbar app menu (replaces the fake avatar): Settings, Plugins, Theme,
-  // Guide, Workspaces, About, Reset onboarding. plugins-btn is wired in
+  // Guide, Workspaces, and About. plugins-btn is wired in
   // bindToolsHub() → openToolsHub.
   document.getElementById('menu-btn').onclick = (e) => openAppMenu(e.currentTarget);
 
@@ -14949,33 +19038,22 @@ function bindStatic() {
   setupDragAutoScroll();
   setupOpenTabsDropToOpen();
 
-  // Onboarding starts with the focused first-save task. The old questionnaire
-  // remains hidden legacy residue; bindTour() still wires the spotlight guide
-  // for coach marks and explicit replays.
-  bindTour();
+  // Onboarding and every replay use the same focused first-save task.
   bindWelcome();
   if (!ensureOnboarding(State.get().settings).welcomeSeen) {
-    setTimeout(openWelcome, 500);
+    setTimeout(() => {
+      // An explicit recovery deep link owns first focus. Do not cover the shared
+      // item sheet with onboarding, and do not mark onboarding complete merely
+      // because a saved item was located from the popup.
+      if (!currentDetailItemId()) openWelcome();
+    }, 500);
   }
   document.getElementById('show-tour-btn').onclick = () => {
-    document.getElementById('settings-drawer').classList.add('hidden');
+    const drawer = document.getElementById('settings-drawer');
+    drawer.classList.add('hidden');
+    restoreOpener(drawer);
     setTimeout(openWelcome, 200);
   };
-  const resetHintsBtn = document.getElementById('reset-hints-btn');
-  if (resetHintsBtn) resetHintsBtn.onclick = () => {
-    ensureOnboarding(State.get().settings).hintsSeen = {};
-    State.persist();
-    toast('Tips reset — they\'ll show again as you explore');
-  };
-  const tipsTog = document.getElementById('tog-tips');
-  if (tipsTog) {
-    tipsTog.checked = !ensureOnboarding(State.get().settings).disabled;
-    tipsTog.onchange = e => {
-      ensureOnboarding(State.get().settings).disabled = !e.target.checked;
-      State.persist();
-    };
-  }
-
   // Floating tool widgets - pop-out buttons
   ['pomodoro:pomo-popout', 'finance:fin-popout', 'habits:habit-popout', 'water:water-popout', 'goals:goals-popout', 'subs:subs-popout', 'books:books-popout', 'workout:workout-popout']
     .forEach(p => {

@@ -8,6 +8,16 @@ slice done. Never claim visual verification that didn't happen.
 ```bash
 for f in newtab.js popup.js background.js suspended.js emoji-data.js prepaint.js import-utils.js scripts/*.js; do node --check "$f"; done
 node scripts/quality-gates.js
+node scripts/onboarding-contract-test.js
+node scripts/item-detail-contract-test.js
+node scripts/popup-locate-contract-test.js
+node scripts/trash-recovery-contract-test.js
+node scripts/organization-removal-contract-test.js
+node scripts/organization-delete-contract-test.js
+node scripts/organization-naming-contract-test.js
+node scripts/organization-creation-contract-test.js
+node scripts/organization-move-contract-test.js
+node scripts/group-stack-identity-contract-test.js
 node scripts/import-recovery-test.js
 node scripts/archive-scale-contract-test.js
 node scripts/export-import-scale-contract-test.js
@@ -23,6 +33,242 @@ git diff --check
 
 The deterministic suites prove only the contracts they model. They do not promote
 a capability to installed-extension runtime verification.
+
+The onboarding suite extracts the production welcome controller and drives its
+loading, real-tab success, no-eligible-tab, tab-query error/retry, failed-save,
+focus, Tab containment, Escape, opener-return, Inbox handoff, and saved-item focus
+paths against a minimal DOM/browser model. It also requires one canonical welcome
+in the markup, localized English and zh-TW query failure copy, the retained narrow
+and reduced-motion rules, and absence of the old questionnaire, spotlight tour,
+coach mark, tip controls, and native reset confirmation. This is deterministic
+production-controller and static-source evidence, not installed Chrome tab-close,
+pixel, screen-reader, viewport, theme, reload, or browser-history evidence.
+
+The item-detail suite extracts production routing, Home-item resolution, direct-
+field mutation, focus, Escape-stack, inertness, and restoration helpers and combines
+them with static render/i18n/CSS contracts. It covers board/group/Library route
+persistence plus `/home?item=<id>` build/parse/current/apply/close behavior;
+globally unique and owning-Space resolution; nested Stacks; missing, duplicated,
+moved-within, and moved-out records; native Home button click and Enter/Space
+behavior; localized English/zh-TW action and failure names; exact-origin and current
+native-row focus; and active-Space/Canvas/layout isolation. The extracted history
+handler proves an ephemeral Home open/close/Back/Forward makes no state write while
+a real durable Space change still does.
+
+The popup-Locate suite extracts the production single-tab save, bounded popup
+writer, service-worker Locate resolver/effect, and new-tab route codec. It covers
+same-request state→Locate ordering; exact and moved/nested same-Workspace identity;
+missing, duplicate, archived/trashed, and moved-out fail-closed targets; encoded
+Home-detail routes; source-window create/activate/focus and create-before-close
+ordering; close-disabled, route-create, source-close, activation, combined close+
+activation, and exact already-created-tab/notification retry outcomes; accepted-
+save/failed-Locate typing; optimistic rollback on rejected state; receipt timeout,
+native-coded and non-object transport rejection, and late receiver-retry
+cancellation; semantic in-section recovery and retry live feedback, English/zh-TW
+parity, focus and motion hooks; and suppression of Landing/Welcome over a valid
+recovery deep link.
+It proves production-extracted deterministic behavior only. Installed action-popup
+teardown, message-port/service-worker lifetime, real tab activation/close, pixels,
+screen readers, themes, locales, and 1280×720/800 px layouts remain open.
+
+The receipt harness drives the production `commitItemDetailMutation()` boundary
+with a deferred state receipt. It requires the synchronous pending token, exactly
+one snapshot and one write, no product render before acknowledgement, an accepted
+render/success path, rejected and unknown acknowledgement paths that retain the
+dirty local graph without retry or false render, and refusal when fail-closed
+recovery already owns the foreground. A throwing detached-field mutation must
+produce no live mutation, history, or write. Duplicate/missing/moved/replaced/
+retyped/fingerprint-changed targets, duplicate Workspace/Space/Group owners,
+changed Stack ancestry, and a duplicated ancestor ID all fail with zero mutation,
+history, write, or render. A second edit is rejected while the first owns the
+receipt. The extracted pending guards execute against Open, Close, the scrim, and
+a body control: pointer activation plus Enter/Space/later Escape are consumed,
+while both Tab directions still reach the sheet's focus trap. The save live region
+must remain in the header, structurally outside the `aria-busy` body. Direct
+candidate-application fixtures preserve same-length checklist/custom-field row
+references, apply structural tag/checklist and cover changes, and leave unrelated
+imported JSON reference- and byte-equivalent. Programmatic and browser-history
+navigation recheck the pending boundary
+after blur; sheet close and later Escape are consumed, while Tab remains contained
+and an initial editor Escape may blur to the stable panel; and pagehide neither
+blurs nor writes again when a transaction is pending, including when its blur
+started that one write.
+Static wiring covers exactly title, URL, task state/text, saved context, cover,
+tags, checklist, and custom fields. Localized Saving/Saved/stale/failure status,
+polite live-region semantics, body `aria-busy`, guarded controls, wrapping, and
+shared pending/success/error theme tokens are required.
+
+The same item-detail suite executes the production
+`commitItemDetailReminderMutation()` and reminder key guard. Set, Change, quick
+choices, and Clear must establish one synchronous detail/reminder pending token,
+preserve imported reminder fields outside the editor's ownership, take one localized
+snapshot, and request exactly one
+`persistNow({ reconcileReminders: true })` receipt. The harness requires state-write
+acknowledgement and the structured `reminderReconciliation` result before picker
+close, render, rebuilt Set/Change focus, or success/warning feedback, and forbids a
+second page runtime/alarm request. Duplicate activation, changed or ambiguous item
+identity, rejected and unknown receipts, accepted-state/alarm-failure warnings,
+busy/live semantics, pending and non-pending Enter/Space/Tab/Escape/shortcut
+behavior, and recovery-over-reminder precedence are covered. Static checks retain
+English/zh-TW copy parity, the picker's separate live and busy regions, responsive
+wrapping, and shared pending/error tokens.
+
+The suite also covers modal naming, primary recovery hierarchy, workspace/category/
+group/Library eligibility checks, the non-transaction dirty-state pagehide fallback,
+Tab from the focused sheet, two-step editor Escape when no receipt is pending,
+independently owned detail/reminder/recovery inertness including a late-mounted body
+surface, ordinary opener/same-item/heading fallback, complete detail/reminder key
+parity, full-width Home rows with hover/focus/pressed states, 800 px dimming, 520 px
+reflow, and reduced motion. This is deterministic production-controller/helper and
+static-source evidence only. It is not installed Chrome storage, history/reload,
+Back/Forward, or pagehide-completion evidence; actual persistence and recovery UI,
+  screen-reader announcements, theme/locale pixels, 1280×720/800 px pixels, and
+  representative-user evidence remain absent. Item-detail reminder ordering is
+  deterministically covered, but real Chrome alarm APIs, page teardown during the
+  combined receipt, restart/sleep, and notification scheduling remain installed
+  runtime gates. Non-detail item and group/category reminder mutation entry points
+  remain outside this detail controller. Stack identity uses its separate identity-
+  controller evidence; Archive and the Open browser effect remain separate flows.
+
+The Trash-recovery suite extracts the production irreversible-delete controller
+and joins it to a minimal DOM and persistence boundary. It requires active saved
+items to expose Archive rather than a permanent-delete bypass; Trash alone may
+open the localized alert dialog. The suite covers exact single/batch scope,
+duplicate and stale entries, safe initial focus, cancellation, Tab containment,
+Escape consumption, opener or Trash-search focus return, pending feedback,
+confirmed central-writer success, rejected-write recovery routing, no premature
+toast/render, and clearing Undo/Redo only after persistence is acknowledged. It
+also checks modal, narrow-layout, destructive-token, unique-ID, and en/zh-TW copy
+contracts. This is deterministic production-controller/static-source evidence,
+not installed Chrome storage-failure rendering, screen-reader output, theme or
+viewport pixels, or representative-user trust evidence.
+
+The organization-removal and organization-delete suites extract the production
+workspace/Space controller and inert-owner helper, then join them to minimal DOM,
+real state graph, focus stack, and persistence boundaries. They require all five
+removal entry points across active markup and rendered Home/sidebar surfaces to
+converge on one localized alert dialog. Production
+occupancy recursively covers groups, stack
+containers/descendants, and category/group reminders; populated organizations must
+hide/disable Delete, name the archive/move/clear recovery step, and perform zero
+snapshot or write. Static wiring also requires the visible Home-card and sidebar
+Space menus to reopen the first existing category reminder through localized edit/
+remove behavior, making the blocker's recovery step reachable after delivery and
+across legacy multiples.
+Only empty structural shells may be confirmed. The suite also
+refuses duplicate, missing, changed, and last-organization targets, and requires a
+fresh empty/blocked decision when displayed scope changes. It covers Cancel/Close-
+first focus, independently owned body-root inertness that leaves fail-closed
+recovery operable, Tab containment, modal-local and outside-target Escape plus
+global-shortcut consumption, lazy command-palette inheritance plus refusal, explicit context-menu
+opener capture, refreshed visible workspace-manager/active-Space focus fallback
+with active-element verification, live blocked/Space/pending locale repaint, pending
+feedback, an immediate central-writer receipt, localized history plus action-ID-
+scoped Undo, and rejected persistence without success, render, or premature unlock.
+Static checks also require centralized workspace/category mutation, Archive-only
+group removal, removal of the obsolete confirmation toggle while retaining its
+compatibility field, modal/narrow/theme/destructive-token reuse, unique IDs, and
+English/zh-TW consequence parity. This is deterministic production-controller/
+static-source evidence, not installed Chrome write-failure rendering, the reload/
+close Undo boundary, screen-reader output, theme or viewport pixels, or representative-
+user trust evidence.
+
+The organization-naming suite extracts the production workspace/Space rename
+controller and drives it against a minimal DOM, real state graph, and immediate
+persistence boundary. It requires the workspace chip, workspace manager, Home
+card, and visible sidebar Space menu to converge on one localized dialog while
+the hidden tab and double-click duplicates stay removed. The suite covers exact
+stable-ID lookup, duplicate names and duplicate-ID refusal, blank and unchanged
+input, owning-workspace revalidation, concurrent-name refresh, missing targets,
+one localized snapshot, one acknowledged write, action-ID-scoped Undo, rejected
+write recovery without premature render/close/success, pending controls, modal
+interlocks, Tab and Escape containment, outside-target shortcut suppression,
+recovery-control keyboard precedence, opener/equivalent-target focus after the
+actual asynchronous workspace-chip render boundary, live English/zh-TW repaint,
+unique IDs, and the
+shared theme, forced-color, reduced-motion, 32 px gutter, 720 px height, and
+520 px wrapping contracts. This is deterministic production-controller/static-
+source evidence, not installed Chrome persistence-failure rendering, screen-
+reader output, theme/locale pixels, 1280×720/800 px behavior, reload/history, or
+representative-user trust evidence.
+
+The organization-creation suite extracts the same production naming controller in
+its create modes. It requires the top-bar and workspace-manager Workspace actions,
+sidebar, Home defensive empty state, and command-palette Space actions, plus the
+Group menu's create-and-move action, to converge on one localized dialog. The old
+workspace/Space branches in the generic modal, native New-category prompt, and the
+workspace manager's duplicate browser-window capture subsection must stay removed.
+The suite covers blank and duplicate names, collision-safe IDs across active,
+Archive, and Trash graphs, a localized empty starter Space, stable parent/source
+IDs, missing/duplicate/moved target refusal, concurrent Group-name review, atomic Group move with Canvas and
+remembered-capture references, one localized snapshot, one acknowledged write,
+action-ID-scoped Undo, delayed and rejected receipts without premature UI, rebuilt
+target focus after the real header boundary, dialog and context-menu Tab/Escape
+containment, keyboard-visible manager actions, recovery precedence,
+live English/zh-TW repaint, and the shared modal/manager responsive and forced-color
+rules. This is deterministic production-controller/static-source evidence, not
+installed Chrome persistence rendering, screen-reader output, theme/locale pixels,
+1280×720/800 px behavior, reload/history, or representative-user evidence.
+
+The organization-move suite extracts the production existing-Space Group-move
+controller and drives the Board/Canvas/focused-Group and both List-menu entries
+against a nested real-state graph. It requires one shared, localized destination
+radiogroup with no preselection, duplicate-name ordinals, required-state semantics,
+roving keys whose Enter/Space only select, contained Tab/Escape, exact opener return,
+and a focusable guarded pending anchor. Stable-ID checks refuse duplicate, missing,
+moved, same-Space, cross-Workspace, and inactive-Workspace targets before history;
+displayed name/list/count changes refresh the review and require a second confirm,
+while current nested content moves intact. The transaction preserves Group/item/
+reminder/custom identities, transfers the source Canvas position, updates only the
+matching capture and Archive/Trash item restore references, leaves the active source
+Space and unrelated layout/settings data unchanged, and prunes only moved hidden
+selections after one `persistNow()` receipt. Delayed and rejected receipts must not
+render, close, toast, expose Undo, or move focus prematurely; acknowledged success
+uses the exact snapshot action ID and focuses the now-visible destination Space.
+Static checks also cover scroll-bounded 44 px options, 32 px viewport gutters,
+520 px action wrapping, light/dark tokens, forced colors, reduced motion, en/zh-TW
+parity, anchored menus, and removal of the debounced direct-move path. This is
+deterministic production-controller/static-source evidence, not installed Chrome
+persistence/recovery rendering, actual screen-reader output, theme/locale pixels,
+1280×720/800 px behavior, reload/history, or representative-user trust evidence.
+
+The Group/Stack identity suite extracts the production identity controller and
+executes it against representative nested graphs. It requires explicit empty-
+Space, Board, List, focused-Group, Stack-detail, and selected-item batch entries to
+converge on one localized dialog, with the dead generic controller, native naming
+prompts, inline/contenteditable identity editors, and the old direct Duplicate
+mutation absent. Board, Canvas/focused-Group, List More, and List context Duplicate
+actions must converge on the same controller. It covers primitive
+stable-ID contexts, exhaustive duplicate/missing/moved/ancestor lookup, blank and
+duplicate names, collision-safe allocation across active/Archive/Trash, concurrent
+identity review, untouched raw-name and custom/missing symbol/color preservation,
+exact non-nested same-Space batch moves, one localized snapshot, one awaited
+receipt, failure without premature render/close/toast, exact-action Undo, receipt-
+gated selection clearing, opener/rebuilt-target focus, a focusable guarded pending
+anchor, inertness, recovery precedence, Tab/Escape ordering, emoji loading/error/
+draft behavior, live English/zh-TW copy, and responsive/forced-color/reduced-motion
+hooks. Its Duplicate cases additionally prove draft-only open/cancel, whole-Group
+and destination-name stale review, preservation of intentionally edited fields,
+recursive fresh IDs for the detached Group/item/Stack graph across active, stored,
+restore, capture, sizing, and Canvas collision streams, detached custom/reminder
+data, source-adjacent insertion, cloned legacy/current sizes, and Canvas placement
+by the real production footprint/overlap/search helpers. Valid `{w,h}` fixtures
+cover current sizes, a null current record falling back to a partial legacy width,
+and the former 720 px unsized vertical-overlap case by reserving 60vh plus column
+chrome. Delayed and rejected receipts prove one write,
+no premature UI or alarm work, same-turn recovery display/focus, and exact dirty-graph
+retention. A focused-Group case requires one post-receipt route render with
+`persist: false` and focus on the copy. Reminder-bearing copies reconcile only
+after success; Undo and Redo reconcile only after their history receipts; delayed
+failures drop exact Undo after a newer action. Live locale tests update only the
+untouched generated copy name, detached opener tests recover durable focus, and
+an extracted history-handler test proves that non-pending drafts close before
+navigation while pending receipts and recovery restore the reviewed route without
+flush/apply/persist/render side effects. Static CSS checks require arbitrary-name wrapping. This is deterministic
+production-controller/static-source evidence, not
+installed Chrome persistence/recovery rendering, screen-reader output, theme or
+locale pixels, 1280×720/800 px behavior, reload/history, or representative-user
+trust evidence.
 
 The import-recovery suite accepts a current-schema graph without mutation and
 rejects 33 explicit malformed boundaries plus 128 fixed-seed structural mutations.
@@ -58,6 +304,15 @@ reminders and overdue one-shots stay unscheduled. This is deterministic mocked-b
 lifecycle evidence, not installed Chrome restart/sleep or delayed-delivery evidence;
 rendered Past Due behavior, notification delivery, and installed time-zone transition
 behavior remain runtime gates.
+
+The central-writer portion also sends a `locus-state-write` request with
+`reconcileReminders: true`. It requires storage acceptance before the first alarm-map
+read and one typed response containing the completed structured reconciliation. An
+injected alarm-create failure must keep the state response accepted, preserve the new
+reminder state, and expose `reminderReconciliation.ok === false`. This proves the
+service-worker-owned state→alarm order in the deterministic harness; it does not
+prove message-port lifetime or service-worker termination behavior in installed
+Chrome.
 
 The same background suite invokes the production `alarms.onAlarm` listener for eight
 accepted deliveries. Daily item, multi-day nested-item, biweekly group, and monthly
@@ -175,7 +430,10 @@ rebasing. It also covers a newer event beating a stale in-flight recovery read,
 a higher graph remembered before recovery beating a stale read, a delayed exact
 self-event after two receipts, an in-flight ordinary conflict retaining its local
 graph, accepted-but-lost and never-settling receipt recovery, and the state-write
-receiver boundary. One transient `Receiving end does not exist` rejection resends
+receiver boundary. An ordinary write omits the optional alarm intent; a
+`persistNow({ reconcileReminders: true })` write forwards it and returns the
+service-worker's structured `reminderReconciliation` result to the caller. One
+transient `Receiving end does not exist` rejection resends
 the same candidate and succeeds; persistent absence stops after three total attempts
 with unchanged authority and typed recovery; a port closing after acceptance gets
 one attempt only and recovers the accepted graph. A delayed no-receiver rejection
@@ -183,7 +441,9 @@ arriving after the receipt deadline cannot start a late retry. The extracted err
 router shows the typed background-service message directly instead of labeling it a
 storage error. The recovery-overlay contract restarts the extension runtime only for
 that typed absence, retains page-only reload for reconciliation failures, and falls
-back to page reload when `runtime.reload()` is unavailable. The suite also covers invalid
+back to page reload when `runtime.reload()` is unavailable. Every foreground claim
+focuses Reload synchronously and schedules one focus reassertion for a not-yet-
+layout-ready overlay. The suite also covers invalid
 fractional/negative baseline rejection, active-capture deferral, debounce
 cancellation, and fail-closed newer-schema handling. It models event ordering, a
 bounded receipt timeout, and injected message failures; it does not establish
@@ -264,7 +524,13 @@ Extension pages throw on plain http (`chrome.storage` missing). Recipe:
       const revision = localRevision + 1;
       candidate._revision = revision;
       mem.te = candidate; save();
-      return { ok: true, revision };
+      return {
+        ok: true,
+        revision,
+        ...(message.reconcileReminders === true
+          ? { reminderReconciliation: { ok: true, reason: 'shim' } }
+          : {}),
+      };
     });
     writeQueue = run.catch(() => undefined);
     return run;

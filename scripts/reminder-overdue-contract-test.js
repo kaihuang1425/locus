@@ -30,7 +30,7 @@ const pendingCollectorSource = extractBetween(
 );
 const pickerSource = extractBetween(
   newtabSource,
-  'function openReminderPicker(itemId) {',
+  'function openReminderPicker(itemId, detailContext = undefined) {',
   '\nfunction openReminderOverlay(ctx, existing, opts = {}) {',
 );
 const badgeSource = extractBetween(
@@ -94,6 +94,9 @@ const context = vm.createContext({
   findItem(id) { return id === pickerItem.id ? { item: pickerItem } : null; },
   findEntity(kind, id) { return kind === 'group' && id === pickerEntity.id ? pickerEntity : null; },
   fmtTimeRelative(at) { return `relative:${at}`; },
+  tr(key, vars = {}) {
+    return String(key).replace(/\{(\w+)\}/g, (_, name) => String(vars[name] ?? ''));
+  },
   openReminderOverlay(ctx, existing, options) {
     pickerCalls.push({ ctx, existing, options });
   },

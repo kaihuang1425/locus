@@ -1,7 +1,10 @@
 # Locus interface simplification
 
-Status: corrective interaction contract; the three-zone Home and core shell are
-implemented in the 2026-07-15 worktree but remain unvalidated. Created: 2026-07-13.
+Status: corrective interaction contract; the canonical save-first welcome,
+three-zone Home, core shell, and asked single-tab popup Open-after-save continuation
+are implemented in the 2026-07-16 worktree but remain unvalidated in an installed
+browser and with representative users. Created:
+2026-07-13.
 Product strategy, claims, and evidence status are governed by
 [`PRODUCT_SUCCESS_SYSTEM.md`](./PRODUCT_SUCCESS_SYSTEM.md).
 
@@ -15,10 +18,10 @@ change by itself.
 
 ## 1. Decision
 
-Locus has accumulated capability faster than it has established hierarchy. A new
-user can encounter a questionnaire, a landing layer, a dense dashboard, two
-navigation rails, Calendar, search, a command palette, and seven Space layouts
-before learning the product's simplest value.
+Locus accumulated capability faster than it established hierarchy. At the
+corrective baseline, a new user could encounter a questionnaire, a landing layer,
+a dense dashboard, two navigation rails, Calendar, search, a command palette, and
+seven Space layouts before learning the product's simplest value.
 
 The correction is **progressive disclosure around one core loop**:
 
@@ -201,6 +204,16 @@ Every Home card must make three things obvious without a tooltip: what it is, wh
 the user can do, and what will happen after the action. Additional modules can be
 user-configurable later, but they are not the default.
 
+Current interaction contract: each real saved-item preview is a full-row native
+control with a localized action name. It re-resolves the current record from
+primitive identity, opens the shared detail sheet on the Home route, and keeps the
+active Space and its saved layout unchanged. Missing or ambiguous records stay on
+Home with visible failure feedback. Escape closes only the sheet; close and browser
+history return focus to the exact rebuilt preview when it still exists, then a
+current preview for the same moved item, then the Home heading. Merely locating an
+item must not snapshot or persist state, initialize Canvas positions, or manufacture
+populated content.
+
 ## 7. Calendar contract
 
 Calendar is a projection of reminders attached to Locus content. It is not a second
@@ -255,7 +268,7 @@ must provide:
 
 | Action | Immediate feedback | Completion | Recovery |
 |---|---|---|---|
-| Save a tab | Button enters a brief busy state | New item appears at its destination with inline confirmation | Undo removes that saved copy |
+| Save a tab | Button or destination enters an honest busy state | New item appears at its destination; an explicitly selected popup continuation opens that item in the existing Home recovery sheet | Rejected state leaves the source open; a known Locate failure keeps the accepted save and offers a local recovery action |
 | Change a view | Selected option updates immediately | Content settles in the chosen view and the choice persists | Reopen View and choose the prior option |
 | Archive or delete | Affected row/card leaves its list | Inline notice names what changed | Undo restores it; permanent deletion requires confirmation |
 | Apply a filter | Filter visibly becomes active | Result count and content update together | Clear control restores the unfiltered set and focus |
@@ -266,6 +279,9 @@ Additional rules:
 - Essential controls cannot be hover-only.
 - Decorative controls that do nothing cannot look interactive.
 - A toast cannot contain information required to continue.
+- A toolbar-popup continuation that can outlive popup teardown belongs to the same
+  worker-owned state receipt; create the recovery destination before closing any
+  source. Do not rely on a delayed success toast.
 - Disabled controls explain why when the reason is not obvious.
 - Drag-and-drop always has a click and keyboard alternative.
 - Optimistic changes must revert visibly when persistence fails.

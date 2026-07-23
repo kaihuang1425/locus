@@ -87,10 +87,10 @@
       <div class="ws-bar">
         <div id="ws-chips-stack"></div>
         <div class="ws-bar-actions">
-          <button id="add-ws-btn" class="icon-btn sm" title="New workspace" data-i18n-title="action.newWorkspace">
+          <button id="add-ws-btn" class="icon-btn sm" type="button" title="New workspace" aria-label="New workspace" data-i18n-title="action.newWorkspace" data-i18n-aria-label="action.newWorkspace">
             <svg width="13" height="13" viewBox="0 0 13 13"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
           </button>
-          <button id="ws-menu-btn" class="icon-btn sm" title="All workspaces" data-i18n-title="action.allWorkspaces">
+          <button id="ws-menu-btn" class="icon-btn sm" type="button" title="All workspaces" aria-label="All workspaces" data-i18n-title="action.allWorkspaces" data-i18n-aria-label="action.allWorkspaces">
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="1.5" y="1.5" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="7.5" y="1.5" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="1.5" y="7.5" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="7.5" y="7.5" width="4" height="4" rx="1" stroke="currentColor" stroke-width="1.3"/></svg>
           </button>
         </div>
@@ -145,7 +145,7 @@
 
       <div class="side-sec-row">
         <span class="side-sec-lbl" data-i18n="nav.spaces">Spaces</span>
-        <button id="add-cat-btn" class="icon-btn sm" title="New category" data-i18n-title="action.newCategory">
+        <button id="add-cat-btn" class="icon-btn sm" type="button" title="New space" aria-label="New space" data-i18n-title="action.newSpace" data-i18n-aria-label="action.newSpace">
           <svg width="13" height="13" viewBox="0 0 13 13"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         </button>
       </div>
@@ -223,7 +223,7 @@
           <button id="plugins-btn" class="icon-btn" title="Plugins" data-i18n-title="action.plugins" aria-haspopup="dialog">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M10 3.2a2 2 0 014 0V4a1 1 0 001 1h2.8a1 1 0 011 1V9a1 1 0 001 1h.2a2 2 0 010 4h-.2a1 1 0 00-1 1v2.8a1 1 0 01-1 1H15a1 1 0 01-1-1v-.2a2 2 0 00-4 0v.2a1 1 0 01-1 1H6.2a1 1 0 01-1-1V15a1 1 0 00-1-1H4a2 2 0 010-4h.2a1 1 0 001-1V6a1 1 0 011-1H9a1 1 0 001-1v-.8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
           </button>
-          <!-- App menu: real dropdown (Settings, Plugins, Theme, Guide, About, Reset onboarding, Workspaces). Replaces the fake avatar button; the initial is the active workspace. -->
+          <!-- App menu: real dropdown (Settings, Plugins, Theme, Guide, About, Workspaces). Replaces the fake avatar button; the initial is the active workspace. -->
           <button id="menu-btn" class="avatar-btn notif-host" title="Menu" aria-label="Menu" aria-haspopup="menu">
             <span id="avatar-face" class="avatar-face">K</span>
             <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5l3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -283,83 +283,82 @@
   </div>
 
   <!-- Workspace grid overlay -->
-  <div id="ws-grid-overlay" class="hidden">
+  <div id="ws-grid-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="wsg-title">
     <div class="wsg-panel">
       <div class="wsg-hd">
-        <h2>Workspaces</h2>
-        <button id="wsg-close" class="icon-btn">
+        <h2 id="wsg-title" data-i18n="workspaceManager.title">Workspaces</h2>
+        <button id="wsg-close" class="icon-btn" type="button" aria-label="Close" data-i18n-aria-label="organization.close">
           <svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         </button>
       </div>
-      <div class="wsg-sec-lbl">Your workspaces</div>
+      <div class="wsg-sec-lbl" data-i18n="workspaceManager.yours">Your workspaces</div>
       <div id="wsg-grid"></div>
-      <button id="wsg-add" class="btn-primary">
+      <button id="wsg-add" class="btn-primary" type="button">
         <svg width="12" height="12" viewBox="0 0 13 13"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
-        New Workspace
+        <span data-i18n="action.newWorkspace">New workspace</span>
       </button>
-      <div class="wsg-sec-lbl" style="margin-top:18px;">Browser windows
-        <small>click to focus · save window as its own workspace</small>
-      </div>
-      <div id="wsg-windows"></div>
     </div>
   </div>
 
-  <!-- Modal -->
-  <div id="modal-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <!-- Group / Stack identity editor -->
+  <div id="modal-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-description modal-error" aria-busy="false">
     <div id="modal">
       <div class="modal-hd">
-        <h2 id="modal-title">New Group</h2>
-        <button id="modal-x" class="icon-btn">
+        <h2 id="modal-title" data-i18n="groupEditor.createTitle">Create group</h2>
+        <button id="modal-x" class="icon-btn" type="button" aria-label="Close group editor" data-i18n-aria-label="groupEditor.close">
           <svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         </button>
       </div>
       <div class="modal-bd">
-        <label class="field-lbl" id="lbl-symbol">Symbol</label>
-        <button id="emoji-trigger" class="emoji-trigger">
+        <p id="modal-description" class="organization-name-description" hidden></p>
+        <div class="field-lbl" id="lbl-symbol" data-i18n="groupEditor.symbolLabel">Symbol</div>
+        <button id="emoji-trigger" class="emoji-trigger" type="button" aria-haspopup="dialog" aria-expanded="false" aria-label="Choose a symbol" data-i18n-aria-label="emojiPicker.title">
           <span id="emoji-trigger-val">📁</span>
-          <span class="em-hint">click to change</span>
+          <span class="em-hint" id="emoji-trigger-hint" data-i18n="groupEditor.symbolHint">Choose a symbol</span>
         </button>
 
-        <label class="field-lbl">Name</label>
-        <input type="text" id="modal-input" placeholder="e.g. Research" autocomplete="off">
+        <label class="field-lbl" id="modal-name-label" for="modal-input" data-i18n="groupEditor.nameLabel">Group name</label>
+        <input type="text" id="modal-input" placeholder="e.g. Research" data-i18n-placeholder="groupEditor.namePlaceholder" aria-describedby="modal-error" autocomplete="off">
+        <p id="modal-error" class="organization-name-error" role="alert" hidden></p>
 
-        <label class="field-lbl" id="lbl-color">Color</label>
-        <div class="color-row" id="color-row">
-          <div class="csw active" data-c="#6366f1"></div>
-          <div class="csw" data-c="#3b82f6"></div>
-          <div class="csw" data-c="#06b6d4"></div>
-          <div class="csw" data-c="#10b981"></div>
-          <div class="csw" data-c="#84cc16"></div>
-          <div class="csw" data-c="#eab308"></div>
-          <div class="csw" data-c="#f97316"></div>
-          <div class="csw" data-c="#ef4444"></div>
-          <div class="csw" data-c="#ec4899"></div>
-          <div class="csw" data-c="#a855f7"></div>
-          <div class="csw" data-c="#64748b"></div>
+        <div class="field-lbl" id="lbl-color" data-i18n="groupEditor.colorLabel">Color</div>
+        <div class="color-row" id="color-row" role="radiogroup" aria-labelledby="lbl-color">
+          <button class="csw active" type="button" role="radio" aria-checked="true" tabindex="0" data-c="#6366f1" data-color-key="indigo"></button>
+          <button class="csw" type="button" role="radio" aria-checked="false" tabindex="-1" data-c="#3b82f6" data-color-key="blue"></button>
+          <button class="csw" type="button" role="radio" aria-checked="false" tabindex="-1" data-c="#06b6d4" data-color-key="cyan"></button>
+          <button class="csw" type="button" role="radio" aria-checked="false" tabindex="-1" data-c="#10b981" data-color-key="green"></button>
+          <button class="csw" type="button" role="radio" aria-checked="false" tabindex="-1" data-c="#84cc16" data-color-key="lime"></button>
+          <button class="csw" type="button" role="radio" aria-checked="false" tabindex="-1" data-c="#eab308" data-color-key="yellow"></button>
+          <button class="csw" type="button" role="radio" aria-checked="false" tabindex="-1" data-c="#f97316" data-color-key="orange"></button>
+          <button class="csw" type="button" role="radio" aria-checked="false" tabindex="-1" data-c="#ef4444" data-color-key="red"></button>
+          <button class="csw" type="button" role="radio" aria-checked="false" tabindex="-1" data-c="#ec4899" data-color-key="pink"></button>
+          <button class="csw" type="button" role="radio" aria-checked="false" tabindex="-1" data-c="#a855f7" data-color-key="purple"></button>
+          <button class="csw" type="button" role="radio" aria-checked="false" tabindex="-1" data-c="#64748b" data-color-key="slate"></button>
+          <button id="identity-custom-color" class="csw identity-custom-color" type="button" role="radio" aria-checked="false" tabindex="-1" data-c="" data-color-key="custom" hidden></button>
         </div>
       </div>
       <div class="modal-ft">
-        <button id="modal-cancel" class="btn-secondary">Cancel</button>
-        <button id="modal-ok" class="btn-primary">Create</button>
+        <button id="modal-cancel" class="btn-secondary" type="button" data-i18n="organization.cancel">Cancel</button>
+        <button id="modal-ok" class="btn-primary" type="button" data-i18n="groupEditor.create">Create group</button>
       </div>
     </div>
   </div>
 
   <!-- Emoji picker overlay -->
-  <div id="emoji-picker" class="hidden">
+  <div id="emoji-picker" class="hidden" role="dialog" aria-label="Choose a symbol" data-i18n-aria-label="emojiPicker.title" aria-busy="false">
     <div class="ep-search">
       <svg width="13" height="13" viewBox="0 0 16 16">
         <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
         <path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
-      <input id="ep-search-input" type="text" placeholder="Search emoji…" autocomplete="off">
+      <input id="ep-search-input" type="text" placeholder="Search symbols…" data-i18n-placeholder="emojiPicker.search" aria-label="Search symbols" data-i18n-aria-label="emojiPicker.search" autocomplete="off">
     </div>
-    <div class="ep-tabs" id="ep-tabs"></div>
+    <div class="ep-tabs" id="ep-tabs" role="tablist" aria-label="Symbol categories" data-i18n-aria-label="emojiPicker.categories"></div>
     <div class="ep-grid" id="ep-grid"></div>
   </div>
 
   <!-- Context menu -->
-  <div id="context-menu" class="hidden"></div>
+  <div id="context-menu" class="hidden" role="menu"></div>
 
   <!-- Rich text toolbar -->
   <div id="rt-toolbar" class="hidden">
@@ -383,38 +382,39 @@
   </div>
 
   <!-- Reminder picker -->
-  <div id="reminder-overlay" class="hidden">
+  <div id="reminder-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="reminder-dialog-title">
     <div class="rm-panel">
       <div class="modal-hd">
-        <h2>Set reminder</h2>
-        <button id="rm-x" class="icon-btn">
+        <h2 id="reminder-dialog-title" data-i18n="reminder.setTitle">Set reminder</h2>
+        <button id="rm-x" class="icon-btn" data-i18n-aria-label="detail.closeReminderDialog" aria-label="Close reminder dialog">
           <svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         </button>
       </div>
       <div class="modal-bd">
         <div id="rm-label-field" class="hidden">
-          <label class="field-lbl">Label</label>
-          <input type="text" id="rm-label" placeholder="Label (optional)" spellcheck="false">
+          <label class="field-lbl" for="rm-label" data-i18n="reminder.label">Reminder name</label>
+          <input type="text" id="rm-label" placeholder="Reminder name (optional)" data-i18n-placeholder="reminder.labelOptional" spellcheck="false">
         </div>
         <div class="rm-quick">
-          <button data-offset="3600000">In 1 hour</button>
-          <button data-offset="10800000">In 3 hours</button>
-          <button data-offset="86400000">Tomorrow</button>
-          <button data-offset="604800000">Next week</button>
+          <button data-offset="3600000" data-i18n="reminder.inOneHour">In 1 hour</button>
+          <button data-offset="10800000" data-i18n="reminder.inThreeHours">In 3 hours</button>
+          <button data-offset="86400000" data-i18n="reminder.tomorrow">Tomorrow</button>
+          <button data-offset="604800000" data-i18n="reminder.nextWeek">Next week</button>
         </div>
-        <label class="field-lbl">Or pick a date</label>
-        <input type="datetime-local" id="rm-datetime">
-        <label class="field-lbl">Repeat</label>
+        <label class="field-lbl" for="rm-datetime" data-i18n="reminder.pickDate">Or pick a date</label>
+        <input type="datetime-local" id="rm-datetime" aria-describedby="rm-status">
+        <label class="field-lbl" for="rm-recur" data-i18n="reminder.repeat">Repeat</label>
         <select id="rm-recur">
-          <option value="">Does not repeat</option>
-          <option value="day">Daily</option>
-          <option value="week">Weekly</option>
-          <option value="month">Monthly</option>
+          <option value="" data-i18n="reminder.none">Does not repeat</option>
+          <option value="day" data-i18n="reminder.daily">Daily</option>
+          <option value="week" data-i18n="reminder.weekly">Weekly</option>
+          <option value="month" data-i18n="reminder.monthly">Monthly</option>
         </select>
       </div>
+      <p id="rm-status" class="rm-status" role="status" aria-live="polite" aria-atomic="true"></p>
       <div class="modal-ft">
-        <button id="rm-clear" class="btn-secondary">Clear</button>
-        <button id="rm-save" class="btn-primary">Set</button>
+        <button id="rm-clear" class="btn-secondary" data-i18n="reminder.clear">Clear</button>
+        <button id="rm-save" class="btn-primary" data-i18n="reminder.set">Set</button>
       </div>
     </div>
   </div>
@@ -560,6 +560,64 @@
     </div>
   </div>
 
+  <!-- Irreversible deletion is reserved for Trash and confirmed in-product. -->
+  <div id="trash-delete-overlay" class="hidden" role="alertdialog" aria-modal="true" aria-labelledby="trash-delete-title" aria-describedby="trash-delete-message" aria-busy="false">
+    <div class="rm-panel trash-delete-panel destructive-confirm-panel">
+      <div class="modal-hd">
+        <h2 id="trash-delete-title" data-i18n="trash.confirmTitle">Delete forever?</h2>
+      </div>
+      <div class="modal-bd">
+        <p id="trash-delete-message" class="destructive-confirm-message">—</p>
+      </div>
+      <div class="modal-ft">
+        <button id="trash-delete-cancel" class="btn-secondary" data-i18n="trash.cancelDelete">Cancel</button>
+        <button id="trash-delete-confirm" class="btn-primary trash-delete-confirm destructive-confirm-button" data-i18n="trash.deleteForever">Delete forever</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Workspace/Space names and Group moves share one stable-ID, receipt-gated dialog. -->
+  <div id="organization-name-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="organization-name-title" aria-describedby="organization-name-description organization-name-error" aria-busy="false">
+    <div class="rm-panel organization-name-panel">
+      <div class="modal-hd">
+        <h2 id="organization-name-title" data-i18n="organization.workspace.renameTitle">Rename workspace</h2>
+        <button id="organization-name-close" class="icon-btn" type="button" aria-label="Close" data-i18n-aria-label="organization.close">
+          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="modal-bd">
+        <label id="organization-name-label" class="field-lbl" for="organization-name-input" data-i18n="organization.workspace.nameLabel">Workspace name</label>
+        <input id="organization-name-input" type="text" autocomplete="off" aria-describedby="organization-name-error">
+        <p id="organization-name-description" class="organization-name-description" hidden></p>
+        <div id="organization-move-field" class="organization-move-field" hidden>
+          <div id="organization-move-label" class="field-lbl" data-i18n="organization.group.moveListLabel">Move to</div>
+          <div id="organization-move-options" class="organization-move-options" role="radiogroup" aria-labelledby="organization-move-label" aria-required="true"></div>
+        </div>
+        <p id="organization-name-error" class="organization-name-error" role="alert" aria-live="polite" hidden></p>
+      </div>
+      <div class="modal-ft">
+        <button id="organization-name-cancel" class="btn-secondary" type="button" data-i18n="organization.cancel">Cancel</button>
+        <button id="organization-name-confirm" class="btn-primary" type="button" data-i18n="organization.rename">Rename</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Populated workspace/Space removal is blocked until its groups and reminders are recovered. -->
+  <div id="organization-delete-overlay" class="hidden" role="alertdialog" aria-modal="true" aria-labelledby="organization-delete-title" aria-describedby="organization-delete-message" aria-busy="false">
+    <div class="rm-panel destructive-confirm-panel">
+      <div class="modal-hd">
+        <h2 id="organization-delete-title" data-i18n="organization.workspace.confirmTitle">Delete empty workspace?</h2>
+      </div>
+      <div class="modal-bd">
+        <p id="organization-delete-message" class="destructive-confirm-message">—</p>
+      </div>
+      <div class="modal-ft">
+        <button id="organization-delete-cancel" class="btn-secondary" data-i18n="organization.cancel">Cancel</button>
+        <button id="organization-delete-confirm" class="btn-primary destructive-confirm-button" data-i18n="organization.workspace.delete">Delete workspace</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Keyboard cheatsheet overlay -->
   <div id="cheatsheet-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="cheatsheet-title">
     <div class="rm-panel">
@@ -687,11 +745,6 @@
                 <span class="tog"></span>
               </label>
               <label class="toggle-row">
-                <span data-i18n="settings.confirmDelete">Confirm before deleting groups</span>
-                <input type="checkbox" id="tog-confirm" checked>
-                <span class="tog"></span>
-              </label>
-              <label class="toggle-row">
                 <span><span data-i18n="settings.autoSwitch">Auto-switch workspace on window focus</span><br><small data-i18n="settings.autoSwitchHint">each workspace tied to a browser window</small></span>
                 <input type="checkbox" id="tog-autoswitch">
                 <span class="tog"></span>
@@ -704,20 +757,11 @@
             </div>
 
             <div class="drawer-sec">
-              <div class="field-lbl" data-i18n="settings.tipsOnboarding">Tips &amp; onboarding</div>
-              <label class="toggle-row">
-                <span><span data-i18n="settings.tips">Show tips as you explore</span><br><small data-i18n="settings.tipsHint">a one-time hint the first time you open a feature</small></span>
-                <input type="checkbox" id="tog-tips" checked>
-                <span class="tog"></span>
-              </label>
+              <div class="field-lbl" data-i18n="settings.tipsOnboarding">Welcome</div>
               <div class="onboarding-actions">
                 <button id="show-tour-btn" class="btn-secondary">
                   <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="vertical-align:-2px;margin-right:5px"><circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.4"/><path d="M5 5.5a1.5 1.5 0 113 0c0 .8-1.5 1-1.5 2M6.5 9.5v.01" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
                   <span data-i18n="settings.showTour">Replay welcome</span>
-                </button>
-                <button id="reset-hints-btn" class="btn-secondary">
-                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="vertical-align:-2px;margin-right:5px"><path d="M2.5 6.5a4 4 0 104-4M2.5 6.5V4M2.5 6.5H5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  <span data-i18n="settings.resetHints">Reset tips</span>
                 </button>
               </div>
             </div>
@@ -1225,16 +1269,14 @@
   </div>
 
   <!-- ══════ WELCOME / FIRST-SAVE TASK ══════ -->
-  <!-- First-run only (gated by settings.onboarding.welcomeSeen). The old
-       questionnaire nodes below are hidden legacy residue retained temporarily
-       for migration-safe cleanup; they are not part of the active experience. -->
+  <!-- First-run only (gated by settings.onboarding.welcomeSeen). -->
   <div id="welcome" class="hidden" role="dialog" aria-modal="true" aria-labelledby="wc-task-title">
     <div class="wc-card">
       <section class="wc-task" aria-describedby="wc-task-description">
         <div class="wc-logo"><img class="brand-img" src="icons/icon128.png" alt="" decoding="async"></div>
         <h2 id="wc-task-title" class="wc-h" data-i18n="welcome.taskTitle">Keep one tab without keeping it open</h2>
         <p id="wc-task-description" class="wc-sub" data-i18n="welcome.taskDescription">Save a real tab to your Inbox, then Locus will show you exactly where it went.</p>
-        <div id="wc-candidate" class="wc-candidate" aria-live="polite">
+        <div id="wc-candidate" class="wc-candidate" aria-live="polite" aria-busy="true">
           <img id="wc-candidate-fav" src="icons/icon32.png" alt="">
           <span class="wc-candidate-copy">
             <strong id="wc-candidate-title" data-i18n="welcome.looking">Looking for an open tab…</strong>
@@ -1242,103 +1284,14 @@
           </span>
         </div>
         <p id="wc-empty" class="wc-empty hidden" data-i18n="welcome.empty">No saveable tab is open yet. Explore Locus, then use the toolbar popup from any page.</p>
+        <p id="wc-error" class="wc-empty hidden" role="alert" data-i18n="welcome.error">Locus couldn’t check your open tabs. Try again, or explore without saving.</p>
         <div class="wc-nav wc-nav-single">
+          <button type="button" id="wc-retry" class="wc-skip hidden" data-i18n="welcome.retry">Try again</button>
           <button type="button" id="wc-explore" class="wc-skip" data-i18n="welcome.explore">Explore on my own</button>
           <button type="button" id="wc-save-first" class="wc-next" data-i18n="welcome.save" disabled>Save this tab</button>
         </div>
       </section>
-      <div class="wc-progress"><span id="wc-progress-fill" class="wc-progress-fill"></span></div>
-
-      <section class="wc-step" data-step="0">
-        <div class="wc-logo"><img class="brand-img" src="icons/icon128.png" alt="" decoding="async"></div>
-        <h2 id="wc-title" class="wc-h">Welcome to Locus</h2>
-        <p class="wc-sub">A calmer home for explicitly saved tabs, notes, tasks, and reminders.</p>
-      </section>
-
-      <section class="wc-step hidden" data-step="1">
-        <h2 class="wc-h">What should we call you?</h2>
-        <p class="wc-sub">We'll use it for your greeting. You can change it anytime.</p>
-        <input id="wc-name" class="wc-input" type="text" maxlength="40" placeholder="Your name" autocomplete="off">
-      </section>
-
-      <section class="wc-step hidden" data-step="2">
-        <h2 class="wc-h">What will you use Locus for?</h2>
-        <p class="wc-sub">Pick what fits best — it helps us suggest the right setup.</p>
-        <div class="wc-choices" data-field="purpose" data-multi="false">
-          <button type="button" class="wc-chip" data-val="work"><span class="wc-emoji">💼</span>Work</button>
-          <button type="button" class="wc-chip" data-val="study"><span class="wc-emoji">📚</span>Study</button>
-          <button type="button" class="wc-chip" data-val="research"><span class="wc-emoji">🔬</span>Research</button>
-          <button type="button" class="wc-chip" data-val="personal"><span class="wc-emoji">🌱</span>Personal</button>
-          <button type="button" class="wc-chip" data-val="everything"><span class="wc-emoji">✨</span>A bit of everything</button>
-        </div>
-      </section>
-
-      <section class="wc-step hidden" data-step="3">
-        <h2 class="wc-h">How do you like to work?</h2>
-        <p class="wc-sub">This sets your starting layout — switch anytime from the toolbar.</p>
-        <div class="wc-choices wc-choices-wide" data-field="workflow" data-multi="false">
-          <button type="button" class="wc-chip wc-chip-wide" data-val="board"><span class="wc-emoji">🗂️</span><span class="wc-chip-txt"><strong>Organized board</strong><small>Grouped columns of saved links</small></span></button>
-          <button type="button" class="wc-chip wc-chip-wide" data-val="list"><span class="wc-emoji">📋</span><span class="wc-chip-txt"><strong>Simple list</strong><small>A tidy, scannable list</small></span></button>
-          <button type="button" class="wc-chip wc-chip-wide" data-val="canvas"><span class="wc-emoji">🎨</span><span class="wc-chip-txt"><strong>Free canvas</strong><small>Arrange things visually</small></span></button>
-        </div>
-      </section>
-
-      <section class="wc-step hidden" data-step="4">
-        <h2 class="wc-h">Which tools do you want?</h2>
-        <p class="wc-sub">Turn on the mini-apps you'll use. You can find them all anytime under Plugins.</p>
-        <div class="wc-choices wc-plugins" data-field="plugins" data-multi="true">
-          <button type="button" class="wc-chip" data-val="pomodoro"><span class="wc-emoji">🍅</span>Pomodoro</button>
-          <button type="button" class="wc-chip" data-val="finance"><span class="wc-emoji">💰</span>Finance Diary</button>
-          <button type="button" class="wc-chip" data-val="habits"><span class="wc-emoji">🔁</span>Habits</button>
-          <button type="button" class="wc-chip" data-val="books"><span class="wc-emoji">📚</span>Reading</button>
-          <button type="button" class="wc-chip" data-val="goals"><span class="wc-emoji">🎯</span>Goals</button>
-          <button type="button" class="wc-chip" data-val="water"><span class="wc-emoji">💧</span>Hydration</button>
-        </div>
-      </section>
-
-      <section class="wc-step hidden" data-step="5">
-        <div class="wc-done-check">
-          <svg width="30" height="30" viewBox="0 0 30 30" fill="none"><circle cx="15" cy="15" r="13" stroke="currentColor" stroke-width="2" opacity="0.25"/><path class="wc-check-path" d="M9 15.5l4 4 8-8.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <h2 class="wc-h">You're all set<span id="wc-done-name"></span></h2>
-        <p class="wc-sub">Locus is ready to go. You can reopen this guide anytime from the menu.</p>
-      </section>
-
-      <div class="wc-nav">
-        <button type="button" id="wc-skip" class="wc-skip">Skip</button>
-        <div id="wc-dots" class="wc-dots" aria-hidden="true"></div>
-        <button type="button" id="wc-next" class="wc-next">Continue</button>
-      </div>
     </div>
-  </div>
-
-  <!-- ══════ ONBOARDING TOUR ══════ -->
-  <div id="tour-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="tour-title">
-    <div class="tour-backdrop"></div>
-    <div class="tour-spotlight" id="tour-spotlight"></div>
-    <div class="tour-bubble" id="tour-bubble">
-      <h3 id="tour-title"></h3>
-      <p id="tour-body"></p>
-      <div class="tour-bubble-foot">
-        <button class="tour-skip" id="tour-skip">Skip</button>
-        <div class="tour-progress-wrap">
-          <span class="tour-count" id="tour-count" aria-live="polite"></span>
-          <div class="tour-progress" id="tour-progress"></div>
-        </div>
-        <div class="tour-actions">
-          <button class="tour-btn" id="tour-prev">Back</button>
-          <button class="tour-btn primary" id="tour-next">Next</button>
-        </div>
-      </div>
-      <div class="tour-hint">← / → to navigate · Esc to close</div>
-    </div>
-  </div>
-
-  <!-- ══════ JUST-IN-TIME COACH-MARK ══════ -->
-  <div id="coach" class="hidden" role="status" aria-live="polite" data-arrow="up">
-    <div class="coach-title"></div>
-    <div class="coach-body"></div>
-    <button class="coach-got" type="button">Got it</button>
   </div>
 
   <!-- ══════ TOOLS HUB ══════ -->

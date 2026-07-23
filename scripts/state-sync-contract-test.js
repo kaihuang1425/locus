@@ -42,6 +42,7 @@ let deferredWriter = null;
 let deferredMissingReceiver = null;
 let nextGetSnapshot = null;
 let stateWriteResponseMode = 'normal';
+let lastStateWriteMessage = null;
 let acceptedStateObserver = null;
 let recoveryOverlayCalls = 0;
 const recoveryOverlayErrors = [];
@@ -118,6 +119,7 @@ const chrome = {
   runtime: {
     async sendMessage(message) {
       assert.equal(message?.type, 'locus-state-write');
+      lastStateWriteMessage = clone(message);
       writeCalls += 1;
       if (stateWriteResponseMode === 'missing-receiver-once') {
         stateWriteResponseMode = 'normal';
@@ -170,7 +172,13 @@ const chrome = {
         pending.signalStarted();
         await pending.wait;
       }
-      return { ok: true, revision };
+      return {
+        ok: true,
+        revision,
+        ...(message.reconcileReminders === true
+          ? { reminderReconciliation: { ok: true, reason: 'state-write' } }
+          : {}),
+      };
     },
   },
 };
@@ -326,6 +334,8 @@ function assertStableReminderIds(entity, label) {
   await pendingWrite;
   assert.equal(State.get()._revision, 22);
   assert.equal(State.isClean(), true);
+  assert.equal(Object.hasOwn(lastStateWriteMessage, 'reconcileReminders'), false,
+    'ordinary state writes must not request an unrelated alarm pass');
 
   const firstAcceptedWrite = clone(stored.te);
   State.get().settings.secondSelfMarker = 'second-receipt-won';
@@ -333,6 +343,14 @@ function assertStableReminderIds(entity, label) {
   assert.equal(State.observeStoredState(firstAcceptedWrite), 'ignored', 'a delayed exact event for an earlier accepted self-write is not a storage rollback');
   assert.equal(State.isRecoveryRequired(), false);
   assert.equal(State.get().settings.secondSelfMarker, 'second-receipt-won');
+
+  State.get().settings.reminderReceiptMarker = 'combined-state-alarm-effect';
+  const reminderReceipt = await State.persistNow({ reconcileReminders: true });
+  assert.equal(lastStateWriteMessage.reconcileReminders, true,
+    'the new-tab state client must forward the reminder effect intent');
+  assert.deepEqual(clone(reminderReceipt.reminderReconciliation), { ok: true, reason: 'state-write' },
+    'persistNow must return the service worker structured reminder result');
+  assert.equal(State.isClean(), true);
 
   State.get().settings.transientReceiverMarker = 'retried-before-accept';
   stateWriteResponseMode = 'missing-receiver-once';
@@ -573,7 +591,8 @@ function assertStableReminderIds(entity, label) {
     addEventListener(type, listener) { this[`${type}Listener`] = listener; },
   };
   const recoveryDetail = { textContent: '' };
-  const recoveryButton = { focus() {} };
+  let recoveryFocusCalls = 0;
+  const recoveryButton = { focus() { recoveryFocusCalls += 1; } };
   const recoveryDocument = {
     getElementById(id) {
       return {
@@ -606,6 +625,7 @@ function assertStableReminderIds(entity, label) {
   });
   recoveryOverlayContext.__showRecovery(new Error('Queued write was cancelled'));
   recoveryOverlayContext.__bindRecovery();
+  assert.ok(recoveryFocusCalls >= 2, 'recovery must focus Reload synchronously on every foreground claim');
   assert.equal(recoveryOverlay.dataset.reloadExtension, '1', 'a queued follow-on failure must not downgrade runtime recovery');
   const callbacksBeforeRuntimeReload = scheduledCallbacks.length;
   recoveryButton.onclick();

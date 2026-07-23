@@ -152,8 +152,23 @@
         <div><h1 id="save-title" data-pop-i18n="saveTab">Save tab</h1><p id="save-context"></p></div>
       </div>
       <div class="view-summary"><span class="destination-icon" aria-hidden="true">⌑</span><span id="save-tab-title"></span></div>
-      <div class="subhead" data-pop-i18n="chooseDestination">Choose destination</div>
+      <div id="stg-destination-label" class="subhead" data-pop-i18n="chooseDestination">Choose destination</div>
+      <label id="stg-locate-option" class="hib-toggle stg-locate-option hidden">
+        <input type="checkbox" id="stg-locate">
+        <span class="hib-tog-box" aria-hidden="true"></span>
+        <span data-pop-i18n="locateAfterSave">Open saved item in Locus</span>
+      </label>
       <div id="stg-list" role="list"></div>
+      <div id="stg-locate-result" class="capture-result hidden" role="status" aria-live="polite" aria-atomic="true" tabindex="-1">
+        <span class="capture-result-icon" aria-hidden="true">✓</span>
+        <div class="capture-result-copy">
+          <span id="stg-locate-result-message"></span>
+        </div>
+        <div class="capture-result-actions">
+          <button id="stg-open-locus" class="pa-btn primary" type="button" data-pop-i18n="openLocus">Open Locus</button>
+          <button id="stg-done" class="pa-btn" type="button" data-pop-i18n="done">Close</button>
+        </div>
+      </div>
     </section>
 
     <section id="hibernate-section" class="popup-view hidden" aria-labelledby="hibernate-title">
