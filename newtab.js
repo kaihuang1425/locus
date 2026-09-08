@@ -27,6 +27,31 @@ function appLocale() {
 
 const I18N = {
   en: {
+    'ux.welcome': 'Welcome to Locus',
+    'ux.intro': 'Save tabs, organise them into Spaces, and find them again. Everything stays on this device.',
+    'ux.firstSave': 'Save your first tab',
+    'ux.explore': 'Explore on my own',
+    'ux.save': 'Save a tab',
+    'ux.destination': 'Save to {space} → Inbox',
+    'ux.noTabs': 'No web tabs to save. Open a page in this window, then try again.',
+    'ux.tabError': 'Could not load your tabs. Try Save a tab again.',
+    'ux.saved': 'Saved to {space} → Inbox',
+    'ux.duplicate': 'Already in this Inbox',
+    'ux.saveError': 'Could not save. Your tab is still open; please try again.',
+    'ux.inboxCount': '{count} saved items to organise',
+    'ux.inboxEmpty': 'Save a tab to keep it here, then organise it when you are ready.',
+    'ux.reviewInbox': 'Review Inbox',
+    'ux.spaces': 'Your Spaces',
+    'ux.allSpaces': 'View all Spaces',
+    'ux.fewerSpaces': 'Show fewer',
+    'ux.advancedViews': 'Advanced views',
+    'ux.boardView': 'Board · organise in groups',
+    'ux.listView': 'List · scan titles quickly',
+    'ux.spaceActions': 'Space actions',
+    'ux.openTabs': 'Opened tabs',
+    'ux.expandTabs': 'Show opened tabs',
+    'ux.collapseTabs': 'Hide opened tabs',
+
     'shell.openTabs': 'open tabs',
     'shell.filterTabs': 'Filter tabs',
     'action.collapseSidebar': 'Collapse sidebar',
@@ -391,6 +416,31 @@ const I18N = {
     'search.unknownDate': 'Date unavailable'
   },
   'zh-TW': {
+    'ux.welcome': '歡迎使用 Locus',
+    'ux.intro': '儲存分頁、用空間整理，隨時找回。所有資料都留在這台裝置上。',
+    'ux.firstSave': '儲存第一個分頁',
+    'ux.explore': '自行探索',
+    'ux.save': '儲存分頁',
+    'ux.destination': '儲存到 {space} → 收件匣',
+    'ux.noTabs': '目前沒有可儲存的網頁。請在這個視窗開啟網頁後再試一次。',
+    'ux.tabError': '無法載入分頁，請再按一次「儲存分頁」。',
+    'ux.saved': '已儲存到 {space} → 收件匣',
+    'ux.duplicate': '已在這個收件匣中',
+    'ux.saveError': '無法儲存。分頁仍保持開啟，請再試一次。',
+    'ux.inboxCount': '有 {count} 個已儲存項目待整理',
+    'ux.inboxEmpty': '先把分頁存到這裡，有空時再整理。',
+    'ux.reviewInbox': '查看收件匣',
+    'ux.spaces': '你的空間',
+    'ux.allSpaces': '查看所有空間',
+    'ux.fewerSpaces': '收起',
+    'ux.advancedViews': '進階檢視',
+    'ux.boardView': '看板 · 分組整理',
+    'ux.listView': '清單 · 快速瀏覽標題',
+    'ux.spaceActions': '空間操作',
+    'ux.openTabs': '已開啟分頁',
+    'ux.expandTabs': '顯示已開啟分頁',
+    'ux.collapseTabs': '收起已開啟分頁',
+
     'shell.openTabs': '開啟分頁',
     'shell.filterTabs': '篩選分頁',
     'action.collapseSidebar': '收合側邊欄',
@@ -798,7 +848,7 @@ const State = (() => {
       language: browserLanguage(),
       closeTabOnSave:true, hibernate:true, showUrls:true,
       animate:true, confirmDelete:true, sidebarCollapsed:false,
-      blurPrivacy:false, windowSync:false, showLanding:true,
+      blurPrivacy:false, windowSync:false, showLanding:false, railCollapsed:true,
       captureDefaultCategoryId:'', captureAskEveryTime:true,
       captureRememberLast:true, captureDeduplicate:true,
       captureIncludeTitle:true, captureIncludeFavicon:true,
@@ -821,7 +871,8 @@ const State = (() => {
       const d = await chrome.storage.local.get('te');
       if (d.te) {
         loadedSchema = Number(d.te.schema) || 0;
-        state = { ...state, ...d.te, settings: { ...state.settings, ...(d.te.settings || {}) } };
+        state = { ...state, ...d.te, settings: { ...state.settings,
+          showLanding: true, railCollapsed: false, ...(d.te.settings || {}) } };
       }
     },
     persist() {
@@ -1377,11 +1428,9 @@ function initAfterLoad() {
   bindStatic();
 
   renderAll();
-  // First run: the welcome questionnaire owns the screen. The landing layer
-  // waits until it closes, so the first greeting uses the name the user just
-  // typed instead of stacking two full-screen layers.
+  // New profiles go straight to Home; established users retain their landing preference.
   if (ensureOnboarding(State.get().settings).welcomeSeen) showLandingLayer();
-  else _landingAfterWelcome = true;
+  else { _landingAfterWelcome = false; goHome(); }
 
   // Reveal the app once the first frame paints (avoids any layout flash).
   requestAnimationFrame(() => {
@@ -2152,6 +2201,12 @@ function applySettings() {
   if (sb) sb.classList.toggle('collapsed', !!s.sidebarCollapsed);
   const rail = document.getElementById('tabrail');
   if (rail) rail.classList.toggle('collapsed', !!s.railCollapsed);
+  const railToggle = document.getElementById('tabrail-toggle');
+  if (railToggle) {
+    railToggle.setAttribute('aria-expanded', String(!s.railCollapsed));
+    railToggle.setAttribute('aria-label', tr(s.railCollapsed ? 'ux.expandTabs' : 'ux.collapseTabs'));
+    railToggle.title = railToggle.getAttribute('aria-label');
+  }
 
   document.querySelectorAll('.theme-card').forEach(c => c.classList.toggle('active', c.dataset.theme === s.theme));
   ['seg-size','seg-width','seg-font'].forEach(id => {
@@ -2731,9 +2786,8 @@ function showContextMenu(x, y, items, opts) {
   });
   menu.classList.remove('hidden');
   const mw = menu.offsetWidth || 200, mh = menu.offsetHeight || 300;
-  let mx = x, my = y;
-  if (x + mw > window.innerWidth) mx = window.innerWidth - mw - 8;
-  if (y + mh > window.innerHeight) my = window.innerHeight - mh - 8;
+  let mx = Math.max(8, Math.min(x, window.innerWidth - mw - 8));
+  let my = Math.max(8, Math.min(y, window.innerHeight - mh - 8));
   menu.style.left = mx + 'px'; menu.style.top = my + 'px';
   const menuOpener = document.activeElement;
   const menuKey = e => {
@@ -2748,7 +2802,7 @@ function showContextMenu(x, y, items, opts) {
     else if (e.key === 'Enter' || e.key === ' ') {
       if (cur >= 0) { e.preventDefault(); entries[cur].click(); }
     } else if (e.key === 'Escape') {
-      e.preventDefault(); hideContextMenu();
+      e.preventDefault(); e.stopPropagation(); hideContextMenu();
       if (menuOpener && menuOpener.focus) menuOpener.focus();
     }
   };
@@ -3452,15 +3506,35 @@ function applyFilter() {
 
 async function saveTabToInbox(t) {
   const cat = activeCat();
+  if (!cat) { toast(tr('palette.noSpace'), { danger: true }); return false; }
   let inbox = cat.groups.find(g => g.name === 'Inbox');
-  if (!inbox) { inbox = { id: uid(), name:'Inbox', symbol:'📥', color:'#6366f1', collapsed:false, items:[] }; cat.groups.unshift(inbox); }
-  if (captureDuplicateExists(inbox, t.url)) { toast('Already saved', { danger: true }); return; }
+  if (inbox && captureDuplicateExists(inbox, t.url)) {
+    toast(tr('ux.duplicate')); return true;
+  }
   State.snapshot('Save to inbox');
+  const createdInbox = !inbox;
+  if (!inbox) {
+    inbox = { id: uid(), name:'Inbox', symbol:'📥', color:'#6366f1', collapsed:false, items:[] };
+    cat.groups.unshift(inbox);
+  }
   const meta = captureTabFields(t);
-  inbox.items.push(stampNew({ id: uid(), type:'tab', title: meta.title, url: t.url, fav: meta.fav }));
-  if (State.get().settings.closeTabOnSave) { try { await chrome.tabs.remove(t.id); } catch {} }
-  State.persist(); renderBoard(); toast('Saved to Inbox', { undo: true });
+  const item = stampNew({ id: uid(), type:'tab', title: meta.title, url: t.url, fav: meta.fav });
+  inbox.items.push(item);
+  try { await State.persistNow(); }
+  catch {
+    inbox.items = inbox.items.filter(it => it.id !== item.id);
+    if (createdInbox && !inbox.items.length) cat.groups = cat.groups.filter(g => g !== inbox);
+    renderBoard();
+    toast(tr('ux.saveError'), { danger: true }); return false;
+  }
+  if (State.get().settings.closeTabOnSave) {
+    try { await chrome.tabs.remove(t.id); } catch {}
+  }
+  renderBoard(); updateNavChrome();
+  toast(tr('ux.saved', { space: cat.name }), { undo: true });
+  return true;
 }
+
 async function saveSelectedAsGroup() {
   const tabs = allOpenTabs.filter(t => selectedTabIds.has(t.id));
   if (!tabs.length) return;
@@ -5028,130 +5102,72 @@ function renderHome() {
   $b.classList.add('home-mode');
   $b.innerHTML = '';
 
-  // Greeting hero. The greeting WORD stays time-aware (morning/afternoon/evening).
-  // The banner art follows the theme's mode rather than the clock: light themes
-  // get the calm pastel morning scene (near-white band, matches the Waypoint
-  // target); dark themes get the night scene so the banner doesn't glow bright
-  // against a dark board. This is part of making a theme switch update the whole
-  // visual system, not just the background.
-  const hr = new Date().getHours();
-  const tod = hr < 12 ? 'morning' : hr < 18 ? 'noon' : 'night';
-  const heroSrc = activeThemeMode() === 'dark'
-    ? 'media/png/night_transparent_corners.png'
-    : 'media/png/morning_transparent_corners.png';
-  const hero = document.createElement('div');
-  hero.className = 'home-hero';
-  hero.dataset.tod = tod;
-  const greetingName = ((State.get().settings.profile && State.get().settings.profile.name) || '').trim();
-  hero.innerHTML = `
-    <img class="home-hero-bg" src="${heroSrc}" alt="" aria-hidden="true" decoding="async">
-    <div class="home-hero-copy">
-      <h1 class="home-greeting">${esc(greetingName
-        ? tr('landing.greeting', { greeting: greetingWord(), name: greetingName })
-        : tr('landing.greetingNoName', { greeting: greetingWord() }))}</h1>
-      <p class="home-subtitle">${esc(homeSubtitle())}</p>
-    </div>`;
-  $b.appendChild(hero);
+  const greetingName = (State.get().settings.profile?.name || '').trim();
+  const intro = document.createElement('header');
+  intro.className = 'home-intro';
+  intro.innerHTML = `<h1 class="home-greeting">${esc(greetingName
+    ? tr('landing.greeting', { greeting: greetingWord(), name: greetingName })
+    : tr('landing.greetingNoName', { greeting: greetingWord() }))}</h1>
+    <p>${esc(tr('ux.intro'))}</p>`;
+  $b.appendChild(intro);
 
-  // Category cards.
+  const cat = activeCat();
+  const inbox = cat?.groups.find(g => g.name === 'Inbox');
+  const capture = document.createElement('section');
+  capture.className = 'home-capture';
+  capture.innerHTML = `<div><h2>${esc(cat ? tr('ux.destination', { space: cat.name }) : tr('nav.inbox'))}</h2>
+    <p>${esc(inbox?.items.length ? tr('ux.inboxCount', { count: inbox.items.length }) : tr('ux.inboxEmpty'))}</p></div>`;
+  const review = document.createElement('button');
+  review.className = 'btn-secondary';
+  review.textContent = tr('ux.reviewInbox');
+  review.onclick = openInboxView;
+  if (cat) capture.appendChild(review);
+  $b.appendChild(capture);
+
+  const section = document.createElement('section');
+  section.className = 'home-spaces';
+  const heading = document.createElement('div');
+  heading.className = 'home-spaces-heading';
+  heading.innerHTML = `<h2>${esc(tr('ux.spaces'))}</h2>`;
+  section.appendChild(heading);
   const grid = document.createElement('div');
   grid.className = 'home-grid';
-
-  if (!ws.categories.length) {
-    grid.appendChild(buildSystemEmptyState({
-      kind: 'space', title: tr('home.emptyTitle'), body: tr('home.emptyBody'),
-      actions: [{ label: tr('palette.newSpace'), icon: '+', run: () => openModal('new-cat') }],
-      note: tr('empty.localNote'),
-    }));
-  }
-
-  // Auto-pick the "collections" category (most groups, ≥3) → promoted to a
-  // full-width strip at the bottom instead of a regular card.
-  let projCat = null;
-  ws.categories.forEach(c => { if (c.groups.length >= 3 && (!projCat || c.groups.length > projCat.groups.length)) projCat = c; });
-
-  ws.categories.forEach(cat => {
-    if (cat === projCat) return;
-    const items = cat.groups.reduce((acc, g) => acc.concat(g.items), []);
-    const card = document.createElement('div');
-    card.className = 'home-card';
-    card.tabIndex = 0;
-    card.setAttribute('role', 'button');
-    card.title = cat.name;
-    card.style.setProperty('--home-accent', homeAccentColor(cat));
-
-    const hd = document.createElement('div');
-    hd.className = 'home-card-hd';
-    hd.innerHTML = `
-      <span class="home-card-sym${homeCardIconName(cat) ? ' has-img' : ''}">${homeCardIconHtml(cat)}</span>
-      <div class="home-card-titles">
-        <div class="home-card-name">${esc(cat.name)}</div>
-        <div class="home-card-count">${esc(tr('home.items', { n: items.length }))}</div>
-      </div>
-      <button class="home-card-more" title="More" aria-label="More actions">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="1.3" fill="currentColor"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="12" cy="8" r="1.3" fill="currentColor"/></svg>
-      </button>`;
-    hd.querySelector('.home-card-more').addEventListener('click', e => {
-      e.stopPropagation();
-      showContextMenu(e.pageX, e.pageY, [
-        { text: 'Open', icon: cmIcons.open, action: () => openCategory(cat.id) },
-        { text: 'Rename', icon: cmIcons.edit, action: () => { const nn = prompt('Rename category:', cat.name); if (nn && nn.trim()) { State.snapshot('Rename cat'); cat.name = nn.trim(); State.persist(); renderCategoryTabs(); renderBoard(); } } },
-        ws.categories.length > 1 ? { text: 'Delete', icon: cmIcons.delete, danger: true, action: () => { if (confirm(`Delete "${cat.name}"?`)) { State.snapshot('Delete cat'); ws.categories = ws.categories.filter(c => c.id !== cat.id); if (ws.activeCatId === cat.id) ws.activeCatId = ws.categories[0].id; State.persist(); renderAll(); } } } : null,
-      ].filter(Boolean));
-    });
-    card.appendChild(hd);
-
-    const main = document.createElement('div');
-    main.className = 'home-card-main';
-    const body = document.createElement('div');
-    body.className = 'home-card-body';
-    if (!items.length) {
-      const em = document.createElement('div');
-      em.className = 'home-card-empty';
-      em.textContent = tr('home.empty');
-      body.appendChild(em);
-    } else {
-      items.slice(0, 5).forEach(it => body.appendChild(buildHomePreviewRow(it)));
-    }
-    main.appendChild(body);
-    // Derived accent panel: a category-tinted gradient with the category glyph —
-    // a calm decorative echo of Waypoint's card art (no fabricated screenshots),
-    // shown only when the card has enough content to balance it.
-    if (items.length >= 3) {
-      const accent = document.createElement('div');
-      accent.className = 'home-card-accent';
-      accent.setAttribute('aria-hidden', 'true');
-      accent.innerHTML = `<span class="home-card-accent-glyph">${esc(cat.symbol || '🗂')}</span>`;
-      main.appendChild(accent);
-      card.classList.add('has-accent');
-    }
-    card.appendChild(main);
-
-    const ft = document.createElement('button');
-    ft.className = 'home-card-viewall';
-    ft.type = 'button';
-    ft.innerHTML = `<span>${esc(tr('home.viewAll'))}</span><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h7M6 3l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-    card.appendChild(ft);
-
-    const go = () => openCategory(cat.id);
-    card.addEventListener('click', go);
-    card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
-
-    // Drop a dragged tab onto a card to save it into that category's Inbox.
-    card.addEventListener('dragover', e => {
-      if (drag?.kind === 'tab' || drag?.kind === 'tabs-multi') { e.preventDefault(); card.classList.add('drop-target'); }
-    });
-    card.addEventListener('dragleave', () => card.classList.remove('drop-target'));
-    card.addEventListener('drop', async e => {
-      if (drag?.kind === 'tab' || drag?.kind === 'tabs-multi') { e.preventDefault(); card.classList.remove('drop-target'); await dropTabsIntoCategory(cat); }
-    });
-
+  const latest = c => {
+    const walk = items => items.reduce((n, it) => Math.max(n, Number(it.createdAt) || 0,
+      it.type === 'stack' ? walk(it.items || []) : 0), 0);
+    return c.groups.reduce((n, g) => Math.max(n, walk(g.items)), 0);
+  };
+  const spaces = ws.categories.slice().sort((a, b) => latest(b) - latest(a));
+  spaces.forEach((space, index) => {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'home-space-card';
+    card.hidden = index >= 3;
+    card.innerHTML = `<span class="home-space-symbol" aria-hidden="true">${esc(space.symbol || '🗂')}</span>
+      <span><strong>${esc(space.name)}</strong><small>${esc(tr('home.items', {
+        n: space.groups.reduce((n, g) => n + g.items.length, 0) }))}</small></span>`;
+    card.onclick = () => openCategory(space.id);
     grid.appendChild(card);
   });
-
-  if (projCat) grid.appendChild(buildProjectsRow(projCat, ws));
-
-  $b.appendChild(grid);
+  if (spaces.length > 3) {
+    const more = document.createElement('button');
+    more.className = 'btn-secondary';
+    more.textContent = tr('ux.allSpaces');
+    more.setAttribute('aria-expanded', 'false');
+    more.onclick = () => {
+      const expanded = more.getAttribute('aria-expanded') !== 'true';
+      more.setAttribute('aria-expanded', String(expanded));
+      more.textContent = tr(expanded ? 'ux.fewerSpaces' : 'ux.allSpaces');
+      [...grid.children].forEach((card, index) => { card.hidden = !expanded && index >= 3; });
+    };
+    heading.appendChild(more);
+  }
+  if (!spaces.length) grid.appendChild(buildSystemEmptyState({
+    kind: 'space', title: tr('home.emptyTitle'), body: tr('home.emptyBody'),
+    actions: [{ label: tr('palette.newSpace'), icon: '+', run: () => openModal('new-cat') }],
+  }));
+  section.appendChild(grid);
+  $b.appendChild(section);
   return true;
 }
 
@@ -5276,6 +5292,12 @@ function updateNavChrome() {
   if (trash) trash.classList.toggle('active', activeLibraryMode === 'trash');
   const inboxNav = document.getElementById('nav-inbox');
   if (inboxNav) inboxNav.classList.toggle('active', !!activeGroupPage && activeGroupPage.groupId === (inbox && inbox.id));
+  const moreNav = document.getElementById('nav-more');
+  if (moreNav) moreNav.classList.toggle('active', ['favorites', 'read-later', 'archive', 'trash'].includes(activeLibraryMode));
+  const calendar = document.getElementById('calendar-btn');
+  if (calendar) calendar.classList.toggle('hidden', !activeCalendar);
+  const layout = document.getElementById('view-mode-btn');
+  if (layout) layout.classList.toggle('hidden', !!(activeHome || activeSearch || activeLibraryMode || activeCalendar));
   // Topbar app-menu chip: initial from the active workspace name + a pending
   // reminder dot (the reminder signal moved here when the bell became Plugins;
   // the menu itself exposes "Calendar & reminders" with the live count).
@@ -10106,7 +10128,7 @@ function _calReduceMotion() {
 // ── Navigation ──────────────────────────────────────────────────
 function openCalendar() {
   const ws = activeWs(); if (!ws) return;
-  const view = activeCalendar ? activeCalendar.view : 'month';
+  const view = activeCalendar ? activeCalendar.view : (buildCalendarEntries().length < 5 ? 'agenda' : 'month');
   Router.navigate({ type: 'calendar', wsId: ws.id, query: view !== 'month' ? { cal: view } : {} });
 }
 function closeCalendar() {
@@ -10710,11 +10732,12 @@ function cycleViewMode() {
 // the shared context-menu chrome so it stays consistent across the 13 themes.
 function openLayoutMenu(btn) {
   const cur = getViewMode();
-  const items = [{ label: 'View' }];
+  const items = [{ label: tr('action.switchLayout') }];
   LAYOUT_ORDER.filter(m => LAYOUTS[m]).forEach(m => {
     const def = LAYOUTS[m];
+    if (m === LAYOUT_ORDER.filter(v => v !== 'board' && v !== 'list')[0]) items.push({ label: tr('ux.advancedViews') });
     items.push({
-      text: def.label,
+      text: m === 'board' ? tr('ux.boardView') : m === 'list' ? tr('ux.listView') : def.label,
       icon: def.icon,
       sub: m === cur ? '✓' : '',
       action: () => setViewMode(m),
@@ -10790,6 +10813,27 @@ const PAL_ICONS = Object.freeze({
 
 function _palModKey() {
   return /Mac|iPhone|iPad/.test(navigator.platform || '') ? '⌘' : 'Ctrl';
+}
+
+async function openSaveTabMenu(btn) {
+  if (!activeCat()) { openModal('new-cat'); return; }
+  btn?.setAttribute('aria-busy', 'true');
+  try {
+    const tabs = (await chrome.tabs.query({ currentWindow: true }))
+      .filter(tab => tab.url && !isProto(tab.url));
+    if (!btn?.isConnected) return;
+    const rect = btn.getBoundingClientRect();
+    const items = [{ label: tr('ux.destination', { space: activeCat().name }) }];
+    if (!tabs.length) { toast(tr('ux.noTabs')); return; }
+    tabs.forEach(tab => items.push({
+      text: tab.title || dispUrl(tab.url), sub: dispUrl(tab.url),
+      action: async () => {
+        if (await saveTabToInbox(tab)) openInboxView();
+      },
+    }));
+    showContextMenu(rect.left, rect.bottom + 6, items, { focusFirst: true });
+  } catch { toast(tr('ux.tabError'), { danger: true }); }
+  finally { btn?.removeAttribute('aria-busy'); }
 }
 
 async function _palSaveActiveTab() {
@@ -11223,6 +11267,22 @@ function openAppMenu(btn) {
   const pending = _pendingReminderCount;
   const items = [
     { label: ws ? ws.name : 'Locus' },
+    ...['favorites', 'read-later', 'archive', 'trash'].map(mode => ({
+      text: tr({ favorites: 'nav.favorites', 'read-later': 'nav.readLater', archive: 'nav.archive', trash: 'nav.trash' }[mode]),
+      action: () => openLibrarySurface(mode),
+    })),
+    { text: tr('ux.openTabs'), action: () => {
+      State.get().settings.railCollapsed = false; applySettings(); State.persist();
+      document.getElementById('tab-filter')?.focus();
+    } },
+    { text: tr('action.undo'), action: () => document.getElementById('undo-btn').click() },
+    { text: tr('action.saveAllTabs'), action: saveAllTabs },
+    { text: tr('palette.createNote'), action: _palCreateNote },
+    ...(!(activeHome || activeSearch || activeLibraryMode || activeCalendar) ? [
+      { text: tr('action.selectionMode'), action: toggleSelectMode },
+      { text: tr('action.reorderMode'), action: toggleReorderMode },
+    ] : []),
+    { sep: true },
     { text: tr('menu.settings'), icon: APP_MENU_ICONS.settings, action: () => openSettingsDrawer() },
     { text: tr('menu.plugins'), icon: APP_MENU_ICONS.plugins, action: () => openToolsHub() },
     { text: tr('menu.calendar'), icon: APP_MENU_ICONS.calendar, sub: pending > 0 ? String(pending) : '', action: () => { if (!activeCalendar) openCalendar(); } },
@@ -11349,9 +11409,20 @@ function setupOpenTabsDropToOpen() {
     openTabMaybeHibernated(item.url, { focus: true }).catch(() => toast('Could not open tab', { danger: true }));
   }, true);
 }
-function openToolsHub() { document.getElementById('tools-hub').classList.remove('hidden'); }
-function closeToolsHub() { document.getElementById('tools-hub').classList.add('hidden'); }
+function openToolsHub() {
+  const ov = document.getElementById('tools-hub');
+  rememberOpener(ov); ov.classList.remove('hidden'); lockBodyScroll(); focusFirstIn(ov);
+}
+function closeToolsHub() {
+  const ov = document.getElementById('tools-hub');
+  if (ov.classList.contains('hidden')) return;
+  ov.classList.add('hidden'); unlockBodyScroll(); restoreOpener(ov);
+}
 function bindToolsHub() {
+  document.getElementById('tools-hub').addEventListener('keydown', e => {
+    trapTabKey(e, e.currentTarget);
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeToolsHub(); }
+  });
   document.getElementById('plugins-btn').onclick = openToolsHub;
   document.getElementById('hub-close').onclick = closeToolsHub;
   document.getElementById('tools-hub').addEventListener('click', e => { if (e.target.id === 'tools-hub') closeToolsHub(); });
@@ -12811,144 +12882,46 @@ function ensureOnboarding(settings) {
   return s.onboarding;
 }
 
-// ── Welcome questionnaire (first-run onboarding) ────────────────────
-// A short, animated setup flow that asks name / purpose / workflow / plugins
-// and persists the answers to settings.profile + settings.plugins. Shown
-// automatically only on first launch (gated by onboarding.welcomeSeen) and
-// re-openable on demand from the app menu / Settings — returning users are
-// never auto-prompted again.
-const WELCOME_STEPS = 6;
-const WELCOME_PLUGIN_KEYS = ['pomodoro', 'finance', 'habits', 'books', 'goals', 'water'];
-let wcIndex = 0;
-let wcAnswers = { name: '', purpose: '', workflow: '', plugins: [] };
-
+// One task welcome. Existing profile, layouts and plugin choices are untouched.
 function openWelcome() {
   const ov = document.getElementById('welcome');
   if (!ov) return;
-  wcIndex = 0;
-  const s = State.get().settings;
-  const prof = s.profile || {};
-  const ws = activeWs();
-  wcAnswers = {
-    name: prof.name || (ws && ws.name && ws.name !== 'My Workspace' ? ws.name : ''),
-    purpose: prof.purpose || '',
-    workflow: prof.workflow || '',
-    plugins: s.plugins ? WELCOME_PLUGIN_KEYS.filter(k => s.plugins[k]) : [],
-  };
-  const dots = document.getElementById('wc-dots');
-  dots.innerHTML = Array.from({ length: WELCOME_STEPS }, () => '<span class="wc-dot"></span>').join('');
+  closeLandingLayer({ immediate: true });
   rememberOpener(ov);
   ov.classList.remove('hidden');
   lockBodyScroll();
-  wcShow(0);
+  focusFirstIn(ov);
 }
 
 function closeWelcome() {
   const ov = document.getElementById('welcome');
-  if (!ov) return;
+  if (!ov || ov.classList.contains('hidden')) return;
   ov.classList.add('hidden');
   unlockBodyScroll();
-  restoreOpener(ov);
-  // Mark first-run onboarding as seen no matter how it's dismissed, so it never
-  // auto-reappears for a returning user.
   const s = State.get().settings;
   ensureOnboarding(s).welcomeSeen = true;
   s.tourCompleted = true;
+  _landingAfterWelcome = false;
   State.persist();
-  // First-run only: the landing was deferred while the questionnaire ran —
-  // reveal it now, greeting with whatever name was just entered.
-  if (_landingAfterWelcome) { _landingAfterWelcome = false; showLandingLayer(); }
-}
-
-function wcShow(i) {
-  wcIndex = Math.max(0, Math.min(WELCOME_STEPS - 1, i));
-  document.querySelectorAll('#welcome .wc-step').forEach(sec => {
-    const active = Number(sec.dataset.step) === wcIndex;
-    sec.classList.toggle('hidden', !active);
-    if (active) { sec.classList.remove('wc-in'); void sec.offsetWidth; sec.classList.add('wc-in'); }
-  });
-  const fill = document.getElementById('wc-progress-fill');
-  if (fill) fill.style.width = (wcIndex / (WELCOME_STEPS - 1)) * 100 + '%';
-  document.querySelectorAll('#wc-dots .wc-dot').forEach((d, idx) => d.classList.toggle('active', idx === wcIndex));
-  wcSyncSelections();
-  const next = document.getElementById('wc-next');
-  const skip = document.getElementById('wc-skip');
-  next.textContent = wcIndex === 0 ? "Let's go" : wcIndex === WELCOME_STEPS - 1 ? 'Start using Locus' : 'Continue';
-  skip.style.visibility = wcIndex === WELCOME_STEPS - 1 ? 'hidden' : 'visible';
-  if (wcIndex === 1) {
-    const n = document.getElementById('wc-name');
-    setTimeout(() => { n.value = wcAnswers.name; n.focus(); n.select(); }, 80);
-  } else {
-    setTimeout(() => next.focus(), 80);
-  }
-  if (wcIndex === WELCOME_STEPS - 1) {
-    document.getElementById('wc-done-name').textContent = wcAnswers.name ? ', ' + wcAnswers.name : '';
-  }
-}
-
-function wcSyncSelections() {
-  document.querySelectorAll('#welcome .wc-choices').forEach(group => {
-    const field = group.dataset.field;
-    const multi = group.dataset.multi === 'true';
-    group.querySelectorAll('.wc-chip').forEach(chip => {
-      const on = multi ? wcAnswers.plugins.includes(chip.dataset.val) : wcAnswers[field] === chip.dataset.val;
-      chip.classList.toggle('on', on);
-      chip.setAttribute('aria-pressed', on ? 'true' : 'false');
-    });
-  });
-}
-
-function wcNext() {
-  if (wcIndex === 1) { const n = document.getElementById('wc-name'); wcAnswers.name = (n.value || '').trim(); }
-  if (wcIndex >= WELCOME_STEPS - 1) { finishWelcome(); return; }
-  wcShow(wcIndex + 1);
-}
-
-function finishWelcome() {
-  const s = State.get().settings;
-  State.snapshot('Onboarding');
-  s.profile = { name: wcAnswers.name, purpose: wcAnswers.purpose, workflow: wcAnswers.workflow };
-  s.plugins = {};
-  WELCOME_PLUGIN_KEYS.forEach(k => { s.plugins[k] = wcAnswers.plugins.includes(k); });
-  // Real, visible effects: the profile name drives the greeting without
-  // renaming the workspace, and the workflow choice sets the default layout.
-  if (wcAnswers.workflow && typeof LAYOUTS !== 'undefined' && LAYOUTS[wcAnswers.workflow]) s.viewMode = wcAnswers.workflow;
-  closeWelcome();
-  try { renderAll(); } catch {}
-  toast(wcAnswers.name ? `You're all set, ${wcAnswers.name}` : "You're all set");
+  restoreOpener(ov);
 }
 
 function bindWelcome() {
   const ov = document.getElementById('welcome');
   if (!ov) return;
-  document.getElementById('wc-next').onclick = wcNext;
-  document.getElementById('wc-skip').onclick = closeWelcome;
-  ov.querySelectorAll('.wc-choices').forEach(group => {
-    const multi = group.dataset.multi === 'true';
-    const field = group.dataset.field;
-    group.querySelectorAll('.wc-chip').forEach(chip => {
-      chip.onclick = () => {
-        const v = chip.dataset.val;
-        if (multi) {
-          const idx = wcAnswers.plugins.indexOf(v);
-          if (idx >= 0) wcAnswers.plugins.splice(idx, 1); else wcAnswers.plugins.push(v);
-          wcSyncSelections();
-        } else {
-          wcAnswers[field] = wcAnswers[field] === v ? '' : v;
-          wcSyncSelections();
-          // Single-select fields glide forward on their own so the flow feels
-          // quick, but never past the last question.
-          if (wcAnswers[field] && wcIndex < WELCOME_STEPS - 1) setTimeout(() => wcShow(wcIndex + 1), 230);
-        }
-      };
-    });
-  });
-  const nameInput = document.getElementById('wc-name');
-  if (nameInput) nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); wcNext(); } });
+  document.getElementById('wc-next').onclick = () => {
+    closeWelcome();
+    goHome();
+    const save = document.getElementById('save-tab-btn');
+    save?.focus();
+    openSaveTabMenu(save);
+  };
+  document.getElementById('wc-skip').onclick = () => { closeWelcome(); goHome(); };
   ov.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { e.preventDefault(); closeWelcome(); }
-    else if (e.key === 'ArrowRight' && wcIndex < WELCOME_STEPS - 1 && document.activeElement !== nameInput) { e.preventDefault(); wcShow(wcIndex + 1); }
-    else if (e.key === 'ArrowLeft' && wcIndex > 0 && document.activeElement !== nameInput) { e.preventDefault(); wcShow(wcIndex - 1); }
+    trapTabKey(e, ov);
+    if (e.key === 'Escape') {
+      e.preventDefault(); e.stopPropagation(); closeWelcome();
+    }
   });
 }
 
@@ -13181,6 +13154,10 @@ function bindStatic() {
 
   // ── Sidebar smart views ──
   document.getElementById('nav-home').onclick = goHome;
+  const navMore = document.getElementById('nav-more');
+  if (navMore) navMore.onclick = e => openAppMenu(e.currentTarget);
+  const saveTab = document.getElementById('save-tab-btn');
+  if (saveTab) saveTab.onclick = e => openSaveTabMenu(e.currentTarget);
   document.getElementById('nav-search').onclick = () => openSearchSurface();
   document.getElementById('nav-all').onclick = () => openLibrarySurface('all');
   document.getElementById('nav-favorites').onclick = () => openLibrarySurface('favorites');
@@ -13195,6 +13172,13 @@ function bindStatic() {
     State.get().settings.railCollapsed = !State.get().settings.railCollapsed;
     applySettings(); State.persist();
   };
+  document.getElementById('tabrail')?.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !State.get().settings.railCollapsed) {
+      e.preventDefault(); e.stopPropagation();
+      State.get().settings.railCollapsed = true; applySettings(); State.persist();
+      document.getElementById('nav-more')?.focus();
+    }
+  });
   const railSaveAll = document.getElementById('rail-saveall');
   if (railSaveAll) railSaveAll.onclick = saveAllTabs;
 
@@ -13487,10 +13471,7 @@ function bindStatic() {
   setupDragAutoScroll();
   setupOpenTabsDropToOpen();
 
-  // Onboarding — an animated setup questionnaire on first run only, the rest
-  // taught just-in-time. bindTour() still wires the legacy spotlight tour (kept
-  // for the JIT coach-marks + any deep-links), but first-run now opens the
-  // welcome questionnaire.
+  // One-task welcome on first run; retain legacy tour bindings for compatibility.
   bindTour();
   bindWelcome();
   if (!ensureOnboarding(State.get().settings).welcomeSeen) {
@@ -13526,14 +13507,11 @@ function bindStatic() {
   // Restore any floating widgets from previous session
   renderFloatingWidgets();
 
-  // Once the board has settled, surface a one-time hint about the layout
-  // switcher — the JIT replacement for the old tour steps. Skipped while the
-  // welcome is still up (welcomeSeen gates it), so it never stacks.
-  setTimeout(() => coachMark('layout', '#view-mode-btn',
-    'More ways to look', 'Switch the same links between board, list, canvas, explorer, and timeline. Each category remembers its own layout.'), 1800);
+
 }
 
 // ════════════════════════════════════════════════════════════════
 // BOOT
 // ════════════════════════════════════════════════════════════════
 init();
+
