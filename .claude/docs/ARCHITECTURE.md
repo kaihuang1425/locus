@@ -80,7 +80,7 @@ pre-paint inline script in newtab.html (prevents theme flash). Keep both in sync
 | Search + operators | `renderSearchSurface`, `collectWorkspaceItems`, `searchItemMatches`, `applySearchFilter`, operators `type: is: domain: site: url: in: tag: color:` with `-` negation |
 | Command palette | `openCommandPalette`, `buildPaletteCommands`, `_palSavedLinkCommand` |
 | Shared empty states | `buildSystemEmptyState`, `buildEmptySpaceState`, `SYSTEM_EMPTY_ICONS` |
-| App menu / About / Welcome | `openAppMenu`, `openAbout`, `openWelcome`, `wcShow` |
+| App menu / About / Welcome | `openAppMenu`, `openAbout`, `openWelcome`, `bindWelcome` |
 | Tools hub (plugins) | `openToolsHub`, overlays `pomo/fin/habit/water/books/goals/workout/subs` |
 | All bindings | `function init()` at the bottom — global Escape handler + `_escBlockers` list |
 
@@ -93,8 +93,11 @@ else the active category board. The settings
 page (`#settings-drawer`) and tools overlays sit above as fixed overlays. Router
 syncs hash routes so surfaces survive reload/back.
 
-`#landing-layer` is the default new-tab launch view when
-`settings.showLanding !== false`. It is a fixed layer above Home, not a router
+`#landing-layer` is the optional new-tab launch view when
+`settings.showLanding !== false`. New profiles default this to false and collapse
+the opened-tabs rail; State.load preserves legacy defaults and explicit settings.
+Welcome is now a single capture task and never hands off to the landing layer.
+The landing layer is a fixed layer above Home, not a router
 surface: Escape, the chevron, or downward wheel motion dismiss it for the current
 page and reveal the already-rendered Home. Its counts come from the active
 category's Inbox and `collectReminders()`. Saved-link typeahead reads
@@ -152,3 +155,4 @@ in newtab.css; rail folds to a top strip below 880px.
 - Category home-card icons map names → bundled art in
   `media/locus_icons_one_folder_badge_nobg/set1-<name>-{light,dark}.png`
   (`homeCardIconName`).
+
