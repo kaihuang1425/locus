@@ -3,7 +3,7 @@
 **Living document — update it at the end of every cycle**: move the shipped slice to
 "Done", re-rank the queue, add discoveries to "Known issues". Trust but verify: if
 this file and the code disagree, the code wins (then fix this file).
-Last updated: 2026-07-13.
+Last updated: 2026-09-08.
 
 ## Queue (highest impact first)
 
@@ -17,6 +17,21 @@ Last updated: 2026-07-13.
    quality vary. Audit the highest-friction layout first, then re-rank the rest from
    rendered evidence rather than treating all six as one rewrite. Keep layouts
    under Advanced views until each passes the core-ready gate.
+
+## Implemented, awaiting rendered extension review
+
+- **2026-09-08 — First-use, shell and Home correction** — one-task welcome,
+  explicit live-tab capture destination, durable save before close-after-save,
+  stable core navigation plus More, compact Inbox/Space Home, multiline card titles
+  and visible action rows, sparse Calendar → Agenda, keyboard-safe tools modal,
+  and bounded scrollable menus. Fresh profiles start on Home with opened tabs
+  collapsed; existing profile/layout/plugin choices and legacy defaults survive.
+  See `docs/DESIGN_FIX_2026-09.md` for contracts and scope.
+  Static syntax and duplicate-ID checks plus the local full-source VM regression
+  harness pass. No browser executable is available in this environment: rendered
+  light/dark, 800px layout, full extension reload/capture and representative
+  usability checks remain required. This is implementation evidence, not a passed
+  core-ready or usability gate.
 
 ## Done (newest first)
 
@@ -175,3 +190,4 @@ Last updated: 2026-07-13.
   fine (isolated), but never link it from the product.
 - Sample/first-run seed data: the default state ships a few starter todos/notes —
   that's the intended first-run content, not demo debt.
+
