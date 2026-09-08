@@ -366,3 +366,21 @@ differentiator we can market honestly.
   Rendered verification covered light/dark, reduced motion, en/zh-TW, zero/no-match
   states, real note creation, and Archive-to-Trash recovery. No new schema field,
   permission, remote dependency, or fabricated data source was added.
+
+
+
+### 2026-09-08 — Core capture and navigation correction
+
+- Replaced the preference questionnaire with one welcome task; removed the chained
+  landing handoff and unsolicited launch-time layout hint. Existing profile,
+  plugin, layout and landing preferences remain intact.
+- Added a real tab picker with Space → Inbox destination, duplicate handling,
+  visible error states, and storage confirmation before closing the source tab.
+- Consolidated secondary navigation under More; Home now presents a compact
+  greeting, active Inbox and up to three Spaces with an explicit View all control.
+- Moved tab-card actions onto their own visible row, kept titles multiline,
+  improved menu bounds, keyboard focus and tools-modal focus return. Sparse
+  Calendar opens in Agenda; alternate layouts remain reachable.
+- Validation: syntax, duplicate IDs and full-source VM capture/preference/welcome
+  checks pass. Rendered extension checks remain pending (no browser executable).
+  No schema, permissions, runtime network access or stored item format changes.
