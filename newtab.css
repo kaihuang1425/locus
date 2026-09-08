@@ -7476,3 +7476,69 @@ body[data-anim="off"] .cmdp-box { animation: none; }
 @media (prefers-reduced-motion: reduce) {
   [data-theme="folio"] .gcol:hover { transform: none; }
 }
+
+
+/* September 2026: one capture loop, stable navigation, readable content. */
+#topbar #undo-btn, #topbar #search-btn, #topbar #settings-btn,
+#topbar #plugins-btn, #topbar .topbar-divider, .side-footer .priv-card { display: none; }
+#topbar { gap: 16px; }
+#topbar .tb-left { min-width: 0; flex: 1; }
+#topbar .tb-right { flex-shrink: 0; gap: 8px; }
+#save-tab-btn { white-space: nowrap; min-height: 36px; padding: 8px 14px; }
+#topbar-search { min-width: 100px; }
+#nav-views { flex-shrink: 0; }
+#space-nav { min-height: 100px; }
+.space-item { flex-shrink: 0; min-height: 38px; }
+.space-item .space-name { white-space: normal; overflow-wrap: anywhere; line-height: 1.4; }
+.home-intro { padding: 8px 0 16px; }
+.home-intro .home-greeting { font-size: clamp(24px, 2.5vw, 32px); }
+.home-intro p, .home-capture p { color: var(--text2); line-height: 1.6; margin-top: 8px; }
+.home-capture { display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  padding: 22px; margin-bottom: 28px; border: 1px solid var(--border); border-radius: 16px; background: var(--bg2); }
+.home-capture h2, .home-spaces h2 { font: 600 16px var(--font); color: var(--text); overflow-wrap: anywhere; }
+.home-capture button { flex-shrink: 0; }
+.home-spaces-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.home-spaces .home-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.home-space-card { display: flex; align-items: center; gap: 12px; padding: 18px; min-width: 0;
+  text-align: left; color: var(--text); background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; }
+.home-space-card[hidden] { display: none; }
+.home-space-card:hover { border-color: var(--accent); background: var(--bg3); }
+.home-space-card strong { display: block; font: 600 14px var(--font); overflow-wrap: anywhere; }
+.home-space-card small { display: block; color: var(--text2); font: 12px var(--font); margin-top: 5px; }
+.home-space-symbol { font-size: 24px; flex-shrink: 0; }
+.item.tab .item-top { display: grid; grid-template-columns: 16px minmax(0, 1fr); }
+.item.tab .item-title { white-space: normal; overflow: visible; -webkit-line-clamp: unset; }
+.item.tab .item-acts { grid-column: 2; justify-self: end; opacity: 1; }
+.item:focus-within .item-acts, .item:focus-within .item-acts-vert { opacity: 1; }
+.item.tab .item-btn { width: 28px; height: 28px; }
+.item.tab:hover, .item.tab:hover .item-fav { transform: none; }
+.rem-badge { position: static; width: fit-content; margin: 0 0 6px auto; animation: none; }
+.home-space-card:focus-visible, #save-tab-btn:focus-visible, .item-btn:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 3px;
+}
+#welcome .wc-card { max-width: 480px; }
+#welcome .wc-nav { justify-content: flex-start; flex-wrap: wrap; gap: 12px; }
+@media (max-width: 1040px) {
+  #topbar { gap: 8px; }
+  #topbar-search { max-width: 180px; }
+  #tabrail:not(.collapsed) { display: flex; position: fixed; right: 0; top: 0; bottom: 0;
+    width: min(320px, 85vw); z-index: 90; box-shadow: -8px 0 30px rgba(0,0,0,.15); }
+  #tabrail:not(.collapsed) .rail-hd, #tabrail:not(.collapsed) .rail-footer { display: block; }
+  #tabrail:not(.collapsed) #open-tabs { display: block; }
+  #tabrail:not(.collapsed) .rail-toggle { transform: none; }
+}
+@media (max-width: 820px) {
+  #topbar { flex-wrap: wrap; }
+  #topbar .tb-left { flex-basis: 35%; }
+  #topbar-search { flex: 1; }
+  .home-capture { align-items: flex-start; flex-direction: column; padding: 16px; }
+}
+@media (hover: none) { .item-acts, .item-acts-vert { opacity: 1; } }
+/* Long tab titles and large windows must remain reachable in the shared menu. */
+#context-menu { max-width: min(440px, calc(100vw - 16px)); max-height: calc(100vh - 16px); overflow-y: auto; }
+.cm-item { white-space: normal; overflow-wrap: anywhere; }
+.cm-item > span:first-of-type { min-width: 0; }
+.cm-item .cm-sub { max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 0; }
+.cm-item:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; background: var(--bg3); }
+/* Organise actions now share the same overflow as settings and secondary views. */
+#topbar #more-btn { display: none; }
