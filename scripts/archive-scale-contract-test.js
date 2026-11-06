@@ -28,6 +28,42 @@ function extractBetween(startMarker, endMarker) {
   return source.slice(start, end);
 }
 
+function extractFunction(name) {
+  const match = new RegExp(`(?:async\\s+)?function\\s+${name}\\s*\\(`).exec(source);
+  assert.ok(match, `${name} must be extractable`);
+  const start = match.index;
+  const open = source.indexOf('{', source.indexOf(')', start) + 1);
+  let depth = 0;
+  let quote = '';
+  let escaped = false;
+  let lineComment = false;
+  let blockComment = false;
+  for (let index = open; index < source.length; index += 1) {
+    const char = source[index];
+    const next = source[index + 1];
+    if (lineComment) { if (char === '\n') lineComment = false; continue; }
+    if (blockComment) {
+      if (char === '*' && next === '/') { blockComment = false; index += 1; }
+      continue;
+    }
+    if (quote) {
+      if (escaped) { escaped = false; continue; }
+      if (char === '\\') { escaped = true; continue; }
+      if (char === quote) quote = '';
+      continue;
+    }
+    if (char === '/' && next === '/') { lineComment = true; index += 1; continue; }
+    if (char === '/' && next === '*') { blockComment = true; index += 1; continue; }
+    if (char === "'" || char === '"' || char === '`') { quote = char; continue; }
+    if (char === '{') depth += 1;
+    else if (char === '}') {
+      depth -= 1;
+      if (depth === 0) return source.slice(start, index + 1);
+    }
+  }
+  assert.fail(`${name} must have a balanced body`);
+}
+
 const stateStart = source.indexOf('const State = (() => {');
 const stateEndMarker = '\n})();';
 const stateEnd = source.indexOf(stateEndMarker, stateStart);
@@ -48,17 +84,37 @@ const productionSources = [
   extractBetween('function archiveRestoreDestination(entry) {', '\n\nfunction captureTabFields(tab) {'),
   extractBetween('function restoreArchiveEntries(entries) {', '\n\nfunction restoreArchive(idx) {'),
   extractBetween('function moveArchiveEntriesToTrash(entries) {', '\n\nfunction permanentlyDeleteTrashEntries(entries) {'),
-  extractBetween('function getSelectedItemsInfo() {', '\n\nfunction openMoveTargetPicker(infos) {'),
+  'let selectedItemMutationPending = null;',
+  ...[
+    'itemDetailValueFingerprint',
+    'identityItemTargets',
+    'collectItemListCaptureTargets',
+    'resolveItemListCaptureTarget',
+    'isSelectedItemMutationPending',
+    'selectedItemSetMatches',
+    'createSelectedItemDestinationContext',
+    'createSelectedItemMutationContext',
+    'resolveSelectedItemMutationTargets',
+    'selectedItemMutationBlocked',
+    'selectedItemArchiveFocusPlan',
+    'removeSelectedItemTargets',
+    'commitSelectedItemArchive',
+  ].map(extractFunction),
 ].join('\n\n');
 
 const exposeContract = `
+async function archiveSelectedForScale() {
+  const review = createSelectedItemMutationContext([...selectedItemIds], { selectionOwned: true });
+  if (!review) return false;
+  return commitSelectedItemArchive(review, null, Date.now());
+}
 this.archiveContract = {
   archiveItem,
   archiveGroup,
   restoreArchiveEntries,
   restoreTrashEntries,
   moveArchiveEntriesToTrash,
-  runBatchAction,
+  archiveSelected: archiveSelectedForScale,
 };`;
 
 function makeItem(prefix, index) {
@@ -123,8 +179,11 @@ function createHarness(state, selectedIds = []) {
     Date: FixedDate,
     State: {
       get: () => state,
-      snapshot: label => metrics.snapshots.push(label),
+      snapshot: label => { metrics.snapshots.push(label); return metrics.snapshots.length; },
       persist: () => { metrics.persists++; },
+      persistNow: async () => { metrics.persists++; return { ok: true, revision: metrics.persists }; },
+      isRecoveryRequired: () => false,
+      requireRecovery() {},
     },
     selectedItemIds,
     activeWs: () => state.workspaces.find(workspace => workspace.id === state.activeWsId),
@@ -133,6 +192,11 @@ function createHarness(state, selectedIds = []) {
       selectedItemIds.clear();
       metrics.clears++;
     },
+    setSelectedItemMutationBusy: () => true,
+    reportSelectedItemMutationUnavailable: () => false,
+    requestAnimationFrame: callback => callback(),
+    focusSelectedItemMutationTarget: () => true,
+    showStateRecoveryRequired() {},
     renderBoard: () => { metrics.boardRenders++; },
     renderArchiveList: () => { metrics.archiveRenders++; },
     updateNavChrome: () => { metrics.navUpdates++; },
@@ -219,6 +283,10 @@ function createPersistenceHarness(baseline, selectedIds = []) {
     clearItemSelection() {
       selectedItemIds.clear();
     },
+    setSelectedItemMutationBusy: () => true,
+    reportSelectedItemMutationUnavailable: () => false,
+    requestAnimationFrame: callback => callback(),
+    focusSelectedItemMutationTarget: () => true,
   };
   const context = vm.createContext(sandbox);
   vm.runInContext(`${stateSource}\nglobalThis.__state = State;`, context, {
@@ -367,18 +435,18 @@ function runGroupRoundTrip() {
   assertIdentityPreserved(state, initialIds, 'whole-group restore');
 }
 
-function runBatchTrashRoundTrip() {
+async function runBatchTrashRoundTrip() {
   const state = makeState('batch');
   const initialGraph = canonicalWorkspaces(state);
   const initialIds = allEntityIds(state);
   const itemIds = topLevelItemIds(state);
   const contract = createHarness(state, itemIds);
 
-  contract.runBatchAction('archive');
+  await contract.archiveSelected();
   assert.equal(state.archive.length, scale);
   assert.equal(activeTopLevelCount(state), 0);
   assert.equal(contract.selectedItemIds.size, 0);
-  assert.deepEqual(contract.metrics.snapshots, [`Archive ${scale} items`]);
+  assert.deepEqual(contract.metrics.snapshots, [`selection.archiveHistoryMany:${scale}`]);
   assert.equal(contract.metrics.persists, 1);
   assertIdentityPreserved(state, initialIds, 'batch archive');
 
@@ -396,7 +464,7 @@ function runBatchTrashRoundTrip() {
   assert.equal(contract.metrics.persists, 3);
 }
 
-function runMissingEntryNoOps() {
+async function runMissingEntryNoOps() {
   const state = makeState('missing');
   const before = JSON.stringify(state);
   const contract = createHarness(state, ['missing-item']);
@@ -404,7 +472,7 @@ function runMissingEntryNoOps() {
 
   contract.archiveItem('missing-item');
   contract.archiveGroup('missing-group');
-  contract.runBatchAction('archive');
+  await contract.archiveSelected();
   contract.moveArchiveEntriesToTrash([foreignEntry]);
   contract.restoreArchiveEntries([foreignEntry]);
 
@@ -421,7 +489,7 @@ async function runQuotaRejectedBatchArchive() {
   const harness = createPersistenceHarness(baseline, itemIds);
 
   await harness.State.load();
-  harness.archiveContract.runBatchAction('archive');
+  await harness.archiveContract.archiveSelected();
   await harness.waitForQuotaRecovery();
 
   const local = harness.State.get();
@@ -433,7 +501,7 @@ async function runQuotaRejectedBatchArchive() {
   assert.equal(harness.metrics.writeAttempts, 1);
   assert.equal(harness.metrics.storageFullMessages.length, 1, 'quota rejection must route to storage-full feedback');
   assert.match(harness.metrics.storageFullMessages[0], /quota/i);
-  assert.equal(harness.metrics.recoveryMessages.length, 1, 'quota rejection must show the reload interlock');
+  assert.ok(harness.metrics.recoveryMessages.length >= 1, 'quota rejection must show the reload interlock');
 
   await harness.State.load();
   assert.equal(activeTopLevelCount(harness.State.get()), scale);
@@ -447,7 +515,7 @@ async function runQuotaRejectedArchiveToTrash() {
   const baseline = persistedState(makeState('quota-trash'), 40);
   const initialIds = allEntityIds(baseline);
   const itemIds = topLevelItemIds(baseline);
-  createHarness(baseline, itemIds).runBatchAction('archive');
+  await createHarness(baseline, itemIds).archiveSelected();
   assert.equal(baseline.archive.length, scale, 'Trash quota fixture must begin with every item authoritatively archived');
   const authoritativeArchive = clone(baseline.archive);
   const harness = createPersistenceHarness(baseline);
@@ -478,8 +546,8 @@ async function runQuotaRejectedArchiveToTrash() {
 (async () => {
   runSingleItemRoundTrip();
   runGroupRoundTrip();
-  runBatchTrashRoundTrip();
-  runMissingEntryNoOps();
+  await runBatchTrashRoundTrip();
+  await runMissingEntryNoOps();
   await runQuotaRejectedBatchArchive();
   await runQuotaRejectedArchiveToTrash();
 

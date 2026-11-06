@@ -512,10 +512,12 @@ function testStaticBoundaryAndWiring() {
   const radioPaint = extractFunction('paintOrganizationMoveOptions');
 
   assert.doesNotMatch(source, /\bmoveGroupToCategory\b/, 'The direct debounced move path must stay removed');
-  assert.match(extractFunction('buildGroupCol'), /organizationGroupMoveMenuItems\(g\.id,\s*opener\)/, 'Board and focused Group must use the shared move menu');
+  const groupActions = extractFunction('groupActionMenuItems');
+  assert.match(extractFunction('buildGroupCol'), /groupActionMenuItems\(g,\s*opener,/, 'Board and focused Group must use the shared Group action model');
   const list = extractFunction('buildLvGroup');
-  assert.match(list, /organizationGroupMoveMenuItems\(g\.id,\s*(?:btn|toggleButton)\)/, 'List must use the shared move menu');
-  assert.match(list, /const rect = btn\.getBoundingClientRect\(\);[\s\S]*?showContextMenu\(rect\.left,\s*rect\.bottom \+ 6,/, 'List More must anchor its menu to the activating button');
+  assert.match(list, /groupActionMenuItems\(g,\s*opener,/, 'List must use the shared Group action model');
+  assert.match(list, /bindBoardItemContextMenu\(hd,\s*groupMenuItems,\s*\{ menuButton \}\)/, 'List More and keyboard context entry must anchor through the activating opener');
+  assert.match(groupActions, /organizationGroupMoveMenuItems\(identity\.group\.id,\s*opener\)/, 'the shared Group action model must use the shared move menu');
   assert.match(menu, /openOrganizationGroupMove\(source\.group\.id,\s*opener\)/, 'Existing-Space move must retain only the stable Group ID and opener at entry');
   assert.match(menu, /openOrganizationCreate\('space',\s*\{\s*groupId:\s*source\.group\.id\s*\},\s*opener\)/, 'New-Space move must remain on the creation transaction');
   assert.doesNotMatch(menu + open + confirm, /\bprompt\s*\(|\bconfirm\s*\(/, 'Group move must not use native prompt or confirm dialogs');

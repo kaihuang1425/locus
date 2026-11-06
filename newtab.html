@@ -30,10 +30,10 @@
         <span>Locus</span>
       </div>
       <div class="landing-actions">
-        <button id="landing-tools" class="landing-icon-btn" type="button" data-i18n-title="action.plugins" aria-label="Plugins" data-i18n-aria-label="action.plugins">
+        <button id="landing-tools" class="landing-icon-btn" type="button" hidden data-i18n-title="action.plugins" aria-label="Plugins" data-i18n-aria-label="action.plugins">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><circle cx="4" cy="4" r="1.6"/><circle cx="10" cy="4" r="1.6"/><circle cx="16" cy="4" r="1.6"/><circle cx="4" cy="10" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="16" cy="10" r="1.6"/><circle cx="4" cy="16" r="1.6"/><circle cx="10" cy="16" r="1.6"/><circle cx="16" cy="16" r="1.6"/></svg>
         </button>
-        <button id="landing-menu" class="landing-avatar" type="button" aria-label="Menu" data-i18n-aria-label="action.menu" aria-haspopup="menu">
+        <button id="landing-menu" class="landing-avatar" type="button" aria-label="Menu" data-i18n-aria-label="action.menu" aria-haspopup="menu" aria-expanded="false">
           <span id="landing-avatar-face">L</span>
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 4.5L6 7.5l3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
@@ -42,11 +42,11 @@
 
     <div class="landing-center">
       <h1 id="landing-greeting"></h1>
-      <p data-i18n="landing.subtitle">Where will your focus take you today?</p>
+      <p data-i18n="landing.subtitle">Find what you saved and pick up where you left off.</p>
       <form id="landing-search-form" class="landing-search" role="search">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M15.5 15.5L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        <input id="landing-search-input" type="search" autocomplete="off" aria-autocomplete="list" aria-controls="landing-search-results" data-i18n-placeholder="landing.searchPlaceholder" placeholder="Search the web or your saved links…">
-        <button id="landing-search-submit" type="submit" data-i18n-aria-label="landing.searchWeb" aria-label="Search the web">
+        <input id="landing-search-input" type="search" role="combobox" autocomplete="off" aria-label="Search saved work" data-i18n-aria-label="landing.searchSaved" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="landing-search-results" data-i18n-placeholder="landing.searchPlaceholder" placeholder="Search saved work…">
+        <button id="landing-search-submit" type="submit" data-i18n-aria-label="landing.searchSaved" aria-label="Search saved work">
           <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true"><path d="M4 11h13M12 5l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
         <div id="landing-search-results" class="landing-search-results hidden" role="listbox" aria-live="polite"></div>
@@ -63,14 +63,14 @@
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 6l4.5 4.5L12.5 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
       <div class="landing-chips">
-        <button id="landing-reminders" class="landing-chip landing-reminder-chip" type="button">
+        <button id="landing-reminders" class="landing-chip landing-reminder-chip" type="button" hidden>
           <svg width="17" height="17" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 1.7l1.1 3.2L13.3 6l-3.2 1.1L9 10.3 7.9 7.1 4.7 6l3.2-1.1L9 1.7zM14.2 10.4l.6 1.8 1.8.6-1.8.6-.6 1.8-.6-1.8-1.8-.6 1.8-.6.6-1.8z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
           <span id="landing-reminder-count">0</span>
           <span class="sr-only" data-i18n="landing.reminders">Reminders</span>
         </button>
         <button id="landing-unsorted" class="landing-chip landing-unsorted-chip" type="button">
-          <span data-i18n="landing.unsorted">Unsorted</span>
-          <b id="landing-unsorted-count">0</b>
+          <span data-i18n="nav.inbox">Inbox</span>
+          <b id="landing-unsorted-count" hidden>0</b>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 9.5L8 5l4.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
@@ -98,10 +98,15 @@
 
       <div id="ws-list" class="hidden"></div>
 
-      <nav id="nav-views" aria-label="Views">
+      <nav id="nav-views" aria-label="Views" data-i18n-aria-label="shell.views">
         <button class="nav-item" id="nav-home" data-i18n-aria-label="nav.home" aria-label="Home">
           <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 6.5L7.5 2l5 4.5V12a1 1 0 01-1 1h-2.6V9.4H6.1V13H3.5a1 1 0 01-1-1V6.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
           <span class="nav-lbl" data-i18n="nav.home">Home</span>
+        </button>
+        <button class="nav-item" id="nav-inbox" data-i18n-aria-label="nav.inbox" aria-label="Inbox">
+          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 8.5l1.4-5A1 1 0 014.4 2.7h6.2a1 1 0 011 .8l1.4 5v3a1 1 0 01-1 1H3a1 1 0 01-1-1v-3z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M2 8.5h3.4a2.1 2.1 0 004.2 0H13" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+          <span class="nav-lbl" data-i18n="nav.inbox">Inbox</span>
+          <span class="nav-count" id="nav-inbox-count"></span>
         </button>
         <button class="nav-item" id="nav-all" data-i18n-aria-label="nav.allLinks" aria-label="All Links">
           <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M6.2 8.8a2.4 2.4 0 003.4 0l2.5-2.5a2.4 2.4 0 10-3.4-3.4l-1 1M8.8 6.2a2.4 2.4 0 00-3.4 0L2.9 8.7a2.4 2.4 0 103.4 3.4l1-1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
@@ -118,11 +123,6 @@
           <span class="nav-lbl" data-i18n="nav.readLater">Read Later</span>
           <span class="nav-count" id="nav-read-later-count"></span>
         </button>
-        <button class="nav-item" id="nav-inbox" data-i18n-aria-label="nav.inbox" aria-label="Inbox">
-          <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 8.5l1.4-5A1 1 0 014.4 2.7h6.2a1 1 0 011 .8l1.4 5v3a1 1 0 01-1 1H3a1 1 0 01-1-1v-3z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M2 8.5h3.4a2.1 2.1 0 004.2 0H13" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
-          <span class="nav-lbl" data-i18n="nav.inbox">Inbox</span>
-          <span class="nav-count" id="nav-inbox-count"></span>
-        </button>
         <button class="nav-item" id="nav-search" data-i18n-aria-label="search.nav" aria-label="Search">
           <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="6.6" cy="6.6" r="4.1" stroke="currentColor" stroke-width="1.4"/><path d="M9.8 9.8l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
           <span class="nav-lbl" data-i18n="search.nav">Search</span>
@@ -137,39 +137,21 @@
           <span class="nav-lbl" data-i18n="nav.trash">Trash</span>
           <span class="nav-count" id="nav-trash-count"></span>
         </button>
-        <button class="nav-item" id="nav-more" aria-haspopup="menu" data-i18n-aria-label="action.more" aria-label="More">
+        <div class="side-sec-row">
+          <span class="side-sec-lbl" data-i18n="nav.spaces">Spaces</span>
+          <button id="add-cat-btn" class="icon-btn sm" type="button" title="New space" aria-label="New space" data-i18n-title="action.newSpace" data-i18n-aria-label="action.newSpace">
+            <svg width="13" height="13" viewBox="0 0 13 13"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div id="space-nav"></div>
+        <button class="nav-item" id="nav-more" aria-haspopup="menu" aria-expanded="false" data-i18n-aria-label="action.more" aria-label="More">
           <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="3.5" cy="7.5" r="1.25" fill="currentColor"/><circle cx="7.5" cy="7.5" r="1.25" fill="currentColor"/><circle cx="11.5" cy="7.5" r="1.25" fill="currentColor"/></svg>
           <span class="nav-lbl" data-i18n="action.more">More</span>
         </button>
       </nav>
 
-      <div class="side-sec-row">
-        <span class="side-sec-lbl" data-i18n="nav.spaces">Spaces</span>
-        <button id="add-cat-btn" class="icon-btn sm" type="button" title="New space" aria-label="New space" data-i18n-title="action.newSpace" data-i18n-aria-label="action.newSpace">
-          <svg width="13" height="13" viewBox="0 0 13 13"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-        </button>
-      </div>
-      <div id="space-nav"></div>
-
       <div class="side-footer">
-        <div class="side-storage" title="Browser-profile storage; export before uninstalling or deleting the profile">
-          <svg width="14" height="14" viewBox="0 0 15 15" fill="none"><rect x="2" y="2" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M2 9.5h11M4.5 11.5h.01M6.8 11.5h.01" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-          <div class="side-storage-bd">
-            <div id="side-storage-text" class="side-storage-text" data-i18n="nav.storage">Local storage</div>
-            <div class="storage-bar-track"><div id="side-storage-fill" class="storage-bar-fill"></div></div>
-          </div>
-        </div>
-        <div class="priv-card">
-          <div class="priv-hd">
-            <svg width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.8l4.7 1.8v3.6c0 3-2 5.2-4.7 6-2.7-.8-4.7-3-4.7-6V3.6l4.7-1.8z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M5.5 7.4l1.4 1.4 2.6-2.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span data-i18n="priv.title">Privacy boundaries</span>
-          </div>
-          <div class="priv-row"><span class="priv-check">✓</span><span data-i18n="priv.noAccount">No account</span></div>
-          <div class="priv-row"><span class="priv-check">✓</span><span data-i18n="priv.localOnly">Profile-local data</span></div>
-          <div class="priv-row"><span class="priv-check">✓</span><span data-i18n="priv.noHost">No host permissions</span></div>
-          <div class="priv-row"><span class="priv-check">✓</span><span data-i18n="priv.export">Export before uninstalling</span></div>
-        </div>
-        <button id="sidebar-toggle" class="side-collapse" title="Collapse sidebar" data-i18n-title="action.collapseSidebar" aria-label="Collapse sidebar">
+        <button id="sidebar-toggle" class="side-collapse" aria-controls="sidebar" aria-expanded="true" title="Collapse sidebar" aria-label="Collapse sidebar" data-i18n-title="action.collapseSidebar" data-i18n-aria-label="action.collapseSidebar">
           <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M9 3.5L5 7.5l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
@@ -181,58 +163,63 @@
         <div class="tb-left">
           <h1 id="ws-title"><span id="ws-title-sym">🏠</span><span id="ws-title-name">Workspace</span></h1>
           <div class="cat-tabs-wrap" id="cat-tabs-wrap">
-            <button class="cat-scroll-btn left" id="cat-scroll-left" tabindex="-1" aria-label="Scroll categories left">
+            <button class="cat-scroll-btn left" id="cat-scroll-left" tabindex="-1" aria-label="Scroll Spaces left" data-i18n-aria-label="organization.scrollSpacesLeft">
               <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M7 2L3.5 5.5 7 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
             <div class="cat-tabs" id="cat-tabs"></div>
-            <button class="cat-scroll-btn right" id="cat-scroll-right" tabindex="-1" aria-label="Scroll categories right">
+            <button class="cat-scroll-btn right" id="cat-scroll-right" tabindex="-1" aria-label="Scroll Spaces right" data-i18n-aria-label="organization.scrollSpacesRight">
               <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M4 2l3.5 3.5L4 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
           </div>
         </div>
-        <button id="topbar-search" class="topbar-search" title="Search (Ctrl/⌘ + K)" data-i18n-title="action.search">
+        <button id="topbar-search" class="topbar-search" type="button" title="Search ( / )" data-i18n-title="action.search" aria-label="Search saved work" data-i18n-aria-label="landing.searchSaved">
           <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5L13 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-          <span class="topbar-search-ph" data-i18n="search.placeholder">Search your links…</span>
-          <kbd>⌘K</kbd>
+          <span class="topbar-search-ph" data-i18n="landing.searchPlaceholder">Search saved work…</span>
+          <kbd aria-hidden="true">/</kbd>
         </button>
         <div class="tb-right">
-          <button id="undo-btn" class="icon-btn" title="Undo (Ctrl+Z)" data-i18n-title="action.undo">
+          <!-- Stable compatibility IDs stay in the DOM, but their routes now live in Search, Save, and More. -->
+          <button id="undo-btn" class="icon-btn" type="button" hidden aria-hidden="true" title="Undo (Ctrl+Z)" data-i18n-title="action.undo">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4.5 4L2 6.5 4.5 9M2 6.5h7.5a3.5 3.5 0 010 7H6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
-          <button id="view-mode-btn" class="icon-btn" title="Switch layout" data-mode="board" aria-haspopup="menu" data-i18n-title="action.switchLayout">
-            <span id="view-mode-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="5" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="3" width="5" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5"/></svg></span>
-          </button>
-          <button id="calendar-btn" class="icon-btn" title="Calendar (reminders)" aria-pressed="false" data-i18n-title="action.calendar">
+          <button id="calendar-btn" class="icon-btn" type="button" hidden aria-hidden="true" title="Calendar (reminders)" aria-pressed="false" data-i18n-title="action.calendar">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2.5" y="3" width="11" height="10.5" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M2.5 6h11M5.5 2v2.2M10.5 2v2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="5.6" cy="9" r="0.9" fill="currentColor"/><circle cx="8" cy="9" r="0.9" fill="currentColor"/><circle cx="10.4" cy="9" r="0.9" fill="currentColor"/></svg>
           </button>
-          <button id="search-btn" class="icon-btn" title="Search (Ctrl/⌘ + K)" data-i18n-title="action.search">
+          <button id="search-btn" class="icon-btn" type="button" hidden aria-hidden="true" title="Search (Ctrl/⌘ + K)" data-i18n-title="action.search">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5L13 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
           </button>
-          <button id="topbar-save" class="topbar-primary" type="button" data-i18n-title="action.saveTab" title="Save a recent tab to Inbox">
+          <button id="topbar-save" class="topbar-primary" type="button" data-i18n-title="action.saveTab" data-i18n-aria-label="action.saveTab" title="Save a recent tab to Inbox" aria-label="Save tab" aria-haspopup="menu" aria-expanded="false">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2.2 3A.8.8 0 013 2.2h6.1l2.7 2.7V11a.8.8 0 01-.8.8H3a.8.8 0 01-.8-.8V3z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M4.3 2.2v3h5v-3M4.5 11.8V8h5v3.8" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
             <span data-i18n="action.saveTab">Save tab</span>
           </button>
-          <button id="more-btn" class="icon-btn" title="More" data-i18n-title="action.more" aria-haspopup="menu">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="1.35" fill="currentColor"/><circle cx="8" cy="8" r="1.35" fill="currentColor"/><circle cx="12" cy="8" r="1.35" fill="currentColor"/></svg>
+          <button id="more-btn" class="icon-btn notif-host" type="button" title="More" data-i18n-title="action.more" aria-label="More" data-i18n-aria-label="action.more" aria-haspopup="menu" aria-expanded="false">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="4" cy="8" r="1.35" fill="currentColor"/><circle cx="8" cy="8" r="1.35" fill="currentColor"/><circle cx="12" cy="8" r="1.35" fill="currentColor"/></svg>
+            <span class="notif-dot" aria-hidden="true"></span>
           </button>
-          <button id="settings-btn" class="icon-btn" title="Settings" data-i18n-title="action.settings">
+          <button id="settings-btn" class="icon-btn" type="button" hidden aria-hidden="true" title="Settings" data-i18n-title="action.settings">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.9 2.2a.6.6 0 01.6-.5h1a.6.6 0 01.6.5l.16 1.05c.44.13.85.36 1.2.66l1-.4a.6.6 0 01.72.26l.5.86a.6.6 0 01-.12.75l-.83.67a4.3 4.3 0 010 1.38l.83.67a.6.6 0 01.12.75l-.5.86a.6.6 0 01-.72.26l-1-.4c-.35.3-.76.53-1.2.66L9.1 14.3a.6.6 0 01-.6.5h-1a.6.6 0 01-.6-.5l-.16-1.05a4.3 4.3 0 01-1.2-.66l-1 .4a.6.6 0 01-.72-.26l-.5-.86a.6.6 0 01.12-.75l.83-.67a4.3 4.3 0 010-1.38l-.83-.67a.6.6 0 01-.12-.75l.5-.86a.6.6 0 01.72-.26l1 .4c.35-.3.76-.53 1.2-.66L6.9 2.2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><circle cx="8" cy="8" r="2.1" stroke="currentColor" stroke-width="1.3"/></svg>
           </button>
-          <div class="topbar-divider"></div>
-          <!-- Plugins: opens the tools hub (Pomodoro, Finance, Focus, Notes, Calendar helpers…). Replaces the former reminder bell. -->
-          <button id="plugins-btn" class="icon-btn" title="Plugins" data-i18n-title="action.plugins" aria-haspopup="dialog">
+          <!-- Compatibility hook: Plugins is now a named entry in More. -->
+          <button id="plugins-btn" class="icon-btn" type="button" hidden aria-hidden="true" title="Plugins" data-i18n-title="action.plugins" aria-haspopup="dialog">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M10 3.2a2 2 0 014 0V4a1 1 0 001 1h2.8a1 1 0 011 1V9a1 1 0 001 1h.2a2 2 0 010 4h-.2a1 1 0 00-1 1v2.8a1 1 0 01-1 1H15a1 1 0 01-1-1v-.2a2 2 0 00-4 0v.2a1 1 0 01-1 1H6.2a1 1 0 01-1-1V15a1 1 0 00-1-1H4a2 2 0 010-4h.2a1 1 0 001-1V6a1 1 0 011-1H9a1 1 0 001-1v-.8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
           </button>
-          <!-- App menu: real dropdown (Settings, Plugins, Theme, Guide, About, Workspaces). Replaces the fake avatar button; the initial is the active workspace. -->
-          <button id="menu-btn" class="avatar-btn notif-host" title="Menu" aria-label="Menu" aria-haspopup="menu">
+          <!-- Compatibility hook: the optional Welcome layer delegates to More. -->
+          <button id="menu-btn" class="avatar-btn" type="button" hidden aria-hidden="true" title="Menu" aria-label="Menu" aria-haspopup="menu">
             <span id="avatar-face" class="avatar-face">K</span>
             <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 4.5L6 7.5l3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span class="notif-dot"></span>
           </button>
         </div>
       </header>
 
       <nav id="breadcrumb-bar" class="hidden" aria-label="Breadcrumb"></nav>
+
+      <div id="surface-toolbar" class="surface-toolbar">
+        <button id="view-mode-btn" class="surface-layout-btn" type="button" title="Switch layout" data-mode="board" aria-haspopup="menu" data-i18n-title="action.switchLayout" aria-label="Switch layout" data-i18n-aria-label="action.switchLayout">
+          <span id="view-mode-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="5" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="3" width="5" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5"/></svg></span>
+          <span data-i18n="action.switchLayout">Switch layout</span>
+          <svg class="surface-layout-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 4.5L6 7.5l3-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
 
       <div id="search-bar" class="hidden">
         <svg width="14" height="14" viewBox="0 0 16 16">
@@ -248,36 +235,32 @@
     </main>
 
     <!-- ══════ OPENED TABS RAIL ══════ -->
-    <aside id="tabrail">
-      <button id="tabrail-toggle" class="rail-toggle icon-btn sm" title="Collapse opened tabs" aria-label="Collapse opened tabs">
+    <aside id="tabrail" aria-labelledby="rail-title">
+      <button id="tabrail-toggle" class="rail-toggle icon-btn sm" aria-controls="open-tabs" aria-expanded="true" title="Collapse opened tabs" aria-label="Collapse opened tabs" data-i18n-title="action.collapseOpenedTabs" data-i18n-aria-label="action.collapseOpenedTabs">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8.5 3L5 7l3.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
       <div class="rail-hd">
         <div class="rail-title-row">
-          <span class="rail-title" data-i18n="rail.openedTabs">Opened Tabs</span>
+          <span id="rail-title" class="rail-title" data-i18n="rail.openedTabs">Opened Tabs</span>
           <span id="open-count" class="rail-count">0</span>
         </div>
-        <span id="selected-badge" class="hidden">0 selected</span>
-        <div class="rail-sub" data-i18n="rail.dragHint">Drag into a space to save</div>
+        <span id="selected-badge" class="hidden" role="status" aria-live="polite"></span>
+        <div class="rail-sub" data-i18n="rail.dragHint">Select tabs, or drag saveable tabs into a Space.</div>
       </div>
-      <div id="open-tabs"></div>
+      <div id="open-tabs" role="list" aria-labelledby="rail-title"></div>
       <div class="rail-footer">
         <div class="filter-box">
           <svg width="12" height="12" viewBox="0 0 16 16">
             <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5" fill="none"/>
             <path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
-          <input id="tab-filter" type="text" placeholder="Filter tabs" data-i18n-placeholder="shell.filterTabs" autocomplete="off">
+          <input id="tab-filter" type="text" placeholder="Filter tabs" aria-label="Filter tabs" aria-controls="open-tabs" data-i18n-placeholder="shell.filterTabs" data-i18n-aria-label="shell.filterTabs" autocomplete="off">
           <kbd>S</kbd>
         </div>
-        <button id="rail-saveall" class="rail-saveall">
+        <button id="rail-saveall" class="rail-saveall" type="button">
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1.5v6m0 0l2.4-2.4M6.5 7.5L4.1 5.1M2 9v1.5a1 1 0 001 1h7a1 1 0 001-1V9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
           <span data-i18n="rail.saveAll">Save eligible tabs</span>
         </button>
-        <div class="rail-tip">
-          <svg width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.6a4.4 4.4 0 00-2.6 7.9c.4.3.6.6.6 1v.5h4v-.5c0-.4.2-.7.6-1a4.4 4.4 0 00-2.6-7.9z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5.8 13h3.4M6.3 11.5h2.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-          <span data-i18n="rail.tip">Drag a tab into any space to save it for later.</span>
-        </div>
       </div>
     </aside>
   </div>
@@ -361,24 +344,50 @@
   <div id="context-menu" class="hidden" role="menu"></div>
 
   <!-- Rich text toolbar -->
-  <div id="rt-toolbar" class="hidden">
-    <button data-cmd="bold" title="Bold (Ctrl+B)"><b>B</b></button>
-    <button data-cmd="italic" title="Italic (Ctrl+I)"><i>I</i></button>
-    <button data-cmd="underline" title="Underline"><u>U</u></button>
-    <button data-cmd="strike" title="Strikethrough"><s>S</s></button>
-    <span class="rt-sep"></span>
-    <button data-cmd="h" title="Heading">H</button>
-    <button data-cmd="ul" title="List">
+  <div id="rt-toolbar" class="hidden" role="toolbar" aria-label="Text formatting" data-i18n-aria-label="richText.toolbar">
+    <button type="button" data-cmd="bold" title="Bold (Ctrl+B)" aria-label="Bold (Ctrl+B)" data-i18n-title="richText.bold" data-i18n-aria-label="richText.bold"><b>B</b></button>
+    <button type="button" data-cmd="italic" title="Italic (Ctrl+I)" aria-label="Italic (Ctrl+I)" data-i18n-title="richText.italic" data-i18n-aria-label="richText.italic"><i>I</i></button>
+    <button type="button" data-cmd="underline" title="Underline" aria-label="Underline" data-i18n-title="richText.underline" data-i18n-aria-label="richText.underline"><u>U</u></button>
+    <button type="button" data-cmd="strike" title="Strikethrough" aria-label="Strikethrough" data-i18n-title="richText.strikethrough" data-i18n-aria-label="richText.strikethrough"><s>S</s></button>
+    <span class="rt-sep" role="separator" aria-orientation="vertical"></span>
+    <button type="button" data-cmd="h" title="Heading" aria-label="Heading" data-i18n-title="richText.heading" data-i18n-aria-label="richText.heading">H</button>
+    <button type="button" data-cmd="ul" title="Bulleted list" aria-label="Bulleted list" data-i18n-title="richText.list" data-i18n-aria-label="richText.list">
       <svg width="11" height="11" viewBox="0 0 11 11"><circle cx="1.5" cy="2" r="0.8" fill="currentColor"/><circle cx="1.5" cy="5.5" r="0.8" fill="currentColor"/><circle cx="1.5" cy="9" r="0.8" fill="currentColor"/><path d="M4 2h6M4 5.5h6M4 9h6" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
     </button>
-    <button data-cmd="link" title="Link (Ctrl+K)">
+    <button type="button" data-cmd="link" title="Add link (Ctrl+K)" aria-label="Add link (Ctrl+K)" data-i18n-title="richText.link" data-i18n-aria-label="richText.link">
       <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 7L4 8.5a2 2 0 01-2.8-2.8L3 4m2.5.5L7 3a2 2 0 012.8 2.8L8 7.5M4 7l3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
     </button>
-    <span class="rt-sep"></span>
-    <button data-cmd="color-red" class="rt-color" style="color:#ef4444" title="Red"></button>
-    <button data-cmd="color-green" class="rt-color" style="color:#22c55e" title="Green"></button>
-    <button data-cmd="color-yellow" class="rt-color" style="color:#eab308" title="Yellow"></button>
-    <button data-cmd="color-clear" title="Clear">✕</button>
+    <span class="rt-sep" role="separator" aria-orientation="vertical"></span>
+    <button type="button" data-cmd="color-red" class="rt-color" style="color:#ef4444" title="Red text" aria-label="Red text" data-i18n-title="richText.red" data-i18n-aria-label="richText.red"></button>
+    <button type="button" data-cmd="color-green" class="rt-color" style="color:#22c55e" title="Green text" aria-label="Green text" data-i18n-title="richText.green" data-i18n-aria-label="richText.green"></button>
+    <button type="button" data-cmd="color-yellow" class="rt-color" style="color:#eab308" title="Yellow text" aria-label="Yellow text" data-i18n-title="richText.yellow" data-i18n-aria-label="richText.yellow"></button>
+    <button type="button" data-cmd="color-clear" title="Clear formatting" aria-label="Clear formatting" data-i18n-title="richText.clear" data-i18n-aria-label="richText.clear">✕</button>
+  </div>
+
+  <!-- Exact-selection rich text Link dialog -->
+  <div id="rich-text-link-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="rich-text-link-title" aria-describedby="rich-text-link-description rich-text-link-error">
+    <form id="rich-text-link-form" class="rm-panel rich-text-link-panel" novalidate>
+      <div class="modal-hd">
+        <h2 id="rich-text-link-title" data-i18n="richText.dialogTitle">Add link</h2>
+        <button id="rich-text-link-close" class="icon-btn" type="button" aria-label="Close Add link dialog" data-i18n-aria-label="richText.closeDialog">
+          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="modal-bd">
+        <p id="rich-text-link-description" class="rich-text-link-description" data-i18n="richText.description">Enter the address for the selected text.</p>
+        <div class="rich-text-link-selection-wrap">
+          <span id="rich-text-link-selection-label" class="field-lbl" data-i18n="richText.selectionLabel">Selected text</span>
+          <p id="rich-text-link-selection" class="rich-text-link-selection" aria-labelledby="rich-text-link-selection-label"></p>
+        </div>
+        <label class="field-lbl" for="rich-text-link-input" data-i18n="richText.addressLabel">Link address</label>
+        <input id="rich-text-link-input" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://example.com" data-i18n-placeholder="richText.addressPlaceholder" aria-describedby="rich-text-link-error" aria-errormessage="rich-text-link-error" aria-invalid="false">
+        <p id="rich-text-link-error" class="rich-text-link-error" role="status" aria-live="polite" aria-atomic="true"></p>
+      </div>
+      <div class="modal-ft">
+        <button id="rich-text-link-cancel" class="btn-secondary" type="button" data-i18n="richText.cancel">Cancel</button>
+        <button id="rich-text-link-apply" class="btn-primary" type="submit" data-i18n="richText.apply">Add link</button>
+      </div>
+    </form>
   </div>
 
   <!-- Reminder picker -->
@@ -417,6 +426,28 @@
         <button id="rm-save" class="btn-primary" data-i18n="reminder.set">Set</button>
       </div>
     </div>
+  </div>
+
+  <!-- Calendar Add-task keeps the reviewed date and destination visible through its write receipt. -->
+  <div id="calendar-task-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="calendar-task-title" aria-describedby="calendar-task-description calendar-task-status" aria-busy="false">
+    <form id="calendar-task-form" class="rm-panel calendar-task-panel">
+      <div class="modal-hd">
+        <h2 id="calendar-task-title" data-i18n="cal.addDialogTitle">Add task</h2>
+        <button id="calendar-task-close" class="icon-btn" type="button" aria-label="Close Add task dialog" data-i18n-aria-label="cal.closeAddDialog">
+          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="modal-bd">
+        <p id="calendar-task-description" class="calendar-task-description"></p>
+        <label class="field-lbl" for="calendar-task-input" data-i18n="cal.taskLabel">Task</label>
+        <input id="calendar-task-input" type="text" autocomplete="off" placeholder="What needs doing?" data-i18n-placeholder="cal.taskPlaceholder" aria-describedby="calendar-task-description calendar-task-status">
+        <p id="calendar-task-status" class="calendar-task-status" role="status" aria-live="polite" aria-atomic="true"></p>
+      </div>
+      <div class="modal-ft">
+        <button id="calendar-task-cancel" class="btn-secondary" type="button" data-i18n="cal.cancelAdd">Cancel</button>
+        <button id="calendar-task-confirm" class="btn-primary" type="submit" data-i18n="cal.confirmAdd">Add task</button>
+      </div>
+    </form>
   </div>
 
   <div id="intent-overlay" class="hidden">
@@ -460,42 +491,53 @@
   </div>
 
   <!-- Import preview overlay -->
-  <div id="import-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="import-title">
-    <div class="rm-panel">
-      <div class="modal-hd">
-        <h2 id="import-title">Import data</h2>
-        <button id="import-x" class="icon-btn" aria-label="Close">
+  <div id="import-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="import-title" aria-describedby="import-description import-status" aria-busy="false">
+    <div class="rm-panel import-review-panel">
+      <div class="modal-hd import-review-head">
+        <div>
+          <span class="import-review-kicker" data-i18n="import.kicker">BACKUP REVIEW</span>
+          <h2 id="import-title" data-i18n="import.title">Review backup</h2>
+        </div>
+        <button id="import-x" class="icon-btn" type="button" aria-label="Close import review" data-i18n-aria-label="import.close">
           <svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         </button>
       </div>
       <div class="modal-bd">
-        <div class="import-meta">
-          <div class="import-meta-row"><span class="import-meta-key">File</span><span id="import-filename" class="import-meta-val">—</span></div>
-          <div class="import-meta-row"><span class="import-meta-key">Exported</span><span id="import-date" class="import-meta-val">—</span></div>
-          <div class="import-meta-row"><span class="import-meta-key">Schema</span><span id="import-schema" class="import-meta-val">—</span></div>
-        </div>
-        <div class="import-counts" id="import-counts"></div>
-        <fieldset class="import-mode">
-          <legend class="field-lbl">Mode</legend>
+        <p id="import-description" class="import-review-description" data-i18n="import.description">Check this backup and choose how it should enter the current browser profile. Nothing changes until you confirm.</p>
+        <section class="import-manifest" aria-labelledby="import-manifest-title">
+          <div class="import-manifest-head">
+            <h3 id="import-manifest-title" data-i18n="import.manifest">Backup manifest</h3>
+            <span data-i18n="import.unchanged">No data has changed</span>
+          </div>
+          <dl class="import-meta">
+            <div class="import-meta-row"><dt class="import-meta-key" data-i18n="import.file">File</dt><dd id="import-filename" class="import-meta-val">—</dd></div>
+            <div class="import-meta-row"><dt class="import-meta-key" data-i18n="import.exported">Exported</dt><dd id="import-date" class="import-meta-val">—</dd></div>
+            <div class="import-meta-row"><dt class="import-meta-key" data-i18n="import.schema">Schema</dt><dd id="import-schema" class="import-meta-val">—</dd></div>
+          </dl>
+          <div class="import-counts" id="import-counts" role="list" aria-label="Backup contents" data-i18n-aria-label="import.countsAria"></div>
+        </section>
+        <fieldset class="import-mode" aria-describedby="import-status">
+          <legend class="field-lbl" data-i18n="import.mode">Mode</legend>
           <label class="import-mode-opt">
-            <input type="radio" name="import-mode" value="replace" checked>
+            <input type="radio" name="import-mode" value="replace" aria-describedby="import-replace-body" checked>
             <div>
-              <div class="import-mode-title">Replace all</div>
-              <div class="import-mode-sub">Restore from this file. Existing workspaces, archive, trash, and settings present in the file will be overwritten.</div>
+              <div class="import-mode-title" data-i18n="import.replaceTitle">Replace all</div>
+              <div id="import-replace-body" class="import-mode-sub" data-i18n="import.replaceBody">Request a backup of the current profile first. Then replace Workspaces, Archive, Trash, and settings supplied by this file.</div>
             </div>
           </label>
           <label class="import-mode-opt">
-            <input type="radio" name="import-mode" value="merge">
+            <input type="radio" name="import-mode" value="merge" aria-describedby="import-merge-body">
             <div>
-              <div class="import-mode-title">Merge</div>
-              <div class="import-mode-sub">Append workspaces, archived items, and trash. Keep current settings and tool data untouched.</div>
+              <div class="import-mode-title" data-i18n="import.mergeTitle">Merge</div>
+              <div id="import-merge-body" class="import-mode-sub" data-i18n="import.mergeBody">Add Workspaces, Archive entries, and Trash. Keep current settings and tool data.</div>
             </div>
           </label>
         </fieldset>
+        <p id="import-status" class="import-status" role="status" aria-live="polite" data-state="idle" data-i18n="import.ready">Choose a method, then confirm the import.</p>
       </div>
       <div class="modal-ft">
-        <button id="import-cancel" class="btn-secondary">Cancel</button>
-        <button id="import-confirm" class="btn-primary">Import</button>
+        <button id="import-cancel" class="btn-secondary" type="button" data-i18n="import.cancel">Cancel</button>
+        <button id="import-confirm" class="btn-primary" type="button" data-i18n="import.confirmReplace">Replace with backup</button>
       </div>
     </div>
   </div>
@@ -538,24 +580,36 @@
     </div>
   </div>
 
-  <!-- Storage-quota overlay: persist failed with QuotaExceeded -->
-  <div id="quota-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="quota-title">
-    <div class="rm-panel">
-      <div class="modal-hd">
-        <h2 id="quota-title">Storage full</h2>
-        <button id="quota-x" class="icon-btn" aria-label="Close">
-          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+  <!-- Storage-quota recovery: safe backup sits above the reload interlock. -->
+  <div id="quota-overlay" class="hidden" role="alertdialog" aria-modal="true" aria-labelledby="quota-title" aria-describedby="quota-summary quota-detail quota-backup quota-guidance quota-status" aria-busy="false">
+    <div class="rm-panel quota-panel">
+      <div class="modal-hd quota-registry">
+        <div class="quota-heading">
+          <span class="quota-eyebrow" data-i18n="quota.eyebrow">Local storage</span>
+          <h2 id="quota-title" data-i18n="quota.title">This change wasn't saved</h2>
+        </div>
+        <button id="quota-x" class="icon-btn" type="button" aria-label="Close storage details" data-i18n-aria-label="quota.close">
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         </button>
       </div>
-      <div class="modal-bd">
-        <p>Your latest change couldn't be saved because browser storage for this extension is full.</p>
-        <p id="quota-detail" class="sub">—</p>
-        <p>Export a backup, then prune the archive or remove unused workspaces to free space.</p>
+      <div class="modal-bd quota-body">
+        <p id="quota-summary" class="quota-summary" data-i18n="quota.summary">Locus reached this browser profile's local storage limit. The current view still contains this change, but it has not been written to the saved copy.</p>
+        <div class="quota-capacity">
+          <p id="quota-detail" class="quota-detail" aria-live="polite" aria-atomic="true" data-i18n="quota.usageLoading">Checking browser-profile storage…</p>
+          <div id="quota-meter" class="quota-meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-busy="true" aria-label="Local storage usage" data-i18n-aria-label="quota.usageAria">
+            <span id="quota-meter-fill" class="quota-meter-fill" aria-hidden="true"></span>
+          </div>
+        </div>
+        <div class="quota-recovery-notes">
+          <p id="quota-backup" data-i18n="quota.backup">Download a backup before reloading. It includes the data currently visible in Locus.</p>
+          <p id="quota-guidance" data-i18n="quota.guidance">Reloading replaces the current view with the latest saved copy. Afterward, review Archive and Trash; space is freed only when items are permanently deleted from Trash.</p>
+        </div>
+        <p id="quota-status" class="quota-status" role="status" aria-live="polite" aria-atomic="true"></p>
       </div>
-      <div class="modal-ft">
-        <button id="quota-archive" class="btn-secondary">Open archive</button>
-        <button id="quota-dismiss" class="btn-secondary">Dismiss</button>
-        <button id="quota-export" class="btn-primary">Export now</button>
+      <div class="modal-ft quota-actions">
+        <button id="quota-export" class="btn-primary" type="button" data-i18n="quota.export">Download backup</button>
+        <button id="quota-archive" class="btn-secondary" type="button" data-i18n="quota.archive">Reload to Archive</button>
+        <button id="quota-dismiss" class="btn-secondary" type="button" data-i18n="quota.reload">Reload saved data</button>
       </div>
     </div>
   </div>
@@ -622,30 +676,17 @@
   <div id="cheatsheet-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="cheatsheet-title">
     <div class="rm-panel">
       <div class="modal-hd">
-        <h2 id="cheatsheet-title">Keyboard shortcuts</h2>
-        <button id="cheatsheet-x" class="icon-btn" aria-label="Close">
+        <h2 id="cheatsheet-title" data-i18n="shortcuts.title">Keyboard shortcuts</h2>
+        <button id="cheatsheet-x" class="icon-btn" aria-label="Close keyboard shortcuts" data-i18n-aria-label="shortcuts.closeAria">
           <svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         </button>
       </div>
       <div class="modal-bd">
-        <dl class="cheatsheet">
-          <dt><kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>K</kbd></dt><dd>Open the command palette</dd>
-          <dt><kbd>/</kbd></dt><dd>Open search</dd>
-          <dt><kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd></dt><dd>Save current tab to Inbox</dd>
-          <dt><kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Shift</kbd> + <kbd>E</kbd></dt><dd>Open Locus popup</dd>
-          <dt><kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Z</kbd></dt><dd>Undo</dd>
-          <dt><kbd>Ctrl</kbd>/<kbd>⌘</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd></dt><dd>Redo</dd>
-          <dt><kbd>S</kbd></dt><dd>Focus sidebar tab filter</dd>
-          <dt><kbd>C</kbd></dt><dd>Open / close the reminders calendar</dd>
-          <dt><kbd>↑</kbd> / <kbd>↓</kbd></dt><dd>Move focus between items in a group</dd>
-          <dt><kbd>Enter</kbd></dt><dd>Open tab · toggle to-do · expand stack</dd>
-          <dt><kbd>M</kbd></dt><dd>Move focused item (or selection) to another group</dd>
-          <dt><kbd>Esc</kbd></dt><dd>Close any open overlay or menu</dd>
-          <dt><kbd>?</kbd></dt><dd>Show this cheatsheet</dd>
-        </dl>
+        <div id="cheatsheet-status" class="shortcut-status" role="status" aria-live="polite" hidden></div>
+        <div id="cheatsheet-list" class="cheatsheet sp-shortcut-list" role="list"></div>
       </div>
       <div class="modal-ft">
-        <button id="cheatsheet-close" class="btn-primary">Close</button>
+        <button id="cheatsheet-close" class="btn-primary" data-i18n="shortcuts.close">Close</button>
       </div>
     </div>
   </div>
@@ -654,7 +695,7 @@
   <!-- Full-page settings surface (was a right-side drawer). The element id and
        the control ids inside are load-bearing: openSettingsDrawer(), the global
        Escape handler, applySettings(), and bindSettings() all address them. -->
-  <div id="settings-drawer" class="hidden" role="dialog" aria-modal="true" aria-labelledby="sp-side-title">
+  <div id="settings-drawer" class="hidden" role="dialog" aria-modal="true" aria-labelledby="sp-side-title" data-settings-layout="ledger">
     <div class="drawer-bd">
 
       <aside class="sp-side">
@@ -721,171 +762,281 @@
 
         <!-- ── General ── -->
         <div class="drawer-sections" id="dp-general">
-          <div class="sp-grid">
-            <div class="drawer-sec">
-              <div class="field-lbl" data-i18n="settings.profile">Profile</div>
-              <label class="capture-field" for="profile-name-input">
-                <span data-i18n="settings.yourName">Your name</span>
-                <input type="text" id="profile-name-input" maxlength="40" autocomplete="off" placeholder="—">
-              </label>
-              <small data-i18n="settings.yourNameHint">Used for the home greeting. Stored in this browser profile; export before uninstalling or deleting the profile.</small>
-              <div class="field-lbl" style="margin-top:14px" data-i18n="settings.language">Language</div>
-              <div class="seg" id="seg-language">
-                <button data-val="en" data-i18n="settings.language.en">English</button>
-                <button data-val="zh-TW" data-i18n="settings.language.zhTW">Traditional Chinese</button>
+          <section id="general-preferences" class="appearance-profile general-preferences" aria-labelledby="sp-title" aria-describedby="general-status" aria-busy="false">
+            <section class="appearance-setting general-setting" aria-labelledby="general-language-heading" aria-describedby="general-language-hint">
+              <div class="appearance-setting-copy">
+                <h3 id="general-language-heading" data-i18n="settings.language">Language</h3>
+                <p id="general-language-hint" data-i18n="settings.language.hint">New users start with the closest supported browser language.</p>
               </div>
-              <small data-i18n="settings.language.hint">New users start with the closest supported browser language.</small>
-            </div>
+              <select id="seg-language" class="general-language-select" data-settings-preference-control aria-labelledby="general-language-heading" aria-describedby="general-language-hint">
+                <option value="en" data-i18n="settings.language.en">English</option>
+                <option value="zh-TW" data-i18n="settings.language.zhTW">Traditional Chinese</option>
+              </select>
+            </section>
 
-            <div class="drawer-sec">
-              <div class="field-lbl" data-i18n="settings.behavior">Behavior</div>
-              <label class="toggle-row">
-                <span><span data-i18n="settings.hibernate">Open saved tabs hibernated</span><br><small data-i18n="settings.hibernateHint">opens a placeholder; the site loads only after you continue</small></span>
-                <input type="checkbox" id="tog-hibernate" checked>
-                <span class="tog"></span>
-              </label>
-              <label class="toggle-row">
-                <span><span data-i18n="settings.autoSwitch">Auto-switch workspace on window focus</span><br><small data-i18n="settings.autoSwitchHint">each workspace tied to a browser window</small></span>
-                <input type="checkbox" id="tog-autoswitch">
-                <span class="tog"></span>
-              </label>
-              <label class="toggle-row">
-                <span><span data-i18n="settings.showLanding">Show calm new-tab welcome</span><br><small data-i18n="settings.showLandingHint">dismiss it to reveal your Home workspace</small></span>
-                <input type="checkbox" id="tog-landing" checked>
-                <span class="tog"></span>
-              </label>
-            </div>
-
-            <div class="drawer-sec">
-              <div class="field-lbl" data-i18n="settings.tipsOnboarding">Welcome</div>
-              <div class="onboarding-actions">
-                <button id="show-tour-btn" class="btn-secondary">
-                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="vertical-align:-2px;margin-right:5px"><circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.4"/><path d="M5 5.5a1.5 1.5 0 113 0c0 .8-1.5 1-1.5 2M6.5 9.5v.01" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-                  <span data-i18n="settings.showTour">Replay welcome</span>
-                </button>
+            <section class="appearance-setting general-setting" aria-labelledby="general-opening-heading" aria-describedby="general-opening-hint">
+              <div class="appearance-setting-copy">
+                <h3 id="general-opening-heading" data-i18n="settings.savedPageOpening">Saved pages</h3>
+                <p id="general-opening-hint" data-i18n="settings.savedPageOpeningHint">Choose whether reopening a saved page loads its website immediately.</p>
               </div>
-            </div>
-          </div>
+              <div class="appearance-toggle-list general-toggle-list" role="group" aria-labelledby="general-opening-heading">
+                <label class="toggle-row">
+                  <span><span data-i18n="settings.hibernate">Open saved pages as placeholders</span><br><small id="general-hibernate-hint" data-i18n="settings.hibernateHint">The website loads only after you choose Continue.</small></span>
+                  <input type="checkbox" id="tog-hibernate" data-settings-preference-control aria-describedby="general-hibernate-hint" checked>
+                  <span class="tog"></span>
+                </label>
+              </div>
+            </section>
+
+            <section class="appearance-setting general-setting" aria-labelledby="general-guide-heading" aria-describedby="general-guide-hint">
+              <div class="appearance-setting-copy">
+                <h3 id="general-guide-heading" data-i18n="settings.tipsOnboarding">First-save guide</h3>
+                <p id="general-guide-hint" data-i18n="settings.firstSaveGuideHint">Review one open tab and its exact Workspace › Space › Inbox destination.</p>
+              </div>
+              <div class="general-guide-action">
+                <button id="show-tour-btn" class="btn-secondary" type="button" data-settings-preference-control data-i18n="settings.showTour">Open guide</button>
+              </div>
+            </section>
+
+            <p id="general-status" class="appearance-status general-status" role="status" aria-live="polite" aria-atomic="true" data-state="idle" data-i18n="settings.generalIdle">General preferences are stored in this browser profile.</p>
+
+            <details id="general-workspace-plugin" class="appearance-style-pack general-workspace-plugin">
+              <summary aria-describedby="general-plugin-hint">
+                <span class="appearance-pack-copy">
+                  <strong data-i18n="settings.workspacePlugin">Workspace extras plugin</strong>
+                  <small id="general-plugin-hint" data-i18n="settings.workspacePluginHint">Optional Welcome screen and browser-window switching. Available locally and off by default.</small>
+                </span>
+                <span id="general-plugin-state" class="appearance-pack-state" data-state="available" data-i18n="settings.workspacePluginAvailable">Available</span>
+              </summary>
+              <div class="appearance-pack-body">
+                <section class="appearance-pack-section" aria-labelledby="general-window-heading" aria-describedby="general-window-hint">
+                  <div class="appearance-pack-heading">
+                    <h3 id="general-window-heading" data-i18n="settings.windowSwitching">Window switching</h3>
+                    <p id="general-window-hint" data-i18n="settings.windowSwitchingHint">Follow the Workspace linked to the browser window you focus.</p>
+                  </div>
+                  <div class="appearance-toggle-list general-toggle-list">
+                    <label class="toggle-row">
+                      <span><span data-i18n="settings.autoSwitch">Follow the active browser window</span><br><small id="general-autoswitch-hint" data-i18n="settings.autoSwitchHint">Switch to the Workspace linked to that window.</small></span>
+                      <input type="checkbox" id="tog-autoswitch" data-settings-preference-control aria-describedby="general-autoswitch-hint">
+                      <span class="tog"></span>
+                    </label>
+                  </div>
+                </section>
+
+                <section class="appearance-pack-section" aria-labelledby="general-welcome-heading" aria-describedby="general-welcome-hint">
+                  <div class="appearance-pack-heading">
+                    <h3 id="general-welcome-heading" data-i18n="settings.welcomeScreen">Welcome screen</h3>
+                    <p id="general-welcome-hint" data-i18n="settings.welcomeScreenHint">Optional clock and search before Home on returning new tabs.</p>
+                  </div>
+                  <div class="general-plugin-controls">
+                    <label class="toggle-row">
+                      <span><span data-i18n="settings.showLanding">Show Welcome screen before Home</span><br><small id="general-landing-hint" data-i18n="settings.showLandingHint">Off by default. Shows a clock and saved-work search before Home.</small></span>
+                      <input type="checkbox" id="tog-landing" data-settings-preference-control aria-describedby="general-landing-hint">
+                      <span class="tog"></span>
+                    </label>
+                    <div class="general-name-field">
+                      <div class="general-name-copy">
+                        <label for="profile-name-input" data-i18n="settings.yourName">Name on Welcome screen</label>
+                        <small id="general-name-hint" data-i18n="settings.yourNameHint">Optional. Used only in the Welcome greeting.</small>
+                      </div>
+                      <div class="general-name-entry">
+                        <input type="text" id="profile-name-input" maxlength="40" autocomplete="off" data-settings-preference-control data-i18n-placeholder="settings.welcomeNamePlaceholder" placeholder="Optional" aria-describedby="general-name-hint">
+                        <button id="profile-name-save" class="btn-secondary" type="button" data-settings-preference-control data-settings-preference-disabled="true" data-i18n="settings.saveWelcomeName" disabled>Save name</button>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </details>
+          </section>
         </div>
 
         <!-- ── Appearance ── -->
         <div class="drawer-sections hidden" id="dp-appearance">
-          <div class="drawer-sec">
-            <div class="sec-hd-row">
-              <div class="field-lbl" data-i18n="settings.theme">Theme</div>
-              <button id="theme-cycle-btn" class="mini-btn" title="Cycle theme" data-i18n-title="action.cycleTheme">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6a4 4 0 016.9-2.8M10 6a4 4 0 01-6.9 2.8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M9.2 1.6v1.9H7.3M2.8 10.4V8.5h1.9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <span data-i18n="action.cycleTheme">Cycle theme</span>
-              </button>
-            </div>
-            <div class="theme-grid" id="theme-grid"></div>
-          </div>
+          <section id="appearance-profile" class="appearance-profile" aria-labelledby="appearance-theme-heading" aria-describedby="appearance-status" aria-busy="false">
+            <section class="appearance-setting appearance-theme-setting" aria-labelledby="appearance-theme-heading" aria-describedby="appearance-theme-hint">
+              <div class="appearance-setting-copy">
+                <h3 id="appearance-theme-heading" data-i18n="settings.themeMode">Color mode</h3>
+                <p id="appearance-theme-hint" data-i18n="settings.themeModeHint">Follow this device, or keep Locus consistently light or dark.</p>
+              </div>
+              <div class="theme-grid" id="theme-grid" role="group" aria-labelledby="appearance-theme-heading" aria-describedby="appearance-theme-hint"></div>
+            </section>
 
-          <div class="sp-grid">
-            <div class="drawer-sec">
-              <div class="field-lbl" data-i18n="settings.itemSize">Item size</div>
-              <div class="seg" id="seg-size">
-                <button data-val="compact" data-i18n="settings.size.compact">Compact</button>
-                <button data-val="normal" class="active" data-i18n="settings.size.normal">Normal</button>
-                <button data-val="large" data-i18n="settings.size.large">Large</button>
+            <section class="appearance-setting" aria-labelledby="appearance-density-heading" aria-describedby="appearance-density-hint">
+              <div class="appearance-setting-copy">
+                <h3 id="appearance-density-heading" data-i18n="settings.itemSize">Item size</h3>
+                <p id="appearance-density-hint" data-i18n="settings.densityHint">Change how much saved information fits on the board.</p>
               </div>
-              <div class="field-lbl" style="margin-top:14px" data-i18n="settings.columnWidth">Column width</div>
-              <div class="seg" id="seg-width">
-                <button data-val="narrow" data-i18n="settings.width.narrow">Narrow</button>
-                <button data-val="normal" class="active" data-i18n="settings.width.normal">Normal</button>
-                <button data-val="wide" data-i18n="settings.width.wide">Wide</button>
+              <div class="seg appearance-seg" id="seg-size" role="group" aria-labelledby="appearance-density-heading" aria-describedby="appearance-density-hint">
+                <button id="appearance-size-compact" type="button" data-settings-preference-control data-val="compact" aria-pressed="false" data-i18n="settings.size.compact">Compact</button>
+                <button id="appearance-size-normal" type="button" data-settings-preference-control data-val="normal" aria-pressed="true" data-i18n="settings.size.normal">Normal</button>
+                <button id="appearance-size-large" type="button" data-settings-preference-control data-val="large" aria-pressed="false" data-i18n="settings.size.large">Large</button>
               </div>
-              <label class="toggle-row" style="margin-top:14px">
-                <span data-i18n="settings.showUrls">Show URLs on cards</span>
-                <input type="checkbox" id="tog-urls" checked>
-                <span class="tog"></span>
-              </label>
-              <label class="toggle-row">
-                <span data-i18n="settings.animations">Animations</span>
-                <input type="checkbox" id="tog-anim" checked>
-                <span class="tog"></span>
-              </label>
-            </div>
+            </section>
 
-            <div class="drawer-sec">
-              <div class="field-lbl" data-i18n="settings.fontFamily">Font family</div>
-              <div class="seg-vert" id="seg-font">
-                <button data-val="dm" style="font-family:'DM Sans', sans-serif;">DM Sans<span class="m">clean &amp; modern</span></button>
-                <button data-val="inter" style="font-family:'Inter', sans-serif;">Inter<span class="m">precise &amp; neutral</span></button>
-                <button data-val="geist" style="font-family:'Geist', sans-serif;">Geist<span class="m">geometric minimal</span></button>
-                <button data-val="plex" style="font-family:'IBM Plex Sans', sans-serif;">IBM Plex Sans<span class="m">technical</span></button>
-                <button data-val="lora" style="font-family:'Lora', serif;">Lora<span class="m">elegant serif</span></button>
-                <button data-val="mono" style="font-family:'JetBrains Mono', monospace;">JetBrains Mono<span class="m">coder</span></button>
-                <button data-val="geist-mono" style="font-family:'Geist Mono', monospace;">Geist Mono<span class="m">modern code</span></button>
-                <button data-val="system" style="font-family:system-ui;">System<span class="m">OS default</span></button>
+            <section class="appearance-setting" aria-labelledby="appearance-details-heading">
+              <div class="appearance-setting-copy">
+                <h3 id="appearance-details-heading" data-i18n="settings.cardDetails">Card details</h3>
+                <p data-i18n="settings.cardDetailsHint">Keep useful context visible without adding another toolbar.</p>
               </div>
-            </div>
-          </div>
+              <div class="appearance-toggle-list" role="group" aria-labelledby="appearance-details-heading">
+                <label class="toggle-row">
+                  <span><span data-i18n="settings.showUrls">Show URLs on cards</span><br><small id="appearance-urls-hint" data-i18n="settings.showUrlsHint">Show the saved address below each page title.</small></span>
+                  <input type="checkbox" id="tog-urls" data-settings-preference-control aria-describedby="appearance-urls-hint" checked>
+                  <span class="tog"></span>
+                </label>
+                <label class="toggle-row">
+                  <span><span data-i18n="settings.animations">Motion</span><br><small id="appearance-motion-hint" data-i18n="settings.animationsHint">Use short transitions that explain a change of state.</small></span>
+                  <input type="checkbox" id="tog-anim" data-settings-preference-control aria-describedby="appearance-motion-hint" checked>
+                  <span class="tog"></span>
+                </label>
+              </div>
+            </section>
+
+            <p id="appearance-status" class="appearance-status" role="status" aria-live="polite" aria-atomic="true" data-state="idle" data-i18n="settings.appearanceIdle">Appearance is stored in this browser profile.</p>
+
+            <details id="appearance-style-pack" class="appearance-style-pack">
+              <summary>
+                <span class="appearance-pack-copy">
+                  <strong data-i18n="settings.stylePack">Style plugin</strong>
+                  <small data-i18n="settings.stylePackHint">Optional local themes, typefaces, and column widths. Nothing is downloaded.</small>
+                </span>
+                <span id="appearance-pack-state" class="appearance-pack-state" data-state="available" data-i18n="settings.stylePackAvailable">Available</span>
+              </summary>
+              <div class="appearance-pack-body">
+                <section class="appearance-pack-section" aria-labelledby="appearance-pack-themes-heading">
+                  <div class="appearance-pack-heading">
+                    <h3 id="appearance-pack-themes-heading" data-i18n="settings.moreThemes">More themes</h3>
+                    <p data-i18n="settings.moreThemesHint">Use a local visual variant without changing saved content.</p>
+                  </div>
+                  <div class="theme-pack-grid" id="theme-pack-grid" role="group" aria-labelledby="appearance-pack-themes-heading"></div>
+                </section>
+
+                <section class="appearance-pack-section" aria-labelledby="appearance-width-heading">
+                  <div class="appearance-pack-heading">
+                    <h3 id="appearance-width-heading" data-i18n="settings.columnWidth">Column width</h3>
+                    <p data-i18n="settings.columnWidthHint">Tune how much horizontal room each board column uses.</p>
+                  </div>
+                  <div class="seg appearance-seg" id="seg-width" role="group" aria-labelledby="appearance-width-heading">
+                    <button id="appearance-width-narrow" type="button" data-settings-preference-control data-val="narrow" aria-pressed="false" data-i18n="settings.width.narrow">Narrow</button>
+                    <button id="appearance-width-normal" type="button" data-settings-preference-control data-val="normal" aria-pressed="true" data-i18n="settings.width.normal">Normal</button>
+                    <button id="appearance-width-wide" type="button" data-settings-preference-control data-val="wide" aria-pressed="false" data-i18n="settings.width.wide">Wide</button>
+                  </div>
+                </section>
+
+                <section class="appearance-pack-section" aria-labelledby="appearance-font-heading">
+                  <div class="appearance-pack-heading">
+                    <h3 id="appearance-font-heading" data-i18n="settings.fontFamily">Typeface</h3>
+                    <p data-i18n="settings.fontFamilyHint">Choose one locally bundled reading voice.</p>
+                  </div>
+                  <div class="appearance-font-grid" id="seg-font" role="group" aria-labelledby="appearance-font-heading">
+                    <button id="appearance-font-dm" type="button" data-settings-preference-control data-val="dm" aria-pressed="true"><span class="font-sample">DM Sans</span><span class="m" data-i18n="settings.font.sans">Sans serif</span></button>
+                    <button id="appearance-font-inter" type="button" data-settings-preference-control data-val="inter" aria-pressed="false"><span class="font-sample">Inter</span><span class="m" data-i18n="settings.font.sans">Sans serif</span></button>
+                    <button id="appearance-font-geist" type="button" data-settings-preference-control data-val="geist" aria-pressed="false"><span class="font-sample">Geist</span><span class="m" data-i18n="settings.font.sans">Sans serif</span></button>
+                    <button id="appearance-font-plex" type="button" data-settings-preference-control data-val="plex" aria-pressed="false"><span class="font-sample">IBM Plex Sans</span><span class="m" data-i18n="settings.font.sans">Sans serif</span></button>
+                    <button id="appearance-font-lora" type="button" data-settings-preference-control data-val="lora" aria-pressed="false"><span class="font-sample">Lora</span><span class="m" data-i18n="settings.font.serif">Serif</span></button>
+                    <button id="appearance-font-mono" type="button" data-settings-preference-control data-val="mono" aria-pressed="false"><span class="font-sample">JetBrains Mono</span><span class="m" data-i18n="settings.font.mono">Monospace</span></button>
+                    <button id="appearance-font-geist-mono" type="button" data-settings-preference-control data-val="geist-mono" aria-pressed="false"><span class="font-sample">Geist Mono</span><span class="m" data-i18n="settings.font.mono">Monospace</span></button>
+                    <button id="appearance-font-system" type="button" data-settings-preference-control data-val="system" aria-pressed="false"><span class="font-sample" data-i18n="settings.font.systemName">System font</span><span class="m" data-i18n="settings.font.system">Device default</span></button>
+                  </div>
+                </section>
+
+                <div class="appearance-pack-footer">
+                  <button id="appearance-pack-reset" type="button" class="btn-secondary" data-settings-preference-control data-i18n="settings.stylePackReset">Use core defaults</button>
+                  <small data-i18n="settings.stylePackResetHint">Resets only optional theme, typeface, and width choices.</small>
+                </div>
+              </div>
+            </details>
+          </section>
         </div>
 
         <!-- ── Capture ── -->
         <div class="drawer-sections hidden" id="dp-capture">
-          <div class="capture-intro" aria-hidden="true">
-            <span class="capture-step active"><b>1</b> Capture</span>
-            <span class="capture-step"><b>2</b> Choose</span>
-            <span class="capture-step"><b>3</b> Save locally</span>
-          </div>
-
-          <div class="sp-grid">
-            <div class="drawer-sec">
-              <div class="field-lbl">Default destination</div>
-              <label class="capture-field" for="capture-destination">
-                <span>Save new captures to</span>
-                <select id="capture-destination" aria-describedby="capture-destination-hint"></select>
-              </label>
-              <small id="capture-destination-hint">Used by the keyboard shortcut and context menu. Missing destinations safely fall back to the active space's Inbox.</small>
-              <label class="toggle-row">
-                <span><span>Ask where to save in the popup</span><br><small>Turn off for one-click capture to your default destination</small></span>
-                <input type="checkbox" id="tog-capture-ask" checked>
-                <span class="tog"></span>
-              </label>
-              <label class="toggle-row">
-                <span><span>Remember the last destination</span><br><small>Popup choices become the next quick-capture target</small></span>
-                <input type="checkbox" id="tog-capture-remember" checked>
-                <span class="tog"></span>
-              </label>
-            </div>
-
-            <div class="drawer-sec">
-              <div class="field-lbl">After capture</div>
-              <label class="toggle-row">
-                <span><span>Close saved tabs</span><br><small>Keep off to save a copy while leaving the tab open</small></span>
-                <input type="checkbox" id="tog-capture-close" checked>
-                <span class="tog"></span>
-              </label>
-              <label class="toggle-row">
-                <span><span>Avoid duplicate links</span><br><small>Skip a URL already stored in the destination</small></span>
-                <input type="checkbox" id="tog-capture-dedupe" checked>
-                <span class="tog"></span>
-              </label>
-            </div>
-
-            <div class="drawer-sec">
-              <div class="field-lbl">Metadata saved locally</div>
-              <label class="toggle-row">
-                <span>Page title</span>
-                <input type="checkbox" id="tog-capture-title" checked>
-                <span class="tog"></span>
-              </label>
-              <label class="toggle-row">
-                <span>Site icon</span>
-                <input type="checkbox" id="tog-capture-favicon" checked>
-                <span class="tog"></span>
-              </label>
-              <div class="capture-preview" aria-live="polite">
-                <span class="capture-preview-icon" id="capture-preview-icon">L</span>
-                <span class="capture-preview-copy">
-                  <strong id="capture-preview-title">Page title</strong>
-                  <small id="capture-preview-destination">Inbox in the active space</small>
-                </span>
-                <span class="capture-local-badge" data-i18n="priv.localOnly">Profile-local data</span>
+          <section id="capture-contract" class="capture-contract" aria-labelledby="capture-contract-title" aria-describedby="capture-policy-status" aria-busy="false">
+            <header class="capture-contract-registry">
+              <span class="capture-contract-kicker" data-i18n="settings.captureContractKicker">SAVE CONTRACT</span>
+              <div>
+                <h3 id="capture-contract-title" data-i18n="settings.captureContractTitle">What happens when you save</h3>
+                <p data-i18n="settings.captureContractBody">The source tab changes only after Locus confirms the local copy.</p>
               </div>
+            </header>
+            <div class="capture-contract-route" role="list" aria-label="Current capture policy" data-i18n-aria-label="settings.captureContractAria">
+              <article class="capture-contract-stop source" role="listitem">
+                <span class="capture-contract-label" data-i18n="settings.captureSourceLabel">Source tab</span>
+                <strong id="capture-contract-source" data-i18n="settings.captureSourceCurrent">Current browser tab</strong>
+                <small data-i18n="settings.captureSourceAction">Save starts only when you ask</small>
+              </article>
+              <span class="capture-contract-link" aria-hidden="true"></span>
+              <article class="capture-contract-stop local" role="listitem">
+                <span class="capture-contract-label" data-i18n="settings.captureLocalLabel">Confirmed local copy</span>
+                <strong id="capture-contract-destination">—</strong>
+                <small id="capture-contract-entry">—</small>
+                <small id="capture-contract-record">—</small>
+                <small id="capture-contract-duplicate">—</small>
+              </article>
+              <span class="capture-contract-link" aria-hidden="true"></span>
+              <article class="capture-contract-stop effect" role="listitem">
+                <span class="capture-contract-label" data-i18n="settings.captureAfterLabel">Source after receipt</span>
+                <strong id="capture-contract-effect">—</strong>
+                <small id="capture-contract-effect-hint">—</small>
+              </article>
             </div>
+            <p id="capture-policy-status" class="capture-policy-status" role="status" aria-live="polite" aria-atomic="true" data-state="idle" data-i18n="settings.capturePolicyIdle">Capture preferences are stored in this browser profile.</p>
+          </section>
+
+          <div class="capture-settings-ledger">
+            <section class="drawer-sec capture-setting-row">
+              <div id="capture-destination-heading" class="field-lbl" data-i18n="settings.captureDestinationHeading">Save destination</div>
+              <div class="capture-setting-controls" role="group" aria-labelledby="capture-destination-heading">
+                <label class="capture-field" for="capture-destination">
+                  <span data-i18n="settings.captureDestinationLabel">Default for quick saves</span>
+                <select id="capture-destination" data-settings-preference-control aria-describedby="capture-destination-hint"></select>
+                </label>
+                <small id="capture-destination-hint" data-i18n="settings.captureDestinationHint">Used by the keyboard shortcut and context menu. If unavailable, saving stops and the source tab stays open.</small>
+                <label class="toggle-row">
+                  <span><span data-i18n="settings.captureAsk">Ask where to save in the popup</span><br><small id="capture-ask-hint" data-i18n="settings.captureAskHint">Turn off to use the quick-save destination immediately.</small></span>
+                  <input type="checkbox" id="tog-capture-ask" data-settings-preference-control aria-describedby="capture-ask-hint" checked>
+                  <span class="tog"></span>
+                </label>
+                <label class="toggle-row">
+                  <span><span data-i18n="settings.captureRemember">Remember the last destination</span><br><small id="capture-remember-hint" data-i18n="settings.captureRememberHint">A popup choice becomes the next quick-save destination.</small></span>
+                  <input type="checkbox" id="tog-capture-remember" data-settings-preference-control aria-describedby="capture-remember-hint" checked>
+                  <span class="tog"></span>
+                </label>
+              </div>
+            </section>
+
+            <section class="drawer-sec capture-setting-row">
+              <div id="capture-source-heading" class="field-lbl" data-i18n="settings.captureSourceHeading">Source-tab consequence</div>
+              <div class="capture-setting-controls" role="group" aria-labelledby="capture-source-heading">
+                <label class="toggle-row capture-consequence-toggle">
+                  <span><span data-i18n="settings.captureClose">Close after confirmed save</span><br><small id="capture-close-hint" data-i18n="settings.captureCloseHint">An unconfirmed save never closes the source tab.</small></span>
+                  <input type="checkbox" id="tog-capture-close" data-settings-preference-control aria-describedby="capture-close-hint" checked>
+                  <span class="tog"></span>
+                </label>
+              </div>
+            </section>
+
+            <section class="drawer-sec capture-setting-row">
+              <div id="capture-record-heading" class="field-lbl" data-i18n="settings.captureRecordHeading">Saved link record</div>
+              <div class="capture-setting-controls" role="group" aria-labelledby="capture-record-heading">
+                <label class="toggle-row">
+                  <span><span data-i18n="settings.captureDedupe">Skip duplicate URLs</span><br><small id="capture-dedupe-hint" data-i18n="settings.captureDedupeHint">Do not add another record when the destination already has the same URL.</small></span>
+                  <input type="checkbox" id="tog-capture-dedupe" data-settings-preference-control aria-describedby="capture-dedupe-hint" checked>
+                  <span class="tog"></span>
+                </label>
+                <label class="toggle-row">
+                  <span><span data-i18n="settings.captureTitle">Save page title</span><br><small id="capture-title-hint" data-i18n="settings.captureTitleHint">When off, the site domain is used as the title.</small></span>
+                  <input type="checkbox" id="tog-capture-title" data-settings-preference-control aria-describedby="capture-title-hint" checked>
+                  <span class="tog"></span>
+                </label>
+                <label class="toggle-row">
+                  <span><span data-i18n="settings.captureFavicon">Save site icon</span><br><small id="capture-favicon-hint" data-i18n="settings.captureFaviconHint">Keep the browser-provided site icon reference with the local record.</small></span>
+                  <input type="checkbox" id="tog-capture-favicon" data-settings-preference-control aria-describedby="capture-favicon-hint" checked>
+                  <span class="tog"></span>
+                </label>
+              </div>
+            </section>
           </div>
 
           <div class="capture-proof">
@@ -904,6 +1055,7 @@
                 <span data-i18n="settings.customizeShortcuts">Customize</span>
               </button>
             </div>
+            <div id="shortcuts-global-status" class="shortcut-status" role="status" aria-live="polite" hidden></div>
             <div id="shortcuts-global-list" class="sp-shortcut-list" role="list"></div>
             <small data-i18n="settings.globalShortcutsHint">These work anywhere in the browser and are managed by the browser itself.</small>
           </div>
@@ -918,108 +1070,186 @@
           </div>
         </div>
 
-        <!-- ── Privacy & Security ── -->
+        <!-- ── Privacy ── -->
         <div class="drawer-sections hidden" id="dp-privacy">
-          <div class="drawer-sec sp-privacy-hero">
-            <div class="sp-privacy-shield" aria-hidden="true">
-              <svg width="30" height="30" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.8l4.7 1.8v3.6c0 3-2 5.2-4.7 6-2.7-.8-4.7-3-4.7-6V3.6l4.7-1.8z" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/><path d="M5.5 7.4l1.4 1.4 2.6-2.6" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </div>
-            <div class="sp-privacy-copy">
-              <strong data-i18n="settings.privateByDesign">Privacy boundaries</strong>
-              <p data-i18n="settings.privateByDesignBody">Locus runs in this browser profile and does not send your workspace data to a Locus server.</p>
-              <ul class="sp-privacy-checks">
-                <li data-i18n="settings.check.local">Browser-profile local storage</li>
-                <li data-i18n="settings.check.tracking">No tracking or analytics</li>
-                <li data-i18n="settings.check.account">No account required</li>
-                <li data-i18n="settings.check.host">No host permissions — no automatic page inspection</li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="sp-grid">
-            <div class="drawer-sec">
-              <div class="field-lbl" data-i18n="settings.onScreen">On-screen privacy</div>
-              <label class="toggle-row">
-                <span><span data-i18n="settings.privacyBlur">Privacy blur mode</span><br><small data-i18n="settings.privacyBlurHint">blur all content (for screen sharing)</small></span>
-                <input type="checkbox" id="tog-blur">
-                <span class="tog"></span>
-              </label>
-            </div>
-            <div class="drawer-sec">
-              <div class="field-lbl" data-i18n="settings.yourData">Your data</div>
-              <p class="sp-body-copy" data-i18n="settings.yourDataBody">Workspace data is stored in this browser profile on this desktop. Uninstalling the extension or losing the profile can erase it, so export backups regularly.</p>
-              <div class="onboarding-actions">
-                <button id="privacy-export-btn" class="btn-secondary" data-i18n="settings.exportBackup">Export backup</button>
-                <button id="privacy-goto-data" class="btn-secondary" data-i18n="settings.openImportExport">Open Import &amp; Export</button>
+          <section id="privacy-contract" class="privacy-contract" aria-labelledby="privacy-contract-title" aria-describedby="privacy-status" aria-busy="false">
+            <header class="privacy-contract-registry">
+              <span class="privacy-contract-kicker" data-i18n="settings.privacyContractKicker">LOCAL DATA BOUNDARY</span>
+              <div>
+                <h3 id="privacy-contract-title" data-i18n="settings.privacyContractTitle">What Locus stores and can access</h3>
+                <p data-i18n="settings.privacyContractBody">These limits come from this extension's storage, permissions, and network policy.</p>
               </div>
+            </header>
+
+            <div class="privacy-fact-grid" role="list" data-i18n-aria-label="settings.privacyFactsAria" aria-label="Locus data and access facts">
+              <article class="privacy-fact" role="listitem">
+                <span class="privacy-fact-label" data-i18n="settings.privacyStorageLabel">Storage</span>
+                <strong data-i18n="settings.privacyStorageValue">This browser profile</strong>
+                <p data-i18n="settings.privacyStorageBody">Workspace data and preferences are stored locally for this browser profile.</p>
+              </article>
+              <article class="privacy-fact" role="listitem">
+                <span class="privacy-fact-label" data-i18n="settings.privacyNetworkLabel">Locus network</span>
+                <strong data-i18n="settings.privacyNetworkValue">No backend connection</strong>
+                <p data-i18n="settings.privacyNetworkBody">Extension pages cannot make network requests. Choosing Open still loads the saved website in a browser tab.</p>
+              </article>
+              <article class="privacy-fact" role="listitem">
+                <span class="privacy-fact-label" data-i18n="settings.privacyAccessLabel">Browser access</span>
+                <strong data-i18n="settings.privacyAccessValue">Zero host permissions</strong>
+                <p data-i18n="settings.privacyAccessBody">Locus can manage tabs, bookmarks, storage, alarms, notifications, and favicons, but cannot automatically inspect page content.</p>
+              </article>
+              <article class="privacy-fact recovery" role="listitem">
+                <span class="privacy-fact-label" data-i18n="settings.privacyRecoveryLabel">Recovery</span>
+                <strong data-i18n="settings.privacyRecoveryValue">Manual JSON backup</strong>
+                <p data-i18n="settings.privacyRecoveryBody">Uninstalling Locus or losing this profile can erase local data. Download a backup first.</p>
+              </article>
             </div>
-          </div>
+
+            <div class="privacy-recovery-actions" aria-label="Backup and restore actions" data-i18n-aria-label="settings.privacyActionsAria">
+              <button id="privacy-export-btn" class="btn-primary" type="button" data-settings-preference-control aria-describedby="privacy-export-limit">
+                <span data-i18n="settings.downloadBackup">Download JSON backup</span>
+              </button>
+              <button id="privacy-goto-data" class="btn-secondary" type="button" data-settings-preference-control data-i18n="settings.reviewRestore">Review restore options</button>
+              <small id="privacy-export-limit" data-i18n="settings.dataExportLimit">Locus can request the download, but cannot verify that the browser saved the file.</small>
+            </div>
+
+            <details id="privacy-screen-plugin" class="appearance-style-pack privacy-screen-plugin">
+              <summary aria-describedby="privacy-plugin-hint">
+                <span class="appearance-pack-copy">
+                  <strong data-i18n="settings.screenMaskPlugin">Screen-share mask plugin</strong>
+                  <small id="privacy-plugin-hint" data-i18n="settings.screenMaskPluginHint">Optional local display mask. It changes only what Locus displays.</small>
+                </span>
+                <span id="privacy-plugin-state" class="appearance-pack-state" data-state="available" data-i18n="settings.screenMaskAvailable">Available</span>
+              </summary>
+              <div class="appearance-pack-body">
+                <section class="appearance-pack-section privacy-mask-setting" aria-labelledby="privacy-mask-heading" aria-describedby="privacy-mask-hint">
+                  <div class="appearance-pack-heading">
+                    <h3 id="privacy-mask-heading" data-i18n="settings.screenMask">Mask saved content</h3>
+                    <p id="privacy-mask-hint" data-i18n="settings.screenMaskHint">Obscures saved titles and locations in Locus and hides destinations in capture notifications. It does not encrypt, delete, or change saved data.</p>
+                  </div>
+                  <div class="appearance-toggle-list">
+                    <label class="toggle-row">
+                      <span><span data-i18n="settings.screenMaskToggle">Use the screen-share mask</span><br><small id="privacy-mask-toggle-hint" data-i18n="settings.screenMaskToggleHint">The mask stays on until you turn it off.</small></span>
+                      <input type="checkbox" id="tog-blur" data-settings-preference-control aria-describedby="privacy-mask-hint privacy-mask-toggle-hint">
+                      <span class="tog"></span>
+                    </label>
+                  </div>
+                </section>
+              </div>
+            </details>
+
+            <p id="privacy-status" class="appearance-status privacy-status" role="status" aria-live="polite" aria-atomic="true" data-state="idle" data-i18n="settings.privacyIdle">The screen-share mask setting is stored in this browser profile.</p>
+          </section>
         </div>
 
         <!-- ── Storage ── -->
         <div class="drawer-sections hidden" id="dp-storage">
           <div class="sp-grid">
-            <div class="drawer-sec">
+            <div class="drawer-sec storage-capacity-row">
               <div class="field-lbl" data-i18n="settings.localStorage">Local storage</div>
-              <div class="storage-bar" aria-label="Storage usage">
-                <div id="storage-bar-text" class="storage-bar-text">Storage · —</div>
-                <div class="storage-bar-track"><div id="storage-bar-fill" class="storage-bar-fill"></div></div>
+              <div id="storage-capacity" class="storage-capacity" data-state="loading">
+                <div class="storage-capacity-head">
+                  <span class="storage-capacity-scope" data-i18n="settings.storageUsageScope">Exact browser usage</span>
+                  <span class="storage-capacity-status">
+                    <span id="storage-bar-state" class="storage-bar-state" data-i18n="settings.storageChecking">Checking</span>
+                    <button id="storage-refresh" class="storage-refresh" type="button" aria-disabled="true" data-i18n="settings.storageRefresh">Check again</button>
+                  </span>
+                </div>
+                <div id="storage-bar-text" class="storage-bar-text" role="status" aria-live="polite" aria-atomic="true" data-i18n="settings.storageUsageLoading">Checking browser-profile storage…</div>
+                <div id="storage-bar-meter" class="storage-bar-track" role="meter" aria-valuemin="0" aria-valuemax="100" aria-busy="true" aria-label="Exact browser-profile storage usage" data-i18n-aria-label="settings.storageUsageAria" aria-describedby="storage-bar-text storage-usage-hint">
+                  <div id="storage-bar-fill" class="storage-bar-fill" aria-hidden="true"></div>
+                </div>
+                <div class="storage-scale" aria-hidden="true">
+                  <span>0</span>
+                  <span data-i18n="settings.storageProfileLimit">Browser limit</span>
+                </div>
               </div>
-              <small data-i18n="settings.storageHint">Workspace data uses this browser profile. Uninstalling the extension or deleting the profile removes it; opening links and searches uses the browser normally.</small>
+              <small id="storage-usage-hint" data-i18n="settings.storageHint">The ruler shows Chrome's exact local-storage total for Locus in this browser profile.</small>
+              <small class="storage-persistence-hint" data-i18n="settings.storagePersistenceHint">Download a backup before uninstalling the extension or deleting this browser profile; either action removes the Locus data stored there.</small>
             </div>
-            <div class="drawer-sec">
-              <div class="field-lbl" data-i18n="settings.manageStorage">Manage</div>
-              <div class="sp-storage-row" id="storage-archive-row">
+            <div class="drawer-sec storage-recovery-row">
+              <div class="field-lbl" data-i18n="settings.manageStorage">Archive &amp; recovery</div>
+              <div class="sp-storage-row storage-archive-ledger" id="storage-archive-row">
                 <span class="sp-storage-row-icon" aria-hidden="true">
                   <svg width="14" height="14" viewBox="0 0 15 15" fill="none"><rect x="2" y="2.5" width="11" height="3" rx="0.8" stroke="currentColor" stroke-width="1.3"/><path d="M3 5.5V12a1 1 0 001 1h7a1 1 0 001-1V5.5M6 8h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
                 </span>
                 <span class="sp-storage-row-copy">
                   <strong data-i18n="settings.archivedItems">Archived items</strong>
-                  <small id="storage-archive-meta">—</small>
+                  <small id="storage-archive-meta" aria-live="polite" aria-atomic="true" data-i18n="settings.storageArchiveLoading">Checking Archive…</small>
                 </span>
                 <button id="storage-open-archive" class="btn-secondary" data-i18n="settings.openArchive">Open archive</button>
               </div>
-              <small data-i18n="settings.manageHint">Export a backup before pruning old items, and keep the file somewhere safe.</small>
+              <small data-i18n="settings.manageHint">Archive keeps items recoverable but does not free local storage. Download a backup before permanently deleting anything from Trash.</small>
             </div>
           </div>
 
-          <div class="drawer-sec">
-            <div class="field-lbl" data-i18n="settings.whatsUsingSpace">What's using space</div>
-            <div id="storage-breakdown" class="sp-breakdown" role="list"></div>
+          <div class="drawer-sec storage-breakdown-row">
+            <div id="storage-breakdown-label" class="field-lbl" data-i18n="settings.whatsUsingSpace">Estimated data breakdown</div>
+            <div class="storage-breakdown-copy">
+              <div class="storage-estimate-head">
+                <p id="storage-breakdown-hint" class="sp-body-copy" data-i18n="settings.storageBreakdownHint">Estimated from the current Locus JSON. Browser storage encoding can make it differ from the exact total above.</p>
+                <strong id="storage-breakdown-total" class="storage-breakdown-total" role="status" aria-live="polite" aria-atomic="true" data-i18n="settings.storageEstimateLoading">Calculating current Locus data…</strong>
+              </div>
+              <p id="storage-breakdown-empty" class="sp-empty hidden" role="status" data-i18n="settings.storageEmpty">No saved records yet. Only Locus settings and empty structure appear below.</p>
+              <div id="storage-breakdown" class="sp-breakdown" role="list" aria-label="Estimated Locus data breakdown" data-i18n-aria-label="settings.storageBreakdownAria" aria-describedby="storage-breakdown-hint storage-breakdown-total" aria-busy="true"></div>
+            </div>
           </div>
         </div>
 
         <!-- ── Import & Export ── -->
         <div class="drawer-sections hidden" id="dp-data">
-          <div class="sp-grid">
-            <div class="drawer-sec">
-              <div class="field-lbl" data-i18n="settings.import">Import</div>
-              <label for="import-file" class="btn-side">
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v7.5m0 0l3-3m-3 3l-3-3M2 10.5v1a1 1 0 001 1h7a1 1 0 001-1v-1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <span data-i18n="settings.importJson">Import JSON</span>
-                <small class="btn-side-hint" data-i18n="settings.importJsonHint">Locus, Folio, TabNest, or TabExtend exports</small>
-              </label>
-              <input type="file" id="import-file" accept=".json" style="display:none">
-              <button id="bookmarks-btn" class="btn-side">
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M3 1.5h7v10l-3.5-3L3 11.5v-10z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>
-                <span data-i18n="settings.importBookmarks">Import bookmarks</span>
-                <small class="btn-side-hint" data-i18n="settings.importBookmarksHint">From the browser's bookmark bar and folders</small>
-              </button>
-              <button id="paste-import-btn" class="btn-side">
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M4.5 1.5h-2a1 1 0 00-1 1v8a1 1 0 001 1h8a1 1 0 001-1v-8a1 1 0 00-1-1h-2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 1.5a1 1 0 011-1h2a1 1 0 011 1v1h-4v-1z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
-                <span data-i18n="settings.pasteLinks">Paste links</span>
-                <small class="btn-side-hint" data-i18n="settings.pasteLinksHint">One URL per line, straight into a group</small>
-              </button>
+          <div id="data-transfer-ledger" class="data-transfer-ledger" aria-label="Local data transfer" data-i18n-aria-label="settings.dataTransferAria">
+            <div class="drawer-sec data-transfer-row data-transfer-out">
+              <div class="field-lbl" data-i18n="settings.dataBackupLabel">Backup first</div>
+              <section class="data-transfer-sheet" aria-labelledby="data-backup-title">
+                <div class="data-transfer-direction" data-i18n="settings.dataBackupDirection">OUT · THIS PROFILE</div>
+                <div class="data-transfer-copy">
+                  <h3 id="data-backup-title" data-i18n="settings.dataBackupTitle">Download a backup</h3>
+                  <p id="data-backup-body" data-i18n="settings.dataBackupBody">Save all Locus data in this browser profile as one JSON file that you keep.</p>
+                  <p id="data-backup-summary" class="data-transfer-summary" role="status" aria-live="polite" data-i18n="settings.dataBackupLoading">Reading current Locus data…</p>
+                  <p id="data-export-hint" class="data-transfer-note" data-i18n="settings.dataExportLimit">Locus can request the download, but cannot verify that the browser saved the file.</p>
+                </div>
+                <button id="export-btn" class="data-transfer-action primary" type="button" aria-describedby="data-backup-body data-export-hint">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2v8m0 0l3-3m-3 3L5 7M3 12.5v1h10v-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span data-i18n="settings.downloadBackup">Download JSON backup</span>
+                </button>
+              </section>
             </div>
 
-            <div class="drawer-sec">
-              <div class="field-lbl" data-i18n="settings.export">Export</div>
-              <button id="export-btn" class="btn-side">
-                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v7.5m0 0l3-3m-3 3l-3-3M2 10.5v1a1 1 0 001 1h7a1 1 0 001-1v-1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" transform="rotate(180 6.5 6.5)"/></svg>
-                <span data-i18n="settings.exportJson">Export all data as JSON</span>
-                <small class="btn-side-hint" data-i18n="settings.exportJsonHint">A complete backup of every workspace</small>
-              </button>
-              <small data-i18n="settings.exportHint">Exports are plain JSON. Keep the file yourself; compatibility with future versions is verified per release.</small>
+            <div class="drawer-sec data-transfer-row data-transfer-in">
+              <div class="field-lbl" data-i18n="settings.dataRestoreLabel">Review and restore</div>
+              <section class="data-transfer-sheet" aria-labelledby="data-restore-title">
+                <div class="data-transfer-direction" data-i18n="settings.dataRestoreDirection">IN · REVIEW FIRST</div>
+                <div class="data-transfer-copy">
+                  <h3 id="data-restore-title" data-i18n="settings.dataRestoreTitle">Restore from a JSON backup</h3>
+                  <p id="data-restore-body" data-i18n="settings.dataRestoreBody">Choose a Locus or compatible legacy export. Review its contents and choose Merge or Replace before anything changes.</p>
+                  <p id="data-file-status" class="data-transfer-status" role="status" aria-live="polite" data-state="idle" data-i18n="settings.dataChooseStatus">No file selected. Current data is unchanged.</p>
+                </div>
+                <button id="import-json-btn" class="data-transfer-action" type="button" aria-controls="import-file" aria-describedby="data-restore-body data-file-status">
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 14V6m0 0L5 9m3-3l3 3M3 3.5v-1h10v1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span data-i18n="settings.chooseBackup">Choose JSON backup</span>
+                </button>
+                <input type="file" id="import-file" accept=".json" hidden>
+              </section>
+            </div>
+
+            <div class="drawer-sec data-transfer-row data-transfer-secondary-row">
+              <div class="field-lbl" data-i18n="settings.dataOtherLabel">Other sources</div>
+              <section class="data-transfer-secondary" aria-labelledby="data-other-title">
+                <div class="data-transfer-secondary-copy">
+                  <h3 id="data-other-title" data-i18n="settings.dataOtherTitle">Add into the current Space</h3>
+                  <p id="data-other-body" data-i18n="settings.dataOtherBody">Bookmarks and pasted links add records; they do not restore a complete Locus backup.</p>
+                </div>
+                <div class="data-transfer-secondary-actions">
+                  <button id="bookmarks-btn" class="data-transfer-action quiet" type="button" aria-describedby="data-other-body">
+                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true"><path d="M3.5 2h8v11l-4-3.2-4 3.2V2z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
+                    <span data-i18n="settings.importBookmarks">Import bookmarks</span>
+                  </button>
+                  <button id="paste-import-btn" class="data-transfer-action quiet" type="button" aria-describedby="data-other-body">
+                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true"><path d="M5 2H3a1 1 0 00-1 1v9a1 1 0 001 1h9a1 1 0 001-1V3a1 1 0 00-1-1H9M5 2a1 1 0 011-1h2a1 1 0 011 1v1H5V2z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span data-i18n="settings.pasteLinks">Paste links</span>
+                  </button>
+                </div>
+              </section>
             </div>
           </div>
         </div>
@@ -1050,29 +1280,35 @@
   </div>
 
   <!-- Paste links import -->
-  <div id="paste-overlay" class="hidden" role="dialog" aria-modal="true">
+  <div id="paste-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="paste-title" aria-describedby="paste-description">
     <div class="rm-panel paste-panel">
       <div class="modal-hd">
-        <h2>Paste links</h2>
-        <button id="paste-x" class="icon-btn" aria-label="Close">
-          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <h2 id="paste-title" data-i18n="paste.title">Paste links</h2>
+        <button id="paste-x" class="icon-btn" type="button" data-i18n-aria-label="paste.close" aria-label="Close Paste links">
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         </button>
       </div>
       <div class="modal-bd">
-        <p class="sub" style="margin-bottom:8px">One URL per line. Non-URL lines are ignored.</p>
-        <textarea id="paste-area" rows="8" placeholder="https://example.com&#10;https://github.com&#10;https://..."></textarea>
-        <div id="paste-preview" class="sub" style="margin-top:6px"></div>
+        <p id="paste-description" class="sub paste-description" data-i18n="paste.description">Paste one full http:// or https:// address per line. Other text is skipped.</p>
+        <label class="field-lbl paste-links-label" for="paste-area" data-i18n="paste.linksLabel">Links</label>
+        <textarea id="paste-area" rows="8" data-i18n-placeholder="paste.linksPlaceholder" placeholder="https://example.com&#10;https://github.com" aria-describedby="paste-preview paste-status" spellcheck="false"></textarea>
+        <p id="paste-preview" class="paste-preview" role="status" aria-live="polite" aria-atomic="true"></p>
+        <p id="paste-space-context" class="paste-space-context"></p>
         <div class="paste-actions">
           <label class="paste-opt">
-            <span>Add to</span>
-            <select id="paste-dest"></select>
+            <span data-i18n="paste.addTo">Add to group</span>
+            <select id="paste-dest" aria-describedby="paste-space-context paste-status"></select>
           </label>
-          <input id="paste-group-name" type="text" class="hidden" placeholder="Group name">
+          <label id="paste-group-name-field" class="paste-name-field hidden">
+            <span data-i18n="paste.groupName">Group name</span>
+            <input id="paste-group-name" type="text" data-i18n-placeholder="paste.groupNamePlaceholder" placeholder="Pasted links" aria-describedby="paste-status">
+          </label>
         </div>
+        <p id="paste-status" class="paste-status" role="status" aria-live="polite" aria-atomic="true"></p>
       </div>
       <div class="modal-ft">
-        <button id="paste-cancel" class="btn-secondary">Cancel</button>
-        <button id="paste-go" class="btn-primary" disabled>Import 0 links</button>
+        <button id="paste-cancel" class="btn-secondary" type="button" data-i18n="paste.cancel">Cancel</button>
+        <button id="paste-go" class="btn-primary" type="button" disabled>Import 1 link</button>
       </div>
     </div>
   </div>
@@ -1262,96 +1498,149 @@
       </div>
     </div>
   </div>
-  <div id="toast" class="hidden" role="status" aria-live="polite" aria-atomic="true">
-    <svg width="14" height="14" viewBox="0 0 14 14"><path d="M2 7l3 3 7-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-    <span id="toast-msg">Saved</span>
-    <button id="toast-undo" class="hidden">Undo</button>
+  <div id="toast" class="hidden" role="status" aria-live="polite" aria-atomic="true" data-tone="success" data-actionable="false">
+    <div class="toast-copy">
+      <span id="toast-mark" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 14 14" focusable="false"><path d="M2 7l3 3 7-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      </span>
+      <span id="toast-msg">Saved</span>
+    </div>
+    <div id="toast-actions" class="toast-actions">
+      <button id="toast-action" class="hidden" type="button"></button>
+      <button id="toast-undo" class="hidden" type="button" data-i18n="history.undoAction">Undo</button>
+    </div>
+    <button id="toast-close" class="toast-close" type="button" data-i18n-aria-label="feedback.dismiss" aria-label="Dismiss notification">
+      <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" focusable="false"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </button>
   </div>
 
   <!-- ══════ WELCOME / FIRST-SAVE TASK ══════ -->
   <!-- First-run only (gated by settings.onboarding.welcomeSeen). -->
   <div id="welcome" class="hidden" role="dialog" aria-modal="true" aria-labelledby="wc-task-title">
-    <div class="wc-card">
+    <div id="wc-card" class="wc-card" aria-busy="false">
       <section class="wc-task" aria-describedby="wc-task-description">
-        <div class="wc-logo"><img class="brand-img" src="icons/icon128.png" alt="" decoding="async"></div>
-        <h2 id="wc-task-title" class="wc-h" data-i18n="welcome.taskTitle">Keep one tab without keeping it open</h2>
-        <p id="wc-task-description" class="wc-sub" data-i18n="welcome.taskDescription">Save a real tab to your Inbox, then Locus will show you exactly where it went.</p>
-        <div id="wc-candidate" class="wc-candidate" aria-live="polite" aria-busy="true">
-          <img id="wc-candidate-fav" src="icons/icon32.png" alt="">
-          <span class="wc-candidate-copy">
-            <strong id="wc-candidate-title" data-i18n="welcome.looking">Looking for an open tab…</strong>
-            <small id="wc-candidate-url"></small>
-          </span>
+        <div class="wc-intro">
+          <div class="wc-kicker">
+            <span class="wc-logo"><img class="brand-img" src="icons/icon128.png" alt="" decoding="async"></span>
+            <span data-i18n="welcome.eyebrow">First save</span>
+          </div>
+          <h2 id="wc-task-title" class="wc-h" data-i18n="welcome.taskTitle">Save one tab. Find it again.</h2>
+          <p id="wc-task-description" class="wc-sub" data-i18n="welcome.taskDescription">Locus stores it at the location below before closing the source tab.</p>
         </div>
-        <p id="wc-empty" class="wc-empty hidden" data-i18n="welcome.empty">No saveable tab is open yet. Explore Locus, then use the toolbar popup from any page.</p>
-        <p id="wc-error" class="wc-empty hidden" role="alert" data-i18n="welcome.error">Locus couldn’t check your open tabs. Try again, or explore without saving.</p>
-        <div class="wc-nav wc-nav-single">
-          <button type="button" id="wc-retry" class="wc-skip hidden" data-i18n="welcome.retry">Try again</button>
-          <button type="button" id="wc-explore" class="wc-skip" data-i18n="welcome.explore">Explore on my own</button>
-          <button type="button" id="wc-save-first" class="wc-next" data-i18n="welcome.save" disabled>Save this tab</button>
+        <div class="wc-operation">
+          <div class="wc-route" role="group" aria-labelledby="wc-task-title" aria-describedby="wc-task-description">
+          <div class="wc-route-source">
+            <span class="wc-route-label" data-i18n="welcome.currentTab">Current tab</span>
+            <div id="wc-candidate" class="wc-candidate" aria-live="polite" aria-busy="true">
+              <img id="wc-candidate-fav" src="icons/icon32.png" alt="">
+              <span class="wc-candidate-copy">
+                <strong id="wc-candidate-title" data-i18n="welcome.looking">Looking for an open tab…</strong>
+                <small id="wc-candidate-url"></small>
+              </span>
+            </div>
+            <p id="wc-empty" class="wc-empty hidden" data-i18n="welcome.empty">No saveable tab is open yet. Explore Locus, then use the toolbar popup from any page.</p>
+            <p id="wc-error" class="wc-empty hidden" role="alert" data-i18n="welcome.error">Locus couldn’t check your open tabs. Try again, or explore without saving.</p>
+          </div>
+          <div class="wc-route-line" aria-hidden="true"><span></span></div>
+          <div class="wc-route-destination">
+            <span id="wc-destination-label" class="wc-route-label" data-i18n="home.trail.saveDestination">Save to</span>
+            <div id="wc-destination" class="wc-destination" aria-live="polite">
+              <span class="wc-destination-loading" data-i18n="welcome.destinationChecking">Checking current Space…</span>
+            </div>
+            <p id="wc-destination-message" class="wc-empty hidden" role="alert"></p>
+          </div>
+          </div>
+          <p id="wc-status" class="wc-status" role="status" aria-live="polite" aria-atomic="true"></p>
+          <div class="wc-nav wc-nav-single">
+            <button type="button" id="wc-save-first" class="wc-next" data-i18n="welcome.save" aria-describedby="wc-task-description wc-destination-label wc-destination wc-destination-message wc-status" disabled>Save and close tab</button>
+            <button type="button" id="wc-retry" class="wc-skip hidden" data-i18n="welcome.retry">Try again</button>
+            <button type="button" id="wc-explore" class="wc-skip" data-i18n="welcome.explore">Explore on my own</button>
+          </div>
         </div>
       </section>
     </div>
   </div>
 
-  <!-- ══════ TOOLS HUB ══════ -->
-  <div id="tools-hub" class="hidden">
-    <div class="hub-panel">
-      <div class="hub-hd">
+  <!-- ══════ OPTIONAL PLUGINS ══════ -->
+  <div id="tools-hub" class="hidden" role="dialog" aria-modal="true" aria-labelledby="plugins-title" aria-describedby="plugins-description plugins-local-note">
+    <section class="hub-panel">
+      <header class="hub-hd">
         <div class="hub-title">
-          <div class="hub-icon">🧩</div>
-          <div>
-            <h2 data-i18n="plugins.title">Plugins</h2>
-            <div class="hub-subtitle" data-i18n="plugins.subtitle">Built-in mini-apps — turn on what you need</div>
+          <span class="hub-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M10 3.2a2 2 0 014 0V4a1 1 0 001 1h2.8a1 1 0 011 1V9a1 1 0 001 1h.2a2 2 0 010 4h-.2a1 1 0 00-1 1v2.8a1 1 0 01-1 1H15a1 1 0 01-1-1v-.2a2 2 0 00-4 0v.2a1 1 0 01-1 1H6.2a1 1 0 01-1-1V15a1 1 0 00-1-1H4a2 2 0 010-4h.2a1 1 0 001-1V6a1 1 0 011-1H9a1 1 0 001-1v-.8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          </span>
+          <div class="hub-title-copy">
+            <span class="hub-eyebrow" data-i18n="plugins.eyebrow">Optional tools</span>
+            <h2 id="plugins-title" data-i18n="plugins.title">Plugins</h2>
+            <p id="plugins-description" class="hub-subtitle" data-i18n="plugins.subtitle">Already available locally. Open one when needed—no download or account.</p>
           </div>
         </div>
-        <button id="hub-close" class="icon-btn">
-          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <button id="hub-close" class="icon-btn" type="button" aria-label="Close plugins" data-i18n-aria-label="plugins.close">
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         </button>
+      </header>
+      <div class="hub-body">
+        <p id="plugins-local-note" class="hub-local-note" data-i18n="plugins.localNote">Plugin data stays in this browser profile.</p>
+        <ul id="plugins-list" class="hub-grid" aria-label="Available plugins" data-i18n-aria-label="plugins.availableList">
+          <li class="hub-entry">
+            <button class="hub-card" type="button" data-tool="pomodoro" aria-labelledby="plugin-pomodoro-name plugin-pomodoro-open" aria-describedby="plugin-pomodoro-desc plugin-pomodoro-state">
+              <span class="hub-card-code" aria-hidden="true">PO</span>
+              <span class="hub-card-copy"><strong id="plugin-pomodoro-name" class="hub-card-name" data-i18n="plugins.pomodoro.name">Pomodoro</strong><span id="plugin-pomodoro-desc" class="hub-card-desc" data-i18n="plugins.pomodoro.desc">Run timed focus and break sessions.</span><span id="plugin-pomodoro-state" class="hub-card-state" data-i18n="plugins.available">Available</span></span>
+              <span id="plugin-pomodoro-open" class="hub-card-open" data-i18n="plugins.open">Open</span>
+            </button>
+          </li>
+          <li class="hub-entry">
+            <button class="hub-card" type="button" data-tool="finance" aria-labelledby="plugin-finance-name plugin-finance-open" aria-describedby="plugin-finance-desc plugin-finance-state">
+              <span class="hub-card-code" aria-hidden="true">FI</span>
+              <span class="hub-card-copy"><strong id="plugin-finance-name" class="hub-card-name" data-i18n="plugins.finance.name">Finance Diary</strong><span id="plugin-finance-desc" class="hub-card-desc" data-i18n="plugins.finance.desc">Record personal spending.</span><span id="plugin-finance-state" class="hub-card-state" data-i18n="plugins.available">Available</span></span>
+              <span id="plugin-finance-open" class="hub-card-open" data-i18n="plugins.open">Open</span>
+            </button>
+          </li>
+          <li class="hub-entry">
+            <button class="hub-card" type="button" data-tool="subs" aria-labelledby="plugin-subs-name plugin-subs-open" aria-describedby="plugin-subs-desc plugin-subs-state">
+              <span class="hub-card-code" aria-hidden="true">SU</span>
+              <span class="hub-card-copy"><strong id="plugin-subs-name" class="hub-card-name" data-i18n="plugins.subs.name">Subscriptions</strong><span id="plugin-subs-desc" class="hub-card-desc" data-i18n="plugins.subs.desc">Record recurring charges.</span><span id="plugin-subs-state" class="hub-card-state" data-i18n="plugins.available">Available</span></span>
+              <span id="plugin-subs-open" class="hub-card-open" data-i18n="plugins.open">Open</span>
+            </button>
+          </li>
+          <li class="hub-entry">
+            <button class="hub-card" type="button" data-tool="habits" aria-labelledby="plugin-habits-name plugin-habits-open" aria-describedby="plugin-habits-desc plugin-habits-state">
+              <span class="hub-card-code" aria-hidden="true">HA</span>
+              <span class="hub-card-copy"><strong id="plugin-habits-name" class="hub-card-name" data-i18n="plugins.habits.name">Habits</strong><span id="plugin-habits-desc" class="hub-card-desc" data-i18n="plugins.habits.desc">Mark daily routines.</span><span id="plugin-habits-state" class="hub-card-state" data-i18n="plugins.available">Available</span></span>
+              <span id="plugin-habits-open" class="hub-card-open" data-i18n="plugins.open">Open</span>
+            </button>
+          </li>
+          <li class="hub-entry">
+            <button class="hub-card" type="button" data-tool="water" aria-labelledby="plugin-water-name plugin-water-open" aria-describedby="plugin-water-desc plugin-water-state">
+              <span class="hub-card-code" aria-hidden="true">HY</span>
+              <span class="hub-card-copy"><strong id="plugin-water-name" class="hub-card-name" data-i18n="plugins.water.name">Hydration</strong><span id="plugin-water-desc" class="hub-card-desc" data-i18n="plugins.water.desc">Record daily water intake.</span><span id="plugin-water-state" class="hub-card-state" data-i18n="plugins.available">Available</span></span>
+              <span id="plugin-water-open" class="hub-card-open" data-i18n="plugins.open">Open</span>
+            </button>
+          </li>
+          <li class="hub-entry">
+            <button class="hub-card" type="button" data-tool="books" aria-labelledby="plugin-books-name plugin-books-open" aria-describedby="plugin-books-desc plugin-books-state">
+              <span class="hub-card-code" aria-hidden="true">RE</span>
+              <span class="hub-card-copy"><strong id="plugin-books-name" class="hub-card-name" data-i18n="plugins.books.name">Reading</strong><span id="plugin-books-desc" class="hub-card-desc" data-i18n="plugins.books.desc">Keep a book log and wishlist.</span><span id="plugin-books-state" class="hub-card-state" data-i18n="plugins.available">Available</span></span>
+              <span id="plugin-books-open" class="hub-card-open" data-i18n="plugins.open">Open</span>
+            </button>
+          </li>
+          <li class="hub-entry">
+            <button class="hub-card" type="button" data-tool="goals" aria-labelledby="plugin-goals-name plugin-goals-open" aria-describedby="plugin-goals-desc plugin-goals-state">
+              <span class="hub-card-code" aria-hidden="true">GO</span>
+              <span class="hub-card-copy"><strong id="plugin-goals-name" class="hub-card-name" data-i18n="plugins.goals.name">Goals</strong><span id="plugin-goals-desc" class="hub-card-desc" data-i18n="plugins.goals.desc">Track long-term targets.</span><span id="plugin-goals-state" class="hub-card-state" data-i18n="plugins.available">Available</span></span>
+              <span id="plugin-goals-open" class="hub-card-open" data-i18n="plugins.open">Open</span>
+            </button>
+          </li>
+          <li class="hub-entry">
+            <button class="hub-card" type="button" data-tool="workout" aria-labelledby="plugin-workout-name plugin-workout-open" aria-describedby="plugin-workout-desc plugin-workout-state">
+              <span class="hub-card-code" aria-hidden="true">WO</span>
+              <span class="hub-card-copy"><strong id="plugin-workout-name" class="hub-card-name" data-i18n="plugins.workout.name">Workouts</strong><span id="plugin-workout-desc" class="hub-card-desc" data-i18n="plugins.workout.desc">Record exercise sessions.</span><span id="plugin-workout-state" class="hub-card-state" data-i18n="plugins.available">Available</span></span>
+              <span id="plugin-workout-open" class="hub-card-open" data-i18n="plugins.open">Open</span>
+            </button>
+          </li>
+        </ul>
       </div>
-      <div class="hub-grid">
-        <button class="hub-card" data-tool="pomodoro">
-          <div class="hub-card-icon pomo">🍅</div>
-          <div class="hub-card-name">Pomodoro</div>
-          <div class="hub-card-desc">Focused study sessions</div>
-        </button>
-        <button class="hub-card" data-tool="finance">
-          <div class="hub-card-icon fin">💰</div>
-          <div class="hub-card-name">Finance Diary</div>
-          <div class="hub-card-desc">Track daily spending</div>
-        </button>
-        <button class="hub-card" data-tool="subs">
-          <div class="hub-card-icon sub">💳</div>
-          <div class="hub-card-name">Subscriptions</div>
-          <div class="hub-card-desc">Recurring charges</div>
-        </button>
-        <button class="hub-card" data-tool="habits">
-          <div class="hub-card-icon hab">🔁</div>
-          <div class="hub-card-name">Habits</div>
-          <div class="hub-card-desc">Build daily streaks</div>
-        </button>
-        <button class="hub-card" data-tool="water">
-          <div class="hub-card-icon wat">💧</div>
-          <div class="hub-card-name">Hydration</div>
-          <div class="hub-card-desc">Daily water intake</div>
-        </button>
-        <button class="hub-card" data-tool="books">
-          <div class="hub-card-icon bk">📚</div>
-          <div class="hub-card-name">Reading</div>
-          <div class="hub-card-desc">Book log & wishlist</div>
-        </button>
-        <button class="hub-card" data-tool="goals">
-          <div class="hub-card-icon go">🎯</div>
-          <div class="hub-card-name">Goals</div>
-          <div class="hub-card-desc">Long-term targets</div>
-        </button>
-        <button class="hub-card" data-tool="workout">
-          <div class="hub-card-icon wo">💪</div>
-          <div class="hub-card-name">Workouts</div>
-          <div class="hub-card-desc">Exercise log</div>
-        </button>
-      </div>
-    </div>
+    </section>
   </div>
 
   <!-- ══════ ABOUT ══════ -->

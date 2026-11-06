@@ -6,46 +6,66 @@
    Loaded before newtab.css and popup.css so both stay in visual lockstep.
    ═══════════════════════════════════════════════════════════════ */
 
-/* Locus — signature light theme. A white canvas with a soft blue→purple
-   gradient identity and glassy cards; this is the first-launch default.
-   --brand-grad (defined in newtab.css) reads --accent → --accent2, so the
-   blue→violet through-line travels across every surface automatically. */
+/* Shared typography roles. The selected face owns readable interface copy and
+   headings on every surface; monospace is reserved for exact paths, counts,
+   shortcuts, and persistence receipts. */
+:root {
+  --font: 'DM Sans', system-ui, sans-serif;
+  --font-display: var(--font);
+  --font-mono: 'Geist Mono', ui-monospace, monospace;
+}
+[data-font="dm"]         { --font: 'DM Sans', system-ui, sans-serif; }
+[data-font="inter"]      { --font: 'Inter', system-ui, sans-serif; }
+[data-font="geist"]      { --font: 'Geist', system-ui, sans-serif; }
+[data-font="plex"]       { --font: 'IBM Plex Sans', system-ui, sans-serif; }
+[data-font="lora"]       { --font: 'Lora', Georgia, serif; }
+[data-font="mono"]       { --font: 'JetBrains Mono', ui-monospace, monospace; }
+[data-font="geist-mono"] { --font: 'Geist Mono', ui-monospace, monospace; }
+[data-font="system"]     { --font: system-ui, -apple-system, sans-serif; }
+
+/* Locus Index — signature light theme. Warm stock, dark registry ink, one blue
+   locator signal, and one green receipt signal; this is the first-launch default.
+   Structural CSS carries those signals across every extension surface. */
 [data-theme="folio"] {
-  /* Near-white canvas; panels/cards sit pure white and lift on soft borders +
-     subtle dividers rather than a heavy tinted board (premium SaaS feel). Kept
-     only a whisper of lavender so it never reads blue-gray (Waypoint target). */
-  --bg: #fcfdfe; --bg2: #ffffff; --bg3: #f1f3fb; --bg4: #e8ecf8; --bg5: #d7def1;
-  --panel: #ffffff;
-  --border: rgba(35,45,86,0.075); --border2: rgba(35,45,86,0.14);
-  --text: #12172d; --text2: #5b647c; --text3: #98a0b5;
-  --accent: #4f66f0; --accent2: #8b5cf6; --accent-bg: #5566f2; --accent-hover: #4453e6; --accent-text: #ffffff;
-  --green: #16a34a; --red: #e5484d; --yellow: #c98a04; --orange: #ea6a1f; --blue: #2f6bff;
-  --note-bg: #eef1ff; --note-bd: rgba(91,110,245,0.24);
-  /* Cool, soft elevation so white cards float off the light-lavender board
-     instead of inheriting the base dark shadows. */
-  --shadow: 0 18px 48px rgba(43,54,116,0.10), 0 4px 14px rgba(43,54,116,0.06);
-  --shadow-sm: 0 2px 10px rgba(43,54,116,0.06);
-  --card-shadow: 0 1px 2px rgba(43,54,116,0.035), 0 2px 8px rgba(43,54,116,0.035);
-  --card-shadow-h: 0 14px 30px rgba(43,54,116,0.12), 0 2px 8px rgba(43,54,116,0.06);
-  --shadow-1: 0 2px 10px rgba(43,54,116,0.07);
-  --shadow-2: 0 10px 24px rgba(43,54,116,0.10), 0 0 0 1px rgba(43,54,116,0.035);
-  --shadow-3: 0 20px 48px rgba(43,54,116,0.14), 0 3px 10px rgba(43,54,116,0.07);
+  /* Locus Index: warm stock, crisp ink, one location blue, and one accepted-
+     receipt green. The registry tokens let every surface share a dark filing
+     edge without turning the work area into another dark dashboard. */
+  --bg: #efede7; --bg2: #faf8f2; --bg3: #e7e4dc; --bg4: #d8d4ca; --bg5: #b9b5aa;
+  --panel: #fffdf8;
+  --paper: #f4f1ea; --paper-strong: #fffdf8;
+  --registry-bg: #19231f; --registry-text: #f6f3eb; --registry-muted: #aeb9b3; --registry-rule: #35423c;
+  --locator: #3158db; --receipt: #197654; --focus-ring: #3158db;
+  --border: rgba(28,35,32,0.13); --border2: rgba(28,35,32,0.27);
+  --text: #1c2320; --text2: #515b56; --text3: #737d77;
+  --accent: #3158db; --accent2: #294bbd; --accent-bg: #3158db; --accent-hover: #294bbd; --accent-text: #ffffff;
+  --green: #197654; --red: #b8423d; --yellow: #8f6305; --orange: #ad572d; --blue: #3158db;
+  --note-bg: #fff5cf; --note-bd: rgba(143,99,5,0.28);
+  --shadow: 0 24px 60px rgba(24,32,28,0.17), 0 4px 12px rgba(24,32,28,0.08);
+  --shadow-sm: 0 2px 8px rgba(24,32,28,0.09);
+  --card-shadow: 0 1px 2px rgba(24,32,28,0.08);
+  --card-shadow-h: 0 8px 22px rgba(24,32,28,0.12);
+  --shadow-1: 0 1px 2px rgba(24,32,28,0.09);
+  --shadow-2: 0 10px 26px rgba(24,32,28,0.13);
+  --shadow-3: 0 26px 68px rgba(24,32,28,0.2), 0 4px 12px rgba(24,32,28,0.08);
 }
 
-/* Locus Dark — deep indigo-ink variant of the signature theme. Same
-   blue→violet accent on a near-black cool base. */
+/* Locus Dark — deep green-ink variant of the same Locus Index system. Blue
+   still marks location while green remains reserved for accepted recovery. */
 [data-theme="folio-dark"] {
-  --bg: #0c0e1a; --bg2: #141626; --bg3: #1b1e33; --bg4: #262a45; --bg5: #343a5c;
-  --panel: #121423;
-  --border: rgba(160,175,255,0.08); --border2: rgba(160,175,255,0.16);
-  --text: #eef0fb; --text2: #a3a9c8; --text3: #656d92;
-  --accent: #8b9bff; --accent2: #b78cff; --accent-bg: #5b6ef5; --accent-hover: #4a5ce8; --accent-text: #ffffff;
-  --green: #34d399; --red: #fb7185; --yellow: #fbbf24; --orange: #fb923c; --blue: #60a5fa;
-  --note-bg: #191c30; --note-bd: rgba(139,155,255,0.22);
-  --shadow: 0 20px 52px rgba(0,0,0,0.5), 0 4px 14px rgba(0,0,0,0.34);
-  --shadow-sm: 0 2px 10px rgba(0,0,0,0.34);
-  --card-shadow: 0 1px 2px rgba(0,0,0,0.4), 0 0 0 1px rgba(160,175,255,0.03);
-  --card-shadow-h: 0 12px 28px rgba(0,0,0,0.46), 0 0 0 1px rgba(160,175,255,0.06);
+  --bg: #111613; --bg2: #171d19; --bg3: #202822; --bg4: #2b352f; --bg5: #3d4942;
+  --panel: #171d19;
+  --paper: #111613; --paper-strong: #171d19;
+  --registry-bg: #090d0b; --registry-text: #f0f3ed; --registry-muted: #9eaaa3; --registry-rule: #2b3530;
+  --locator: #8fa8ff; --receipt: #59c29a; --focus-ring: #a8b9ff;
+  --border: rgba(232,240,235,0.11); --border2: rgba(232,240,235,0.23);
+  --text: #edf2ee; --text2: #afb9b3; --text3: #7f8b84;
+  --accent: #8fa8ff; --accent2: #748ff0; --accent-bg: #5d73d1; --accent-hover: #6b82dc; --accent-text: #ffffff;
+  --green: #59c29a; --red: #ff8178; --yellow: #e7b74a; --orange: #ef925c; --blue: #8fa8ff;
+  --note-bg: #292718; --note-bd: rgba(231,183,74,0.26);
+  --shadow: 0 24px 64px rgba(0,0,0,0.58), 0 4px 14px rgba(0,0,0,0.36);
+  --shadow-sm: 0 2px 10px rgba(0,0,0,0.36);
+  --card-shadow: 0 1px 2px rgba(0,0,0,0.5), 0 0 0 1px rgba(232,240,235,0.025);
+  --card-shadow-h: 0 10px 26px rgba(0,0,0,0.5), 0 0 0 1px rgba(232,240,235,0.07);
 }
 
 /* Rice Paper: legacy warm "bento box" base with a gold/persimmon accent. */
@@ -210,4 +230,63 @@
   --accent: #ffffff; --accent2: #e5e5e5; --accent-bg: #ffffff; --accent-hover: #e5e5e5; --accent-text: #000000;
   --green: #ffffff; --red: #ffffff; --yellow: #ffffff; --orange: #ffffff; --blue: #ffffff;
   --note-bg: #1a1a1a; --note-bd: rgba(255,255,255,0.15);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Grid — monochrome hairline system (design direction G).
+   Chrome is black, white, and grey only; depth comes from 1px borders
+   instead of blur. Colour is spent exclusively on state that the user
+   has to act on (accepted receipt, error, overdue, external link), so a
+   coloured pixel always means something. Registry stays near-black in
+   both variants because --index-registry doubles as the modal scrim
+   base; inverting it in dark mode would flash the overlay white.
+   ═══════════════════════════════════════════════════════════════ */
+[data-theme="grid"] {
+  --bg: #ffffff; --bg2: #fafafa; --bg3: #f5f5f5; --bg4: #ededed; --bg5: #d4d4d4;
+  --panel: #ffffff;
+  --paper: #ffffff; --paper-strong: #ffffff;
+  --registry-bg: #000000; --registry-text: #ffffff; --registry-muted: #a1a1a1; --registry-rule: #2a2a2a;
+  --locator: #000000; --receipt: #067a3f; --focus-ring: #000000;
+  --border: #eaeaea; --border2: #d4d4d4;
+  /* text2/text3 are held at 7.5:1 and 4.5:1 on --bg. Muted grey that fails AA
+     is this project's recurring regression; do not lighten these. */
+  --text: #000000; --text2: #595959; --text3: #767676;
+  --accent: #000000; --accent2: #333333; --accent-bg: #000000; --accent-hover: #333333; --accent-text: #ffffff;
+  --green: #067a3f; --red: #c62828; --yellow: #8a6100; --orange: #b2521a; --blue: #0060df;
+  --note-bg: #fafafa; --note-bd: #eaeaea;
+}
+
+[data-theme="grid-dark"] {
+  --bg: #000000; --bg2: #0a0a0a; --bg3: #141414; --bg4: #1f1f1f; --bg5: #2e2e2e;
+  --panel: #0a0a0a;
+  --paper: #000000; --paper-strong: #0a0a0a;
+  --registry-bg: #1f1f1f; --registry-text: #ffffff; --registry-muted: #8f8f8f; --registry-rule: #333333;
+  --locator: #ffffff; --receipt: #3fb950; --focus-ring: #ffffff;
+  --border: #262626; --border2: #3d3d3d;
+  --text: #ffffff; --text2: #a1a1a1; --text3: #8f8f8f;
+  --accent: #ffffff; --accent2: #d4d4d4; --accent-bg: #ffffff; --accent-hover: #d4d4d4; --accent-text: #000000;
+  --green: #3fb950; --red: #f85149; --yellow: #d29922; --orange: #db6d28; --blue: #4493f8;
+  --note-bg: #141414; --note-bd: #333333;
+}
+
+/* Structural half of the Grid system. Lives here rather than in newtab.css so
+   the popup inherits it too, and is written against both :root and body because
+   the new tab sets data-theme on <body> while the popup sets it on <html>.
+   Both selectors outrank the plain `:root` scale in newtab.css. */
+:root[data-theme="grid"], :root[data-theme="grid-dark"],
+body[data-theme="grid"], body[data-theme="grid-dark"] {
+  /* One tight radius pair. No 12-16px card corners. */
+  --r-sm: 6px; --r-md: 6px; --r-lg: 8px; --r: 6px; --rl: 8px; --r-card: 8px;
+  /* Resting surfaces get a hairline, never a blur. Only true overlays (menus,
+     modals, drags) keep a drop, and even then it stays short and faint. */
+  --card-shadow: none; --card-shadow-h: none; --shadow-sm: none;
+  --shadow-1: 0 0 0 1px var(--border);
+  --shadow-2: 0 0 0 1px var(--border), 0 4px 12px rgba(0,0,0,0.06);
+  --shadow-3: 0 0 0 1px var(--border), 0 8px 24px rgba(0,0,0,0.08);
+  --shadow: 0 0 0 1px var(--border), 0 8px 24px rgba(0,0,0,0.08);
+  --chrome-edge-shadow: none;
+  --chrome-side-shadow-r: none;
+  --chrome-side-shadow-l: none;
+  /* Frosted chrome is the opposite of a hairline system. */
+  --glass-blur: 0px; --blur: 0px;
 }

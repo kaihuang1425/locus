@@ -16,7 +16,7 @@ const clone = value => JSON.parse(JSON.stringify(value));
 
 assert.ok(currentSchemaMatch, 'CURRENT_SCHEMA must be extractable');
 const currentSchema = Number(currentSchemaMatch[1]);
-const compatibilitySchemas = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+const compatibilitySchemas = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13];
 const compatibilityApps = ['locus', 'folio', 'stow', 'tabento', 'tabnest', 'tabextend'];
 const semanticFuzzSeed = 0x51a7e5;
 const semanticFuzzRuns = 128;
@@ -57,6 +57,60 @@ function extractBetween(startMarker, endMarker) {
   return source.slice(start, end);
 }
 
+function extractFunction(name) {
+  const marker = `function ${name}(`;
+  const start = source.indexOf(marker);
+  assert.ok(start >= 0, `${name} must remain extractable`);
+  const declarationStart = source.slice(Math.max(0, start - 6), start) === 'async ' ? start - 6 : start;
+  const bodyStart = source.indexOf('{', source.indexOf(')', start));
+  assert.ok(bodyStart >= 0, `${name} must have a body`);
+  let depth = 0;
+  let quote = '';
+  let escaped = false;
+  let lineComment = false;
+  let blockComment = false;
+  for (let index = bodyStart; index < source.length; index += 1) {
+    const char = source[index];
+    const next = source[index + 1];
+    if (lineComment) { if (char === '\n') lineComment = false; continue; }
+    if (blockComment) { if (char === '*' && next === '/') { blockComment = false; index += 1; } continue; }
+    if (quote) {
+      if (escaped) { escaped = false; continue; }
+      if (char === '\\') { escaped = true; continue; }
+      if (char === quote) quote = '';
+      continue;
+    }
+    if (char === '/' && next === '/') { lineComment = true; index += 1; continue; }
+    if (char === '/' && next === '*') { blockComment = true; index += 1; continue; }
+    if (char === '"' || char === "'" || char === '`') { quote = char; continue; }
+    if (char === '{') depth += 1;
+    if (char === '}' && --depth === 0) return source.slice(declarationStart, index + 1);
+  }
+  assert.fail(`${name} body is unterminated`);
+}
+
+function readI18n() {
+  const startMarker = 'const I18N = ';
+  const start = source.indexOf(startMarker);
+  const trStart = source.indexOf('\nfunction tr(', start);
+  const close = source.lastIndexOf('};', trStart);
+  assert.ok(start >= 0 && trStart > start && close > start, 'I18N must remain extractable');
+  return vm.runInNewContext(
+    `(${source.slice(start + startMarker.length, close + 1)})`,
+    {},
+    { filename: 'export-import-scale-i18n.js' },
+  );
+}
+
+const i18n = readI18n();
+function translateEnglish(key, vars = {}) {
+  let value = i18n.en[key] || key;
+  for (const [name, replacement] of Object.entries(vars)) {
+    value = value.replaceAll(`{${name}}`, String(replacement));
+  }
+  return value;
+}
+
 const stateStart = source.indexOf('const State = (() => {');
 const stateEndMarker = '\n})();';
 const stateEnd = source.indexOf(stateEndMarker, stateStart);
@@ -66,6 +120,11 @@ const migrateSource = extractBetween('function isStableEntityReminderId(value) {
 const exportSource = extractBetween('function countState(s) {', '\n\nlet importCtx = null;');
 const importReaderSource = extractBetween('let importCtx = null;', '\n\nfunction openImportPreview() {');
 const applyImportSource = extractBetween('async function applyImportReplace(data) {', '\n\nfunction bindImportUI() {');
+const confirmImportPreviewSource = extractFunction('confirmImportPreview');
+const handleImportGlobalKeySource = extractFunction('handleImportGlobalKey');
+const savedTabUrlPolicySource = extractFunction('isOpenableSavedTabUrl');
+const organizationIdAllocatorSource = extractFunction('createOrganizationIdAllocator');
+const importBookmarksSource = extractFunction('importBookmarks');
 
 function makeItem(prefix, index) {
   const id = `${prefix}-item-${index}`;
@@ -283,6 +342,8 @@ function createHarness(initialState, initialWriteMode = 'success') {
     storageErrors: [],
     recoveryMessages: [],
     toasts: [],
+    dataStatuses: [],
+    importInputResets: 0,
   };
   let stored = { te: clone(initialState) };
   let writeMode = initialWriteMode;
@@ -358,6 +419,7 @@ function createHarness(initialState, initialWriteMode = 'success') {
   };
 
   const sandbox = {
+    appLocale: () => 'en',
     Blob,
     browserLanguage: () => 'en',
     chrome,
@@ -395,9 +457,11 @@ function createHarness(initialState, initialWriteMode = 'success') {
       const complete = previewCompletion;
       previewCompletion = null;
       if (complete) complete(clone(context.__contract.importContext()));
+      return true;
     },
     refreshStorageUsage() {},
     renderAll() {},
+    resetImportFileInput() { metrics.importInputResets += 1; },
     resetSurfaceAfterImportReplace() {},
     applySettings() {},
     sanitizeHtml: value => value,
@@ -411,7 +475,11 @@ function createHarness(initialState, initialWriteMode = 'success') {
     showStateRecoveryRequired(error) {
       metrics.recoveryMessages.push(String(error?.message || error || ''));
     },
+    setDataTransferFileStatus(key, vars = {}, state = 'idle') {
+      metrics.dataStatuses.push({ key, vars: clone(vars), state });
+    },
     structuredClone,
+    tr: translateEnglish,
     toast(message) {
       metrics.toasts.push(String(message || ''));
     },
@@ -535,7 +603,8 @@ function makeCompatibilitySettings(schema, label) {
   };
   if (schema < 6) settings.tourCompleted = true;
   else settings.onboarding = { welcomeSeen: false, hintsSeen: { imported: true }, disabled: true };
-  if (schema >= 7) settings.showLanding = false;
+  if (schema === 6 || schema === 12) settings.showLanding = true;
+  else if (schema >= 7 && schema !== 11) settings.showLanding = false;
   if (schema >= 8) {
     settings.popupHibernateScope = schema >= 11 ? 'selected' : 'all';
     settings.popupHibernateKeepPinned = false;
@@ -758,7 +827,8 @@ function assertCompatibilitySettings(state, schema, label) {
   assert.equal(settings.onboarding.welcomeSeen, schema < 6);
   assert.deepEqual(clone(settings.onboarding.hintsSeen), schema < 6 ? {} : { imported: true });
   assert.equal(settings.onboarding.disabled, schema >= 6);
-  assert.equal(settings.showLanding, schema < 7 ? true : false);
+  assert.equal(settings.showLanding, schema === 6 || schema === 12,
+    `${label} must preserve an explicit Welcome choice and default an absent one off`);
   assert.equal(settings.popupHibernateScope, schema < 8 ? 'window' : (schema >= 11 ? 'selected' : 'all'));
   assert.equal(settings.popupHibernateKeepPinned, schema < 8 ? true : false);
   assert.equal(settings.popupHibernateKeepAudio, schema < 8 ? true : false);
@@ -1434,6 +1504,14 @@ async function testExactImportLimitPreview(fixture) {
   assert.equal(harness.State.isClean(), true);
   assert.equal(harness.metrics.fileReads, 1, 'the exact-limit file must be read exactly once');
   assert.equal(harness.metrics.previews, 1, 'the exact-limit file must reach exactly one preview');
+  assert.deepEqual(
+    harness.metrics.dataStatuses.map(status => [status.key, status.state]),
+    [
+      ['settings.dataReadingFile', 'loading'],
+      ['settings.dataReviewReady', 'ready'],
+    ],
+    'valid file review must expose loading before a non-mutating ready state',
+  );
   assert.equal(harness.metrics.writeAttempts, 0);
   assert.equal(harness.metrics.downloads.length, 0);
   assert.equal(harness.metrics.reminderRequests, 0);
@@ -1461,7 +1539,13 @@ async function testOversizedImportRejected(fixture) {
   assert.equal(harness.metrics.writeAttempts, 0);
   assert.equal(harness.metrics.downloads.length, 0);
   assert.equal(harness.metrics.reminderRequests, 0);
-  assert.deepEqual(harness.metrics.toasts, ['Backup is too large to import safely']);
+  assert.deepEqual(harness.metrics.toasts, ['This backup is too large to import safely.']);
+  assert.deepEqual(
+    harness.metrics.dataStatuses.map(status => [status.key, status.state]),
+    [['settings.dataReviewFailed', 'error']],
+    'oversized file rejection must remain visible beside the native file trigger',
+  );
+  assert.equal(harness.metrics.importInputResets, 1, 'a rejected file must be reselectable immediately');
   assert.equal(harness.contract.importContext(), null);
   assert.deepEqual(clone(harness.State.get()), beforeLocal, 'oversized rejection must not mutate State');
   assert.deepEqual(harness.storedState(), beforeStored, 'oversized rejection must not mutate authority');
@@ -1546,6 +1630,321 @@ async function testRejectedImportRollback(serializedImport, mode) {
   assert.equal(JSON.stringify(importContext.data), parsedSnapshot, `${mode} rejection must not mutate parsed input`);
 }
 
+async function testImportReviewController() {
+  const metrics = {
+    applyReplace: 0,
+    applyMerge: 0,
+    busy: [],
+    closes: [],
+    focuses: [],
+    fallbackFocus: 0,
+    paints: 0,
+    storageErrors: 0,
+  };
+  let selectedMode = 'replace';
+  let replaceResult = true;
+  let mergeResult = true;
+  let replacePromise = null;
+  let recoveryOpen = false;
+  let quotaOpen = false;
+  const overlay = {
+    classList: { contains: name => name === 'hidden' ? false : false },
+    contains: target => target?.owner === 'overlay',
+  };
+  const layer = open => ({
+    classList: { contains: name => name === 'hidden' ? !open() : false },
+    contains: target => target?.owner === 'recovery',
+  });
+  const sandbox = {
+    document: {
+      querySelector: selector => selector.includes(':checked') ? { value: selectedMode } : null,
+      getElementById(id) {
+        if (id === 'import-overlay') return overlay;
+        if (id === 'state-recovery-overlay') return layer(() => recoveryOpen);
+        if (id === 'quota-overlay') return layer(() => quotaOpen);
+        return null;
+      },
+    },
+    async applyImportReplace() {
+      metrics.applyReplace += 1;
+      return replacePromise || replaceResult;
+    },
+    async applyImportMerge() {
+      metrics.applyMerge += 1;
+      return mergeResult;
+    },
+    setImportBusy(value) {
+      sandbox.importBusy = !!value;
+      metrics.busy.push(!!value);
+    },
+    handleStorageError() { metrics.storageErrors += 1; },
+    paintImportPreview() { metrics.paints += 1; return true; },
+    focusImportControl(id) { metrics.focuses.push(id); },
+    closeImportPreview(options = {}) { metrics.closes.push({ ...options }); return true; },
+    focusImportFallback() { metrics.fallbackFocus += 1; return true; },
+    setTimeout(fn) { fn(); return 1; },
+  };
+  const context = vm.createContext(sandbox);
+  vm.runInContext(
+    `let importCtx = { data: { marker: 'reviewed' }, mode: 'replace', errorKey: null };\n`
+      + `let importBusy = false;\n`
+      + `${confirmImportPreviewSource}\n${handleImportGlobalKeySource}\n`
+      + `globalThis.__review = {\n`
+      + `  confirmImportPreview, handleImportGlobalKey,\n`
+      + `  setContext(value) { importCtx = value; },\n`
+      + `  context() { return importCtx; },\n`
+      + `  setBusy(value) { importBusy = value; },\n`
+      + `  busy() { return importBusy; },\n`
+      + `};`,
+    context,
+    { filename: 'import-review-controller-contract.js' },
+  );
+  // setImportBusy is defined outside the VM declarations and must update the
+  // lexical pending flag through the exposed setter as the production painter does.
+  sandbox.setImportBusy = value => {
+    context.__review.setBusy(!!value);
+    metrics.busy.push(!!value);
+  };
+
+  let releaseReplace;
+  replacePromise = new Promise(resolve => { releaseReplace = resolve; });
+  const pending = context.__review.confirmImportPreview();
+  await Promise.resolve();
+  assert.equal(context.__review.busy(), true, 'confirm must expose pending before applying replacement');
+  assert.equal(await context.__review.confirmImportPreview(), false, 'pending import must reject duplicate confirmation');
+  assert.equal(metrics.applyReplace, 1, 'pending replacement must have one application owner');
+  releaseReplace(true);
+  assert.equal(await pending, true, 'acknowledged replacement must complete');
+  assert.deepEqual(metrics.busy.slice(0, 2), [true, false], 'successful replacement must acquire and release pending');
+  assert.deepEqual(metrics.closes.at(-1), { restoreFocus: false, outcome: 'success' },
+    'replacement completion must close without targeting the removed Settings opener');
+  assert.equal(metrics.fallbackFocus, 1, 'replacement completion must focus visible Home navigation');
+
+  selectedMode = 'merge';
+  replacePromise = null;
+  context.__review.setContext({ data: { marker: 'merge' }, mode: 'merge', errorKey: null });
+  assert.equal(await context.__review.confirmImportPreview(), true, 'acknowledged merge must complete');
+  assert.equal(metrics.applyMerge, 1);
+  assert.deepEqual(metrics.closes.at(-1), { restoreFocus: true, outcome: 'success' },
+    'merge completion must return to the still-visible native file trigger');
+
+  selectedMode = 'replace';
+  replaceResult = false;
+  context.__review.setContext({ data: { marker: 'failed' }, mode: 'replace', errorKey: null });
+  const closesBeforeFailure = metrics.closes.length;
+  assert.equal(await context.__review.confirmImportPreview(), false, 'rejected persistence must not close the review');
+  assert.equal(metrics.closes.length, closesBeforeFailure, 'failure must remain behind its recovery layer');
+  assert.equal(context.__review.context().errorKey, 'import.saveFailed');
+  assert.equal(metrics.focuses.at(-1), 'import-confirm', 'known failure must return focus to the reviewed confirmation');
+
+  context.__review.setBusy(false);
+  context.__review.setContext({ data: {}, mode: 'replace', errorKey: null });
+  let prevented = false;
+  let stopped = false;
+  const closesBeforeEscape = metrics.closes.length;
+  assert.equal(context.__review.handleImportGlobalKey({
+    key: 'Escape',
+    target: { owner: 'outside' },
+    preventDefault() { prevented = true; },
+    stopImmediatePropagation() { stopped = true; },
+  }), true);
+  assert.equal(prevented, true);
+  assert.equal(stopped, true);
+  assert.equal(metrics.closes.length, closesBeforeEscape + 1, 'outside-focus Escape must pop only import review');
+
+  context.__review.setBusy(true);
+  const closesBeforePendingEscape = metrics.closes.length;
+  context.__review.handleImportGlobalKey({
+    key: 'Escape',
+    target: { owner: 'outside' },
+    preventDefault() {},
+    stopImmediatePropagation() {},
+  });
+  assert.equal(metrics.closes.length, closesBeforePendingEscape, 'pending Escape must not dismiss import review');
+  assert.equal(metrics.focuses.at(-1), 'import-cancel', 'pending outside focus must be returned inside the review');
+
+  recoveryOpen = true;
+  context.__review.setBusy(false);
+  context.__review.setContext({ data: {}, mode: 'replace', errorKey: null });
+  const closesBeforeRecoveryKey = metrics.closes.length;
+  assert.equal(context.__review.handleImportGlobalKey({
+    key: 'Escape',
+    target: { owner: 'recovery' },
+    preventDefault() { throw new Error('upper recovery must own the key'); },
+    stopImmediatePropagation() { throw new Error('upper recovery must own the key'); },
+  }), false);
+  assert.equal(metrics.closes.length, closesBeforeRecoveryKey, 'upper recovery must remain last-opened-first-closed');
+}
+
+async function testBookmarkImportReceiptBoundary() {
+  function buildHarness({ rejectPersist = false } = {}) {
+    const space = { id: 'space-live', name: 'Live space', groups: [] };
+    const workspace = {
+      id: 'workspace-live',
+      name: 'Live workspace',
+      activeCatId: space.id,
+      categories: [space],
+    };
+    const state = {
+      activeWsId: workspace.id,
+      workspaces: [workspace],
+      archive: [{
+        kind: 'item',
+        data: { id: 'archived-item', type: 'tab' },
+        groupId: 'retained-group-target',
+      }],
+      trash: [],
+      settings: {},
+    };
+    const metrics = {
+      reads: 0,
+      renders: 0,
+      snapshots: 0,
+      persists: 0,
+      rollbacks: 0,
+      boardRenders: 0,
+      toasts: [],
+    };
+    let resolveRead;
+    const readPromise = new Promise(resolve => { resolveRead = resolve; });
+    let destinationDrift = false;
+    let snapshotGroups = null;
+    const uidCandidates = [
+      'retained-group-target',
+      'bookmark-group-safe',
+      'bookmark-item-http',
+      'bookmark-item-https',
+      'bookmark-item-ftp',
+      'bookmark-item-file',
+    ];
+    let uidSequence = 0;
+    const sandbox = {
+      chrome: {
+        bookmarks: {
+          getTree() {
+            metrics.reads += 1;
+            return readPromise;
+          },
+        },
+      },
+      activeWs: () => workspace,
+      activeCat: () => space,
+      identitySpaceTarget: () => destinationDrift
+        ? { workspace: { ...workspace }, space: { ...space, groups: [] } }
+        : { workspace, space },
+      renderDataSettings() { metrics.renders += 1; },
+      uid: () => uidCandidates[uidSequence++] || `bookmark-fallback-${uidSequence}`,
+      stampNew: value => value,
+      tr: translateEnglish,
+      toast(message, options = {}) { metrics.toasts.push({ message: String(message), options: { ...options } }); },
+      renderBoard() { metrics.boardRenders += 1; },
+      LocusImportUtils,
+      URL,
+      State: {
+        get() { return state; },
+        snapshot() {
+          metrics.snapshots += 1;
+          snapshotGroups = clone(space.groups);
+          return 91;
+        },
+        async persistNow() {
+          metrics.persists += 1;
+          if (rejectPersist) throw new Error('Injected bookmark persistence rejection');
+          return { ok: true };
+        },
+        rollbackSnapshot(actionId) {
+          assert.equal(actionId, 91);
+          metrics.rollbacks += 1;
+          space.groups = clone(snapshotGroups);
+          return true;
+        },
+      },
+    };
+    const context = vm.createContext(sandbox);
+    vm.runInContext(
+      `let dataBookmarksBusy = false;\n${savedTabUrlPolicySource}\n${organizationIdAllocatorSource}\n${importBookmarksSource}\n`
+        + `globalThis.__bookmarks = {\n`
+        + `  importBookmarks,\n`
+        + `  busy() { return dataBookmarksBusy; },\n`
+        + `};`,
+      context,
+      { filename: 'bookmark-import-receipt-contract.js' },
+    );
+    return {
+      api: context.__bookmarks,
+      metrics,
+      resolveRead,
+      setDestinationDrift(value) { destinationDrift = !!value; },
+      space,
+    };
+  }
+
+  const tree = [{ children: [{ title: 'Reading', children: [
+    { title: 'HTTP', url: 'http://example.com/one' },
+    { title: 'HTTPS', url: 'https://example.com/two' },
+    { title: 'FTP', url: 'ftp://example.com/three' },
+    { title: 'Local file', url: 'file:///C:/Users/example/four.html' },
+    { title: 'Bookmarklet', url: 'javascript:alert(document.title)' },
+    { title: 'Inline data', url: 'data:text/html,private' },
+    { title: 'Private blob', url: 'blob:https://example.com/private' },
+    { title: 'Email', url: 'mailto:person@example.com' },
+    { title: 'Malformed', url: 'not a URL' },
+  ] }] }];
+
+  const success = buildHarness();
+  const pending = success.api.importBookmarks();
+  assert.equal(success.api.busy(), true, 'bookmark import must expose pending before the browser read');
+  assert.equal(await success.api.importBookmarks(), false, 'bookmark import must reject duplicate activation');
+  assert.equal(success.metrics.reads, 1);
+  assert.deepEqual(success.metrics.toasts, [], 'pending bookmark import must not claim success');
+  success.resolveRead(tree);
+  assert.equal(await pending, true);
+  assert.equal(success.api.busy(), false);
+  assert.equal(success.metrics.snapshots, 1);
+  assert.equal(success.metrics.persists, 1);
+  assert.equal(success.space.groups.length, 1);
+  assert.equal(success.space.groups[0].id, 'bookmark-group-safe',
+    'bookmark import must reject a retained destination ID before allocating its Group');
+  assert.deepEqual(
+    Array.from(success.space.groups[0].items, item => item.id),
+    ['bookmark-item-http', 'bookmark-item-https', 'bookmark-item-ftp', 'bookmark-item-file'],
+    'bookmark import must share one collision-safe allocator across every accepted item',
+  );
+  assert.deepEqual(
+    Array.from(success.space.groups[0].items, item => item.url),
+    [
+      'http://example.com/one',
+      'https://example.com/two',
+      'ftp://example.com/three',
+      'file:///C:/Users/example/four.html',
+    ],
+    'bookmark import must retain only exact addresses supported by saved-item Reopen',
+  );
+  assert.match(success.metrics.toasts.at(-1).message, /^Imported 4 bookmarks$/);
+  assert.equal(success.metrics.toasts.at(-1).options.undo, 91,
+    'bookmark success must expose the exact acknowledged action for Undo');
+
+  const drift = buildHarness();
+  const driftRun = drift.api.importBookmarks();
+  drift.setDestinationDrift(true);
+  drift.resolveRead(tree);
+  assert.equal(await driftRun, false, 'replaced Space authority must stop bookmark import');
+  assert.equal(drift.metrics.snapshots, 0);
+  assert.equal(drift.metrics.persists, 0);
+  assert.equal(drift.space.groups.length, 0);
+  assert.match(drift.metrics.toasts.at(-1).message, /current Space changed/);
+
+  const rejected = buildHarness({ rejectPersist: true });
+  const rejectedRun = rejected.api.importBookmarks();
+  rejected.resolveRead(tree);
+  assert.equal(await rejectedRun, false, 'bookmark persistence rejection must not report success');
+  assert.equal(rejected.metrics.persists, 1);
+  assert.equal(rejected.metrics.rollbacks, 1);
+  assert.equal(rejected.space.groups.length, 0, 'bookmark rejection must restore the pre-import graph');
+  assert.equal(rejected.metrics.toasts.some(entry => /^Imported/.test(entry.message)), false);
+  assert.match(rejected.metrics.toasts.at(-1).message, /could not confirm/);
+}
+
 (async () => {
   const scaleExport = await exportScaleFixture();
   await testReplaceRoundTrip(scaleExport);
@@ -1559,6 +1958,8 @@ async function testRejectedImportRollback(serializedImport, mode) {
   await testRejectedImportRollback(semanticFuzz.representativeImport, 'replace');
   await testRejectedImportRollback(semanticFuzz.representativeImport, 'merge');
   const largeFiles = await testLargeFileBoundaries();
+  await testImportReviewController();
+  await testBookmarkImportReceiptBoundary();
   console.log(`Export/import contracts passed: activeTopLevel=${scale}, activeItems=${expectedCounts.items}, archive=${scale}, trash=${scale}, bytes=${scaleExport.serializedBytes}, schemas=0-${currentSchema}, envelopes=${compatibilityApps.length}+raw, compatibilityCases=${compatibility.cases}, semanticRuns=${semanticFuzzRuns}, semanticCases=${semanticFuzz.cases}, semanticSeed=0x${semanticFuzzSeed.toString(16)}, semanticEntities=${semanticFuzz.coverage.totalEntities}, modes=replace+merge, importLimitBytes=${largeFiles.importLimitBytes}, quotaFileBytes=${largeFiles.quotaFileBytes}, largeFileCases=${largeFiles.cases}, quotaRollbacks=${largeFiles.quotaRollbacks}, rejectedWrites=8`);
 })().catch(error => {
   console.error(error);

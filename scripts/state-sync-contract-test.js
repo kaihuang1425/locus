@@ -4,6 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const LocusImportUtils = require('../import-utils.js');
 
 const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'newtab.js'), 'utf8').replace(/\r\n/g, '\n');
@@ -26,12 +27,19 @@ function extractBetween(startMarker, endMarker) {
 
 const migrateSource = extractBetween('function isStableEntityReminderId(value) {', '\nconst STORAGE_QUOTA');
 const ensureDefaultSource = extractBetween('function ensureDefault() {', '\nconst THEMES = [');
+const organizationIdAllocatorSource = extractBetween('function createOrganizationIdAllocator() {', '\nfunction organizationGroupMoveOptions(');
 const trashSource = extractBetween('function normalizeExpiredTrash(', '\n\nfunction archiveItem(');
 const ensureOnboardingSource = extractBetween('function ensureOnboarding(settings) {', '\n\n//');
 const normalizeLoadedSource = extractBetween('function normalizeLoadedSettings() {', '\n\nfunction initAfterLoad()');
 const ordinaryFailureSource = extractBetween('async function recoverAfterOrdinaryWriteFailure(error) {', '\n\nfunction handleObservedStoredState(stored)');
 const storageErrorRouterSource = extractBetween('function handleStorageError(err) {', '\n\nfunction showStorageFull(msg)');
-const recoveryOverlaySource = extractBetween('function showStateRecoveryRequired(error) {', '\n\nasync function recoverAfterOrdinaryWriteFailure(error)');
+const recoveryOverlaySource = extractBetween('function focusStateRecoveryReload() {', '\n\nasync function recoverAfterOrdinaryWriteFailure(error)');
+const quotaRecoverySource = extractBetween('const STORAGE_QUOTA =', '\n\n// ════════════════════════════════════════════════════════════════\n// SCHEMA-MISMATCH OVERLAY');
+
+assert.match(source, /if \(child === overlay \|\| child === quotaRecovery\) continue;/,
+  'the reload interlock must leave only quota backup recovery interactive above it');
+assert.match(source, /if \(quotaRecovery && !quotaRecovery\.classList\.contains\('hidden'\)\)[\s\S]*no app shortcut may pass through it/,
+  'global keys must treat quota recovery as the top safe layer');
 
 let stored;
 let writeCalls = 0;
@@ -191,6 +199,7 @@ const context = vm.createContext({
   CURRENT_SCHEMA: currentSchema,
   LOCUS_STATE_RECEIVER_RETRY_MS: 5,
   LOCUS_STATE_WRITE_TIMEOUT_MS: 40,
+  LocusImportUtils,
   THEMES: [{ id: 'folio' }, { id: 'folio-dark' }],
   esc: value => String(value ?? ''),
   handleStorageError() { storageErrorCalls += 1; },
@@ -219,7 +228,7 @@ vm.runInContext(
 );
 vm.runInContext(ordinaryFailureSource, context, { filename: 'newtab-ordinary-write-recovery.js' });
 vm.runInContext(
-  `${migrateSource}\n${ensureDefaultSource}\n${trashSource}\n${ensureOnboardingSource}\n${normalizeLoadedSource}\n`
+  `${migrateSource}\n${organizationIdAllocatorSource}\n${ensureDefaultSource}\n${trashSource}\n${ensureOnboardingSource}\n${normalizeLoadedSource}\n`
     + 'globalThis.__normalizeLoadedState = normalizeLoadedState;',
   context,
   { filename: 'newtab-boot-normalizers.js' },
@@ -235,7 +244,56 @@ function assertStableReminderIds(entity, label) {
   assert.equal(new Set(ids).size, ids.length, `${label} reminder ids must be unique`);
 }
 
+function assertDefaultGraphUsesRetainedSafeIdentity() {
+  const defaultState = {
+    schema: currentSchema,
+    activeWsId: null,
+    workspaces: [],
+    archive: [{ kind: 'item', data: { id: 'retained-payload' }, wsId: 'retained-envelope' }],
+    trash: [],
+    recentEmoji: [],
+    columnWidths: {},
+    settings: { language: 'en' },
+  };
+  const candidates = [
+    'retained-payload',
+    'retained-envelope',
+    'shared-new',
+    'shared-new',
+    'inbox-new',
+    'later-new',
+    'workspace-new',
+  ];
+  const defaultContext = vm.createContext({
+    browserLanguage: () => 'en',
+    LocusImportUtils,
+    normalizeLanguage: value => value || 'en',
+    State: { get: () => defaultState },
+    uid: () => candidates.shift(),
+  });
+
+  vm.runInContext(
+    `${organizationIdAllocatorSource}\n${ensureDefaultSource}\nensureDefault();`,
+    defaultContext,
+    { filename: 'newtab-default-state.js' },
+  );
+
+  const workspace = defaultState.workspaces[0];
+  const [pinned, later] = workspace.categories;
+  const inbox = pinned.groups[0];
+  assert.deepEqual(
+    [pinned.id, inbox.id, later.id, workspace.id],
+    ['shared-new', 'inbox-new', 'later-new', 'workspace-new'],
+    'default organization ids must skip retained ids and reserve each accepted candidate immediately',
+  );
+  assert.equal(new Set([pinned.id, inbox.id, later.id, workspace.id]).size, 4,
+    'the default Workspace, Spaces, and Inbox must be uniquely addressable');
+  assert.equal(defaultState.activeWsId, workspace.id);
+  assert.equal(workspace.activeCatId, pinned.id);
+}
+
 (async () => {
+  assertDefaultGraphUsesRetainedSafeIdentity();
   await State.load();
   const writesAtCleanBoot = writeCalls;
   const cleanRevision = State.get()._revision;
@@ -281,6 +339,8 @@ function assertStableReminderIds(entity, label) {
   await State.load();
   const writesBeforeMigration = writeCalls;
   assert.equal(normalizeLoadedState(), true, 'legacy schema normalization must schedule persistence');
+  assert.equal(State.get().settings.showLanding, false,
+    'schema 13 migration must keep an absent optional Welcome preference inactive');
   assertStableReminderIds(State.get().workspaces[0].categories[0], 'active category');
   assertStableReminderIds(State.get().workspaces[0].categories[0].groups[0], 'active group');
   assertStableReminderIds(State.get().archive[0].data, 'archived group');
@@ -561,6 +621,7 @@ function assertStableReminderIds(entity, label) {
     __routedToasts: routedToasts,
     showStorageFull(message) { routedToasts.push(`quota:${message}`); },
     toast(message, options) { routedToasts.push({ message, options }); },
+    tr(key, vars = {}) { return `${key}:${String(vars.message || '')}`; },
   });
   vm.runInContext(
     `${storageErrorRouterSource}\nglobalThis.__handleStorageError = handleStorageError;`,
@@ -575,7 +636,9 @@ function assertStableReminderIds(entity, label) {
   assert.equal(routedToasts[0]?.options?.danger, true);
   assert.equal(routedToasts[0]?.options?.duration, 7000);
   storageErrorRouterContext.__handleStorageError(new Error('Injected generic failure'));
-  assert.equal(routedToasts[1]?.message, 'Storage error: Injected generic failure');
+  assert.equal(routedToasts[1]?.message, 'feedback.storageError:Injected generic failure');
+  assert.equal(routedToasts[1]?.options?.danger, true);
+  assert.equal(routedToasts[1]?.options?.duration, 7000);
 
   const runtimeReloads = [];
   const pageReloads = [];
@@ -592,6 +655,7 @@ function assertStableReminderIds(entity, label) {
   };
   const recoveryDetail = { textContent: '' };
   let recoveryFocusCalls = 0;
+  let quotaOnTop = false;
   const recoveryButton = { focus() { recoveryFocusCalls += 1; } };
   const recoveryDocument = {
     getElementById(id) {
@@ -607,6 +671,7 @@ function assertStableReminderIds(entity, label) {
     clearTimeout(id) { clearedCallbacks.push(id); },
     document: recoveryDocument,
     location: { reload() { pageReloads.push('page'); } },
+    isQuotaRecoveryOpen: () => quotaOnTop,
     rememberOpener() {},
     setStateRecoveryInterlock() {},
     setTimeout(callback) { scheduledCallbacks.push(callback); return scheduledCallbacks.length; },
@@ -659,6 +724,219 @@ function assertStableReminderIds(entity, label) {
   assert.equal(scheduledCallbacks.length, callbacksBeforeThrownRuntimeReload + 1);
   assert.equal(clearedCallbacks.at(-1), scheduledCallbacks.length, 'a thrown runtime reload must cancel its delayed fallback');
   assert.equal(pageReloads.length, 4, 'a thrown runtime reload must immediately reload the page');
+
+  const focusBeforeQuotaUnderlay = recoveryFocusCalls;
+  recoveryHidden = true;
+  quotaOnTop = true;
+  recoveryOverlayContext.__showRecovery(new Error('Quota write failed'));
+  assert.equal(recoveryDetail.textContent, 'quota.reloadDetail',
+    'the reload underlay must use localized quota-specific replacement copy');
+  assert.equal(recoveryFocusCalls, focusBeforeQuotaUnderlay,
+    'the reload underlay must not steal focus from the quota backup action');
+  quotaOnTop = false;
+
+  function quotaClassList(initial = []) {
+    const values = new Set(initial);
+    return {
+      add(...tokens) { tokens.forEach(token => values.add(token)); },
+      remove(...tokens) { tokens.forEach(token => values.delete(token)); },
+      contains(token) { return values.has(token); },
+    };
+  }
+  const quotaElements = new Map();
+  const quotaDocument = { activeElement: null };
+  function quotaElement(id, classes = []) {
+    const attributes = new Map();
+    const events = new Map();
+    const element = {
+      id,
+      dataset: {},
+      classList: quotaClassList(classes),
+      textContent: '',
+      style: {},
+      disabled: false,
+      inert: false,
+      isConnected: true,
+      focusCalls: 0,
+      onclick: null,
+      addEventListener(type, listener) { events.set(type, listener); },
+      setAttribute(name, value) { attributes.set(name, String(value)); },
+      getAttribute(name) { return attributes.get(name); },
+      removeAttribute(name) { attributes.delete(name); },
+      focus() { element.focusCalls += 1; quotaDocument.activeElement = element; },
+      contains(target) { return target === element || (id === 'quota-overlay' && quotaElements.has(target?.id)); },
+      events,
+    };
+    quotaElements.set(id, element);
+    return element;
+  }
+  const quotaOverlay = quotaElement('quota-overlay', ['hidden']);
+  const quotaDetail = quotaElement('quota-detail');
+  const quotaMeter = quotaElement('quota-meter');
+  const quotaMeterFill = quotaElement('quota-meter-fill');
+  const quotaStatus = quotaElement('quota-status');
+  const quotaClose = quotaElement('quota-x');
+  const quotaExport = quotaElement('quota-export');
+  const quotaArchive = quotaElement('quota-archive');
+  const quotaReload = quotaElement('quota-dismiss');
+  const quotaRecoveryUnderlay = quotaElement('state-recovery-overlay');
+  quotaDocument.getElementById = id => quotaElements.get(id) || null;
+  const quotaTimers = [];
+  const quotaErrors = [];
+  const quotaExports = [];
+  const quotaRoutes = [];
+  let quotaPageReloads = 0;
+  let quotaReloadThrows = false;
+  let quotaRecoveryFocus = 0;
+  let quotaOpenerRemembers = 0;
+  let quotaOpenerRestores = 0;
+  let quotaExportThrows = false;
+  let quotaWorkspace = { id: 'w1' };
+  const quotaContext = vm.createContext({
+    activeWs: () => quotaWorkspace,
+    chrome: {
+      storage: {
+        local: {
+          QUOTA_BYTES: 10 * 1024 * 1024,
+          async getBytesInUse() { return 9 * 1024 * 1024; },
+        },
+      },
+    },
+    console: { error(error) { quotaErrors.push(String(error?.message || error)); } },
+    document: quotaDocument,
+    exportJSON(options) {
+      if (quotaExportThrows) throw new Error('Injected export failure');
+      quotaExports.push(options);
+    },
+    focusStateRecoveryReload() { quotaRecoveryFocus += 1; },
+    history: { pushState(_state, _title, route) { quotaRoutes.push(route); } },
+    location: {
+      reload() {
+        if (quotaReloadThrows) throw new Error('Injected reload failure');
+        quotaPageReloads += 1;
+      },
+    },
+    rememberOpener() { quotaOpenerRemembers += 1; },
+    restoreOpener() { quotaOpenerRestores += 1; return true; },
+    Router: { build(route) { return route?.wsId ? `/ws/${route.wsId}/library/${route.mode}` : ''; } },
+    setElementInertOwner(element, owner, enabled) {
+      const owners = new Set(String(element?.dataset?.locusInertOwners || '').split(' ').filter(Boolean));
+      if (enabled) owners.add(owner); else owners.delete(owner);
+      if (owners.size) element.dataset.locusInertOwners = [...owners].join(' ');
+      else delete element.dataset.locusInertOwners;
+      element.inert = owners.size > 0;
+    },
+    setTimeout(callback) { quotaTimers.push(callback); return quotaTimers.length; },
+    toast() {},
+    tr(key, vars = {}) {
+      if (key === 'quota.usage') return `${key}:${vars.used}/${vars.quota}/${vars.percent}`;
+      return key;
+    },
+    trapTabKey() {},
+  });
+  vm.runInContext(
+    `${quotaRecoverySource}\n` +
+    'globalThis.__quota = { showStorageFull, closeStorageFull, requestQuotaBackup, reloadQuotaSavedData, reloadQuotaToArchive, bindQuotaOverlay, isQuotaRecoveryOpen };',
+    quotaContext,
+    { filename: 'newtab-quota-recovery.js' },
+  );
+  quotaContext.__quota.bindQuotaOverlay();
+  assert.equal(quotaOverlay.dataset.bound, '1', 'quota recovery must bind once');
+  quotaOverlay.dataset.locusInertOwners = 'identity-editor reminder';
+  quotaOverlay.inert = true;
+  assert.equal(quotaContext.__quota.showStorageFull('QUOTA_BYTES exceeded'), true);
+  assert.equal(quotaContext.__quota.isQuotaRecoveryOpen(), true);
+  assert.equal(quotaOverlay.inert, false, 'quota backup must clear lower-dialog inert owners');
+  assert.equal(quotaOverlay.dataset.locusInertOwners, undefined);
+  assert.equal(quotaOpenerRemembers, 1);
+  assert.equal(quotaDetail.textContent, 'quota.usageLoading');
+  assert.equal(quotaMeter.getAttribute('aria-busy'), 'true');
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(quotaDetail.textContent, 'quota.usage:9.00 MB/10.00 MB/90');
+  assert.equal(quotaMeter.getAttribute('aria-valuenow'), '90');
+  assert.equal(quotaMeterFill.style.width, '90%');
+  quotaTimers.shift()();
+  assert.equal(quotaExport.focusCalls, 1, 'safe backup must receive initial focus');
+
+  const backupRequest = quotaContext.__quota.requestQuotaBackup();
+  assert.equal(quotaOverlay.getAttribute('aria-busy'), 'true');
+  assert.equal(quotaExport.disabled, true);
+  assert.equal(await quotaContext.__quota.requestQuotaBackup(), false, 'pending backup must reject duplicates');
+  assert.equal(quotaContext.__quota.closeStorageFull(), false, 'pending backup must block dismissal');
+  const pendingEscape = {
+    key: 'Escape', prevented: false, stopped: false,
+    preventDefault() { this.prevented = true; },
+    stopPropagation() { this.stopped = true; },
+  };
+  quotaOverlay.events.get('keydown')(pendingEscape);
+  assert.equal(pendingEscape.prevented, true);
+  assert.equal(quotaContext.__quota.isQuotaRecoveryOpen(), true);
+  quotaTimers.shift()();
+  assert.equal(await backupRequest, true);
+  assert.equal(quotaExports.length, 1);
+  assert.equal(quotaExports[0]?.silent, true);
+  assert.equal(quotaStatus.textContent, 'quota.exportRequested');
+  assert.equal(quotaStatus.getAttribute('role'), 'status');
+  assert.equal(quotaOverlay.getAttribute('aria-busy'), 'false');
+  assert.equal(quotaExport.disabled, false);
+
+  quotaExportThrows = true;
+  const failedBackup = quotaContext.__quota.requestQuotaBackup();
+  quotaTimers.shift()();
+  assert.equal(await failedBackup, false);
+  assert.equal(quotaErrors.length, 1);
+  assert.equal(quotaStatus.textContent, 'quota.exportFailed');
+  assert.equal(quotaStatus.getAttribute('role'), 'alert');
+  assert.equal(quotaStatus.getAttribute('aria-live'), 'assertive');
+  quotaExportThrows = false;
+
+  const quotaEscape = {
+    key: 'Escape', prevented: false, stopped: false,
+    preventDefault() { this.prevented = true; },
+    stopPropagation() { this.stopped = true; },
+  };
+  quotaOverlay.events.get('keydown')(quotaEscape);
+  assert.equal(quotaEscape.prevented, true);
+  assert.equal(quotaEscape.stopped, true);
+  assert.equal(quotaContext.__quota.isQuotaRecoveryOpen(), false);
+  assert.equal(quotaRecoveryFocus, 1, 'Escape must transfer focus to the reload underlay');
+  assert.equal(quotaOpenerRestores, 0, 'stacked quota dismissal must never refocus inert app UI');
+
+  quotaRecoveryUnderlay.classList.add('hidden');
+  quotaContext.__quota.showStorageFull('quota');
+  await new Promise(resolve => setImmediate(resolve));
+  quotaContext.__quota.closeStorageFull();
+  assert.equal(quotaOpenerRestores, 1, 'standalone quota dismissal must restore its opener');
+
+  quotaRecoveryUnderlay.classList.remove('hidden');
+  quotaContext.__quota.showStorageFull('quota');
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(quotaContext.__quota.reloadQuotaToArchive(), true);
+  assert.equal(quotaRoutes.at(-1), '#/ws/w1/library/archive');
+  assert.equal(quotaPageReloads, 1, 'Archive continuation must reload authoritative data');
+  quotaContext.__quota.closeStorageFull({ force: true, restoreFocus: false });
+
+  quotaWorkspace = null;
+  quotaContext.__quota.showStorageFull('quota');
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(quotaContext.__quota.reloadQuotaToArchive(), false);
+  assert.equal(quotaStatus.textContent, 'quota.archiveUnavailable');
+  assert.equal(quotaStatus.getAttribute('role'), 'alert');
+  quotaContext.__quota.closeStorageFull({ force: true, restoreFocus: false });
+
+  quotaWorkspace = { id: 'w1' };
+  quotaContext.__quota.showStorageFull('quota');
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(quotaContext.__quota.reloadQuotaSavedData(), true);
+  assert.equal(quotaPageReloads, 2, 'Reload must use the page-only authoritative recovery path');
+  quotaContext.__quota.closeStorageFull({ force: true, restoreFocus: false });
+
+  quotaReloadThrows = true;
+  quotaContext.__quota.showStorageFull('quota');
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(quotaContext.__quota.reloadQuotaSavedData(), false);
+  assert.equal(quotaStatus.textContent, 'quota.reloadFailed');
+  assert.equal(quotaStatus.getAttribute('role'), 'alert');
 
   console.log('State sync contracts passed');
 })().catch(error => {

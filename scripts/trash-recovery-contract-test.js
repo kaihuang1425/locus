@@ -22,7 +22,7 @@ const dialogSource = extractBetween(
   '\n// CRUD',
 );
 const commonActsSource = extractBetween(
-  'function commonActs(it, extra = []) {',
+  'function commonActs(',
   '\nfunction renderReminderBadge',
 );
 

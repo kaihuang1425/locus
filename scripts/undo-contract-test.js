@@ -7,6 +7,31 @@ const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'newtab.js'), 'utf8');
+assert.match(
+  source,
+  /const sourceDescriptor = capturedTabSourceDescriptor\(t\);[\s\S]{0,500}drag = \{ kind:'tab', data: sourceDescriptor \};/,
+  'a single-tab drag must freeze the reviewed browser source identity before Save starts',
+);
+assert.match(
+  source,
+  /const sourceDescriptors = tabs\.map\(capturedTabSourceDescriptor\);[\s\S]{0,500}drag = \{ kind: 'tabs-multi', data: sourceDescriptors \};/,
+  'a multi-tab drag must freeze every reviewed browser source identity before Save starts',
+);
+const dropControllerStart = source.indexOf('async function handleTabDropIntoList(');
+const dropControllerEnd = source.indexOf('\nasync function handleTabDropIntoGroup(', dropControllerStart);
+assert.ok(dropControllerStart >= 0 && dropControllerEnd > dropControllerStart,
+  'the shared exact-destination browser-drop controller must remain extractable');
+const dropControllerSource = source.slice(dropControllerStart, dropControllerEnd);
+assert.match(
+  dropControllerSource,
+  /commitCapturedTabs\([\s\S]*refreshSources:\s*true/,
+  'the shared browser-drop controller must request a fresh pre-save browser read',
+);
+assert.equal(
+  (source.match(/await handleTabDropIntoList\(drag\.data/g) || []).length,
+  6,
+  'Board, Group insertion, and List Stack single/multi drops must all delegate to the fresh-read controller',
+);
 const start = source.indexOf('const State = (() => {');
 const endMarker = '\n})();';
 const end = source.indexOf(endMarker, start);
@@ -25,11 +50,13 @@ let maxActiveStateWrites = 0;
 const failedUrls = new Set();
 const openedTabs = new Map();
 const createCalls = [];
+const getCalls = [];
 const removeCalls = [];
 const toastMessages = [];
 let deferredRemove = null;
 let deferredCreate = null;
 let deferredGet = null;
+let deferredTabGet = null;
 
 function deferNextRemove() {
   let signalStarted;
@@ -55,6 +82,15 @@ function deferNextGet() {
   const started = new Promise(resolve => { signalStarted = resolve; });
   const wait = new Promise(resolve => { release = resolve; });
   deferredGet = { signalStarted, wait };
+  return { started, release };
+}
+
+function deferNextTabGet(tabId) {
+  let signalStarted;
+  let release;
+  const started = new Promise(resolve => { signalStarted = resolve; });
+  const wait = new Promise(resolve => { release = resolve; });
+  deferredTabGet = { tabId, signalStarted, wait };
   return { started, release };
 }
 
@@ -131,6 +167,13 @@ const chrome = {
       return tab;
     },
     async get(tabId) {
+      getCalls.push(tabId);
+      if (deferredTabGet?.tabId === tabId) {
+        const pending = deferredTabGet;
+        deferredTabGet = null;
+        pending.signalStarted();
+        await pending.wait;
+      }
       if (!openedTabs.has(tabId)) throw new Error('tab not found');
       return openedTabs.get(tabId);
     },
@@ -161,8 +204,19 @@ const context = vm.createContext({
   refreshStorageUsage() {},
   setTimeout,
   showStateRecoveryRequired() {},
+  syncOpenTabRailCaptureControls() {},
   structuredClone,
   toast(message) { toastMessages.push(String(message)); },
+  tr(key) {
+    return ({
+      'capture.pending': 'Another save is still being confirmed — your tabs were left open',
+      'capture.startFailed': 'Save could not start safely — your tabs were left open',
+      'capture.unconfirmedLater': 'Save was not confirmed — your tabs stayed open and later edits remain visible. Reload Locus before continuing.',
+      'capture.receiptLost': 'Save reached storage, but confirmation was lost — your tabs were left open. Review the saved item before retrying.',
+      'capture.restored': 'Save was not confirmed — latest saved data restored; your tabs were left open',
+      'capture.failed': 'Save failed — your tabs were left open. Reload Locus before continuing.',
+    })[key] || key;
+  },
 });
 vm.runInContext(
   `${source.slice(start, end + endMarker.length)}\nglobalThis.__state = State;`,
@@ -179,11 +233,14 @@ const commitStart = source.indexOf('let captureCommitPending = false;');
 const commitEnd = source.indexOf('\nfunction captureResultMessage(', commitStart);
 assert.ok(commitStart >= 0 && commitEnd > commitStart, 'Capture commit implementation must be extractable');
 vm.runInContext(
-  `${source.slice(commitStart, commitEnd)}\nglobalThis.__commitCapturedTabs = commitCapturedTabs;`,
+  `${source.slice(commitStart, commitEnd)}\n` +
+  'globalThis.__commitCapturedTabs = commitCapturedTabs; ' +
+  'globalThis.__capturedTabSourceDescriptor = capturedTabSourceDescriptor;',
   context,
   { filename: 'newtab-capture-commit.js' },
 );
 const commitCapturedTabs = context.__commitCapturedTabs;
+const capturedTabSourceDescriptor = context.__capturedTabSourceDescriptor;
 
 (async () => {
   await State.load();
@@ -192,11 +249,222 @@ const commitCapturedTabs = context.__commitCapturedTabs;
   assert.equal(maxActiveStateWrites, 1, 'same-context page writes must wait for the prior revision receipt');
   assert.equal(stored.te._revision, 2, 'serialized same-context writes must receive consecutive revisions');
 
+  const activatedDragAction = State.snapshot('single drag whose source becomes active');
+  State.get().settings.marker = 'accepted-single-drag';
+  const cachedActiveDragSource = {
+    id: 706,
+    windowId: 4,
+    active: true,
+    url: 'https://single-drag.test',
+    title: 'Single drag',
+    pinned: false,
+  };
+  const singleDragDescriptor = capturedTabSourceDescriptor(cachedActiveDragSource);
+  openedTabs.set(706, { ...cachedActiveDragSource, active: false });
+  const dragRefreshGate = deferNextTabGet(706);
+  const getsBeforeActivatedDrag = getCalls.length;
+  const removesBeforeActivatedDrag = removeCalls.length;
+  const activatedDragCommit = commitCapturedTabs(
+    [singleDragDescriptor],
+    { actionId: activatedDragAction, closeSources: true, refreshSources: true },
+  );
+  // The rail cache said active while the live source begins inactive. The user
+  // activates that source before the asynchronous fresh read settles.
+  await dragRefreshGate.started;
+  openedTabs.set(706, { ...cachedActiveDragSource, active: true });
+  dragRefreshGate.release();
+  const activatedDragResult = await activatedDragCommit;
+  assert.equal(activatedDragResult.closedCount, 0,
+    'an inactive source the user activates while Save is pending must stay open');
+  assert.equal(activatedDragResult.failedCloseCount, 1,
+    'the accepted single-drag Save must report the skipped destructive cleanup');
+  assert.equal(removeCalls.length, removesBeforeActivatedDrag,
+    'an activated single-drag source must never reach chrome.tabs.remove');
+  assert.deepEqual(getCalls.slice(getsBeforeActivatedDrag), [706],
+    'an active pre-save source must be protected without a post-receipt removal read');
+  assert.equal(State.get().settings.marker, 'accepted-single-drag',
+    'the saved graph must remain accepted when source cleanup is conservatively skipped');
+  await State.undo(activatedDragAction);
+  openedTabs.clear();
+
+  const failedRefreshWriteAction = State.snapshot('drag save before a later ordinary edit');
+  State.get().settings.marker = 'drag-refresh-capture-visible';
+  const refreshFailureSource = {
+    id: 709,
+    windowId: 4,
+    active: false,
+    url: 'https://drag-refresh-failure.test',
+    pinned: false,
+  };
+  openedTabs.set(709, { ...refreshFailureSource });
+  const failedRefreshGate = deferNextTabGet(709);
+  const failedRefreshCommit = commitCapturedTabs(
+    [refreshFailureSource],
+    { actionId: failedRefreshWriteAction, closeSources: true, refreshSources: true },
+  );
+  await failedRefreshGate.started;
+  State.snapshot('ordinary edit during drag source refresh');
+  State.get().settings.dragRefreshLaterMarker = 'must-remain-visible';
+  State.persist();
+  failSetOnce = true;
+  failedRefreshGate.release();
+  assert.equal(await failedRefreshCommit, false,
+    'a failed write after source refresh must not report accepted persistence');
+  assert.equal(State.get().settings.marker, 'drag-refresh-capture-visible',
+    'the optimistic capture must remain visible until explicit recovery');
+  assert.equal(State.get().settings.dragRefreshLaterMarker, 'must-remain-visible',
+    'an ordinary edit made during source refresh must not be replaced by automatic recovery');
+  assert.equal(State.isRecoveryRequired(), true,
+    'a failed drag write with a later edit must require explicit authoritative recovery');
+  await State.recoverAuthoritative();
+  assert.equal(State.get().settings.marker, undefined);
+  assert.equal(State.get().settings.dragRefreshLaterMarker, undefined);
+  openedTabs.clear();
+
+  const removedDuringRefreshAction = State.snapshot('drag save removed during source refresh');
+  State.get().settings.marker = 'optimistic-saved-copy';
+  const removedDuringRefreshSource = {
+    id: 710,
+    windowId: 4,
+    active: false,
+    url: 'https://drag-refresh-removed.test',
+    pinned: false,
+  };
+  openedTabs.set(710, { ...removedDuringRefreshSource });
+  const removedDuringRefreshGate = deferNextTabGet(710);
+  const removesBeforeRemovedDuringRefresh = removeCalls.length;
+  const removedDuringRefreshCommit = commitCapturedTabs(
+    [removedDuringRefreshSource],
+    { actionId: removedDuringRefreshAction, closeSources: true, refreshSources: true },
+  );
+  await removedDuringRefreshGate.started;
+  const removalEditAction = State.snapshot('ordinary edit removes optimistic saved copy');
+  delete State.get().settings.marker;
+  State.get().settings.removedDuringRefresh = 'persisted-without-copy';
+  State.persist();
+  removedDuringRefreshGate.release();
+  const removedDuringRefreshResult = await removedDuringRefreshCommit;
+  assert.equal(removedDuringRefreshResult.closedCount, 0,
+    'a preparation-time edit that removes the saved copy must protect its source');
+  assert.equal(removedDuringRefreshResult.failedCloseCount, 1,
+    'successful persistence without the reviewed copy must report skipped cleanup');
+  assert.equal(removeCalls.length, removesBeforeRemovedDuringRefresh,
+    'a source must not close when the graph changed during pre-save refresh');
+  assert.equal(State.get().settings.marker, undefined,
+    'the later edit may remain the successfully persisted graph authority');
+  assert.equal(State.get().settings.removedDuringRefresh, 'persisted-without-copy');
+  await State.undo(removalEditAction);
+  assert.equal(State.get().settings.marker, 'optimistic-saved-copy');
+  await State.undo(removedDuringRefreshAction);
+  assert.equal(State.get().settings.marker, undefined);
+  openedTabs.clear();
+
+  const changedDestinationAction = State.snapshot('drag destination changes during source refresh');
+  State.get().settings.marker = 'destination-review';
+  const changedDestinationSource = {
+    id: 711,
+    windowId: 4,
+    active: false,
+    url: 'https://changed-destination.test',
+    pinned: false,
+  };
+  openedTabs.set(711, { ...changedDestinationSource });
+  let destinationValid = true;
+  const changedDestinationGate = deferNextTabGet(711);
+  const removesBeforeChangedDestination = removeCalls.length;
+  const changedDestinationCommit = commitCapturedTabs(
+    [changedDestinationSource],
+    {
+      actionId: changedDestinationAction,
+      closeSources: true,
+      refreshSources: true,
+      validateDestination: () => destinationValid,
+    },
+  );
+  await changedDestinationGate.started;
+  destinationValid = false;
+  changedDestinationGate.release();
+  const changedDestinationResult = await changedDestinationCommit;
+  assert.equal(changedDestinationResult.destinationChanged, true,
+    'the accepted write must report that its exact reviewed destination no longer resolves');
+  assert.equal(changedDestinationResult.closedCount, 0,
+    'destination drift during the fresh source read must protect the source tab');
+  assert.equal(changedDestinationResult.failedCloseCount, 1,
+    'destination drift must be visible as skipped destructive cleanup');
+  assert.equal(removeCalls.length, removesBeforeChangedDestination,
+    'an invalid destination receipt must never authorize source removal');
+  await State.undo(changedDestinationAction);
+  openedTabs.clear();
+
+  const changedDuringCleanupAction = State.snapshot('drag destination changes between source closes');
+  State.get().settings.marker = 'destination-cleanup-review';
+  const cleanupSources = [
+    { id: 712, windowId: 4, active: false, url: 'https://cleanup-first.test', pinned: false },
+    { id: 713, windowId: 4, active: false, url: 'https://cleanup-second.test', pinned: false },
+  ];
+  cleanupSources.forEach(tab => openedTabs.set(tab.id, { ...tab }));
+  let cleanupDestinationValid = true;
+  const changedDuringCleanupGate = deferNextTabGet(713);
+  const removesBeforeChangedDuringCleanup = removeCalls.length;
+  const changedDuringCleanupCommit = commitCapturedTabs(
+    cleanupSources,
+    {
+      actionId: changedDuringCleanupAction,
+      closeSources: true,
+      validateDestination: () => cleanupDestinationValid,
+    },
+  );
+  await changedDuringCleanupGate.started;
+  cleanupDestinationValid = false;
+  changedDuringCleanupGate.release();
+  const changedDuringCleanupResult = await changedDuringCleanupCommit;
+  assert.equal(changedDuringCleanupResult.destinationChanged, true,
+    'destination drift during final source review must remain explicit');
+  assert.equal(changedDuringCleanupResult.closedCount, 1,
+    'a source checked while the exact destination still resolved may close');
+  assert.equal(changedDuringCleanupResult.failedCloseCount, 1,
+    'the remaining source must stay open after destination authority changes');
+  assert.deepEqual(removeCalls.slice(removesBeforeChangedDuringCleanup), [712],
+    'each source close must revalidate destination authority after its final browser read');
+  await State.undo(changedDuringCleanupAction);
+  openedTabs.clear();
+
+  const movedMultiDragAction = State.snapshot('multi drag whose first source moves windows');
+  State.get().settings.marker = 'accepted-multi-drag';
+  const multiDragSources = [
+    { id: 707, windowId: 4, active: false, url: 'https://moved-multi-drag.test', title: 'Moved source', pinned: false },
+    { id: 708, windowId: 4, active: false, url: 'https://unchanged-multi-drag.test', title: 'Unchanged source', pinned: true },
+  ];
+  const multiDragDescriptors = multiDragSources.map(capturedTabSourceDescriptor);
+  openedTabs.set(707, { ...multiDragSources[0], windowId: 9 });
+  openedTabs.set(708, { ...multiDragSources[1] });
+  const getsBeforeMovedMultiDrag = getCalls.length;
+  const removesBeforeMovedMultiDrag = removeCalls.length;
+  const movedMultiDragResult = await commitCapturedTabs(
+    multiDragDescriptors,
+    { actionId: movedMultiDragAction, closeSources: true, refreshSources: true },
+  );
+  assert.equal(movedMultiDragResult.closedCount, 1,
+    'an unchanged sibling in a multi-drag may close after the shared Save receipt');
+  assert.equal(movedMultiDragResult.failedCloseCount, 1,
+    'a moved sibling must be reported as conservatively left open');
+  assert.deepEqual(removeCalls.slice(removesBeforeMovedMultiDrag), [708],
+    'multi-drag cleanup must remove only the source whose reviewed identity still matches');
+  assert.deepEqual(getCalls.slice(getsBeforeMovedMultiDrag), [707, 708, 708],
+    'multi-drag cleanup must pre-read every source and post-read only an unchanged close candidate');
+  assert.equal(State.get().settings.marker, 'accepted-multi-drag',
+    'a partial multi-drag cleanup must retain every accepted saved item');
+  await State.undo(movedMultiDragAction);
+  openedTabs.clear();
+  removeCalls.length = 0;
+  createCalls.length = 0;
+
   const inFlightAction = State.snapshot('in-flight capture');
   State.get().settings.marker = 'in-flight';
+  openedTabs.set(7, { id: 7, windowId: 1, active: false, url: 'https://in-flight.test', pinned: false });
   const removeGate = deferNextRemove();
   const committing = commitCapturedTabs(
-    [{ id: 7, url: 'https://in-flight.test', pinned: false }],
+    [{ id: 7, windowId: 1, active: false, url: 'https://in-flight.test', pinned: false }],
     { actionId: inFlightAction, closeSources: true },
   );
   await removeGate.started;
@@ -233,6 +501,45 @@ const commitCapturedTabs = context.__commitCapturedTabs;
   assert.equal(createCalls.filter(url => url === 'https://in-flight.test').length, 1);
   createCalls.length = 0;
   openedTabs.clear();
+
+  const navigatedDuringReceiptAction = State.snapshot('capture whose source navigates');
+  State.get().settings.marker = 'accepted-copy-source-changed';
+  const removesBeforeNavigation = removeCalls.length;
+  const expectedSource = { id: 701, windowId: 4, active: false, url: 'https://before-navigation.test', pinned: false };
+  openedTabs.set(701, { ...expectedSource });
+  const navigatedDuringReceipt = commitCapturedTabs(
+    [expectedSource],
+    { actionId: navigatedDuringReceiptAction, closeSources: true },
+  );
+  // State persistence yields through the mocked writer. Navigation in that
+  // interval must turn the requested close into a truthful partial result.
+  openedTabs.set(701, { ...expectedSource, url: 'https://after-navigation.test' });
+  const navigatedResult = await navigatedDuringReceipt;
+  assert.equal(navigatedResult.closedCount, 0, 'a newly navigated source must stay open after the save receipt');
+  assert.equal(navigatedResult.failedCloseCount, 1, 'the accepted copy must report the skipped stale close');
+  assert.equal(removeCalls.length, removesBeforeNavigation, 'stale tab identity must never reach chrome.tabs.remove');
+  assert.equal(State.get().settings.marker, 'accepted-copy-source-changed', 'the accepted saved graph must remain after a skipped close');
+  await State.undo(navigatedDuringReceiptAction);
+  assert.equal(State.get().settings.marker, undefined);
+  openedTabs.clear();
+
+  const keepOpenAction = State.snapshot('capture that keeps its source open');
+  State.get().settings.marker = 'accepted-copy-kept-open';
+  const getsBeforeKeepOpen = getCalls.length;
+  const removesBeforeKeepOpen = removeCalls.length;
+  const keepOpenResult = await commitCapturedTabs(
+    [{ id: 702, windowId: 4, url: 'https://keep-open.test', pinned: false }],
+    { actionId: keepOpenAction, closeSources: false },
+  );
+  assert.equal(keepOpenResult.closeSources, false);
+  assert.equal(keepOpenResult.requestedCloseCount, 0);
+  assert.equal(keepOpenResult.closedCount, 0);
+  assert.equal(keepOpenResult.failedCloseCount, 0);
+  assert.equal(getCalls.length, getsBeforeKeepOpen, 'keep-open capture must not query a source for removal');
+  assert.equal(removeCalls.length, removesBeforeKeepOpen, 'keep-open capture must never request browser removal');
+  assert.equal(State.get().settings.marker, 'accepted-copy-kept-open', 'keep-open persistence must retain the accepted graph');
+  await State.undo(keepOpenAction);
+  assert.equal(State.get().settings.marker, undefined, 'keep-open capture must remain action-scoped Undo');
 
   const captureAction = State.snapshot('capture');
   State.get().settings.marker = 'captured';

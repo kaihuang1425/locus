@@ -685,23 +685,36 @@ function testStaticReachabilityAndLegacyRemoval() {
 
   const boardGroup = extractFunction('buildGroupCol');
   const listGroup = extractFunction('buildLvGroup');
-  assert.equal((source.match(/openIdentityEditor\('group',\s*'duplicate'/g) || []).length, 3,
-    'Board More, List More, and List right-click must be the only Duplicate entry points');
+  const groupMenu = extractFunction('groupActionMenuItems');
+  assert.equal((source.match(/openIdentityEditor\('group',\s*'duplicate'/g) || []).length, 1,
+    'Board and List Duplicate must share one Group action model');
   assert.match(
-    boardGroup,
+    groupMenu,
     /action:\s*\(\) => openIdentityEditor\('group',\s*'duplicate',\s*identityParams,\s*opener\)/,
-    'Board and Canvas Duplicate must pass the stable identity tuple and exact visible opener to the shared editor',
+    'Group Duplicate must pass the stable identity tuple and exact visible opener to the shared editor',
   );
   assert.match(
-    listGroup,
-    /action:\s*\(\) => openIdentityEditor\('group',\s*'duplicate',\s*params,\s*btn\)/,
-    'List More Duplicate must pass the stable identity tuple and its visible button opener',
+    groupMenu,
+    /identityGroupTarget\(group\?\.id\)[\s\S]*?identity\.group !== group[\s\S]*?return \[.*openIdentityEditor\('group',\s*'duplicate'/s,
+    'the shared Group action model must fail closed on a stale or ambiguous rendered Group',
+  );
+  assert.match(boardGroup, /groupActionMenuItems\(g, opener,/, 'Board and Canvas must consume the shared Group action model');
+  assert.match(listGroup, /groupActionMenuItems\(g, opener,/, 'List must consume the shared Group action model');
+  const boardStack = extractFunction('buildStack');
+  const listStack = extractFunction('buildLvStack');
+  const stackMenu = extractFunction('stackActionMenuItems');
+  assert.match(
+    stackMenu,
+    /Array\.isArray\(options\.parentItems\)[\s\S]*?options\.group[\s\S]*?identityStackTarget\(stack\?\.id\)[\s\S]*?identity\.item !== stack[\s\S]*?identity\.parentItems !== options\.parentItems[\s\S]*?identity\.group !== options\.group[\s\S]*?return \[/,
+    'the shared Stack action model must fail closed on stale, moved, or ambiguous rendered identity',
   );
   assert.match(
-    listGroup,
-    /action:\s*\(\) => openIdentityEditor\('group',\s*'duplicate',\s*params,\s*toggleButton\)/,
-    'List right-click Duplicate must converge on the same editor with the focused Group toggle',
+    stackMenu,
+    /openIdentityEditor\('stack',\s*'edit',\s*identityParams,\s*opener\)/,
+    'Stack Edit must pass the stable identity tuple and exact visible opener to the shared editor',
   );
+  assert.match(boardStack, /stackActionMenuItems\(it, opener, \{[\s\S]*?parentItems,[\s\S]*?group,/, 'Board Stack must consume the shared action model with its rendered owner');
+  assert.match(listStack, /stackActionMenuItems\(it, opener, \{[\s\S]*?parentItems,[\s\S]*?group,/, 'List Stack must consume the shared action model with its rendered owner');
   assert.doesNotMatch(source, /\bfunction\s+duplicateGroup\s*\(/,
     'Duplicate must not retain a first-match legacy mutation path outside the identity controller');
 
@@ -710,8 +723,18 @@ function testStaticReachabilityAndLegacyRemoval() {
     assert.doesNotMatch(implementation, /\bprompt\s*\(/, `${name} must not use a native naming prompt`);
     assert.doesNotMatch(implementation, /\.ondblclick\s*=/, `${name} must not retain mouse-only double-click naming`);
   }
-  assert.match(extractFunction('buildGroupCol'), /<span class="gcol-name"/, 'Board Group names must be display text, not inline editors');
-  assert.match(extractFunction('buildLvGroup'), /<span class="lv-group-name"/, 'List Group names must be display text, not inline editors');
+  assert.match(
+    extractFunction('buildGroupCol'),
+    /<button class="gcol-name" type="button" data-act="focus"/,
+    'Board Group names may be native page routes but must not become inline editors',
+  );
+  assert.doesNotMatch(
+    extractFunction('buildGroupCol'),
+    /class="gcol-name"[^>]*contenteditable/,
+    'Board Group names must keep naming inside the exact identity transaction',
+  );
+  assert.match(extractFunction('buildLvGroup'), /<button class="lv-group-name" type="button" data-act="focus"/, 'List Group names must be native page routes, not inline editors');
+  assert.doesNotMatch(extractFunction('buildLvGroup'), /class="lv-group-name"[^>]*contenteditable/, 'List Group names must keep naming inside the exact identity transaction');
   assert.match(extractFunction('buildStack'), /<span class="stack-name"/, 'Board Stack names must be display text, not inline editors');
   assert.match(extractFunction('buildLvStack'), /<span class="lv-stack-name"/, 'List Stack names must be display text, not inline editors');
 
@@ -813,14 +836,14 @@ function testStaticTransactionContracts() {
     'Acknowledged reminder-bearing copies must request one background reconciliation');
   assert.match(reconcile, /result\?\.ok !== true/,
     'Reminder reconciliation must require an explicit background acknowledgement');
-  assert.match(reconcile, /duplicateReminderWarning[\s\S]*danger:\s*true[\s\S]*undo:\s*actionId/,
+  assert.match(reconcile, /duplicateReminderWarning[\s\S]*tone:\s*'warning'[\s\S]*undo:\s*actionId/,
     'A reconciliation warning must preserve the exact Duplicate Undo action');
   assert.match(reconcile, /current\?\.group === group && State\.latestActionId\(\) === actionId[\s\S]*history\.reminderReconcileWarning/,
     'A delayed reconciliation failure must drop stale exact-Undo affordances after the copy or action changes');
   const historyReconcile = extractFunction('reconcileRemindersAfterHistoryChange');
   assert.match(historyReconcile, /chrome\.runtime\.sendMessage\(\{ type: 'reconcile-reminders' \}\)/,
     'Undo and Redo must request a fresh authoritative reminder map after their acknowledged state write');
-  assert.match(historyReconcile, /history\.reminderReconcileWarning[\s\S]*danger:\s*true/,
+  assert.match(historyReconcile, /history\.reminderReconcileWarning[\s\S]*tone:\s*'warning'/,
     'A failed post-history reconciliation must expose a localized warning with a recovery path');
   assert.match(extractFunction('performUndo'), /await State\.undo[\s\S]*reconcileRemindersAfterHistoryChange\(\)/,
     'Duplicate Undo must reconcile only after its persistence receipt');
@@ -969,10 +992,23 @@ function testEscapeAndPickerStackContracts() {
 
   const bindStart = source.indexOf("document.addEventListener('keydown', e => {");
   assert.ok(bindStart >= 0, 'The global key stack must exist');
-  const globalKeys = source.slice(bindStart, bindStart + 1200);
-  const emojiIndex = globalKeys.indexOf('handleEmojiPickerGlobalKey(e)');
-  const identityIndex = globalKeys.indexOf('handleIdentityEditorGlobalKey(e)');
-  assert.ok(emojiIndex >= 0 && identityIndex > emojiIndex, 'Global Escape must offer the last-opened picker its event before the identity editor');
+  const bindEnd = source.indexOf('\n  });', bindStart);
+  assert.ok(bindEnd > bindStart, 'The complete global key stack must be extractable');
+  const globalKeys = source.slice(bindStart, bindEnd);
+  let previousGlobalLayer = -1;
+  for (const handler of [
+    'handleRichTextLinkGlobalKey(e)',
+    'handlePasteImportGlobalKey(e)',
+    'handleReminderGlobalKey(e)',
+    'handleCalendarTaskGlobalKey(e)',
+    'handleEmojiPickerGlobalKey(e)',
+    'handleIdentityEditorGlobalKey(e)',
+  ]) {
+    const index = globalKeys.indexOf(handler);
+    assert.ok(index > previousGlobalLayer,
+      `Global Escape must offer ${handler} its event in last-opened-first-closed order`);
+    previousGlobalLayer = index;
+  }
 
   const interlocks = extractFunction('inheritActiveBodyInterlocks');
   assert.match(interlocks, /getElementById\('modal-overlay'\)/, 'Late-mounted body surfaces must observe an open identity editor');
@@ -1063,7 +1099,18 @@ function testHistoryNavigationIdentityInterlock() {
     },
     closeIdentityEditor(options) { calls.closes.push(plain(options)); hidden = true; return true; },
     flushActiveItemDetailEditor() { calls.flushes += 1; },
+    isArchivedPageRestorePending() { return false; },
+    isSavedPageArchivePending() { return false; },
+    isSelectedItemMutationPending() { return false; },
+    isSavedTabReturnMutationPending() { return false; },
+    isBoardTodoCompletionPending() { return false; },
     isItemDetailMutationPending() { return false; },
+    isReminderMutationPending() { return false; },
+    isCalendarTaskMutationPending() { return false; },
+    isPasteImportPending() { return false; },
+    settingsPreferencePendingTransaction() { return null; },
+    closePasteOverlay() {},
+    closeCalendarTaskDialog() {},
     State: {
       get() { return routeState; },
       persist() { calls.persists += 1; },
@@ -1534,7 +1581,7 @@ async function testDuplicateReceiptCloneLayoutAndReminderContract() {
   assert.equal(harness.calls.toasts.length, 2, 'Failed reminder reconciliation must add one warning after success');
   const warning = harness.calls.toasts[1];
   assert.equal(warning.message, i18n.en['groupEditor.duplicateReminderWarning'].replace('{name}', expectedName));
-  assert.equal(warning.options.danger, true);
+  assert.equal(warning.options.tone, 'warning');
   assert.equal(warning.options.duration, 8000);
   assert.equal(warning.options.undo, 73, 'Reminder warning must retain the exact Duplicate Undo action');
   assert.equal(harness.api.getBusy(), false);
@@ -1655,7 +1702,7 @@ async function testDuplicateFocusedGroupRouteAndDelayedWarning() {
   const warning = warningHarness.calls.toasts[1];
   assert.equal(warning.message, i18n.en['history.reminderReconcileWarning'],
     'A delayed reconciliation failure after a newer action must use generic recovery guidance');
-  assert.equal(warning.options.danger, true);
+  assert.equal(warning.options.tone, 'warning');
   assert.equal(warning.options.duration, 8000);
   assert.equal(warning.options.undo, undefined,
     'A delayed reconciliation failure must not expose stale exact Undo');
@@ -1748,7 +1795,7 @@ async function testDuplicateZhTWAndHistoryReconciliation() {
   undoReconcile.resolve({ ok: false });
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(undoHarness.calls.toasts[1].message, i18n['zh-TW']['history.reminderReconcileWarning']);
-  assert.equal(undoHarness.calls.toasts[1].options.danger, true);
+  assert.equal(undoHarness.calls.toasts[1].options.tone, 'warning');
 
   const redoReceipt = deferred();
   const redoHarness = buildHarness({
@@ -2101,8 +2148,249 @@ function testKeyboardFocusAndInterlockDynamically() {
     'A pre-existing recovery foreground must retain focus when it blocks editor opening');
 }
 
+function testGroupFocusSelectorOrderAfterRerender() {
+  const groupId = 'g-a';
+  const selectors = [
+    `.gcol[data-gid="${groupId}"] .gcol-toggle:not(.hidden)`,
+    `.gcol[data-gid="${groupId}"] [data-act="more"]`,
+    `.lv-group[data-gid="${groupId}"] .lv-group-toggle`,
+  ];
+  const queries = [];
+  let renderedControls = new Map();
+  const document = {
+    activeElement: null,
+    getElementById(id) {
+      return id === 'item-detail' ? { dataset: { itemId: '' } } : null;
+    },
+    querySelector(selector) {
+      queries.push(selector);
+      const target = renderedControls.get(selector) || null;
+      if (target?.classList.contains('hidden') && selector.includes(':not(.hidden)')) return null;
+      return target;
+    },
+  };
+  function control(id, classes = []) {
+    return {
+      id,
+      classList: new ClassList(...classes),
+      isConnected: true,
+      focusCount: 0,
+      scrollCount: 0,
+      focus() {
+        if (!this.isConnected || this.classList.contains('hidden')) return;
+        this.focusCount += 1;
+        document.activeElement = this;
+      },
+      scrollIntoView() { this.scrollCount += 1; },
+    };
+  }
+  const context = vm.createContext({
+    document,
+    CSS: { escape(value) { return String(value); } },
+    String,
+  });
+  vm.runInContext(
+    `${extractFunction('focusIdentityTarget')}\n` +
+      'globalThis.runFocusIdentityTarget = focusIdentityTarget;',
+    context,
+    { filename: 'group-focus-selector-order-contract.js' },
+  );
+
+  const visibleToggle = control('visible-toggle', ['gcol-toggle']);
+  const standardMore = control('standard-more');
+  const standardListToggle = control('standard-list-toggle');
+  renderedControls = new Map([
+    [selectors[0], visibleToggle],
+    [selectors[1], standardMore],
+    [selectors[2], standardListToggle],
+  ]);
+  assert.equal(context.runFocusIdentityTarget('group', groupId), true);
+  assert.equal(document.activeElement, visibleToggle,
+    'A normal Group rerender must restore focus to its visible collapse toggle first');
+  assert.deepEqual(queries.splice(0), [selectors[0]],
+    'A successful visible-toggle focus must not probe later Group fallbacks');
+
+  visibleToggle.isConnected = false;
+  const hiddenForcedToggle = control('forced-hidden-toggle', ['gcol-toggle', 'hidden']);
+  const forcedMore = control('forced-more');
+  const forcedListToggle = control('forced-list-toggle');
+  renderedControls = new Map([
+    [selectors[0], hiddenForcedToggle],
+    [selectors[1], forcedMore],
+    [selectors[2], forcedListToggle],
+  ]);
+  assert.equal(context.runFocusIdentityTarget('group', groupId), true);
+  assert.equal(document.activeElement, forcedMore,
+    'A forced-expanded Group with a hidden toggle must restore focus to its visible More button after rerender');
+  assert.equal(hiddenForcedToggle.focusCount, 0,
+    'The hidden forced-expanded toggle must never receive focus');
+  assert.equal(forcedListToggle.focusCount, 0,
+    'The same rendered Group More button must win before the List fallback');
+  assert.deepEqual(queries.splice(0), selectors.slice(0, 2),
+    'Forced-expanded focus must probe the visible toggle selector, then the same Group More button');
+
+  forcedMore.isConnected = false;
+  const listOnlyToggle = control('list-only-toggle');
+  renderedControls = new Map([[selectors[2], listOnlyToggle]]);
+  assert.equal(context.runFocusIdentityTarget('group', groupId), true);
+  assert.equal(document.activeElement, listOnlyToggle,
+    'List view must remain the final Group focus fallback when Board controls are absent');
+  assert.deepEqual(queries.splice(0), selectors,
+    'List fallback must be queried only after the visible Board toggle and same Group More button');
+}
+
+function testSharedGroupActionMenuModel() {
+  const group = { id: 'group-1', name: 'Inbox', collapsed: false, items: [] };
+  const opener = { id: 'group-more' };
+  const calls = { identity: [], openAll: [], move: [], archive: [] };
+  let resolvedGroup = group;
+  const factory = vm.runInNewContext(`(() => {
+    ${extractFunction('groupRecordCreationMenuItems')}
+    ${extractFunction('groupActionMenuItems')}
+    return groupActionMenuItems;
+  })()`, {
+    identityGroupTarget(groupId) {
+      if (groupId !== 'group-1' || !resolvedGroup) return null;
+      return {
+        workspace: { id: 'workspace-1' },
+        space: { id: 'space-1' },
+        group: resolvedGroup,
+      };
+    },
+    tr(key) { return key; },
+    cmIcons: {
+      edit: 'edit', clock: 'clock', open: 'open', expand: 'expand',
+      copy: 'copy', note: 'note', todo: 'todo', stack: 'stack', archive: 'archive',
+    },
+    createBoardLocalRecord() {},
+    openIdentityEditor(...args) { calls.identity.push(args); },
+    openIntentEditor() {},
+    openEntityReminderPickerOrReport() {},
+    openGroupAll(...args) { calls.openAll.push(args); },
+    openGroupPage() {},
+    organizationGroupMoveMenuItems(groupId, actualOpener) {
+      calls.move.push([groupId, actualOpener]);
+      return [{ text: 'move' }];
+    },
+    archiveGroup(groupId) { calls.archive.push(groupId); },
+  });
+  let toggles = 0;
+  const items = factory(group, opener, { toggleCollapse: () => { toggles += 1; } });
+  assert.ok(items.some(item => item.text === 'groupAction.openAll'),
+    'the shared action model must expose the core recovery action for the exact rendered Group');
+  assert.deepEqual(
+    plain(items.filter(item => ['groupAction.addNote', 'groupAction.addTodo', 'groupAction.addStack'].includes(item.text)).map(item => item.text)),
+    ['groupAction.addNote', 'groupAction.addTodo', 'groupAction.addStack'],
+    'the shared List action model must keep local record types together inside the contextual menu',
+  );
+  assert.deepEqual(plain(calls.move), [['group-1', { id: 'group-more' }]],
+    'the shared Move section must receive the exact Group ID and actual opener');
+
+  items.find(item => item.text === 'groupAction.duplicate').action();
+  assert.deepEqual(plain(calls.identity), [[
+    'group',
+    'duplicate',
+    { workspaceId: 'workspace-1', spaceId: 'space-1', groupId: 'group-1' },
+    { id: 'group-more' },
+  ]], 'Duplicate must retain the exact identity tuple and actual opener');
+  items.find(item => item.text === 'groupAction.openAll').action();
+  assert.deepEqual(plain(calls.openAll), [[group, { id: 'group-more' }]],
+    'Open all must retain the exact rendered Group and actual opener');
+  items.find(item => item.text === 'groupAction.collapse').action();
+  assert.equal(toggles, 1, 'the shared collapse action must invoke only the supplied surface controller');
+
+  resolvedGroup = { ...group };
+  assert.deepEqual(plain(factory(group, opener)), [],
+    'a same-ID replacement must fail closed instead of exposing actions on a detached Group');
+  resolvedGroup = null;
+  assert.deepEqual(plain(factory(group, opener)), [],
+    'a missing or ambiguous Group must fail closed before exposing actions');
+}
+
+function testSharedStackActionMenuModel() {
+  const stack = { id: 'stack-1', type: 'stack', name: 'Sources', expanded: false, items: [] };
+  const parentItems = [stack];
+  const group = { id: 'group-1', name: 'Inbox', items: parentItems };
+  const opener = { id: 'stack-more' };
+  const calls = { identity: [], common: [], archive: [] };
+  let resolvedStack = stack;
+  let resolvedParentItems = parentItems;
+  let resolvedGroup = group;
+  const factory = vm.runInNewContext(`(${extractFunction('stackActionMenuItems')})`, {
+    identityStackTarget(stackId) {
+      if (stackId !== 'stack-1' || !resolvedStack) return null;
+      return {
+        workspace: { id: 'workspace-1' },
+        space: { id: 'space-1' },
+        group: resolvedGroup,
+        item: resolvedStack,
+        parentItems: resolvedParentItems,
+      };
+    },
+    tr(key) { return key; },
+    cmIcons: { edit: 'edit' },
+    openIdentityEditor(...args) { calls.identity.push(args); },
+    openIntentEditor() {},
+    archiveBoardLocalItemWithFocus(...args) { calls.archive.push(args); return true; },
+    commonActs(item, extra, options) {
+      calls.common.push({ item, extra, options });
+      return [
+        { text: 'itemAction.details' },
+        { text: 'itemAction.archive', action: options.archiveAction },
+      ];
+    },
+  });
+  let toggles = 0;
+  const menuOptions = {
+    parentItems,
+    group,
+    toggleCollapse: () => { toggles += 1; },
+  };
+  const items = factory(stack, opener, menuOptions);
+  assert.ok(items.some(item => item.text === 'itemAction.details'),
+    'the exact Stack must retain the established Details recovery action');
+  assert.equal(calls.common.length, 1, 'the shared Stack model must build one common action section');
+  assert.equal(calls.common[0].item, stack);
+  assert.equal(calls.common[0].options.mutationOpener, opener,
+    'Stack reminder/archive actions must retain the actual visible opener');
+
+  items.find(item => item.text === 'stackAction.edit').action();
+  assert.deepEqual(plain(calls.identity), [[
+    'stack',
+    'edit',
+    { workspaceId: 'workspace-1', spaceId: 'space-1', groupId: 'group-1', stackId: 'stack-1' },
+    { id: 'stack-more' },
+  ]], 'Stack Edit must retain the exact identity tuple and actual opener');
+  items.find(item => item.text === 'stackAction.expand').action();
+  assert.equal(toggles, 1, 'the shared disclosure action must invoke only the supplied surface controller');
+  items.find(item => item.text === 'itemAction.archive').action();
+  assert.deepEqual(plain(calls.archive), [[
+    stack,
+    [stack],
+    group,
+    { id: 'stack-more' },
+  ]], 'Stack Archive must retain the complete exact Stack, parent list, Group, and opener');
+
+  resolvedParentItems = [stack];
+  assert.deepEqual(plain(factory(stack, opener, menuOptions)), [],
+    'a Stack moved to a different parent list must fail closed from its stale rendered header');
+  resolvedParentItems = parentItems;
+  resolvedGroup = { ...group, items: parentItems };
+  assert.deepEqual(plain(factory(stack, opener, menuOptions)), [],
+    'a Stack moved to a different Group must fail closed from its stale rendered header');
+  resolvedGroup = group;
+  resolvedStack = { ...stack };
+  assert.deepEqual(plain(factory(stack, opener, menuOptions)), [],
+    'a same-ID Stack replacement must fail closed instead of exposing detached actions');
+  resolvedStack = null;
+  assert.deepEqual(plain(factory(stack, opener, menuOptions)), [],
+    'a missing or duplicate Stack must fail closed before exposing actions');
+}
+
 async function run() {
   testStaticReachabilityAndLegacyRemoval();
+  testSharedGroupActionMenuModel();
+  testSharedStackActionMenuModel();
   testStaticTransactionContracts();
   testMarkupLocalizationAndResponsiveHooks();
   testEscapeAndPickerStackContracts();
@@ -2121,6 +2409,7 @@ async function run() {
   await testNameValidationAndColorRoving();
   await testBatchAtomicityAndExactSelection();
   testKeyboardFocusAndInterlockDynamically();
+  testGroupFocusSelectorOrderAfterRerender();
   console.log('Group/Stack identity contracts passed: stable IDs, atomic Duplicate receipts, production Canvas placement, history/recovery ordering, post-history reminders, localization, and focus stack.');
 }
 

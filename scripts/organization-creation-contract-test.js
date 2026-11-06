@@ -110,10 +110,12 @@ const setElementInertOwnerSource = extractFunction('setElementInertOwner');
 const focusDialogOpenerSource = extractFunction('focusDialogOpener');
 const applyLocaleSource = extractFunction('applyLocale');
 const bindStaticSource = extractFunction('bindStatic');
-const renderHomeSource = extractFunction('renderHome');
+const buildHomeTrailSource = extractFunction('buildHomeTrail');
+const homeTrailBlockedDestinationActionPlanSource = extractFunction('homeTrailBlockedDestinationActionPlan');
 const buildPaletteCommandsSource = extractFunction('buildPaletteCommands');
 const buildGroupColSource = extractFunction('buildGroupCol');
 const buildLvGroupSource = extractFunction('buildLvGroup');
+const groupActionMenuSource = extractFunction('groupActionMenuItems');
 const groupMoveMenuSource = extractFunction('organizationGroupMoveMenuItems');
 const openWsGridSource = extractFunction('openWsGrid');
 const showContextMenuSource = extractFunction('showContextMenu');
@@ -486,10 +488,14 @@ function testStaticEntryPointsAndResidueRemoval() {
   assert.match(bindStaticSource, /wsg-add[^\n]+openOrganizationCreate\('workspace',\s*\{\},\s*event\.currentTarget\)/, 'Workspace manager Add must use the shared creation controller with its real opener');
   assert.match(bindStaticSource, /add-ws-btn[^\n]+openOrganizationCreate\('workspace',\s*\{\},\s*event\.currentTarget\)/, 'Header Add workspace must use the shared creation controller');
   assert.match(bindStaticSource, /add-cat-btn[^\n]+openOrganizationCreate\('space',\s*\{\},\s*event\.currentTarget\)/, 'Sidebar Add Space must use the shared creation controller');
-  assert.match(renderHomeSource, /palette\.newSpace[\s\S]*openOrganizationCreate\('space'\)/, 'Home zero-Space recovery must use the shared creation controller');
+  assert.match(homeTrailBlockedDestinationActionPlanSource, /key:\s*'create-space'[\s\S]*labelKey:\s*'organization\.space\.createTitle'/,
+    'Home zero-Space recovery must expose the localized shared creation action');
+  assert.match(buildHomeTrailSource, /action\.key === 'create-space'[\s\S]*openOrganizationCreate\('space',\s*\{\},\s*event\.currentTarget\)/,
+    'Home zero-Space recovery must use the shared creation controller with its real opener');
   assert.match(buildPaletteCommandsSource, /id:\s*'new-space'[\s\S]*openOrganizationCreate\('space'\)/, 'Command-palette New space must use the shared creation controller');
-  assert.match(buildGroupColSource, /organizationGroupMoveMenuItems\(g\.id,\s*opener\)/, 'Board and focused-Group menus must use the shared move section');
-  assert.match(buildLvGroupSource, /organizationGroupMoveMenuItems\(g\.id,\s*(?:btn|toggleButton)\)/, 'List Group menus must use the shared move section');
+  assert.match(buildGroupColSource, /groupActionMenuItems\(g,\s*opener,/, 'Board and focused-Group menus must use the shared Group action model');
+  assert.match(buildLvGroupSource, /groupActionMenuItems\(g,\s*opener,/, 'List Group menus must use the shared Group action model');
+  assert.match(groupActionMenuSource, /organizationGroupMoveMenuItems\(identity\.group\.id,\s*opener\)/, 'the shared Group action model must use the shared move section');
   assert.match(groupMoveMenuSource, /organization\.space\.moveMenuLabel/, 'The shared Group move action must use public localized Space vocabulary');
   assert.match(groupMoveMenuSource, /organization\.space\.newAndMoveMenu[\s\S]*openOrganizationCreate\('space',\s*\{\s*groupId:\s*source\.group\.id\s*\},\s*opener\)/, 'New-Space-and-move must pass a stable Group ID and connected opener');
   assert.equal((source.match(/openOrganizationCreate\(/g) || []).length, 7, 'Six reachable entry points plus one controller must share the creation path');

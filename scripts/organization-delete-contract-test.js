@@ -337,9 +337,12 @@ function testStaticOrganizationBoundary() {
   assert.equal(controllerSource.includes('confirm('), false, 'Organization deletion must not use native confirm()');
   assert.equal(source.includes('function deleteGroup('), false, 'Group removal must not retain a duplicate Delete controller');
   assert.equal(source.includes('deleteGroup('), false, 'All group removal menus must remain Archive-only');
+  const groupActions = extractFunction('groupActionMenuItems');
+  assert.ok(groupActions.includes('archiveGroup('), 'the shared Group action model must retain the recoverable Archive action');
+  assert.equal(groupActions.includes('deleteGroup('), false, 'the shared Group action model must not expose a duplicate group Delete action');
   for (const name of ['buildGroupCol', 'buildLvGroup']) {
     const implementation = extractFunction(name);
-    assert.ok(implementation.includes('archiveGroup('), `${name} must retain the recoverable Archive action`);
+    assert.ok(implementation.includes('groupActionMenuItems('), `${name} must use the shared recoverable Group action model`);
     assert.equal(implementation.includes('deleteGroup('), false, `${name} must not expose a duplicate group Delete action`);
   }
 
@@ -358,9 +361,13 @@ function testStaticOrganizationBoundary() {
   const reminderMenu = extractFunction('categoryReminderMenuItem');
   assert.match(reminderMenu, /Array\.isArray\(cat\?\.reminders\) && cat\.reminders\.length > 0/, 'Space reminder recovery must detect an existing record, including a delivered reminder hidden from pending surfaces');
   assert.match(reminderMenu, /tr\(hasReminder \? 'reminder\.editTitle' : 'reminder\.setTitle'\)/, 'The Space reminder action must use localized set/edit copy');
-  assert.match(reminderMenu, /openEntityReminderPicker\('category', cat\.id, hasReminder \? 0 : undefined\)/, 'The Space menu must reopen the first existing reminder so Remove can make structural deletion reachable');
-  for (const name of ['renderCategoryTabs', 'renderHome', 'renderSpaceNav']) {
-    assert.match(extractFunction(name), /categoryReminderMenuItem\(cat\)/, `${name} must expose the same reminder recovery action`);
+  assert.match(reminderMenu, /openEntityReminderPickerOrReport\([\s\S]*'category',[\s\S]*cat\.id,[\s\S]*hasReminder \? cat\.reminders\[0\]\.id : undefined,[\s\S]*\{ opener \}/, 'The Space menu must reopen the first stable reminder identity, report stale capture failure, and preserve its real opener');
+  for (const [name, opener] of [
+    ['renderCategoryTabs', 'b'],
+    ['renderHome', 'homeMore'],
+    ['renderSpaceNav', 'el'],
+  ]) {
+    assert.match(extractFunction(name), new RegExp(`categoryReminderMenuItem\\(cat, ${opener}\\)`), `${name} must expose the same stable reminder recovery action with its visible opener`);
   }
   assert.match(css, /\.cat-tabs-wrap\s*\{\s*display:\s*none !important;/, 'The legacy category strip remains hidden, so visible Home/sidebar reminder wiring is required');
   assert.equal((source.match(/openOrganizationDelete\(/g) || []).length, 6, 'Five entry points plus the controller must share one organization path');
