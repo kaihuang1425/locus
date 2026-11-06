@@ -15581,7 +15581,11 @@ async function refreshOpenTabs() {
   // Capture mutates the in-memory graph optimistically, then waits for storage.
   // A tab event that resolves in that window must not expose the unacknowledged
   // item on Home. The accepted or recovery path owns the eventual repaint.
-  if (activeHome && !captureCommitPending
+  // The Today board shows nothing derived from the trail candidate (its tab
+  // count is set by setOpenTabRailCount above), so a tab event never rebuilds
+  // it and keyboard focus on a Today control stays where it is.
+  const todayShown = !!document.querySelector?.('#board .today');
+  if (activeHome && !captureCommitPending && !todayCapturePending && !todayShown
       && homeTrailCandidateFingerprint() !== previousTrailCandidate) {
     renderBoard();
     if (focusKey) restoreHomeTrailFocus(focusKey) || restoreHomeTrailFocus('capture');
@@ -20086,8 +20090,25 @@ function todayClockText(at) {
 // earlier day, reminders due now, anytime to-dos (created today, no reminder),
 // reminders later today; then IDs deferred with Later, in deferral order; done
 // to-dos last. A duplicated stable ID is left out because no exact-identity
-// action could reach it.
-function todayTaskModel(workspace, now = Date.now(), laterIds = []) {
+// action could reach it. A repeating reminder shows today's occurrence: the one
+// that already fired (stored `at` re-armed past today) or the next one from a
+// stale stored `at`, never a missed earlier day. Undated to-dos marked Someday
+// in Plan are not "anytime".
+function previousReminderOccurrence(at, recur) {
+  const stored = Number(at);
+  if (!Number.isFinite(stored) || !['day', 'week', 'month'].includes(recur?.every)) return null;
+  const rawInterval = Number(recur.interval);
+  const interval = Number.isFinite(rawInterval) ? Math.max(1, Math.trunc(rawInterval)) : 1;
+  const prev = new Date(stored);
+  if (recur.every === 'month') prev.setMonth(prev.getMonth() - interval);
+  else prev.setDate(prev.getDate() - interval * (recur.every === 'week' ? 7 : 1));
+  const candidate = prev.getTime();
+  // Only a real step of the same series: forward from it must land on `at`.
+  return nextReminderOccurrenceForDisplay(candidate, recur, candidate) === stored ? candidate : null;
+}
+
+function todayTaskModel(workspace, now = Date.now(), laterIds = [], somedayIds = null) {
+  const someday = somedayIds instanceof Set ? somedayIds : new Set(Array.isArray(somedayIds) ? somedayIds.map(String) : []);
   const { start, end } = todayDayBounds(now);
   const todos = [];
   const walk = items => (Array.isArray(items) ? items : []).forEach(item => {
@@ -20109,13 +20130,27 @@ function todayTaskModel(workspace, now = Date.now(), laterIds = []) {
     if (!id || idCounts.get(id) !== 1) return;
     const done = item.done === true;
     const storedAt = item.reminder && item.reminder.at != null ? Number(item.reminder.at) : NaN;
-    const at = Number.isFinite(storedAt) ? storedAt : null;
+    let at = Number.isFinite(storedAt) ? storedAt : null;
     const createdAt = Number(item.createdAt);
+    const recur = ['day', 'week', 'month'].includes(item.reminder?.recur?.every) ? item.reminder.recur : null;
+    let repeating = false;
+    if (at != null && recur) {
+      if (at < start) {
+        const next = nextReminderOccurrenceForDisplay(at, recur, start - 1);
+        if (Number.isFinite(next)) { at = next; repeating = true; }
+      } else if (at >= end) {
+        // The alarm fired earlier today and re-armed the series past today.
+        const prev = previousReminderOccurrence(at, recur);
+        const writtenBefore = !Number.isFinite(createdAt) || createdAt <= prev;
+        if (prev != null && prev >= start && prev < end && prev <= now && writtenBefore) at = prev;
+        repeating = true;
+      } else repeating = true;
+    }
     let kind = null;
     if (at != null) {
       if (at >= start && at < end) kind = at <= now ? 'due' : 'upcoming';
-      else if (at < start && !done) kind = 'overdue';
-    } else if (Number.isFinite(createdAt) && createdAt >= start && createdAt < end) {
+      else if (at < start && !done && !repeating) kind = 'overdue';
+    } else if (Number.isFinite(createdAt) && createdAt >= start && createdAt < end && !someday.has(id)) {
       kind = 'anytime';
     }
     if (!kind) return;
@@ -20229,31 +20264,51 @@ function parseTodayCapture(text, { now = Date.now(), timeZone = '', spaces = [] 
     spaceName: '',
   };
   const found = [];
-  const enWhen = /\b(?:(?:at|on|by|this)\s+)?(today|tonight|tomorrow|next\s+week|weekend|monday|mon|tuesday|tues|tue|wednesday|thursday|thurs|thur|thu|friday|fri|saturday|sunday|morning|afternoon|evening|noon|(\d{1,2})(?::([0-5]\d))?\s?(am|pm)|([01]?\d|2[0-3]):([0-5]\d))\b/gi;
-  const zhWhen = /(下(?:週|星期|禮拜)[一二三四五六日天]|(?:週|星期|禮拜)[一二三四五六日天]|下週|下星期|下禮拜|今天|今晚|明天|後天|週末|早上|上午|中午|下午|晚上)|(\d{1,2})點(?:(半)|(\d{1,2})分?)?/g;
+  // Full-width digits and letters are read as ASCII one character at a time, so
+  // token offsets still point into the text exactly as typed.
+  const scan = Array.from(source).map(ch => {
+    const folded = ch.normalize('NFKC');
+    return folded.length === ch.length ? folded : ch;
+  }).join('');
+  // Words inside quotes stay literal: `read "today's report"` schedules nothing.
+  const quoted = [];
+  const quotePattern = /\x22[^\x22]*\x22|“[^”]*”|「[^」]*」|『[^』]*』/g;
+  // A bare H:MM without am/pm counts only after at/by, with a two-digit hour,
+  // or beside a day or part-of-day word, so "read John 3:16" stays a title.
+  const enWhen = /\b(?:(at|on|by|this)\s+)?(today|tonight|tomorrow|next\s+week|weekend|monday|mon|tuesday|tues|tue|wednesday|thursday|thurs|thur|thu|friday|fri|saturday|sunday|morning|afternoon|evening|noon|(\d{1,2})(?::([0-5]\d))?\s?(am|pm)|([01]?\d|2[0-3]):([0-5]\d))(?![\x27’\w])/gi;
+  const zhWhen = /(下(?:[週周]|星期|禮拜)[一二三四五六日天]|(?:[週周]|星期|禮拜)[一二三四五六日天]|下[週周]|下星期|下禮拜|今天|今晚|明天|後天|[週周]末|早上|上午|中午|下午|晚上)|(\d{1,2})\s*點(?:\s*(半)|(\d{1,2})分?|\s+(\d{1,2})\s*分)?/g;
   const tagPattern = /#([\p{L}\p{N}_-]+)/gu;
   let match;
-  while ((match = enWhen.exec(source))) {
+  while ((match = quotePattern.exec(scan))) quoted.push([match.index, match.index + match[0].length]);
+  const inQuote = (start, end) => quoted.some(([a, b]) => start < b && end > a);
+  while ((match = enWhen.exec(scan))) {
+    const prefix = String(match[1] || '').toLowerCase();
     found.push({
       start: match.index,
       end: match.index + match[0].length,
       kind: 'when',
-      word: match[1].toLowerCase().replace(/\s+/g, ' '),
-      clock: match[2] != null
-        ? { hour: Number(match[2]), minute: Number(match[3] || 0), meridiem: match[4].toLowerCase() }
-        : (match[5] != null ? { hour: Number(match[5]), minute: Number(match[6]), meridiem: null } : null),
+      word: match[2].toLowerCase().replace(/\s+/g, ' '),
+      clock: match[3] != null
+        ? { hour: Number(match[3]), minute: Number(match[4] || 0), meridiem: match[5].toLowerCase() }
+        : (match[6] != null ? { hour: Number(match[6]), minute: Number(match[7]), meridiem: null } : null),
+      bare: match[6] != null && match[6].length < 2 && prefix !== 'at' && prefix !== 'by',
     });
   }
-  while ((match = zhWhen.exec(source))) {
+  while ((match = zhWhen.exec(scan))) {
     found.push({
       start: match.index,
       end: match.index + match[0].length,
       kind: 'when',
-      word: match[1] || '',
+      word: String(match[1] || '').replace(/周/g, '週'),
       clock: match[2] != null
-        ? { hour: Number(match[2]), minute: match[3] ? 30 : Number(match[4] || 0), meridiem: null }
+        ? { hour: Number(match[2]), minute: match[3] ? 30 : Number(match[4] || match[5] || 0), meridiem: null }
         : null,
     });
+  }
+  const hasDayWord = found.some(token => token.kind === 'when' && !token.clock && !inQuote(token.start, token.end));
+  for (let i = found.length - 1; i >= 0; i -= 1) {
+    const token = found[i];
+    if (inQuote(token.start, token.end) || (token.bare && !hasDayWord)) found.splice(i, 1);
   }
   const normalize = value => String(value || '').normalize('NFKC').toLowerCase().replace(/[\s_-]+/g, '');
   const candidates = (Array.isArray(spaces) ? spaces : [])
@@ -20267,9 +20322,11 @@ function parseTodayCapture(text, { now = Date.now(), timeZone = '', spaces = [] 
     const prefix = candidates.filter(space => space.key.startsWith(key));
     return prefix.length === 1 ? prefix[0] : null;
   };
-  while ((match = tagPattern.exec(source))) {
+  while ((match = tagPattern.exec(scan))) {
     const space = resolveSpace(match[1]);
-    if (space) found.push({ start: match.index, end: match.index + match[0].length, kind: 'where', space });
+    if (space && !inQuote(match.index, match.index + match[0].length)) {
+      found.push({ start: match.index, end: match.index + match[0].length, kind: 'where', space });
+    }
   }
   found.sort((a, b) => a.start - b.start || b.end - a.end);
   const kept = [];
@@ -20304,7 +20361,7 @@ function parseTodayCapture(text, { now = Date.now(), timeZone = '', spaces = [] 
     } else if (word === 'tomorrow' || word === '明天') day = day || { offset: 1 };
     else if (word === '後天') day = day || { offset: 2 };
     else if (word === 'next week' || word === '下週' || word === '下星期' || word === '下禮拜') day = day || { nextWeek: true, weekday: 0 };
-    else if (word === 'weekend' || word === '週末') day = day || { weekday: 5, defaultMinutes: 600 };
+    else if (word === 'weekend' || word === '週末') day = day || { weekday: 5, defaultMinutes: 600, weekend: true };
     else if (weekdays[word] != null) day = day || { weekday: weekdays[word] };
     else if (word.startsWith('下') && zhWeekdays[last] != null) day = day || { nextWeek: true, weekday: zhWeekdays[last] };
     else if (zhWeekdays[last] != null) day = day || { weekday: zhWeekdays[last] };
@@ -20312,13 +20369,25 @@ function parseTodayCapture(text, { now = Date.now(), timeZone = '', spaces = [] 
   });
 
   let minutes = null;
+  let fromClock = false;
+  let nextDay = 0;
   if (clock && clock.minute <= 59) {
     let hour = clock.hour;
+    const evening = part === 'evening' || part === '晚上';
     if (clock.meridiem === 'pm' && hour >= 1 && hour < 12) hour += 12;
-    else if (clock.meridiem === 'am' && hour === 12) hour = 0;
-    else if (!clock.meridiem && part && afternoonParts.includes(part) && hour >= 1 && hour < 12) hour += 12;
+    else if (clock.meridiem === 'am' && hour === 12) {
+      hour = 0;
+      if (evening) nextDay = 1;
+    } else if (!clock.meridiem && hour === 12 && evening) {
+      // "12 tonight" / 晚上12點 is the midnight that ends the evening.
+      hour = 0;
+      nextDay = 1;
+    } else if (!clock.meridiem && part && afternoonParts.includes(part) && hour >= 1 && hour < 12) hour += 12;
     const meridiemValid = !clock.meridiem || (clock.hour >= 1 && clock.hour <= 12);
-    if (hour <= 23 && meridiemValid) minutes = hour * 60 + clock.minute;
+    if (hour <= 23 && meridiemValid) {
+      minutes = hour * 60 + clock.minute;
+      fromClock = true;
+    } else nextDay = 0;
   }
   if (minutes == null && part) minutes = partMinutes[part];
   if (minutes == null && day) minutes = day.defaultMinutes ?? 540;
@@ -20340,11 +20409,29 @@ function parseTodayCapture(text, { now = Date.now(), timeZone = '', spaces = [] 
       if (wall.status === 'gap') wall = Plan.zonedWallToEpoch(iso, Plan.parseHm(wall.suggestion), zone);
       return wall.status === 'ok' || wall.status === 'ambiguous' ? wall.at : null;
     };
+    offset += nextDay;
     let at = resolve(offset);
-    if (at != null && !day && at <= now) {
-      offset += 1;
-      at = resolve(offset);
-      result.rolled = true;
+    if (at != null && at <= now) {
+      if (!day) {
+        // No day word: a passed time means the same time tomorrow.
+        offset += 1;
+        at = resolve(offset);
+        result.rolled = true;
+      } else if (!fromClock && day.weekday != null && !day.nextWeek) {
+        // A default time on a weekday that is today and already past means the
+        // next one; on a Saturday afternoon the weekend still has its Sunday.
+        offset += day.weekend ? 1 : 7;
+        at = resolve(offset);
+        result.rolled = true;
+      } else if (!fromClock && day.offset === 0) {
+        // "today" / "tonight" with no clock and the default gone: next whole hour.
+        const nowMinutes = Plan.epochToZoned(now, zone).minutes;
+        const nextHour = (Math.floor(nowMinutes / 60) + 1) * 60;
+        offset = nextHour >= 1440 ? 1 : 0;
+        minutes = nextHour >= 1440 ? 0 : nextHour;
+        at = resolve(offset);
+        result.rolled = true;
+      }
     }
     if (at != null) {
       result.at = at;
@@ -20515,6 +20602,7 @@ function buildTodayNow(workspace, model) {
     button.type = 'button';
     button.className = 'today-now-title';
     button.dataset.itemId = entry.id;
+    button.dataset.todayFocus = `now-title:${entry.id}`;
     button.tabIndex = 0;
     button.setAttribute('aria-label', tr('home.trail.reviewItem', { title }));
     const text = document.createElement('span');
@@ -20544,6 +20632,7 @@ function buildTodayNow(workspace, model) {
     const check = document.createElement('button');
     check.type = 'button';
     check.className = 'today-now-check';
+    check.dataset.todayFocus = `now-check:${entry.id}`;
     check.setAttribute('aria-pressed', 'false');
     check.setAttribute('aria-label', tr('today.markDone', { title }));
     const rays = Array.from({ length: 8 }, () => '<span class="today-ray"><span class="today-ray-dot"></span></span>').join('');
@@ -20555,6 +20644,7 @@ function buildTodayNow(workspace, model) {
       const later = document.createElement('button');
       later.type = 'button';
       later.className = 'today-now-later';
+      later.dataset.todayFocus = `now-later:${entry.id}`;
       later.setAttribute('aria-label', tr('today.laterLabel', { title }));
       later.innerHTML = `<span>${esc(tr('today.later'))}</span>${TODAY_ARROW_ICON}`;
       later.addEventListener('click', event => { void laterTodayNow(event.currentTarget); });
@@ -20574,6 +20664,7 @@ function buildTodayCard(workspace, entry) {
   const check = document.createElement('button');
   check.type = 'button';
   check.className = 'today-card-check';
+  check.dataset.todayFocus = `card-check:${entry.id}`;
   check.setAttribute('aria-pressed', String(entry.done));
   check.setAttribute('aria-label', tr(entry.done ? 'today.markNotDone' : 'today.markDone', { title }));
   check.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -20587,6 +20678,7 @@ function buildTodayCard(workspace, entry) {
   button.type = 'button';
   button.className = 'today-card-title';
   button.dataset.itemId = entry.id;
+  button.dataset.todayFocus = `card-title:${entry.id}`;
   button.tabIndex = 0;
   button.setAttribute('aria-label', tr('home.trail.reviewItem', { title }));
   const titleText = document.createElement('span');
@@ -20609,6 +20701,7 @@ function buildTodayRest(workspace, model) {
   const week = document.createElement('button');
   week.type = 'button';
   week.className = 'today-week';
+  week.dataset.todayFocus = 'week';
   week.innerHTML = `<span>${esc(tr('today.thisWeek'))}</span>${TODAY_ARROW_ICON}`;
   week.addEventListener('click', () => openTodayWeek());
   head.appendChild(week);
@@ -21174,7 +21267,8 @@ function bindTodayBoard() {
 }
 
 function buildTodayBoard(workspace, now = Date.now()) {
-  const model = todayTaskModel(workspace, now, readTodayLaterIds(now));
+  const somedayIds = typeof planSomedayIds === 'function' ? planSomedayIds() : null;
+  const model = todayTaskModel(workspace, now, readTodayLaterIds(now), somedayIds);
   const root = document.createElement('div');
   root.className = 'today';
   root.dataset.todayDay = todayDayKey(now);
@@ -21205,6 +21299,12 @@ function renderHome() {
   const capture = document.getElementById('today-capture-input');
   const captureFocused = !!capture && document.activeElement === capture;
   const selection = captureFocused ? [capture.selectionStart, capture.selectionEnd] : null;
+  // Any other Today control carries a stable data-today-focus key, so focus on
+  // it survives a repaint (storage sync, a toggle elsewhere) instead of falling
+  // to <body>.
+  const todayFocusKey = captureFocused
+    ? null
+    : (document.activeElement?.closest?.('#board [data-today-focus]')?.dataset?.todayFocus || null);
   $b.innerHTML = '';
 
   // Home is the Today board (2026-11 canvas): clock, one Now card, the rest of
@@ -21218,6 +21318,12 @@ function renderHome() {
     if (rebuilt) {
       try { rebuilt.focus({ preventScroll: true }); } catch { try { rebuilt.focus(); } catch {} }
       try { if (selection) rebuilt.setSelectionRange(selection[0], selection[1]); } catch {}
+    }
+  } else if (todayFocusKey) {
+    const rebuilt = [...$b.querySelectorAll('[data-today-focus]')]
+      .find(element => element.dataset.todayFocus === todayFocusKey);
+    if (rebuilt) {
+      try { rebuilt.focus({ preventScroll: true }); } catch { try { rebuilt.focus(); } catch {} }
     }
   }
   syncTodayTabsEar();

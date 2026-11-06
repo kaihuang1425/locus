@@ -6721,6 +6721,7 @@ async function assertHomeTrailRefreshController() {
   const calls = { boards: 0, tabRenders: 0, focus: [], railFocus: [] };
   let fingerprint = 'before';
   let activeElement = null;
+  let todayShown = false;
   const context = vm.createContext({
     chrome: {
       tabs: {
@@ -6732,6 +6733,7 @@ async function assertHomeTrailRefreshController() {
     document: {
       get activeElement() { return activeElement; },
       getElementById() { return { textContent: '' }; },
+      querySelector(selector) { return selector === '#board .today' && todayShown ? {} : null; },
     },
     isProto() { return false; },
     homeTrailCandidateFingerprint() { return fingerprint; },
@@ -6751,10 +6753,12 @@ let currentActiveTabId = null;
 let activeHome = true;
 let homeTrailSavePending = false;
 let captureCommitPending = false;
+let todayCapturePending = null;
 ${refreshOpenTabsSource}
 globalThis.__trailRefresh = {
   refreshOpenTabs,
   setPending(home, capture) { homeTrailSavePending = home; captureCommitPending = capture; },
+  setTodayPending(value) { todayCapturePending = value; },
 };`,
     context,
     { filename: 'home-trail-refresh-contract.js' },
@@ -6780,6 +6784,30 @@ globalThis.__trailRefresh = {
   await staleCandidateRefresh;
   assert.equal(calls.boards, 1, 'a pre-mutation stale-candidate refresh must repaint Home even while its controller is pending');
   assert.deepEqual(calls.focus, ['save-primary'], 'a stale-candidate repaint must restore the exact Trail focus key');
+
+  // T8: a Today capture write in flight blocks the repaint like a Trail capture.
+  context.__trailRefresh.setPending(false, false);
+  context.__trailRefresh.setTodayPending({ id: 'today-capture' });
+  fingerprint = 'before-today-capture';
+  const todayCaptureRefresh = context.__trailRefresh.refreshOpenTabs();
+  const todayCapturePair = pendingQueries.splice(0, 2);
+  fingerprint = 'after-today-capture';
+  resolvePair(todayCapturePair, [{ id: 5 }], [{ id: 5, url: 'https://today-capture.example' }]);
+  await todayCaptureRefresh;
+  assert.equal(calls.boards, 1, 'a tab query resolving during a Today capture write must not repaint the unacknowledged to-do');
+  context.__trailRefresh.setTodayPending(null);
+
+  // T4: the Today board shows nothing derived from the trail candidate, so a
+  // changed candidate never rebuilds it (focus on Later or Done stays put).
+  todayShown = true;
+  fingerprint = 'before-today-board';
+  const todayBoardRefresh = context.__trailRefresh.refreshOpenTabs();
+  const todayBoardPair = pendingQueries.splice(0, 2);
+  fingerprint = 'after-today-board';
+  resolvePair(todayBoardPair, [{ id: 6 }], [{ id: 6, url: 'https://retitled.example' }]);
+  await todayBoardRefresh;
+  assert.equal(calls.boards, 1, 'a trail-candidate change must not repaint the Today board');
+  todayShown = false;
 
   context.__trailRefresh.setPending(false, false);
   fingerprint = 'stable';

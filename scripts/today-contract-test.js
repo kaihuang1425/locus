@@ -86,7 +86,8 @@ const NOW = london(2026, 11, 4, 14, 32); // Wednesday 4 November 2026, 14:32 GMT
 
 const context = vm.createContext({ LocusPlan, Intl, Date, Math, JSON, Map, Set, Number, String, Array, Object });
 vm.runInContext([
-  'todayPad2', 'todayDayKey', 'todayDayBounds', 'todayClockText', 'todayTaskModel', 'parseTodayCapture',
+  'todayPad2', 'todayDayKey', 'todayDayBounds', 'todayClockText', 'nextReminderOccurrenceForDisplay',
+  'previousReminderOccurrence', 'todayTaskModel', 'parseTodayCapture',
 ].map(extractFunction).join('\n') + '\nglobalThis.__today = { todayDayKey, todayDayBounds, todayTaskModel, parseTodayCapture };', context, { filename: 'today-model.js' });
 const today = context.__today;
 const plain = value => JSON.parse(JSON.stringify(value));
@@ -154,6 +155,57 @@ equal([parsed.title, parsed.at], ['看電影', london(2026, 11, 6, 19)], 'zh-TW:
 parsed = parse('今晚8點半 整理收件匣 #reading');
 equal([parsed.title, parsed.at, parsed.spaceId], ['整理收件匣', london(2026, 11, 4, 20, 30), 's3'], 'zh-TW: 今晚8點半 is 20:30 today, with a #space');
 
+// T1: a day word with no clock takes a default time; once that has passed, the
+// to-do moves to the next real occurrence instead of saving a past reminder.
+parsed = parse('email Sam today');
+equal([parsed.title, parsed.at, parsed.rolled], ['email Sam', london(2026, 11, 4, 15), true], 'a passed default today moves to the next whole hour');
+parsed = parse('pay rent wednesday');
+equal([parsed.title, parsed.at, parsed.rolled], ['pay rent', london(2026, 11, 11, 9), true], 'a passed default on today\'s weekday moves to next week');
+parsed = parse('今天寄信');
+equal([parsed.title, parsed.at], ['寄信', london(2026, 11, 4, 15)], 'zh-TW: a passed default 今天 moves to the next whole hour');
+parsed = parse('週三繳費');
+equal([parsed.title, parsed.at], ['繳費', london(2026, 11, 11, 9)], 'zh-TW: a passed default 週三 moves to next Wednesday');
+parsed = parse('call mom tonight', london(2026, 11, 4, 23, 10));
+equal([parsed.title, parsed.at], ['call mom', london(2026, 11, 5, 0)], 'tonight after 19:00 moves to the next whole hour, past midnight if need be');
+parsed = parse('hike this weekend', london(2026, 11, 7, 12));
+equal([parsed.title, parsed.at], ['hike', london(2026, 11, 8, 10)], 'the weekend on a Saturday afternoon still has its Sunday');
+parsed = parse('pay rent wednesday', london(2026, 11, 4, 8));
+equal([parsed.at, parsed.rolled], [london(2026, 11, 4, 9), false], 'a default that is still ahead stays on today\'s weekday');
+
+// T3: spaced and full-width zh-TW times, and 周 as well as 週.
+text = '明天早上 9 點打給銀行';
+parsed = parse(text);
+equal([parsed.title, parsed.at], ['打給銀行', london(2026, 11, 5, 9)], 'zh-TW: the placeholder example 明天早上 9 點 parses');
+equal(tokenText(text, parsed), ['when:明天', 'when:早上', 'when:9 點'], 'zh-TW: a spaced time is highlighted as one word');
+parsed = parse('下午 3 點開會');
+equal([parsed.title, parsed.at], ['開會', london(2026, 11, 4, 15)], 'zh-TW: 下午 3 點 is 15:00 today');
+text = '明天下午３點半 開會';
+parsed = parse(text);
+equal([parsed.title, parsed.at], ['開會', london(2026, 11, 5, 15, 30)], 'zh-TW: full-width digits read as ASCII');
+equal(tokenText(text, parsed), ['when:明天', 'when:下午', 'when:３點半'], 'offsets still point into the text as typed');
+parsed = parse('周五晚上 看電影');
+equal([parsed.title, parsed.at], ['看電影', london(2026, 11, 6, 19)], 'zh-TW: 周五 reads like 週五');
+parsed = parse('明天 9 點 15 分 晨會');
+equal([parsed.title, parsed.at], ['晨會', london(2026, 11, 5, 9, 15)], 'zh-TW: spaced 點 and 分 both parse');
+
+// T5: 12 with an evening word is the midnight that ends the evening.
+parsed = parse('晚上12點睡覺');
+equal([parsed.title, parsed.at], ['睡覺', london(2026, 11, 5, 0)], 'zh-TW: 晚上12點 is 00:00 the next day');
+parsed = parse('deploy 12:30 tonight');
+equal([parsed.title, parsed.at], ['deploy', london(2026, 11, 5, 0, 30)], '12:30 tonight is 00:30 the next day');
+
+// T6: word edges, bare H:MM, and quoting.
+parsed = parse('look at today\'s report');
+equal([parsed.title, parsed.at, parsed.tokens.length], ['look at today\'s report', null, 0], 'today\'s is a word, not a day');
+parsed = parse('read John 3:16');
+equal([parsed.title, parsed.at], ['read John 3:16', null], 'a bare one-digit H:MM with no day word stays in the title');
+parsed = parse('call Ana at 3:30');
+equal([parsed.title, parsed.at], ['call Ana', london(2026, 11, 5, 3, 30)], 'at H:MM still reads as a time (03:30, rolled to tomorrow)');
+parsed = parse('read "tomorrow\'s news" tomorrow 9am');
+equal([parsed.title, parsed.at], ['read "tomorrow\'s news"', london(2026, 11, 5, 9)], 'words in quotes stay literal');
+parsed = parse('讀「明天過後」 週五');
+equal([parsed.title, parsed.at], ['讀「明天過後」', london(2026, 11, 6, 9)], 'zh-TW: words in 「」 stay literal');
+
 // DST: 01:30 on 28 March 2027 does not exist in London; plan-contract moves it to 02:30 BST.
 parsed = parse('flight tomorrow 1:30', london(2027, 3, 27, 12));
 equal(parsed.at, Date.UTC(2027, 2, 28, 1, 30), 'a wall time in a DST gap uses the next valid time from plan-contract.js');
@@ -193,6 +245,29 @@ equal(model.open.map(entry => entry.id), ['any1', 'any2', 'nested', 'up', 'over'
 model = plain(today.todayTaskModel({ categories: [] }, NOW, []));
 equal([model.now, model.rest, model.total], [null, [], 0], 'an empty Workspace has no Now task');
 
+// T2: a repeating reminder shows today's occurrence.
+const daily = { every: 'day', interval: 1 };
+const repeating = { categories: [{ id: 'c1', groups: [{ id: 'g1', items: [
+  // Fired at 09:00 today, so the background re-armed it to tomorrow 09:00.
+  { id: 'fired', type: 'todo', text: 'Stretch', done: false, createdAt: london(2026, 11, 1, 8), reminder: { at: london(2026, 11, 5, 9), recur: daily, notified: false } },
+  // The browser was closed at yesterday's fire time, so `at` is still yesterday.
+  { id: 'stale', type: 'todo', text: 'Water plants', done: false, createdAt: london(2026, 11, 1, 8), reminder: { at: london(2026, 11, 3, 18), recur: daily, notified: false } },
+  // Weekly on Mondays: no occurrence today, and a missed Monday is not overdue.
+  { id: 'weekly', type: 'todo', text: 'Bins', done: false, createdAt: london(2026, 10, 1, 8), reminder: { at: london(2026, 11, 2, 7), recur: { every: 'week', interval: 1 }, notified: false } },
+  // Written at 10:00 today with a first 09:00 alarm tomorrow: nothing fired today.
+  { id: 'fresh', type: 'todo', text: 'Journal', done: false, createdAt: london(2026, 11, 4, 10), reminder: { at: london(2026, 11, 5, 9), recur: daily, notified: false } },
+] }] }] };
+model = plain(today.todayTaskModel(repeating, NOW, []));
+equal(model.open.map(entry => [entry.id, entry.kind, entry.at]), [
+  ['fired', 'due', london(2026, 11, 4, 9)],
+  ['stale', 'upcoming', london(2026, 11, 4, 18)],
+], 'a fired series counts as due today, a stale one shows today\'s next occurrence, and neither is overdue');
+
+// Someday marks from Plan keep an undated to-do off Today's anytime list.
+model = plain(today.todayTaskModel(workspace, NOW, [], new Set(['any1', 'due'])));
+equal(model.open.map(entry => entry.id), ['over', 'due', 'any2', 'nested', 'up'],
+  'a to-do sent to Someday in Plan leaves Today\'s anytime list (dated ones stay)');
+
 // ── Rendering, transactions, and reuse ──
 const renderHome = extractFunction('renderHome');
 match(renderHome, /buildTodayBoard\(ws\)/, 'Home renders the Today board');
@@ -226,7 +301,86 @@ match(later, /deferTodayTask\(itemId\)/, 'Later defers the Now task');
 noMatch(later + extractFunction('deferTodayTask'), /State\.(?:snapshot|persist|persistNow)\(/, 'Later is view order only and never writes the stored graph');
 match(extractFunction('deferTodayTask'), /localStorage\.setItem\(TODAY_LATER_STORAGE_KEY/, 'Later order is per-device view state');
 match(source, /const TODAY_LATER_STORAGE_KEY = 'locus\.today\.later';/, 'Later uses one documented localStorage key');
-match(extractFunction('buildTodayBoard'), /todayTaskModel\(workspace, now, readTodayLaterIds\(now\)\)/, 'the board applies the day\'s Later order');
+
+// Later run for real against a State double that fails on any touch.
+{
+  const stored = new Map();
+  const laterContext = vm.createContext({
+    Date, JSON, Number, String, Array,
+    State: new Proxy({}, { get(_, key) { throw new Error(`Later touched State.${String(key)}`); } }),
+    localStorage: {
+      getItem(key) { return stored.has(key) ? stored.get(key) : null; },
+      setItem(key, value) { stored.set(key, String(value)); },
+    },
+  });
+  vm.runInContext([
+    "const TODAY_LATER_STORAGE_KEY = 'locus.today.later';",
+    'const TODAY_LATER_LIMIT = 200;',
+    "let todayLaterMemory = { day: '', ids: [] };",
+    ...['todayPad2', 'todayDayKey', 'readTodayLaterIds', 'deferTodayTask'].map(extractFunction),
+    'globalThis.__later = { deferTodayTask, readTodayLaterIds };',
+  ].join('\n'), laterContext, { filename: 'today-later.js' });
+  equal(laterContext.__later.deferTodayTask('a', NOW), true, 'Later succeeds without touching State');
+  laterContext.__later.deferTodayTask('b', NOW);
+  laterContext.__later.deferTodayTask('a', NOW);
+  equal(plain(laterContext.__later.readTodayLaterIds(NOW)), ['b', 'a'], 'Later keeps one entry per to-do, newest last');
+  equal(plain(laterContext.__later.readTodayLaterIds(london(2026, 11, 5, 8))), [], 'Later order resets the next day');
+  equal(JSON.parse(stored.get('locus.today.later')).day, '2026-11-04', 'Later order is stored per device for the day');
+}
+
+// T4: focus on a Today control survives a Home repaint through its stable key.
+{
+  const focused = [];
+  let activeElement = null;
+  const control = key => {
+    const element = {
+      dataset: { todayFocus: key },
+      focus() { focused.push(key); activeElement = element; },
+      closest(selector) { return selector === '#board [data-today-focus]' ? element : null; },
+    };
+    return element;
+  };
+  let built = [];
+  const board = {
+    classList: { add() {}, remove() {} },
+    querySelector() { return null; },
+    querySelectorAll(selector) { return selector === '[data-today-focus]' ? built : []; },
+    set innerHTML(value) { built = []; },
+    appendChild() {},
+  };
+  const homeContext = vm.createContext({
+    document: {
+      get activeElement() { return activeElement; },
+      getElementById(id) { return id === 'board' ? board : null; },
+    },
+    activeWs() { return { id: 'w1' }; },
+    hideBreadcrumb() {},
+    buildTodayBoard() {
+      built = [control('now-check:t1'), control('now-later:t1'), control('card-check:t2')];
+      return {};
+    },
+    syncTodayTabsEar() {},
+    startTodayClock() {},
+  });
+  vm.runInContext([
+    'let activeHome = true;',
+    'let todayCaptureComposing = false;',
+    'let todayRenderDeferred = false;',
+    'let todayJustAddedId = null;',
+    extractFunction('renderHome'),
+    'globalThis.__home = { renderHome };',
+  ].join('\n'), homeContext, { filename: 'today-home-focus.js' });
+  homeContext.__home.renderHome();
+  activeElement = built[1];
+  homeContext.__home.renderHome();
+  equal(focused, ['now-later:t1'], 'a repaint puts focus back on the same Later button, not <body>');
+  ok(activeElement !== null && activeElement.dataset.todayFocus === 'now-later:t1', 'the rebuilt Later button holds focus');
+}
+for (const builder of ['buildTodayNow', 'buildTodayCard', 'buildTodayRest']) {
+  match(extractFunction(builder), /dataset\.todayFocus = /, `${builder} gives its controls a stable focus key`);
+}
+match(extractFunction('buildTodayBoard'), /todayTaskModel\(workspace, now, readTodayLaterIds\(now\), somedayIds\)/, 'the board applies the day\'s Later order and Plan\'s Someday marks');
+match(extractFunction('buildTodayBoard'), /somedayIds = typeof planSomedayIds === 'function' \? planSomedayIds\(\)/, 'the board reads Someday marks from plan.js');
 match(extractFunction('buildTodayNow'), /if \(model\.open\.length > 1\)[\s\S]*today-now-later/, 'Later is offered only when another open task can take its place');
 match(extractFunction('toggleTodayCard'), /commitTodayTodoToggle\(itemId, button\)/, 'a Rest card check uses the same completion transaction');
 
@@ -291,6 +445,7 @@ equal(manifest.permissions, ['tabs', 'storage', 'contextMenus', 'bookmarks', 'al
 equal(manifest.optional_permissions, ['nativeMessaging'], 'Today adds no optional permission');
 equal(manifest.content_security_policy.extension_pages, "script-src 'self'; object-src 'self'; img-src 'self' data: blob:; connect-src 'none'", 'the CSP is unchanged');
 noMatch(manifest.host_permissions ? JSON.stringify(manifest.host_permissions) : '', /./, 'there are still no host permissions');
+noMatch(manifest.optional_host_permissions ? JSON.stringify(manifest.optional_host_permissions) : '', /./, 'there are still no optional host permissions');
 match(source, /const CURRENT_SCHEMA = 14\b/, 'Today needs no schema change');
 
 console.log(`Today contracts passed: ${checks} checks (day bounds, capture parsing in en and zh-TW with DST, task order and Later, receipt-gated completion and capture, edge tab, locale parity, motion, fonts, permissions)`);
