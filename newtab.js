@@ -1307,6 +1307,20 @@ const I18N = {
     'groupAction.archive': 'Archive',
     'groupAction.oneItem': '1 item',
     'groupAction.items': '{count} items',
+    'groupAction.openAllIn': 'Open all tabs in “{name}”',
+    'space.actionsFor': 'Space actions for “{name}”',
+    'space.reminderFor': 'Set reminder for “{name}”',
+    'space.reminderAt': 'Reminder {time}',
+    'space.reminderCustom': 'Pick a time…',
+    'space.todosDone': 'To-dos done: {done} of {total}',
+    'space.next': 'Next: {text}',
+    'timeline.scale': 'Scale',
+    'timeline.day': 'Day',
+    'timeline.week': 'Week',
+    'timeline.month': 'Month',
+    'timeline.now': 'Now',
+    'timeline.undated': 'Undated',
+    'timeline.weekOf': 'Week of {date}',
     'groupAction.aria': 'Group “{name}”',
     'emojiPicker.title': 'Choose a symbol',
     'emojiPicker.search': 'Search symbols…',
@@ -3054,6 +3068,20 @@ const I18N = {
     'groupAction.archive': '封存',
     'groupAction.oneItem': '1 個項目',
     'groupAction.items': '{count} 個項目',
+    'groupAction.openAllIn': '開啟「{name}」的所有分頁',
+    'space.actionsFor': '「{name}」空間的操作',
+    'space.reminderFor': '為「{name}」設定提醒',
+    'space.reminderAt': '提醒：{time}',
+    'space.reminderCustom': '自訂時間…',
+    'space.todosDone': '待辦已完成 {done} 項，共 {total} 項',
+    'space.next': '下一步：{text}',
+    'timeline.scale': '時間刻度',
+    'timeline.day': '日',
+    'timeline.week': '週',
+    'timeline.month': '月',
+    'timeline.now': '現在',
+    'timeline.undated': '未標日期',
+    'timeline.weekOf': '{date} 起的一週',
     'groupAction.aria': '群組「{name}」',
     'emojiPicker.title': '選擇圖示',
     'emojiPicker.search': '搜尋圖示…',
@@ -4474,6 +4502,8 @@ let inboxPageSession = null;
 let inboxSpacePicker = null;
 // The Library page's memory of its last paint (see Library page).
 let libraryPageSession = null;
+// The Space page's memory of its last paint and its open sheet (see SPACE PAGE).
+let spacePageSession = null;
 
 // Home surface (Waypoint-style dashboard): true → the workspace overview (greeting
 // hero + one card per category) is showing instead of a category board. It sits
@@ -4600,6 +4630,8 @@ let explorerSel = { groupId: null, stackPath: [], itemId: null };
 let _exFocusAfter = null;
 // Timeline layout (§3.2) time granularity: 'day' | 'week' | 'month'.
 let timelineZoom = 'day';
+// The scale the timeline last showed, so its switch can slide to the new one.
+let timelineShownZoom = null;
 
 // Calendar surface (§5). null → not on the calendar; { view, anchor } while it's
 // open. view ∈ CAL_VIEWS; anchor is a ms timestamp *inside* the period being
@@ -8841,7 +8873,7 @@ function bulkSavedTabReopenMessage(result) {
 
 function bulkSavedTabReopenAnchor(opener) {
   if (!opener || typeof opener.closest !== 'function') return null;
-  return opener.closest('#item-sel-toolbar, .gcol-hd, .lv-group-hd');
+  return opener.closest('#item-sel-toolbar, .gcol-hd, .spc-gh, .lv-group-hd');
 }
 
 function clearBulkSavedTabReopenRecovery(opener) {
@@ -9887,9 +9919,14 @@ function focusEntityReminderRemovalFallback(context, removedIndex) {
     ))) return true;
     if (focusTarget(document.getElementById('cal-filter-input'))) return true;
   }
+  if (context.kind === 'group' && focusTarget(document.querySelector(
+    `.spc [data-spc-rem-owner="group:${escapeValue(context.entityId)}"]`,
+  ))) return true;
   if (context.kind === 'category') {
     const id = escapeValue(context.entityId);
     for (const selector of [
+      `.spc[data-cat="${id}"] [data-spc-focus="space-rem"]`,
+      `.spc[data-cat="${id}"] [data-spc-focus="space-more"]`,
       `.cat-tab[data-cid="${id}"]`,
       `.space-item[data-cat-id="${id}"]`,
       `.home-card-more[data-cat-id="${id}"]`,
@@ -9915,9 +9952,12 @@ function focusEntityReminderOwnerFallback(kind, entityId) {
   if (kind === 'group') {
     if (activeGroupPage?.groupId === String(entityId)
         && focusTarget(document.querySelector(`.gp-reminders[data-entity-id="${id}"] .gp-rem-add`))) return true;
+    if (focusTarget(document.querySelector(`.spc [data-spc-rem-owner="group:${id}"]`))) return true;
     if (focusIdentityTarget('group', entityId)) return true;
   } else {
     for (const selector of [
+      `.spc[data-cat="${id}"] [data-spc-focus="space-rem"]`,
+      `.spc[data-cat="${id}"] [data-spc-focus="space-more"]`,
       `.cat-tab[data-cid="${id}"]`,
       `.space-item[data-cat-id="${id}"]`,
       `.home-card-more[data-cat-id="${id}"]`,
@@ -15057,6 +15097,7 @@ function focusIdentityTarget(kind, id) {
     ? [
         `.gcol[data-gid="${value}"] .gcol-toggle:not(.hidden)`,
         `.gcol[data-gid="${value}"] [data-act="more"]`,
+        `.spc-col[data-gid="${value}"] .spc-chev`,
         `.lv-group[data-gid="${value}"] .lv-group-toggle`,
         `.ibx[data-gid="${value}"] .ibx-card[tabindex="0"]`,
         `.ibx[data-gid="${value}"] .ibx-title`,
@@ -15092,8 +15133,8 @@ function focusIdentityFallback(ctx) {
   }
   if (ctx?.entityKind === 'stack' && ctx.groupId && focusIdentityTarget('group', ctx.groupId)) return true;
   const candidates = [
-    document.querySelector('.lv-add-row'),
-    document.querySelector('.add-col-btn'),
+    document.querySelector('[data-spc-act="add-group"]:not([hidden])'),
+    document.getElementById('space-title'),
     document.getElementById('board'),
   ];
   for (const target of candidates) {
@@ -17305,6 +17346,10 @@ function renderBoard() {
     document.getElementById('board').classList.remove('lib-mode');
     if (document.body.dataset.page === 'library') delete document.body.dataset.page;
   }
+  if (!isSpacePageActive()) {
+    document.getElementById('board').classList.remove('spc-mode');
+    if (document.body.dataset.page === 'space') delete document.body.dataset.page;
+  }
   // Reflect the active surface on <body> (diagnostic / styling hook), computed
   // from the flags so it stays correct through every early-returning gate.
   document.body.dataset.surface = activeSearch ? 'search' : activeCalendar ? 'calendar' : activeGroupPage ? 'group' : activeLibraryMode ? 'library' : activeHome ? 'home' : 'board';
@@ -17321,6 +17366,7 @@ function renderBoard() {
     closeInboxSpacePicker();
   }
   if (libraryPageSession && !isLibraryPageActive()) libraryPageSession = null;
+  if (spacePageSession && !isSpacePageActive()) spacePageSession = null;
   // The calendar (§5) and group pages (§4.1) are surfaces that sit above the
   // layout registry: when one is open every re-render keeps showing it. Each
   // renderer returns false if the user has navigated away, so we fall through to
@@ -17348,6 +17394,8 @@ function renderBoard() {
   const mode = getViewMode();
   document.body.dataset.viewMode = mode;
   updateViewModeButton(mode);
+  // The Space page carries the view switcher and draws the layout inside it.
+  if (renderSpacePage(mode)) return;
   const layout = LAYOUTS[mode] || LAYOUTS.board;
   layout.render();
 }
@@ -22149,7 +22197,7 @@ let _pendingReminderCount = 0;
 
 // The bento-board layout itself (formerly the body of renderBoard).
 function renderBoardView() {
-  const $b = document.getElementById('board');
+  const $b = spaceViewHost();
   $b.classList.remove('list-mode', 'canvas-mode');
   $b.innerHTML = '';
   const cat = activeCat(); if (!cat) return;
@@ -22159,21 +22207,11 @@ function renderBoardView() {
     return;
   }
 
-  cat.groups.forEach(g => $b.appendChild(buildGroupCol(g)));
-
-  // Add group placeholder
-  const add = document.createElement('button');
-  add.type = 'button';
-  add.className = 'add-col-btn';
-  add.innerHTML = `<svg width="15" height="15" viewBox="0 0 15 15" aria-hidden="true"><path d="M7.5 2v11M2 7.5h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg> <span>${esc(tr('groupAction.new'))}</span>`;
-  add.onclick = event => {
-    const workspace = activeWs();
-    openIdentityEditor('group', 'create', {
-      workspaceId: workspace?.id,
-      spaceId: cat.id,
-    }, event.currentTarget);
-  };
-  $b.appendChild(add);
+  // The board's columns wrap into a grid; New group lives in the view bar.
+  const grid = document.createElement('div');
+  grid.className = 'spc-board';
+  cat.groups.forEach(g => grid.appendChild(buildSpaceColumn(g)));
+  $b.appendChild(grid);
   applySearchFilter();
 }
 
@@ -23855,9 +23893,10 @@ async function runBatchAction(act, opener) {
     return commitSelectedItemArchive(review, opener);
   }
   if (act === 'move') {
-    // The Inbox page moves through its filterable Space picker; the commit is
-    // the same selection transaction.
-    if (typeof isInboxPageActive === 'function' && isInboxPageActive()) return openInboxBulkMovePicker(review, opener);
+    // The Inbox and Space pages move through the filterable Space picker; the
+    // commit is the same selection transaction.
+    if ((typeof isInboxPageActive === 'function' && isInboxPageActive())
+        || (typeof isSpacePageActive === 'function' && isSpacePageActive())) return openInboxBulkMovePicker(review, opener);
     return openMoveTargetPicker(review, opener);
   }
   return false;
@@ -24733,9 +24772,10 @@ function applySearchFilter() {
     let bs = node.parentElement?.closest('.item.stack');
     while (bs) { add(bs.querySelector(':scope > .stack-hd > .stack-name')?.textContent); bs = bs.parentElement?.closest('.item.stack'); }
     add(node.closest('.gcol')?.querySelector(':scope > .gcol-hd .gcol-name')?.textContent);
+    add(node.closest('.spc-col')?.querySelector(':scope > .spc-gh .spc-gname')?.textContent);
     let ls = node.parentElement?.closest('.lv-stack');
     while (ls) { add(ls.querySelector(':scope > .lv-stack-hd > .lv-stack-name')?.textContent); ls = ls.parentElement?.closest('.lv-stack'); }
-    add(node.closest('.lv-group')?.querySelector(':scope > .lv-group-hd > .lv-group-name')?.textContent);
+    add(node.closest('.lv-group')?.querySelector(':scope > .lv-group-hd .lv-group-name')?.textContent);
     return names;
   };
   const matchIn = (filters, node) => { const ns = containerNamesOf(node); return filters.some(f => ns.some(n => n.includes(f))); };
@@ -24839,7 +24879,7 @@ function applySearchFilter() {
     getItemNodes().forEach(el => { if (!el.classList.contains('hidden')) revealAncestors(el); });
     document.querySelectorAll('.lv-stack-hd:not(.hidden)').forEach(revealAncestors);
   }
-  document.querySelectorAll('.gcol').forEach(col => {
+  document.querySelectorAll('.gcol, .spc-col').forEach(col => {
     const any = col.querySelectorAll('.item:not(.hidden)').length > 0;
     col.style.display = (!raw || any) ? '' : 'none';
   });
@@ -30592,6 +30632,696 @@ function renderFloatingSubs(c) {
 }
 
 // ════════════════════════════════════════════════════════════════
+// SPACE PAGE (2026-11 canvas)
+// ════════════════════════════════════════════════════════════════
+// A Space opens on one page: its name with the item count and its reminder,
+// the Space actions, and one switcher for the seven views whose underline
+// slides to the chosen view while the views crossfade. Board columns and List
+// groups carry the group's count, to-dos, reminder chip and actions; Set
+// reminder opens a sheet of quick times inside the page. Cards are the shared
+// item builders, so their menus, selection, drag, reminders and Details keep
+// working, and a card or group that was not on the last paint drops in. Every
+// write is the same transaction as before, with its usual Undo.
+
+const SPACE_VIEW_PATHS = {
+  board: 'M2.5 3h4v10h-4zM9.5 3h4v10h-4z',
+  list: 'M5.5 4h8M5.5 8h8M5.5 12h8M2.5 4h.01M2.5 8h.01M2.5 12h.01',
+  canvas: 'M2 2h6v5H2zM9 3h5v4H9zM3 9h5v5H3zM9 9h5v3H9z',
+  explorer: 'M2 3h3.6v10H2zM6.2 3h3.6v10H6.2zM10.4 3H14v10h-3.6z',
+  timeline: 'M8 2v1M8 6v2M8 11v3M9.5 4.5H13M9.5 9.5H12M6.5 4.5a1.5 1.5 0 1 0 3 0 1.5 1.5 0 1 0-3 0M6.5 9.5a1.5 1.5 0 1 0 3 0 1.5 1.5 0 1 0-3 0',
+  gallery: 'M2 2h5v6.5H2zM9 2h5v4H9zM2 10h5v4H2zM9 7.5h5V14H9z',
+  graph: 'M6 4a2 2 0 1 0 4 0 2 2 0 1 0-4 0M1.8 11.5a1.7 1.7 0 1 0 3.4 0 1.7 1.7 0 1 0-3.4 0M10.8 11.5a1.7 1.7 0 1 0 3.4 0 1.7 1.7 0 1 0-3.4 0M6.8 5.7 4.7 10M9.2 5.7l2.1 4.3M5.2 11.5h5.6',
+};
+const SPACE_PATHS = {
+  chevron: 'M4.5 6.5 8 10l3.5-3.5',
+  openAll: 'M6.5 3.5H4a1 1 0 0 0-1 1V12a1 1 0 0 0 1 1h7.5a1 1 0 0 0 1-1V9.5M9.5 2.5h4v4M13.5 2.5 8 8',
+  save: 'M8 2.5v7M5 6.8l3 3 3-3M3 12.5h10',
+  addRecord: 'M2.5 4h6M2.5 8h6M2.5 12h4M12 7v6M9 10h6',
+  plus: 'M8 3v10M3 8h10',
+  clock: 'M8 14A6 6 0 1 0 8 2a6 6 0 0 0 0 12zM8 5v3.2l2 1.3',
+  close: 'M4 4l8 8M12 4l-8 8',
+  note: 'M3.5 2.5h6l3 3v8h-9zM9.5 2.5v3h3M5.5 8.5h5M5.5 11h3.5',
+  stack: 'M2.5 5.5 8 3l5.5 2.5L8 8zM2.5 8.5 8 11l5.5-2.5M2.5 11.5 8 14l5.5-2.5',
+  todo: 'M3 3h10v10H3zM5.5 8l2 2 3.5-4',
+  tab: 'M6.2 9.8a2.6 2.6 0 0 0 3.7 0l2.7-2.7a2.6 2.6 0 1 0-3.7-3.7l-1 1M9.8 6.2a2.6 2.6 0 0 0-3.7 0L3.4 8.9a2.6 2.6 0 1 0 3.7 3.7l1-1',
+  chevronRight: 'M6 3.5 10.5 8 6 12.5',
+};
+const SPACE_QUICK_TIMES = [
+  [3600000, 'reminder.inOneHour'],
+  [10800000, 'reminder.inThreeHours'],
+  [86400000, 'reminder.tomorrow'],
+  [604800000, 'reminder.nextWeek'],
+];
+
+function spaceSvg(path, size = 16, stroke = 1.6) {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="${stroke}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${SPACE_PATHS[path] || SPACE_VIEW_PATHS[path] || ''}"/></svg>`;
+}
+
+function isSpacePageActive() {
+  return !activeSearch && !activeCalendar && !activeGroupPage && !activeLibraryMode && !activeHome && !!activeCat();
+}
+
+// What the last paint showed, so counts roll and new cards drop in only when
+// something changed; `sheet` is the open reminder sheet and the control that
+// opened it.
+function spacePageState(catId) {
+  if (!spacePageSession || spacePageSession.catId !== catId) {
+    spacePageSession = {
+      catId,
+      view: null,
+      host: null,
+      total: null,
+      remAt: undefined,
+      counts: null,
+      todos: null,
+      groupRem: null,
+      seenItems: null,
+      seenGroups: null,
+      sheet: null,
+    };
+  }
+  return spacePageSession;
+}
+
+function spacePageRoot() {
+  return document.querySelector('#board > .spc');
+}
+
+// The renderers draw into the Space page's current view, or into the board
+// when no Space page is showing.
+function spaceViewHost() {
+  const host = spacePageSession?.host;
+  return host?.isConnected && !host.classList.contains('is-out') ? host : document.getElementById('board');
+}
+
+function spaceReducedMotion() {
+  return typeof planReducedMotion === 'function'
+    ? planReducedMotion()
+    : document.body?.dataset?.anim === 'off';
+}
+
+function spaceRestart(el, cls) {
+  if (!el) return;
+  el.classList.remove(cls);
+  void el.offsetWidth;
+  el.classList.add(cls);
+}
+
+// "N items" with the number rolling to its new value, in the locale's own
+// word order.
+function spaceItemsMarkup(count, previous, delay = 0) {
+  const marker = '\u0001';
+  const text = count === 1 ? tr('groupAction.oneItem') : tr('groupAction.items', { count: marker });
+  const at = text.indexOf(marker);
+  if (at < 0) return esc(text);
+  return `${esc(text.slice(0, at))}<span class="spc-num">${spaceRollMarkup(count, previous, delay)}</span>${esc(text.slice(at + marker.length))}`;
+}
+
+// A count that changed rolls, using the Inbox count's roll; a repaint in the
+// middle of the roll carries it on from where it was.
+function spaceRollMarkup(count, previous, delay = 0) {
+  const markup = libraryRollMarkup(count, previous);
+  return delay > 0 ? markup.replace('<span class="ibx-roll-stack', `<span style="animation-delay:-${delay}ms" class="ibx-roll-stack`) : markup;
+}
+
+function spaceCountRoll(session, key, count) {
+  if (!session) return { previous: null, delay: 0 };
+  const now = Date.now();
+  const previous = session.counts?.get(key);
+  session.rolls = session.rolls || new Map();
+  if (previous != null && previous !== count) session.rolls.set(key, { from: previous, to: count, at: now });
+  const roll = session.rolls.get(key);
+  if (!roll || roll.to !== count || now - roll.at > 400) return { previous: null, delay: 0 };
+  return { previous: roll.from, delay: now - roll.at };
+}
+
+function spaceItemsLabel(count) {
+  return count === 1 ? tr('groupAction.oneItem') : tr('groupAction.items', { count });
+}
+
+// The reminder a chip shows: the next pending one, else the first stored.
+function spaceReminderTarget(entity, now = Date.now()) {
+  const list = Array.isArray(entity?.reminders) ? entity.reminders : [];
+  let best = null;
+  list.forEach(reminder => {
+    const at = pendingReminderTime(reminder, now);
+    if (at == null) return;
+    if (!best || at < best.at) best = { reminder, at };
+  });
+  if (best) return best;
+  return list.length ? { reminder: list[0], at: null } : null;
+}
+
+function spaceCreateGroup(opener) {
+  const workspace = activeWs();
+  const cat = activeCat();
+  return openIdentityEditor('group', 'create', {
+    workspaceId: workspace?.id,
+    spaceId: cat?.id,
+  }, opener);
+}
+
+function spaceActionMenuItems(cat, opener) {
+  const ws = activeWs();
+  if (!ws || !cat) return [];
+  const hasReminder = Array.isArray(cat.reminders) && cat.reminders.length > 0;
+  return [
+    { text: tr('organization.renameMenu'), icon: cmIcons.edit, action: () => openOrganizationName('space', cat.id, opener) },
+    { text: `${tr(hasReminder ? 'reminder.editTitle' : 'reminder.setTitle')}…`, icon: cmIcons.clock, action: () => openSpaceSheet('category', cat.id, opener) },
+    ...(ws.categories.length > 1 ? [
+      { sep: true },
+      { text: tr('organization.space.delete'), icon: cmIcons.delete, danger: true, action: () => openOrganizationDelete('space', cat.id, opener) },
+    ] : []),
+  ];
+}
+
+// On this page the shared Group menu's Set reminder opens the page's
+// reminder sheet; every other action is unchanged.
+function spaceGroupMenu(entries, g, opener) {
+  const setReminder = tr('groupAction.setReminder');
+  return entries.map(entry => (
+    entry.text === setReminder ? { ...entry, action: () => openSpaceSheet('group', g.id, opener) } : entry
+  ));
+}
+
+function focusSpaceKey(key) {
+  if (!key) return false;
+  const page = spacePageRoot();
+  return inboxFocus(page?.querySelector(`[data-spc-focus="${CSS.escape(String(key))}"]`));
+}
+
+// ── The reminder sheet: quick times for the Space or one group ──
+function openSpaceSheet(kind, id, opener = null) {
+  const session = spacePageSession;
+  if (!session || !findEntity(kind, id)) return false;
+  hideContextMenu();
+  const key = String(id);
+  const ownerKey = opener?.closest?.('[data-spc-focus]')?.dataset.spcFocus
+    || (kind === 'category' ? 'space-more' : `col:${key}:more`);
+  if (session.sheet && session.sheet.kind === kind && session.sheet.id === key) return closeSpaceSheet({ restoreFocus: true });
+  session.sheet = { kind, id: key, ownerKey, opening: true };
+  renderBoard();
+  if (spacePageSession?.sheet) spacePageSession.sheet.opening = false;
+  focusSpaceKey('sheet:0');
+  return true;
+}
+
+function closeSpaceSheet({ restoreFocus = false } = {}) {
+  const session = spacePageSession;
+  const sheet = session?.sheet;
+  if (!sheet) return false;
+  session.sheet = null;
+  renderBoard();
+  if (restoreFocus) focusSpaceKey(sheet.ownerKey);
+  return true;
+}
+
+async function spaceSheetPick(kind, id, offset) {
+  const target = spaceReminderTarget(findEntity(kind, id));
+  const context = createEntityReminderMutationContext(kind, id, target?.reminder?.id ?? null);
+  if (spacePageSession) spacePageSession.sheet = null;
+  if (!context) {
+    renderBoard();
+    toast(tr('reminder.entityUnavailable'), { danger: true });
+    return false;
+  }
+  const changed = await commitEntityReminderMutation(context, { at: Date.now() + offset });
+  if (!changed) renderBoard();
+  return changed;
+}
+
+async function spaceSheetClear(kind, id) {
+  const target = spaceReminderTarget(findEntity(kind, id));
+  const context = target ? createEntityReminderRemovalContext(kind, id, target.reminder?.id) : null;
+  if (spacePageSession) spacePageSession.sheet = null;
+  if (!context) {
+    renderBoard();
+    toast(tr('reminder.entityUnavailable'), { danger: true });
+    return false;
+  }
+  const changed = await commitEntityReminderRemoval(context);
+  if (!changed) renderBoard();
+  return changed;
+}
+
+function spaceSheetCustom(kind, id) {
+  const target = spaceReminderTarget(findEntity(kind, id));
+  const ownerKey = spacePageSession?.sheet?.ownerKey;
+  if (spacePageSession) spacePageSession.sheet = null;
+  renderBoard();
+  const opener = spacePageRoot()?.querySelector(`[data-spc-focus="${CSS.escape(String(ownerKey || ''))}"]`) || null;
+  return openEntityReminderPickerOrReport(kind, id, target?.reminder?.id, { opener });
+}
+
+function buildSpaceSheet(kind, entity, opening = false) {
+  const now = Date.now();
+  const id = String(entity.id);
+  const target = spaceReminderTarget(entity, now);
+  const sheet = document.createElement('div');
+  sheet.className = `spc-sheet${opening ? ' is-opening' : ''}`;
+  sheet.setAttribute('role', 'group');
+  sheet.setAttribute('aria-label', tr('space.reminderFor', { name: entity.name || '' }));
+  sheet.innerHTML = `
+    <div class="spc-shops">
+      ${SPACE_QUICK_TIMES.map(([offset, key], index) => `<button type="button" class="spc-sho" data-offset="${offset}" data-spc-focus="sheet:${index}" style="--spc-d:${index * 30}ms"><span>${esc(tr(key))}</span><span class="spc-mono">${esc(inboxWhenLabel(now + offset, now))}</span></button>`).join('')}
+      <button type="button" class="spc-sho" data-spc-sheet="custom" data-spc-focus="sheet:custom" style="--spc-d:120ms"><span>${esc(tr('space.reminderCustom'))}</span></button>
+      ${target ? `<button type="button" class="spc-sho is-clear" data-spc-sheet="clear" data-spc-focus="sheet:clear" style="--spc-d:150ms"><span>${esc(tr('reminder.clear'))}</span>${target.at ? `<span class="spc-mono">${esc(inboxWhenLabel(target.at, now))}</span>` : ''}</button>` : ''}
+    </div>
+    <button type="button" class="spc-ibtn spc-shx" data-spc-sheet="close" data-spc-focus="sheet:close" aria-label="${esc(tr('organization.close'))}" title="${esc(tr('organization.close'))}">${spaceSvg('close', 13, 2)}</button>`;
+  sheet.querySelectorAll('[data-offset]').forEach(button => {
+    button.addEventListener('click', () => { void spaceSheetPick(kind, id, Number(button.dataset.offset)); });
+  });
+  sheet.querySelector('[data-spc-sheet="custom"]').addEventListener('click', () => spaceSheetCustom(kind, id));
+  sheet.querySelector('[data-spc-sheet="clear"]')?.addEventListener('click', () => { void spaceSheetClear(kind, id); });
+  sheet.querySelector('[data-spc-sheet="close"]').addEventListener('click', () => closeSpaceSheet({ restoreFocus: true }));
+  sheet.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    event.preventDefault();
+    event.stopPropagation();
+    closeSpaceSheet({ restoreFocus: true });
+  });
+  return sheet;
+}
+
+// The orange chip for a Space or group reminder. It fills once when its time
+// changes, and opens the sheet.
+function buildSpaceReminderChip(kind, entity, focusKey, previousAt) {
+  const target = spaceReminderTarget(entity);
+  if (!target?.at) return null;
+  const label = inboxWhenLabel(target.at);
+  const chip = document.createElement('button');
+  chip.type = 'button';
+  chip.className = `spc-chip${target.at < Date.now() ? ' is-past' : ''}${previousAt !== undefined && previousAt !== target.at ? ' is-fill' : ''}`;
+  chip.dataset.spcFocus = focusKey;
+  chip.dataset.spcRemOwner = `${kind}:${entity.id}`;
+  chip.setAttribute('aria-label', tr('space.reminderAt', { time: label }));
+  chip.title = tr('space.reminderFor', { name: entity.name || '' });
+  chip.innerHTML = `${spaceSvg('clock', 12, 1.9)}<span>${esc(label)}</span>`;
+  chip.addEventListener('click', event => {
+    event.stopPropagation();
+    openSpaceSheet(kind, entity.id, chip);
+  });
+  return chip;
+}
+
+// A note or stack card leads with its kind tile, as a page does with its icon.
+function decorateSpaceCards(root) {
+  root.querySelectorAll('.item.note:not([data-spc-kind])').forEach(card => {
+    card.dataset.spcKind = 'note';
+    const body = card.querySelector(':scope > .board-record-body');
+    body?.insertAdjacentHTML('beforebegin', `<span class="spc-kic" aria-hidden="true">${spaceSvg('note', 15, 1.4)}</span>`);
+  });
+  root.querySelectorAll('.item.stack:not([data-spc-kind])').forEach(card => {
+    card.dataset.spcKind = 'stack';
+    card.querySelector(':scope > .stack-hd > .stack-copy')?.insertAdjacentHTML('beforebegin', `<span class="spc-kic" aria-hidden="true">${spaceSvg('stack', 15, 1.4)}</span>`);
+  });
+  root.querySelectorAll('.lv-stack:not([data-spc-kind])').forEach(stack => {
+    stack.dataset.spcKind = 'stack';
+    stack.querySelector(':scope > .lv-stack-hd > .lv-stack-copy')?.insertAdjacentHTML('beforebegin', `<span class="spc-kic" aria-hidden="true">${spaceSvg('stack', 13, 1.5)}</span>`);
+  });
+}
+
+// The group's meta line: its reminder chip, then its intention.
+function buildSpaceGroupMeta(g, session) {
+  const previous = session?.groupRem?.get(String(g.id));
+  const chip = buildSpaceReminderChip('group', g, `col:${g.id}:rem`, previous);
+  const intent = hasIntentMeta(g) ? ensureIntentMeta(g) : null;
+  const next = String(intent?.nextAction || '').trim();
+  if (!chip && !intent) return null;
+  const meta = document.createElement('div');
+  meta.className = 'spc-gmeta';
+  if (chip) meta.appendChild(chip);
+  if (intent) {
+    meta.insertAdjacentHTML('beforeend', `<span class="spc-ipill">${esc(intent.status)}</span>${next ? `<span class="spc-inext">${esc(tr('space.next', { text: next }))}</span>` : ''}`);
+  }
+  return meta;
+}
+
+function spaceToggleGroup(g, section) {
+  State.snapshot('Toggle collapse');
+  g.collapsed = !g.collapsed;
+  section.classList.toggle('is-folded', !!g.collapsed);
+  const toggle = section.querySelector('[data-act="toggle"]');
+  toggle?.setAttribute('aria-expanded', String(!g.collapsed));
+  toggle?.setAttribute('aria-label', tr(g.collapsed ? 'groupAction.expandFor' : 'groupAction.collapseFor', { name: g.name }));
+  State.persist();
+}
+
+// Drag a group onto another to reorder (before or after, by pointer side).
+function bindSpaceGroupReorder(section, g, axis) {
+  const selector = axis === 'x' ? '.spc-col' : '.spc-lg';
+  const clear = () => document.querySelectorAll(selector).forEach(x => x.classList.remove('drop-before', 'drop-after'));
+  const after = e => {
+    const r = section.getBoundingClientRect();
+    return axis === 'x' ? e.clientX > r.left + r.width / 2 : e.clientY > r.top + r.height / 2;
+  };
+  section.addEventListener('dragstart', e => {
+    if (e.target !== section) return;
+    drag = { kind: 'group', srcId: g.id };
+    section.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  section.addEventListener('dragend', () => { section.classList.remove('dragging'); clear(); drag = null; });
+  section.addEventListener('dragover', e => {
+    if (drag?.kind !== 'group' || drag.srcId === g.id) return;
+    e.preventDefault();
+    clear();
+    section.classList.add(after(e) ? 'drop-after' : 'drop-before');
+  });
+  section.addEventListener('drop', e => {
+    if (drag?.kind !== 'group' || drag.srcId === g.id) return;
+    e.preventDefault();
+    const cat = activeCat();
+    const place = after(e);
+    State.snapshot('Reorder groups');
+    const srcIdx = cat.groups.findIndex(x => x.id === drag.srcId);
+    const [src] = cat.groups.splice(srcIdx, 1);
+    let tgtIdx = cat.groups.findIndex(x => x.id === g.id);
+    if (place) tgtIdx++;
+    cat.groups.splice(tgtIdx, 0, src);
+    State.persist(); renderBoard();
+  });
+}
+
+// One Board column: chevron, the group's colour (which edits the group), its
+// name (which opens its page), count and to-dos, Open all and More; the
+// reminder chip and intention under it; the cards; Save here and Add record.
+function buildSpaceColumn(g) {
+  const session = spacePageSession;
+  const id = String(g.id);
+  const name = g.name;
+  const items = Array.isArray(g.items) ? g.items : [];
+  const todos = items.filter(it => it.type === 'todo');
+  const done = todos.filter(it => it.done).length;
+  const canOpenAll = groupHasReopenableSavedTab(g);
+  const countRoll = spaceCountRoll(session, id, items.length);
+  const previousTodos = session?.todos?.get(id);
+  const todoText = `${done}/${todos.length}`;
+  const col = document.createElement('section');
+  col.className = 'spc-col' + (g.collapsed ? ' is-folded' : '');
+  col.dataset.gid = id;
+  col.dataset.spcGid = id;
+  col.style.setProperty('--spc-tint', g.color || 'var(--accent)');
+  col.setAttribute('aria-labelledby', `spc-gn-${id}`);
+  col.innerHTML = `
+    <div class="spc-gh" role="group" aria-label="${esc(tr('groupAction.aria', { name }))}">
+      <button type="button" class="spc-ib spc-chev" data-act="toggle" data-spc-focus="col:${esc(id)}:toggle" aria-expanded="${!g.collapsed}" aria-label="${esc(tr(g.collapsed ? 'groupAction.expandFor' : 'groupAction.collapseFor', { name }))}">${spaceSvg('chevron', 14, 1.9)}</button>
+      <button type="button" class="spc-gdot" data-act="identity" data-spc-focus="col:${esc(id)}:identity" aria-label="${esc(tr('groupAction.editFor', { name }))}" title="${esc(tr('groupAction.editFor', { name }))}"><span></span></button>
+      <h2 class="spc-gh2"><button class="spc-gname" type="button" data-act="focus" id="spc-gn-${esc(id)}" data-spc-focus="col:${esc(id)}:name" title="${esc(`${name} · ${tr('groupAction.openAsPage')}`)}" aria-label="${esc(`${name} · ${tr('groupAction.openAsPage')}`)}">${esc(name)}</button></h2>
+      <span class="spc-cnt"><span class="sr-only">${esc(spaceItemsLabel(items.length))}</span><span aria-hidden="true">${spaceRollMarkup(items.length, countRoll.previous, countRoll.delay)}</span></span>
+      ${todos.length ? `<span class="spc-tdc${done === todos.length ? ' is-all' : ''}"><span class="sr-only">${esc(tr('space.todosDone', { done, total: todos.length }))}</span><span class="spc-tdc-n${previousTodos != null && previousTodos !== todoText ? ' is-tick' : ''}" aria-hidden="true">${todoText}</span></span>` : ''}
+      <span class="spc-gap" aria-hidden="true"></span>
+      <button type="button" class="spc-ib" data-act="open-all" data-spc-focus="col:${esc(id)}:open-all" title="${esc(tr('groupAction.openAll'))}" aria-label="${esc(tr('groupAction.openAllIn', { name }))}"${canOpenAll ? '' : ' disabled aria-disabled="true"'}>${spaceSvg('openAll', 16, 1.6)}</button>
+      <button type="button" class="spc-ib" data-act="more" data-spc-focus="col:${esc(id)}:more" title="${esc(tr('groupAction.more'))}" aria-label="${esc(tr('groupAction.moreFor', { name }))}" aria-haspopup="menu" aria-expanded="false">${inboxDotsIcon(16)}</button>
+    </div>
+    <div class="spc-fold"><div class="spc-fold-in">
+      <div class="spc-cards"></div>
+      <div class="spc-gf">
+        <button type="button" class="spc-fbtn" data-act="add-tab" data-spc-focus="col:${esc(id)}:save" title="${esc(tr('groupAction.saveHereFor', { name }))}" aria-label="${esc(tr('groupAction.saveHereFor', { name }))}">${spaceSvg('save', 15, 1.7)}<span>${esc(tr('groupAction.saveHere'))}</span></button>
+        <button type="button" class="spc-fbtn is-quiet" data-act="add-record" data-spc-focus="col:${esc(id)}:add" title="${esc(tr('groupAction.addRecordFor', { name }))}" aria-label="${esc(tr('groupAction.addRecordFor', { name }))}" aria-haspopup="menu" aria-expanded="false">${spaceSvg('addRecord', 15, 1.6)}<span>${esc(tr('groupAction.addRecord'))}</span></button>
+      </div>
+    </div></div>`;
+
+  const hd = col.querySelector('.spc-gh');
+  const toggleCollapse = () => spaceToggleGroup(g, col);
+  hd.addEventListener('click', e => {
+    if (e.target.closest('button')) return;
+    toggleCollapse();
+  });
+  col.querySelector('[data-act="toggle"]').addEventListener('click', e => { e.stopPropagation(); toggleCollapse(); });
+  col.querySelector('[data-act="identity"]').addEventListener('click', e => {
+    e.stopPropagation();
+    const identity = identityGroupTarget(g.id);
+    openIdentityEditor('group', 'edit', {
+      workspaceId: identity?.workspace.id,
+      spaceId: identity?.space.id,
+      groupId: g.id,
+    }, e.currentTarget);
+  });
+  col.querySelector('[data-act="focus"]').addEventListener('click', e => {
+    e.stopPropagation();
+    openGroupPage(g.id);
+  });
+  col.querySelector('[data-act="open-all"]').addEventListener('click', event => {
+    event.stopPropagation();
+    openGroupAll(g, event.currentTarget);
+  });
+  const menuButton = col.querySelector('[data-act="more"]');
+  const groupMenuItems = opener => spaceGroupMenu(groupActionMenuItems(g, opener, {
+    toggleCollapse,
+    includeRecordCreation: false,
+  }), g, opener);
+  bindBoardItemContextMenu(hd, groupMenuItems, { menuButton });
+
+  const saveHereButton = col.querySelector('[data-act="add-tab"]');
+  saveHereButton.addEventListener('click', async event => {
+    event.stopPropagation();
+    await addSidebarOrActiveTabToGroup(g);
+  });
+  const addRecordButton = col.querySelector('[data-act="add-record"]');
+  addRecordButton.addEventListener('click', event => {
+    event.stopPropagation();
+    openGroupRecordCreationMenu(g, event.currentTarget);
+  });
+
+  const meta = buildSpaceGroupMeta(g, session);
+  if (meta) hd.after(meta);
+  if (session?.sheet?.kind === 'group' && session.sheet.id === id) {
+    (meta || hd).after(buildSpaceSheet('group', g, session.sheet.opening));
+  }
+
+  const cardsEl = col.querySelector('.spc-cards');
+  if (!items.length && isInboxPageGroup(g)) {
+    cardsEl.appendChild(buildSystemEmptyState({
+      kind: 'inbox',
+      title: tr('empty.inboxTitle'),
+      body: tr('empty.inboxBody'),
+      actions: [
+        { label: tr('empty.addSave'), icon: '+', run: () => openCommandPalette() },
+        { label: tr('empty.importBookmarks'), icon: '⇩', run: () => importBookmarks() },
+      ],
+      compact: true,
+    }));
+  }
+  items.forEach(it => cardsEl.appendChild(buildItem(it, items, g)));
+  decorateSpaceCards(cardsEl);
+  makeGroupDropZone(cardsEl, col, g, items);
+
+  col.draggable = true;
+  bindSpaceGroupReorder(col, g, 'x');
+  return col;
+}
+
+// ── The page shell ──
+function buildSpacePage(cat) {
+  const page = document.createElement('div');
+  page.className = 'spc';
+  page.dataset.cat = String(cat.id);
+  page.innerHTML = `
+    <p class="sr-only spc-live" aria-live="polite"></p>
+    <header class="spc-hd">
+      <span class="spc-dot" aria-hidden="true"></span>
+      <h1 class="spc-title" id="space-title" tabindex="-1" data-spc-focus="title"></h1>
+      <span class="spc-total" aria-hidden="true"></span>
+      <span class="spc-rem-slot"></span>
+      <span class="spc-gap" aria-hidden="true"></span>
+      <button type="button" class="spc-ibtn" data-spc-act="space-more" data-spc-focus="space-more" aria-haspopup="menu" aria-expanded="false">${inboxDotsIcon(18)}</button>
+    </header>
+    <div class="spc-sheet-slot"></div>
+    <div class="spc-bar">
+      <div class="spc-tabs-scroll">
+        <div class="spc-tabs" role="tablist">
+          ${LAYOUT_ORDER.map(view => `<button type="button" role="tab" class="spc-tab" id="spc-tab-${view}" data-view="${view}" data-spc-focus="tab:${view}" aria-controls="space-view" aria-selected="false" tabindex="-1">${spaceSvg(view, 16, 1.5)}<span class="spc-tab-label"></span></button>`).join('')}
+          <span class="spc-uline is-jump" aria-hidden="true"></span>
+        </div>
+      </div>
+      <button type="button" class="spc-newg" data-spc-act="add-group" data-spc-focus="add-group">${spaceSvg('plus', 14, 1.8)}<span class="spc-newg-label"></span></button>
+    </div>
+    <div id="space-view" class="spc-views" role="tabpanel"></div>`;
+
+  const more = page.querySelector('[data-spc-act="space-more"]');
+  more.addEventListener('click', () => {
+    const current = activeCat();
+    const items = spaceActionMenuItems(current, more);
+    if (!items.length) return;
+    focusDialogOpener(more);
+    showAnchoredContextMenu(more, items, { ariaLabel: tr('space.actionsFor', { name: current?.name || '' }), expandedOwner: more });
+  });
+  page.querySelector('[data-spc-act="add-group"]').addEventListener('click', event => spaceCreateGroup(event.currentTarget));
+  const tabs = page.querySelector('.spc-tabs');
+  tabs.addEventListener('click', event => {
+    const tab = event.target.closest('.spc-tab');
+    if (!tab || tab.dataset.view === getViewMode()) return;
+    setViewMode(tab.dataset.view);
+    focusSpaceKey(`tab:${tab.dataset.view}`);
+  });
+  // Arrows, Home and End move along the tabs and show the view (automatic
+  // activation, as on the board).
+  tabs.addEventListener('keydown', event => {
+    const order = LAYOUT_ORDER.filter(view => LAYOUTS[view]);
+    const index = order.indexOf(getViewMode());
+    let next = -1;
+    if (event.key === 'ArrowRight') next = (index + 1) % order.length;
+    else if (event.key === 'ArrowLeft') next = (index - 1 + order.length) % order.length;
+    else if (event.key === 'Home') next = 0;
+    else if (event.key === 'End') next = order.length - 1;
+    if (next < 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    setViewMode(order[next]);
+    focusSpaceKey(`tab:${order[next]}`);
+  });
+  return page;
+}
+
+// The underline sits under the chosen tab; between views it slides.
+function placeSpaceUnderline(page, view) {
+  const tab = page.querySelector(`.spc-tab[data-view="${view}"]`);
+  const line = page.querySelector('.spc-uline');
+  if (!tab || !line) return;
+  const inset = Math.min(14, Math.max(0, (tab.offsetWidth - 24) / 2));
+  line.style.setProperty('--spc-ul-x', `${tab.offsetLeft + inset}px`);
+  line.style.setProperty('--spc-ul-w', `${Math.max(0, tab.offsetWidth - inset * 2)}px`);
+  if (line.classList.contains('is-jump')) {
+    void line.offsetWidth;
+    line.classList.remove('is-jump');
+  }
+  const scroller = page.querySelector('.spc-tabs-scroll');
+  if (scroller && scroller.scrollWidth > scroller.clientWidth) {
+    const left = tab.offsetLeft - 16;
+    const right = tab.offsetLeft + tab.offsetWidth + 16 - scroller.clientWidth;
+    if (scroller.scrollLeft > left) scroller.scrollLeft = Math.max(0, left);
+    else if (scroller.scrollLeft < right) scroller.scrollLeft = right;
+  }
+}
+
+function syncSpacePage(page, ws, cat, mode, session) {
+  const total = cat.groups.reduce((n, g) => n + (Array.isArray(g.items) ? g.items.length : 0), 0);
+  page.dataset.view = mode;
+  const title = page.querySelector('.spc-title');
+  if (title.textContent !== cat.name) title.textContent = cat.name;
+  const totalEl = page.querySelector('.spc-total');
+  const totalText = tr('groupAction.items', { count: '#' });
+  if (session.total !== total || session.totalText !== totalText || !totalEl.firstChild) {
+    totalEl.innerHTML = spaceItemsMarkup(total, session.totalText === totalText ? session.total : null);
+  }
+  session.totalText = totalText;
+  const live = page.querySelector('.spc-live');
+  if (session.total != null && session.total !== total) live.textContent = spaceItemsLabel(total);
+  const remSlot = page.querySelector('.spc-rem-slot');
+  remSlot.innerHTML = '';
+  const chip = buildSpaceReminderChip('category', cat, 'space-rem', session.remAt);
+  if (chip) remSlot.appendChild(chip);
+  const more = page.querySelector('[data-spc-act="space-more"]');
+  more.setAttribute('aria-label', tr('space.actionsFor', { name: cat.name }));
+  more.title = tr('space.actionsFor', { name: cat.name });
+  const sheetSlot = page.querySelector('.spc-sheet-slot');
+  sheetSlot.innerHTML = '';
+  if (session.sheet?.kind === 'category' && session.sheet.id === String(cat.id)) {
+    sheetSlot.appendChild(buildSpaceSheet('category', cat, session.sheet.opening));
+  }
+  const tabs = page.querySelector('.spc-tabs');
+  tabs.setAttribute('aria-label', tr('layout.view'));
+  tabs.querySelectorAll('.spc-tab').forEach(tab => {
+    const selected = tab.dataset.view === mode;
+    tab.setAttribute('aria-selected', String(selected));
+    tab.tabIndex = selected ? 0 : -1;
+    tab.querySelector('.spc-tab-label').textContent = layoutLabel(tab.dataset.view);
+    if (selected && session.view != null && session.view !== mode) spaceRestart(tab, 'is-picked');
+  });
+  const newGroup = page.querySelector('[data-spc-act="add-group"]');
+  newGroup.hidden = !['board', 'list'].includes(mode);
+  newGroup.setAttribute('aria-label', tr('groupAction.new'));
+  newGroup.querySelector('.spc-newg-label').textContent = tr('groupAction.new');
+  page.querySelector('.spc-views').setAttribute('aria-labelledby', `spc-tab-${mode}`);
+  session.total = total;
+  session.remAt = spaceReminderTarget(cat)?.at ?? null;
+}
+
+// After a paint: a card or group that was not on the last paint of this view
+// drops in; the remembered counts make the next change roll. A repaint while
+// it is still dropping (Details opening, a receipt) carries the motion on from
+// where it was instead of restarting it.
+function markSpaceArrivals(host, session, fresh) {
+  const cards = [...host.querySelectorAll('.item[data-id]')];
+  const groups = [...host.querySelectorAll('[data-spc-gid]')];
+  const now = Date.now();
+  if (fresh || !session.arrived) session.arrived = new Map();
+  session.arrived.forEach((at, key) => { if (now - at > 900) session.arrived.delete(key); });
+  const land = (el, key, seen, cls) => {
+    if (!fresh && seen && !seen.has(key.slice(2))) session.arrived.set(key, now);
+    const at = session.arrived.get(key);
+    if (at == null) return;
+    el.classList.add(cls);
+    if (now > at) el.style.animationDelay = `-${now - at}ms`;
+  };
+  cards.forEach(card => land(card, `i:${card.dataset.id}`, session.seenItems, 'spc-drop'));
+  groups.forEach(group => land(group, `g:${group.dataset.spcGid}`, session.seenGroups, 'spc-back'));
+  session.seenItems = new Set(cards.map(card => card.dataset.id));
+  session.seenGroups = new Set(groups.map(group => group.dataset.spcGid));
+  const cat = activeCat();
+  session.counts = new Map((cat?.groups || []).map(g => [String(g.id), (g.items || []).length]));
+  session.todos = new Map((cat?.groups || []).map(g => {
+    const todos = (g.items || []).filter(it => it.type === 'todo');
+    return [String(g.id), `${todos.filter(it => it.done).length}/${todos.length}`];
+  }));
+  session.groupRem = new Map((cat?.groups || []).map(g => [String(g.id), spaceReminderTarget(g)?.at ?? null]));
+}
+
+function renderSpacePage(mode) {
+  const ws = activeWs();
+  const cat = activeCat();
+  const board = document.getElementById('board');
+  if (!ws || !cat || !board) return false;
+  const session = spacePageState(cat.id);
+  document.body.dataset.page = 'space';
+  board.classList.add('spc-mode');
+  let page = spacePageRoot();
+  if (page && page.dataset.cat !== String(cat.id)) page = null;
+  const keepScroll = page ? board.scrollTop : 0;
+  const active = document.activeElement;
+  const focusKey = page && active && page.contains(active)
+    ? active.closest('[data-spc-focus]')?.dataset.spcFocus || null
+    : null;
+  if (!page) {
+    board.innerHTML = '';
+    page = buildSpacePage(cat);
+    board.appendChild(page);
+    Object.assign(session, { view: null, host: null, total: null, remAt: undefined, seenItems: null, seenGroups: null });
+  }
+  const changed = session.view != null && session.view !== mode;
+  syncSpacePage(page, ws, cat, mode, session);
+  const views = page.querySelector('.spc-views');
+  let host = session.host?.isConnected && !changed ? session.host : null;
+  if (!host) {
+    const previous = session.host?.isConnected ? session.host : null;
+    host = document.createElement('div');
+    host.className = 'spc-vw';
+    views.prepend(host);
+    if (previous) {
+      if (changed && !spaceReducedMotion()) {
+        host.classList.add('is-in');
+        previous.classList.add('is-out');
+        previous.setAttribute('aria-hidden', 'true');
+        previous.inert = true;
+        setTimeout(() => previous.remove(), 200);
+      } else {
+        previous.remove();
+      }
+    }
+  }
+  host.dataset.view = mode;
+  session.host = host;
+  (LAYOUTS[mode] || LAYOUTS.board).render();
+  markSpaceArrivals(host, session, changed || session.view == null);
+  placeSpaceUnderline(page, mode);
+  session.view = mode;
+  if (keepScroll && board.scrollTop !== keepScroll) board.scrollTo({ top: keepScroll, behavior: 'instant' });
+  if (focusKey && !page.contains(document.activeElement)) focusSpaceKey(focusKey);
+  return true;
+}
+
+// ════════════════════════════════════════════════════════════════
 // CANVAS VIEW (free positioning, idea-board style)
 // ════════════════════════════════════════════════════════════════
 function getCanvasPositions() {
@@ -30695,7 +31425,7 @@ function placeMissingCanvasPositions(cat, positions) {
 }
 
 function renderCanvasView() {
-  const $b = document.getElementById('board');
+  const $b = spaceViewHost();
   $b.innerHTML = '';
   $b.classList.remove('list-mode');
   $b.classList.add('canvas-mode');
@@ -30770,6 +31500,7 @@ function renderCanvasView() {
   });
 
   sizeCanvas(wrap, cat.groups, positions);
+  decorateSpaceCards(wrap);
   applySearchFilter();
 }
 
@@ -30788,7 +31519,7 @@ function sizeCanvas(wrap, groups, positions) {
 }
 
 function renderListView() {
-  const $b = document.getElementById('board');
+  const $b = spaceViewHost();
   $b.innerHTML = '';
   $b.classList.add('list-mode');
   const cat = activeCat(); if (!cat) return;
@@ -30799,87 +31530,73 @@ function renderListView() {
   }
 
   const wrap = document.createElement('div');
-  wrap.className = 'lv-wrap';
+  wrap.className = 'lv-wrap spc-list';
   cat.groups.forEach(g => wrap.appendChild(buildLvGroup(g)));
-
-  const add = document.createElement('button');
-  add.type = 'button';
-  add.className = 'lv-add-row';
-  add.innerHTML = `<svg width="13" height="13" viewBox="0 0 13 13" aria-hidden="true"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg> ${esc(tr('groupAction.new'))}`;
-  add.onclick = event => {
-    const workspace = activeWs();
-    openIdentityEditor('group', 'create', {
-      workspaceId: workspace?.id,
-      spaceId: cat.id,
-    }, event.currentTarget);
-  };
-  wrap.appendChild(add);
-
   $b.appendChild(wrap);
   applySearchFilter();
 }
 
+// One List group: chevron, the group's colour (which edits the group), its
+// name (which opens its page), the localized item count and to-do progress,
+// then Open all, Save here and More, always visible. Its items are rows.
 function buildLvGroup(g) {
-  const wrap = document.createElement('div');
-  wrap.className = 'lv-group' + (g.collapsed ? ' collapsed' : '');
-  wrap.dataset.gid = g.id;
-  wrap.style.setProperty('--gcol-tint', g.color);
-
-  const itemCnt = g.items.length;
+  const session = spacePageSession;
+  const id = String(g.id);
+  const name = g.name;
+  const items = Array.isArray(g.items) ? g.items : [];
+  const itemCnt = items.length;
   const canOpenAll = groupHasReopenableSavedTab(g);
+  const countRoll = spaceCountRoll(session, id, itemCnt);
   const itemLabel = itemCnt === 1
     ? tr('groupAction.oneItem')
     : tr('groupAction.items', { count: itemCnt });
   const todoStat = (() => {
-    const todos = g.items.filter(it => it.type === 'todo');
+    const todos = items.filter(it => it.type === 'todo');
     if (!todos.length) return '';
     const done = todos.filter(t => t.done).length;
     const todoLabel = tr('home.previewType.todo');
-    return `<span class="lv-todo-cnt${done === todos.length ? ' all-done' : ''}">${esc(todoLabel)} ${done}/${todos.length}</span>`;
+    const text = `${done}/${todos.length}`;
+    const ticked = session?.todos?.get(id) != null && session.todos.get(id) !== text;
+    return `<span class="spc-tdc is-text${done === todos.length ? ' is-all' : ''}"><span class="sr-only">${esc(tr('space.todosDone', { done, total: todos.length }))}</span><span class="spc-tdc-n${ticked ? ' is-tick' : ''}" aria-hidden="true">${esc(todoLabel)} ${text}</span></span>`;
   })();
 
+  const wrap = document.createElement('section');
+  wrap.className = 'lv-group spc-lg' + (g.collapsed ? ' is-folded' : '');
+  wrap.dataset.gid = id;
+  wrap.dataset.spcGid = id;
+  wrap.style.setProperty('--spc-tint', g.color || 'var(--accent)');
+  wrap.setAttribute('aria-labelledby', `spc-ln-${id}`);
+
   const hd = document.createElement('div');
-  hd.className = 'lv-group-hd';
+  hd.className = 'lv-group-hd spc-lgh';
   hd.setAttribute('role', 'group');
-  hd.setAttribute('aria-label', tr('groupAction.aria', { name: g.name }));
+  hd.setAttribute('aria-label', tr('groupAction.aria', { name }));
   hd.innerHTML = `
-    <button class="lv-chev lv-group-toggle" type="button" aria-expanded="${!g.collapsed}" aria-label="${esc(tr(g.collapsed ? 'groupAction.expandFor' : 'groupAction.collapseFor', { name: g.name }))}"><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M3.5 2.5l3 2.5-3 2.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-    <button class="lv-group-sym" type="button" aria-label="${esc(tr('groupAction.editFor', { name: g.name }))}">${esc(g.symbol || '📁')}</button>
-    <div class="lv-group-copy">
-      <button class="lv-group-name" type="button" data-act="focus" title="${esc(`${g.name} · ${tr('groupAction.openAsPage')}`)}" aria-label="${esc(`${g.name} · ${tr('groupAction.openAsPage')}`)}">${esc(g.name)}</button>
-      <div class="lv-group-meta">
-        <span class="lv-group-cnt">${esc(itemLabel)}</span>
-        ${todoStat}
-      </div>
-    </div>
-    <div class="lv-group-acts">
-      <button class="lv-act-btn" type="button" data-act="open-all"${canOpenAll ? '' : ' disabled aria-disabled="true"'} title="${esc(tr('groupAction.openAll'))}" aria-label="${esc(tr('groupAction.openAll'))}"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4 2.5H2a1 1 0 00-1 1v6.5A1 1 0 002 11h6.5a1 1 0 001-1V8M7 1h4m0 0v4M11 1L5.5 6.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>${esc(tr('groupAction.openAll'))}</span></button>
-      <button class="lv-act-btn" type="button" data-act="add-tab" title="${esc(tr('groupAction.saveHereFor', { name: g.name }))}" aria-label="${esc(tr('groupAction.saveHereFor', { name: g.name }))}"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M6 1.5v5.8M3.8 5.2 6 7.5l2.2-2.3M2 9.5h8" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></svg><span>${esc(tr('groupAction.saveHere'))}</span></button>
-      <button class="lv-act-btn" type="button" data-act="more" title="${esc(tr('groupAction.more'))}" aria-label="${esc(tr('groupAction.moreFor', { name: g.name }))}" aria-haspopup="menu"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><circle cx="3" cy="6" r="1"/><circle cx="6" cy="6" r="1"/><circle cx="9" cy="6" r="1"/></svg></button>
+    <button class="lv-group-toggle spc-ib spc-chev" type="button" data-act="toggle" data-spc-focus="lg:${esc(id)}:toggle" aria-expanded="${!g.collapsed}" aria-label="${esc(tr(g.collapsed ? 'groupAction.expandFor' : 'groupAction.collapseFor', { name }))}">${spaceSvg('chevron', 14, 1.9)}</button>
+    <button class="lv-group-sym spc-gdot" type="button" data-act="identity" data-spc-focus="lg:${esc(id)}:identity" aria-label="${esc(tr('groupAction.editFor', { name }))}" title="${esc(tr('groupAction.editFor', { name }))}"><span></span></button>
+    <h2 class="spc-gh2"><button class="lv-group-name spc-gname" type="button" data-act="focus" id="spc-ln-${esc(id)}" data-spc-focus="lg:${esc(id)}:name" title="${esc(`${name} · ${tr('groupAction.openAsPage')}`)}" aria-label="${esc(`${name} · ${tr('groupAction.openAsPage')}`)}">${esc(name)}</button></h2>
+    <span class="spc-cnt is-text"><span class="sr-only">${esc(itemLabel)}</span><span aria-hidden="true">${spaceItemsMarkup(itemCnt, countRoll.previous, countRoll.delay)}</span></span>
+    ${todoStat}
+    <span class="spc-gap" aria-hidden="true"></span>
+    <div class="lv-group-acts spc-lacts">
+      <button class="spc-ib" type="button" data-act="open-all" data-spc-focus="lg:${esc(id)}:open-all" title="${esc(tr('groupAction.openAll'))}" aria-label="${esc(tr('groupAction.openAllIn', { name }))}"${canOpenAll ? '' : ' disabled aria-disabled="true"'}>${spaceSvg('openAll', 16, 1.6)}</button>
+      <button class="spc-fbtn" type="button" data-act="add-tab" data-spc-focus="lg:${esc(id)}:save" title="${esc(tr('groupAction.saveHereFor', { name }))}" aria-label="${esc(tr('groupAction.saveHereFor', { name }))}">${spaceSvg('save', 15, 1.7)}<span>${esc(tr('groupAction.saveHere'))}</span></button>
+      <button class="spc-ib" type="button" data-act="more" data-spc-focus="lg:${esc(id)}:more" title="${esc(tr('groupAction.more'))}" aria-label="${esc(tr('groupAction.moreFor', { name }))}" aria-haspopup="menu" aria-expanded="false">${inboxDotsIcon(16)}</button>
     </div>`;
 
-  const toggleButton = hd.querySelector('.lv-group-toggle');
-  const toggleGroup = () => {
-    State.snapshot('Toggle');
-    g.collapsed = !g.collapsed;
-    wrap.classList.toggle('collapsed');
-    toggleButton.setAttribute('aria-expanded', String(!g.collapsed));
-    toggleButton.setAttribute('aria-label', tr(g.collapsed ? 'groupAction.expandFor' : 'groupAction.collapseFor', { name: g.name }));
-    State.persist();
-  };
+  const toggleGroup = () => spaceToggleGroup(g, wrap);
   hd.addEventListener('click', e => {
-    if (e.target.closest('button') || e.target.closest('.lv-group-acts') || e.target.closest('.lv-group-sym')) return;
+    if (e.target.closest('button') || e.target.closest('.lv-group-acts')) return;
     toggleGroup();
   });
-  toggleButton.addEventListener('click', event => { event.stopPropagation(); toggleGroup(); });
-  hd.querySelector('.lv-group-sym').addEventListener('click', (e) => {
+  hd.querySelector('[data-act="toggle"]').addEventListener('click', event => { event.stopPropagation(); toggleGroup(); });
+  hd.querySelector('[data-act="identity"]').addEventListener('click', (e) => {
     e.stopPropagation();
     const identity = identityGroupTarget(g.id);
     openIdentityEditor('group', 'edit', {
       workspaceId: identity?.workspace.id,
       spaceId: identity?.space.id,
       groupId: g.id,
-      focusField: 'symbol',
     }, e.currentTarget);
   });
   hd.querySelector('.lv-group-name').addEventListener('click', event => {
@@ -30895,51 +31612,36 @@ function buildLvGroup(g) {
     await addSidebarOrActiveTabToGroup(g);
   });
   const menuButton = hd.querySelector('[data-act="more"]');
-  const groupMenuItems = opener => groupActionMenuItems(g, opener, {
+  const groupMenuItems = opener => spaceGroupMenu(groupActionMenuItems(g, opener, {
     toggleCollapse: toggleGroup,
-  });
+  }), g, opener);
   bindBoardItemContextMenu(hd, groupMenuItems, { menuButton });
   wrap.appendChild(hd);
 
-  const children = document.createElement('div');
-  children.className = 'lv-children';
-  g.items.forEach(it => children.appendChild(buildLvItem(it, g.items, g, 1)));
-  wrap.appendChild(children);
-  makeGroupDropZone(children, wrap, g, g.items);
+  const meta = buildSpaceGroupMeta(g, session);
+  if (meta) wrap.appendChild(meta);
+  if (session?.sheet?.kind === 'group' && session.sheet.id === id) wrap.appendChild(buildSpaceSheet('group', g, session.sheet.opening));
+
+  const fold = document.createElement('div');
+  fold.className = 'spc-fold';
+  fold.innerHTML = '<div class="spc-fold-in"><div class="spc-rows"></div></div>';
+  const children = fold.querySelector('.spc-rows');
+  items.forEach(it => children.appendChild(buildLvItem(it, items, g, 0)));
+  decorateSpaceCards(children);
+  // Each row ends with the day it was saved, as on the board.
+  const byId = new Map();
+  const walk = list => list.forEach(it => { byId.set(String(it.id), it); if (it.type === 'stack') walk(it.items || []); });
+  walk(items);
+  children.querySelectorAll('.lv-row > .item[data-id]').forEach(card => {
+    const label = inboxSavedLabel(byId.get(card.dataset.id)?.createdAt);
+    if (label) card.insertAdjacentHTML('beforeend', `<span class="spc-added">${esc(label)}</span>`);
+  });
+  wrap.appendChild(fold);
+  makeGroupDropZone(children, wrap, g, items);
 
   if (document.body.classList.contains('reorder-mode')) {
     wrap.draggable = true;
-    wrap.addEventListener('dragstart', (e) => {
-      drag = { kind:'group', srcId: g.id };
-      wrap.classList.add('dragging');
-      e.dataTransfer.effectAllowed = 'move';
-      e.stopPropagation();
-    });
-    wrap.addEventListener('dragend', () => { wrap.classList.remove('dragging'); document.querySelectorAll('.lv-group').forEach(x => { x.classList.remove('drop-before'); x.classList.remove('drop-after'); }); drag = null; });
-    wrap.addEventListener('dragover', e => {
-      if (drag?.kind === 'group' && drag.srcId !== g.id) {
-        e.preventDefault();
-        const r = wrap.getBoundingClientRect();
-        const after = e.clientY > r.top + r.height / 2;
-        document.querySelectorAll('.lv-group').forEach(x => { x.classList.remove('drop-before'); x.classList.remove('drop-after'); });
-        wrap.classList.add(after ? 'drop-after' : 'drop-before');
-      }
-    });
-    wrap.addEventListener('drop', e => {
-      if (drag?.kind === 'group' && drag.srcId !== g.id) {
-        e.preventDefault();
-        const cat = activeCat();
-        const r = wrap.getBoundingClientRect();
-        const after = e.clientY > r.top + r.height / 2;
-        State.snapshot('Reorder groups');
-        const srcIdx = cat.groups.findIndex(x => x.id === drag.srcId);
-        const [src] = cat.groups.splice(srcIdx, 1);
-        let tgtIdx = cat.groups.findIndex(x => x.id === g.id);
-        if (after) tgtIdx++;
-        cat.groups.splice(tgtIdx, 0, src);
-        State.persist(); renderBoard();
-      }
-    });
+    bindSpaceGroupReorder(wrap, g, 'y');
   }
   return wrap;
 }
@@ -31131,7 +31833,7 @@ function explorerCopy() {
 }
 
 function renderExplorerView() {
-  const $b = document.getElementById('board');
+  const $b = spaceViewHost();
   $b.innerHTML = '';
   $b.classList.add('explorer-mode');
   const ws = activeWs(), cat = activeCat();
@@ -31154,7 +31856,7 @@ function renderExplorerView() {
   // Column 1 — Spaces in the active workspace. Selecting one makes its internal
   // category record active and resets the deeper selection.
   wrap.appendChild(buildExCol(copy.spaces, ws.categories.map(c => ({
-    sym: '🗂', label: c.name, meta: String(c.groups.length), hasChildren: true,
+    icon: explorerTile(c.name, 'var(--accent)'), label: c.name, meta: String(c.groups.length), hasChildren: true,
     active: c.id === cat.id,
     onSelect: () => {
       if (c.id === cat.id) return;
@@ -31168,7 +31870,7 @@ function renderExplorerView() {
   // Column 2 — Groups in the active Space. Select drills in; double-click /
   // Enter opens the full group page (§4.1).
   wrap.appendChild(buildExCol(copy.groups, cat.groups.map(g => ({
-    sym: g.symbol || '📁', label: g.name, meta: String(g.items.length), color: g.color,
+    icon: explorerTile(g.name, g.color || 'var(--accent)'), label: g.name, meta: String(g.items.length), color: g.color,
     hasChildren: true, active: group && g.id === group.id,
     onSelect: () => {
       explorerSel.groupId = g.id; explorerSel.stackPath = []; explorerSel.itemId = null;
@@ -31214,13 +31916,12 @@ function explorerItemRow(it, lvl, group, depth) {
   const label = it.type === 'note'
     ? (String(it.html || '').replace(/<[^>]*>/g, ' ').trim().slice(0, 60) || 'Empty note')
     : (it.title || it.text || it.name || 'Untitled');
-  const sym = isStack ? (it.symbol || '📚')
-    : it.type === 'note' ? '📝'
-    : it.type === 'todo' ? (it.done ? '☑' : '☐')
-    : '🔗';
+  const icon = it.type === 'tab'
+    ? `<img class="ex-fav" src="${esc(favUrl(it.url) || BLANK_FAV)}" alt="" decoding="async">`
+    : `<span class="ex-kic${it.type === 'todo' && it.done ? ' is-done' : ''}">${spaceSvg(it.type === 'todo' && it.done ? 'todo' : (SPACE_PATHS[it.type] ? it.type : 'note'), 13, 1.5)}</span>`;
   const active = isStack ? explorerSel.stackPath.includes(it.id) : explorerSel.itemId === it.id;
   return {
-    sym, label, color: it.color, hasChildren: isStack, active,
+    icon, label, color: it.color, hasChildren: isStack, active,
     meta: isStack ? String((it.items || []).length) : '',
     onSelect: () => {
       const prefix = explorerSel.stackPath.slice(0, depth);
@@ -31240,6 +31941,12 @@ function explorerItemRow(it, lvl, group, depth) {
       else openItemDetail(it.id);
     },
   };
+}
+
+// A Space or group in the Explorer leads with a tile in its colour.
+function explorerTile(name, color) {
+  const initial = Array.from(String(name || '').trim())[0] || '·';
+  return `<span class="ex-tile" style="--ex-c:${esc(color)}">${esc(initial.toLocaleUpperCase())}</span>`;
 }
 
 function buildExCol(title, rows, opts = {}) {
@@ -31274,7 +31981,7 @@ function buildExRow(r) {
   b.tabIndex = r.active ? 0 : -1;
   if (r.color) b.style.setProperty('--ex-tint', r.color);
   b.innerHTML =
-    `<span class="ex-row-sym">${esc(r.sym)}</span>` +
+    `<span class="ex-row-sym" aria-hidden="true">${r.icon || esc(r.sym || '')}</span>` +
     `<span class="ex-row-label">${esc(r.label)}</span>` +
     (r.meta ? `<span class="ex-row-meta">${esc(r.meta)}</span>` : '') +
     (r.hasChildren ? EX_CHEVRON : '');
@@ -31336,7 +32043,7 @@ function _tlBucketLabel(start, zoom) {
   const d = new Date(start);
   const sameYear = d.getFullYear() === new Date().getFullYear();
   if (zoom === 'month') return d.toLocaleDateString(appLocale(), { month: 'long', year: 'numeric' });
-  if (zoom === 'week') return 'Week of ' + d.toLocaleDateString(appLocale(), { month: 'short', day: 'numeric' }) + (sameYear ? '' : ', ' + d.getFullYear());
+  if (zoom === 'week') return tr('timeline.weekOf', { date: d.toLocaleDateString(appLocale(), sameYear ? { month: 'short', day: 'numeric' } : { year: 'numeric', month: 'short', day: 'numeric' }) });
   return d.toLocaleDateString(appLocale(), { weekday: 'short', month: 'short', day: 'numeric' }) + (sameYear ? '' : ', ' + d.getFullYear());
 }
 
@@ -31347,7 +32054,7 @@ function setTimelineZoom(z) {
 }
 
 function renderTimelineView() {
-  const $b = document.getElementById('board');
+  const $b = spaceViewHost();
   $b.innerHTML = '';
   $b.classList.add('timeline-mode');
   const cat = activeCat(); if (!cat) return;
@@ -31379,11 +32086,17 @@ function renderTimelineView() {
   wrap.className = 'tl-wrap';
 
   // Zoom control (day / week / month granularity).
+  // Zoom control (day / week / month granularity): one switch whose thumb
+  // slides to the chosen scale.
+  const zooms = ['day', 'week', 'month'];
   const ctrl = document.createElement('div');
-  ctrl.className = 'tl-controls';
-  ctrl.innerHTML = `<span class="tl-controls-label">Scale</span>` +
-    ['day', 'week', 'month'].map(z =>
-      `<button type="button" class="tl-zoom${z === timelineZoom ? ' active' : ''}" data-zoom="${z}">${z[0].toUpperCase() + z.slice(1)}</button>`
+  ctrl.className = 'tl-controls spc-seg';
+  ctrl.setAttribute('role', 'group');
+  ctrl.setAttribute('aria-label', tr('timeline.scale'));
+  ctrl.style.setProperty('--spc-i', String(Math.max(0, zooms.indexOf(timelineShownZoom || timelineZoom))));
+  ctrl.innerHTML = `<span class="spc-thumb" aria-hidden="true"></span>` +
+    zooms.map(z =>
+      `<button type="button" class="tl-zoom${z === timelineZoom ? ' active' : ''}" data-zoom="${z}" data-spc-focus="tl:${z}" aria-pressed="${z === timelineZoom}">${esc(tr(`timeline.${z}`))}</button>`
     ).join('');
   ctrl.querySelectorAll('.tl-zoom').forEach(b => b.onclick = () => setTimelineZoom(b.dataset.zoom));
   wrap.appendChild(ctrl);
@@ -31433,7 +32146,7 @@ function renderTimelineView() {
   const nowDivider = () => {
     const d = document.createElement('div');
     d.className = 'tl-now';
-    d.innerHTML = `<span class="tl-now-dot"></span><span class="tl-now-label">Now</span>`;
+    d.innerHTML = `<span class="tl-now-dot" aria-hidden="true"></span><span class="tl-now-label">${esc(tr('timeline.now'))}</span><span class="tl-now-time">${esc(planTimeLabel(Date.now()))}</span>`;
     return d;
   };
 
@@ -31459,7 +32172,7 @@ function renderTimelineView() {
     section.className = 'tl-bucket tl-undated';
     const lab = document.createElement('div');
     lab.className = 'tl-bucket-label';
-    lab.textContent = 'Undated';
+    lab.textContent = tr('timeline.undated');
     section.appendChild(lab);
     const items = document.createElement('div');
     items.className = 'tl-bucket-items';
@@ -31470,6 +32183,13 @@ function renderTimelineView() {
 
   wrap.appendChild(track);
   $b.appendChild(wrap);
+  decorateSpaceCards(wrap);
+  const zoomIndex = String(zooms.indexOf(timelineZoom));
+  if (ctrl.style.getPropertyValue('--spc-i') !== zoomIndex) {
+    void ctrl.offsetWidth;
+    ctrl.style.setProperty('--spc-i', zoomIndex);
+  }
+  timelineShownZoom = timelineZoom;
   applySearchFilter();
 }
 
@@ -31484,7 +32204,7 @@ function renderTimelineView() {
 // search via applySearchFilter's .gl-section pass. Clicking a section header
 // opens that group's page (§4.1).
 function renderGalleryView() {
-  const $b = document.getElementById('board');
+  const $b = spaceViewHost();
   $b.innerHTML = '';
   $b.classList.add('gallery-mode');
   const cat = activeCat(); if (!cat) return;
@@ -31502,23 +32222,28 @@ function renderGalleryView() {
     section.className = 'gl-section';
     if (g.color) section.style.setProperty('--gl-tint', g.color);
 
+    const heading = document.createElement('h2');
+    heading.className = 'gl-sec-h';
     const hd = document.createElement('button');
     hd.type = 'button';
     hd.className = 'gl-section-hd';
-    hd.title = 'Open group page';
+    hd.dataset.spcFocus = `gl:${g.id}`;
+    hd.title = `${g.name} · ${tr('groupAction.openAsPage')}`;
+    hd.setAttribute('aria-label', `${g.name} · ${tr('groupAction.openAsPage')}`);
     hd.innerHTML =
-      `<span class="gl-sec-sym">${g.symbol ? esc(g.symbol) : ''}</span>` +
+      `<span class="gl-sec-dot" aria-hidden="true"></span>` +
       `<span class="gl-sec-name">${esc(g.name)}</span>` +
-      `<span class="gl-sec-count">${g.items.length}</span>`;
+      `<span class="gl-sec-count" aria-hidden="true">${g.items.length}</span>`;
     hd.addEventListener('click', () => openGroupPage(g.id));
-    section.appendChild(hd);
+    heading.appendChild(hd);
+    section.appendChild(heading);
 
     const grid = document.createElement('div');
     grid.className = 'gl-grid';
     if (!g.items.length) {
       const em = document.createElement('div');
       em.className = 'gl-empty';
-      em.textContent = 'Empty group';
+      em.textContent = tr('explorer.empty');
       grid.appendChild(em);
     } else {
       // Items are placed directly as column children (not wrapped) so the shared
@@ -31530,6 +32255,7 @@ function renderGalleryView() {
   });
 
   $b.appendChild(wrap);
+  decorateSpaceCards(wrap);
   applySearchFilter();
 }
 
@@ -31552,7 +32278,7 @@ function graphItemLabel(it) {
 }
 function _grClip(s, n) { s = String(s); return s.length > n ? s.slice(0, n - 1) + '…' : s; }
 function renderGraphView() {
-  const $b = document.getElementById('board');
+  const $b = spaceViewHost();
   $b.innerHTML = '';
   $b.classList.add('graph-mode');
   const cat = activeCat(); if (!cat) return;
@@ -31582,7 +32308,7 @@ function renderGraphView() {
     const hx = n <= 1 ? cx : cx + Rg * Math.cos(ga);
     const hy = n <= 1 ? cy : cy + Rg * Math.sin(ga);
     const color = grp.g.color || 'var(--accent)';
-    hubs.push({ x: hx, y: hy, g: grp.g, color });
+    hubs.push({ x: hx, y: hy, g: grp.g, color, count: grp.items.length });
     if (n > 1) spokes.push([cx, cy, hx, hy]);
 
     const c = grp.items.length;
@@ -31595,9 +32321,9 @@ function renderGraphView() {
         : ga + (c <= 1 ? 0 : (j - (c - 1) / 2) * Math.min(2 * Math.PI / c, 0.62));
       const ix = hx + ri * Math.cos(ia);
       const iy = hy + ri * Math.sin(ia);
-      const node = { x: ix, y: iy, it, color: reminderDotColor(it.color || grp.g.color) };
+      const node = { x: ix, y: iy, it, gid: grp.g.id, right: Math.cos(ia) >= -0.05, color: reminderDotColor(it.color || grp.g.color) };
       leaves.push(node);
-      links.push([hx, hy, ix, iy, color]);
+      links.push([hx, hy, ix, iy, color, grp.g.id]);
       let host = '';
       if (it.type === 'tab' && it.url) { try { host = new URL(it.url).hostname.replace(/^www\./, ''); } catch {} }
       if (host) { if (!domainMap.has(host)) domainMap.set(host, []); domainMap.get(host).push(node); }
@@ -31608,28 +32334,29 @@ function renderGraphView() {
   // rather than every pair, so a big domain doesn't turn into a hairball.
   domainMap.forEach(list => { for (let k = 1; k < list.length; k++) cross.push([list[k-1].x, list[k-1].y, list[k].x, list[k].y]); });
 
-  const showLabels = totalItems <= 44;
   const f = v => v.toFixed(1);
   let s = `<svg class="gr-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">`;
   s += `<g class="gr-edges">`;
   cross.forEach(([x1,y1,x2,y2]) => { s += `<line class="gr-cross" x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}"/>`; });
   spokes.forEach(([x1,y1,x2,y2]) => { s += `<line class="gr-spoke" x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}"/>`; });
-  links.forEach(([x1,y1,x2,y2,col]) => { s += `<line class="gr-link" x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}" style="stroke:${col}"/>`; });
+  links.forEach(([x1,y1,x2,y2,col,gid]) => { s += `<line class="gr-link" data-g="${esc(gid)}" x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}" style="stroke:${col}"/>`; });
   s += `</g>`;
-  s += `<g class="gr-node gr-center"><circle r="7" cx="${f(cx)}" cy="${f(cy)}"/><text x="${f(cx)}" y="${f(cy - 15)}">${esc(cat.name)}</text></g>`;
-  hubs.forEach((h, i) => {
-    const ly = h.y < cy ? h.y - 16 : h.y + 23;
-    s += `<g class="gr-node gr-hub" data-group-id="${esc(h.g.id)}" style="--i:${Math.min(i,14)}" tabindex="0" role="button" aria-label="${esc(h.g.name)}">`
-      + `<circle r="10" cx="${f(h.x)}" cy="${f(h.y)}" style="fill:${h.color}"/>`
-      + `<text x="${f(h.x)}" y="${f(ly)}">${esc(_grClip(h.g.name, 22))}</text>`
-      + `<title>${esc(h.g.name)} — open group page</title></g>`;
-  });
+  // The Space and its groups are pills; each pill is sized to its label once drawn.
+  s += `<g class="gr-node gr-center"><rect class="gr-pill" rx="18"/><text class="gr-pill-text" x="${f(cx)}" y="${f(cy + 5.5)}">${esc(cat.name)}</text></g>`;
   leaves.forEach((node, i) => {
     const label = graphItemLabel(node.it);
-    s += `<g class="gr-node gr-item" data-item-id="${esc(node.it.id)}" style="--i:${Math.min(i,20)}" tabindex="0" role="button" aria-label="${esc(label)}">`
-      + `<circle r="5" cx="${f(node.x)}" cy="${f(node.y)}" style="fill:${node.color}"/>`
-      + (showLabels ? `<text x="${f(node.x + 8)}" y="${f(node.y + 3.5)}">${esc(_grClip(label, 20))}</text>` : '')
+    s += `<g class="gr-node gr-item" data-item-id="${esc(node.it.id)}" data-g="${esc(node.gid)}" style="--i:${Math.min(i,20)}" tabindex="0" role="button" aria-label="${esc(label)}">`
+      + `<circle class="gr-hit" r="15" cx="${f(node.x)}" cy="${f(node.y)}"/>`
+      + `<circle class="gr-leaf" r="5.5" cx="${f(node.x)}" cy="${f(node.y)}" style="fill:${node.color}"/>`
+      + `<text class="gr-label" text-anchor="${node.right ? 'start' : 'end'}" x="${f(node.x + (node.right ? 12 : -12))}" y="${f(node.y + 4)}">${esc(_grClip(label, 26))}</text>`
       + `<title>${esc(label)}</title></g>`;
+  });
+  hubs.forEach((h, i) => {
+    s += `<g class="gr-node gr-hub" data-group-id="${esc(h.g.id)}" data-g="${esc(h.g.id)}" style="--i:${Math.min(i,14)};--gr-c:${h.color}" tabindex="0" role="button" aria-label="${esc(`${h.g.name} · ${tr('groupAction.openAsPage')}`)}">`
+      + `<rect class="gr-pill" rx="21"/>`
+      + `<circle class="gr-hub-dot" r="4.5" cx="${f(h.x)}" cy="${f(h.y)}" style="fill:${h.color}"/>`
+      + `<text class="gr-pill-text" x="${f(h.x)}" y="${f(h.y + 5)}">${esc(_grClip(h.g.name, 22))}<tspan class="gr-pill-n" dx="8">${h.count}</tspan></text>`
+      + `<title>${esc(`${h.g.name} · ${tr('groupAction.openAsPage')}`)}</title></g>`;
   });
   s += `</svg>`;
 
@@ -31657,8 +32384,51 @@ function renderGraphView() {
     el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); act(); } });
   });
 
+  sizeGraphPills(wrap);
+  // Pointing at (or focusing) a group lights its branch and dims the rest; a
+  // click pins it until the next click.
+  const light = id => {
+    wrap.classList.toggle('has-hot', !!id);
+    wrap.querySelectorAll('[data-g]').forEach(el => el.classList.toggle('is-hot', !!id && el.dataset.g === id));
+  };
+  wrap.querySelectorAll('.gr-hub').forEach(el => {
+    el.addEventListener('mouseenter', () => light(el.dataset.groupId));
+    el.addEventListener('focus', () => light(el.dataset.groupId));
+    el.addEventListener('mouseleave', () => light(null));
+    el.addEventListener('blur', () => light(null));
+  });
+
   const svg = wrap.querySelector('.gr-svg');
   if (svg) { if (_grReduceMotion()) svg.classList.add('in'); else requestAnimationFrame(() => svg.classList.add('in')); }
+}
+
+// Fit each pill (the Space and its groups) to its drawn label.
+function sizeGraphPills(wrap) {
+  wrap.querySelectorAll('.gr-center, .gr-hub').forEach(node => {
+    const text = node.querySelector('.gr-pill-text');
+    const pill = node.querySelector('.gr-pill');
+    if (!text || !pill || typeof text.getBBox !== 'function') return;
+    let box;
+    try { box = text.getBBox(); } catch { return; }
+    if (!box || !box.width) return;
+    const hub = node.classList.contains('gr-hub');
+    const padX = hub ? 16 : 18;
+    const dotRoom = hub ? 14 : 0;
+    const height = hub ? 42 : 36;
+    const width = box.width + padX * 2 + dotRoom;
+    const cxv = box.x + box.width / 2;
+    const cyv = Number(text.getAttribute('y')) - (hub ? 5 : 5.5);
+    const left = cxv - width / 2 - dotRoom / 2;
+    pill.setAttribute('x', left.toFixed(1));
+    pill.setAttribute('y', (cyv - height / 2).toFixed(1));
+    pill.setAttribute('width', width.toFixed(1));
+    pill.setAttribute('height', String(height));
+    if (hub) {
+      const dot = node.querySelector('.gr-hub-dot');
+      dot?.setAttribute('cx', (left + padX).toFixed(1));
+      text.setAttribute('x', (Number(text.getAttribute('x')) + dotRoom / 2).toFixed(1));
+    }
+  });
 }
 
 // ════════════════════════════════════════════════════════════════

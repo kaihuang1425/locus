@@ -5154,3 +5154,44 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   behaviour checks, Light, Dark, zh-TW, reduced motion, 1440 and 390 px).
 
   **Implemented: yes. Verified: partial. User-validated: no. Released: no.**
+
+- **2026-11-06 - A Space opens on one page with all seven views (pages build,
+  page 3).** The Board, List and the five other views follow the canvas Space
+  board.
+  - The page heading is the Space name with its item count (the number rolls)
+    and its reminder as an orange chip; Space actions (Rename, Set or Edit
+    reminder, Delete space) sit in one More menu beside it. The Switch layout
+    button and its "Advanced views" submenu give way to one switcher that shows
+    all seven views as tabs, as the board does; its underline slides to the
+    chosen view and the views crossfade. This replaces "Board and List remain
+    the immediate choices; the others under Advanced views" (2026-08-12).
+  - Board groups are columns in a grid: chevron, the group's colour (which
+    edits the group), its name (which opens the group page), the count bubble
+    and to-do progress, Open all and More; the reminder chip and intention
+    under it; Save here and Add record at the foot. The grid sizes columns, so
+    the width and height handles live on Canvas, where a column's size still
+    applies.
+  - List groups are white panels. They keep the "N items" and "To-do d/t"
+    wording and their always-visible Open all, Save here and More (the
+    2026-08-12 List decisions); rows run icon, title, source, reminder and the
+    day it was saved.
+  - Cards are the shared item cards drawn as the board's quiet white cards:
+    the whole card is its main action, More is the hover action, and the lead
+    mark turns into the select box. A card or group that was not on the last
+    paint drops in and rings once (an Undo brings one back the same way).
+  - Set reminder on a group or the Space opens an inline sheet of quick times
+    (the picker's own four), Pick a time… (the full picker) and Clear. It
+    writes through the same reminder transactions, with their Undo.
+  - Group and Space names still change only in their dialogs (the identity
+    and organization decisions), so the board's inline rename is not built.
+    Move and Edit intention keep their dialogs.
+  - Canvas, Explorer, Timeline, Gallery and Graph keep their behaviour and take
+    the board's look; Timeline, Gallery and Graph lose their hard-coded English.
+
+  Evidence: `space-page-contract-test.js` (208 checks, 16 mutations caught),
+  the ported `onboarding`, `group-stack-identity`, `inbox-page`,
+  `organization-delete`, `organization-naming` and `organization-removal`
+  suites, and every suite; a throwaway Edge 156 profile (Light, Dark, zh-TW,
+  reduced motion, other themes, 1440 and 390 px).
+
+  **Implemented: yes. Verified: partial. User-validated: no. Released: no.**

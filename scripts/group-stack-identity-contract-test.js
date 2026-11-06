@@ -235,8 +235,7 @@ function buildHarness({
       return [];
     },
     querySelector(selector) {
-      if (selector === '.lv-add-row') return elements.get('lv-add-row');
-      if (selector === '.add-col-btn') return elements.get('add-col-btn');
+      if (selector === '[data-spc-act="add-group"]:not([hidden])') return elements.get('add-group');
       if (selector === '#item-detail [data-idp-focus="stack-identity"]') return elements.get('detail-stack-identity');
       const groupId = selector.match(/\.gcol\[data-gid="([^"]+)"\]/)?.[1]
         || selector.match(/\.lv-group\[data-gid="([^"]+)"\]/)?.[1];
@@ -356,8 +355,7 @@ function buildHarness({
   customColor.hidden = true;
   colors.push(customColor);
   const opener = makeElement('identity-opener');
-  makeElement('lv-add-row');
-  makeElement('add-col-btn');
+  makeElement('add-group');
   const board = makeElement('board');
   board.clientWidth = 960;
   board.scrollLeft = 0;
@@ -672,8 +670,9 @@ function testStaticReachabilityAndLegacyRemoval() {
 
   const entryContracts = [
     ['buildEmptySpaceState', /openIdentityEditor\('group',\s*'create'/],
-    ['renderBoardView', /openIdentityEditor\('group',\s*'create'/],
-    ['renderListView', /openIdentityEditor\('group',\s*'create'/],
+    // 2026-11: the Space page's New group (view bar) creates for Board and List.
+    ['spaceCreateGroup', /openIdentityEditor\('group',\s*'create'/],
+    ['buildSpaceColumn', /openIdentityEditor\('group',\s*'edit'/],
     ['buildGroupCol', /openIdentityEditor\('group',\s*'edit'/],
     ['buildLvGroup', /openIdentityEditor\('group',\s*'edit'/],
     ['buildStack', /openIdentityEditor\('stack',\s*'edit'/],
@@ -734,8 +733,11 @@ function testStaticReachabilityAndLegacyRemoval() {
     /class="gcol-name"[^>]*contenteditable/,
     'Board Group names must keep naming inside the exact identity transaction',
   );
-  assert.match(extractFunction('buildLvGroup'), /<button class="lv-group-name" type="button" data-act="focus"/, 'List Group names must be native page routes, not inline editors');
-  assert.doesNotMatch(extractFunction('buildLvGroup'), /class="lv-group-name"[^>]*contenteditable/, 'List Group names must keep naming inside the exact identity transaction');
+  // 2026-11: the Space page's List and Board headers carry extra page classes.
+  assert.match(extractFunction('buildLvGroup'), /<button class="lv-group-name[^"]*" type="button" data-act="focus"/, 'List Group names must be native page routes, not inline editors');
+  assert.doesNotMatch(extractFunction('buildLvGroup'), /class="lv-group-name[^"]*"[^>]*contenteditable/, 'List Group names must keep naming inside the exact identity transaction');
+  assert.match(extractFunction('buildSpaceColumn'), /<button class="spc-gname" type="button" data-act="focus"/, 'Space Board Group names must be native page routes, not inline editors');
+  assert.doesNotMatch(extractFunction('buildSpaceColumn'), /class="spc-gname"[^>]*contenteditable/, 'Space Board Group names must keep naming inside the exact identity transaction');
   assert.match(extractFunction('buildStack'), /<span class="stack-name"/, 'Board Stack names must be display text, not inline editors');
   assert.match(extractFunction('buildLvStack'), /<span class="lv-stack-name"/, 'List Stack names must be display text, not inline editors');
 
@@ -1307,7 +1309,7 @@ async function testDuplicateZeroWritePreflights() {
   detached.opener.isConnected = false;
   detached.document.activeElement = detached.elements.get('board');
   assert.equal(detached.api.openIdentityEditor('group', 'duplicate', duplicateParams('missing-group'), detached.opener), false);
-  assert.equal(detached.document.activeElement, detached.elements.get('lv-add-row'),
+  assert.equal(detached.document.activeElement, detached.elements.get('add-group'),
     'A rejected Duplicate with a detached opener must recover focus on a durable surface control');
   assertNoDuplicateWrite(detached, 'Detached-opener Duplicate target');
 
@@ -2154,9 +2156,12 @@ function testKeyboardFocusAndInterlockDynamically() {
 
 function testGroupFocusSelectorOrderAfterRerender() {
   const groupId = 'g-a';
+  // 2026-11: the Space page's Board column chevron sits between the bento
+  // column controls and the List fallback.
   const selectors = [
     `.gcol[data-gid="${groupId}"] .gcol-toggle:not(.hidden)`,
     `.gcol[data-gid="${groupId}"] [data-act="more"]`,
+    `.spc-col[data-gid="${groupId}"] .spc-chev`,
     `.lv-group[data-gid="${groupId}"] .lv-group-toggle`,
   ];
   const queries = [];
@@ -2206,7 +2211,7 @@ function testGroupFocusSelectorOrderAfterRerender() {
   renderedControls = new Map([
     [selectors[0], visibleToggle],
     [selectors[1], standardMore],
-    [selectors[2], standardListToggle],
+    [selectors[3], standardListToggle],
   ]);
   assert.equal(context.runFocusIdentityTarget('group', groupId), true);
   assert.equal(document.activeElement, visibleToggle,
@@ -2221,7 +2226,7 @@ function testGroupFocusSelectorOrderAfterRerender() {
   renderedControls = new Map([
     [selectors[0], hiddenForcedToggle],
     [selectors[1], forcedMore],
-    [selectors[2], forcedListToggle],
+    [selectors[3], forcedListToggle],
   ]);
   assert.equal(context.runFocusIdentityTarget('group', groupId), true);
   assert.equal(document.activeElement, forcedMore,
@@ -2234,8 +2239,18 @@ function testGroupFocusSelectorOrderAfterRerender() {
     'Forced-expanded focus must probe the visible toggle selector, then the same Group More button');
 
   forcedMore.isConnected = false;
+  const spaceChevron = control('space-chevron');
+  const spaceListToggle = control('space-list-toggle');
+  renderedControls = new Map([[selectors[2], spaceChevron], [selectors[3], spaceListToggle]]);
+  assert.equal(context.runFocusIdentityTarget('group', groupId), true);
+  assert.equal(document.activeElement, spaceChevron,
+    'On the Space page Board the Group chevron must win before the List fallback');
+  assert.deepEqual(queries.splice(0), selectors.slice(0, 3),
+    'The Space Board chevron must be probed after the bento column controls');
+
+  spaceChevron.isConnected = false;
   const listOnlyToggle = control('list-only-toggle');
-  renderedControls = new Map([[selectors[2], listOnlyToggle]]);
+  renderedControls = new Map([[selectors[3], listOnlyToggle]]);
   assert.equal(context.runFocusIdentityTarget('group', groupId), true);
   assert.equal(document.activeElement, listOnlyToggle,
     'List view must remain the final Group focus fallback when Board controls are absent');

@@ -472,6 +472,8 @@ function testStaticDialogAndReachability() {
     ['openWsGrid', /openOrganizationName\('workspace',\s*ws\.id,\s*card\)/],
     // 2026-11: Home is the Today board; the Space register card menu is gone.
     ['renderSpaceNav', /openOrganizationName\('space',\s*cat\.id,\s*el\)/],
+    // 2026-11: the Space page's own Space actions menu.
+    ['spaceActionMenuItems', /openOrganizationName\('space',\s*cat\.id,\s*opener\)/],
   ];
   for (const [name, expected] of entryContracts) {
     const implementation = extractFunction(name);
@@ -479,7 +481,7 @@ function testStaticDialogAndReachability() {
     assert.match(implementation, /organization\.rename/, `${name} must use the localized Rename menu label`);
     assert.doesNotMatch(implementation, /\bprompt\s*\(/, `${name} must not retain a native organization rename prompt`);
   }
-  assert.equal((source.match(/openOrganizationName\(/g) || []).length, 4, 'Three reachable entry points plus the controller must share one rename path');
+  assert.equal((source.match(/openOrganizationName\(/g) || []).length, 5, 'Four reachable entry points plus the controller must share one rename path');
 
   const hiddenTabs = extractFunction('renderCategoryTabs');
   assert.doesNotMatch(hiddenTabs, /openOrganizationName|Rename category|Rename cat|organization\.rename/, 'The hidden legacy category strip must not retain a duplicate rename action');

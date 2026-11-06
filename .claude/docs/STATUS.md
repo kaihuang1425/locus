@@ -297,6 +297,31 @@ Slices, in order:
 
 ## Done (newest first)
 
+- **2026-11-06 - Space page built from its canvas board (pages build, page 3 of 9)**
+  - **What:** a Space opens on one page: its name with a rolling item count
+    and an orange reminder chip, one More for Rename, reminder and Delete, and
+    one switcher for all seven views (the board shows them all, so the
+    "Advanced views" submenu gives way to tabs) whose underline slides while
+    the views crossfade. Board groups are columns in a grid with the chevron,
+    colour dot (edits the group), name (opens the group page), count bubble,
+    to-do progress, Open all, More, the reminder chip and intention, then Save
+    here and Add record; cards are the shared cards drawn as quiet white cards
+    (whole card opens, More on hover, the lead mark turns into the select box)
+    and new or restored ones drop in. List groups are white panels with rows
+    and the saved day. Set reminder on a group or the Space opens an inline
+    sheet of quick times over the same reminder transactions, with Undo.
+    Canvas, Explorer, Timeline, Gallery and Graph keep their behaviour with the
+    board's look; Timeline, Gallery and Graph lose their hard-coded English. The
+    dark selection bar and the filterable Move picker now serve this page too.
+    At phone width columns and cards take the full width (Open all moves to
+    More, long group names wrap), and List rows put source and chips under the
+    title. Column resize now lives on Canvas only.
+  - **Evidence:** `space-page-contract-test.js` (208 checks, 16 mutations
+    caught); `onboarding`, `group-stack-identity`, `inbox-page` and the three
+    organization suites ported; all 44 `scripts/*.js` checks pass; Edge 156
+    proof with behaviour checks and screenshots in the shared notes
+    `locus-redesign-evidence/pages/space/`.
+
 - **2026-11-06 - Library page built from its canvas board (pages build, page 2 of 9)**
   - **What:** All links, Favorites and Read later are one page with a big
     heading and one row of controls: a view switch whose pill slides and whose

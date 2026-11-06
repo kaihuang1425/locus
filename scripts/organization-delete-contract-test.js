@@ -353,6 +353,8 @@ function testStaticOrganizationBoundary() {
     // register, so its card menu is no longer a Space entry point.
     ['renderSpaceNav', /openOrganizationDelete\('space', cat\.id, el\)/],
     ['openWsGrid', /openOrganizationDelete\('workspace', ws\.id, e\.target\.closest\('\.del'\)\)/],
+    // 2026-11: the Space page's own Space actions menu.
+    ['spaceActionMenuItems', /openOrganizationDelete\('space', cat\.id, opener\)/],
   ];
   for (const [name, expected] of entryContracts) {
     const implementation = extractFunction(name);
@@ -370,7 +372,7 @@ function testStaticOrganizationBoundary() {
     assert.match(extractFunction(name), new RegExp(`categoryReminderMenuItem\\(cat, ${opener}\\)`), `${name} must expose the same stable reminder recovery action with its visible opener`);
   }
   assert.match(css, /\.cat-tabs-wrap\s*\{\s*display:\s*none !important;/, 'The legacy category strip remains hidden, so visible sidebar reminder wiring is required');
-  assert.equal((source.match(/openOrganizationDelete\(/g) || []).length, 5, 'Four entry points plus the controller must share one organization path');
+  assert.equal((source.match(/openOrganizationDelete\(/g) || []).length, 6, 'Five entry points plus the controller must share one organization path');
   assert.equal((source.match(/state\.workspaces = state\.workspaces\.filter/g) || []).length, 1, 'Workspace mutation must exist only in the shared controller');
   assert.equal((source.match(/info\.ws\.categories = info\.ws\.categories\.filter/g) || []).length, 1, 'Space mutation must exist only in the shared controller');
   assert.match(inheritedInterlocksSource, /setElementInertOwner\(element, 'organization'/, 'Late-mounted body surfaces must inherit an active organization interlock');

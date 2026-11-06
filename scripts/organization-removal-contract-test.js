@@ -45,8 +45,10 @@ assert.equal(source.includes('deleteGroup('), false, 'Every group removal path m
 assert.equal(html.includes('id="tog-confirm"'), false, 'The obsolete group-delete confirmation toggle must leave Settings');
 assert.equal(source.includes("'settings.confirmDelete':"), false, 'Obsolete group-delete copy must leave both locales');
 assert.match(source, /animate:true, confirmDelete:true, sidebarCollapsed:false/, 'The stored compatibility field must remain readable without changing the schema');
-// 2026-11: the Home Space register (one entry point) gave way to the Today board.
-assert.equal((source.match(/openOrganizationDelete\(/g) || []).length, 5, 'Four visible entry points plus the controller must share one removal path');
+// 2026-11: the Home Space register (one entry point) gave way to the Today board,
+// and the Space page's own Space actions menu became one.
+assert.equal((source.match(/openOrganizationDelete\(/g) || []).length, 6, 'Five visible entry points plus the controller must share one removal path');
+assert.match(source, /function spaceActionMenuItems\(cat, opener\) \{[\s\S]*?openOrganizationDelete\('space', cat\.id, opener\)/, 'the Space page’s Delete space uses the shared removal path');
 assert.equal((source.match(/\bstate\.workspaces\s*=\s*state\.workspaces\.filter\(/g) || []).length, 1, 'Workspace removal must mutate state only inside the shared controller');
 assert.equal((source.match(/\binfo\.ws\.categories\s*=\s*info\.ws\.categories\.filter\(/g) || []).length, 1, 'Space removal must mutate state only inside the shared controller');
 assert.match(controllerSource, /function organizationDeleteOccupancy\(entity\)[\s\S]*occupancy\.groups[\s\S]*occupancy\.items[\s\S]*occupancy\.reminders/, 'The guard must inspect groups, recursively stored items, and reminders');

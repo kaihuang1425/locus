@@ -1105,7 +1105,7 @@ assert.match(
 );
 assert.match(
   buildLvGroupSource,
-  /<button class="lv-group-name" type="button" data-act="focus"[\s\S]*?tr\('groupAction\.openAsPage'\)/,
+  /<button class="lv-group-name[^"]*" type="button" data-act="focus"[\s\S]*?tr\('groupAction\.openAsPage'\)/,
   'the List Group name must be a native localized route to the focused Group page',
 );
 assert.doesNotMatch(
@@ -1135,7 +1135,7 @@ assert.doesNotMatch(
 );
 assert.match(
   buildLvGroupSource,
-  /const groupMenuItems = opener => groupActionMenuItems\(g, opener,[\s\S]*?bindBoardItemContextMenu\(hd, groupMenuItems, \{ menuButton \}\);/,
+  /const groupMenuItems = opener => spaceGroupMenu\(groupActionMenuItems\(g, opener,[\s\S]*?bindBoardItemContextMenu\(hd, groupMenuItems, \{ menuButton \}\);/,
   'List More, pointer context, Context Menu, and Shift+F10 must share the actual-opener Group menu',
 );
 assert.doesNotMatch(
@@ -1148,47 +1148,58 @@ assert.doesNotMatch(
   /hd\.addEventListener\('contextmenu'|showContextMenu\(/,
   'List must not retain either duplicate or pointer-only Group menu paths',
 );
+// 2026-11: the Space page draws the List as the board's white group panels.
+// The same decisions hold on the new look: one panel per Group, the real
+// Group colour, actions visible without hover, 44 px targets, a second line
+// at compact widths, and a forced-colors outline.
+const spaceListCss = css.slice(css.indexOf('SPACE PAGE (2026-11 canvas)'));
 assert.match(
-  css,
-  /\.lv-group\s*\{[^}]*border:\s*1px solid var\(--border2\);[^}]*background:\s*var\(--panel\);[^}]*overflow:\s*hidden;/s,
-  'each List Group must render as one flat Field Desk register',
+  spaceListCss,
+  /\.spc \.lv-group\.spc-lg \{[^}]*border:\s*1px solid var\(--today-rule\);[^}]*border-radius:\s*20px;[^}]*background:\s*var\(--today-card\);/s,
+  'each List Group must render as one panel',
 );
 assert.match(
-  css,
-  /\.lv-group-hd::before\s*\{[^}]*top:\s*0;[^}]*bottom:\s*0;[^}]*width:\s*4px;[^}]*background:\s*var\(--gcol-tint,\s*var\(--accent\)\)/s,
-  'List must preserve the real Group color as a full-height filing locator',
+  buildLvGroupSource,
+  /wrap\.style\.setProperty\('--spc-tint', g\.color \|\| 'var\(--accent\)'\)/,
+  'List must preserve the real Group color',
 );
 assert.match(
-  css,
-  /\.lv-group-acts\s*\{[^}]*opacity:\s*1;/s,
+  spaceListCss,
+  /\.spc-gdot span \{[^}]*background:\s*var\(--spc-tint\);/s,
+  'the Group color marks the Group header',
+);
+assert.match(
+  spaceListCss,
+  /\.spc \.spc-lg \.lv-group-acts\.spc-lacts \{[^}]*opacity:\s*1;/s,
   'List recovery actions must remain visible without hover discovery',
 );
 for (const [selector, label] of [
-  ['\\.lv-group-toggle', 'collapse'],
-  ['\\.lv-group-sym', 'symbol'],
-  ['\\.lv-group-name', 'name route'],
-  ['\\.lv-act-btn', 'header action'],
+  ['\\.spc \\.spc-lg \\.lv-group-toggle', 'collapse'],
+  ['\\.spc-gdot', 'colour and identity'],
+  ['\\.spc \\.spc-gname', 'name route'],
+  ['\\.spc-ib', 'header action'],
+  ['\\.spc-fbtn', 'Save here'],
 ]) {
   assert.match(
-    css,
-    new RegExp(`${selector}\\s*\\{[^}]*?(?:width|min-height|height):\\s*40px`, 's'),
-    `the List Group ${label} control must expose a 40 px target`,
+    spaceListCss,
+    new RegExp(`${selector}\\s*\\{[^}]*?(?:width|min-height|height):\\s*44px`, 's'),
+    `the List Group ${label} control must expose a 44 px target`,
   );
 }
 assert.doesNotMatch(
-  css,
-  /\.lv-group-sym:hover\s*\{[^}]*transform:\s*scale|\.lv-group-hd:hover \.lv-group-acts|\.lv-group-hd:focus-within \.lv-group-acts/,
+  spaceListCss,
+  /\.spc-gdot:hover[^{]*\{[^}]*transform:\s*scale|\.lv-group-hd:hover \.lv-group-acts|\.lv-group-hd:focus-within \.lv-group-acts/,
   'List must not retain ornamental symbol scaling or hover-only actions',
 );
 assert.match(
-  css,
-  /@media \(max-width:\s*900px\)\s*\{[\s\S]*?\.lv-group-hd\s*\{[^}]*grid-template-columns:\s*40px 40px minmax\(0,\s*1fr\);/s,
+  spaceListCss,
+  /@container \(max-width:\s*640px\)\s*\{[\s\S]*?\.spc \.spc-lg > \.lv-group-hd\.spc-lgh \{ flex-wrap: wrap;/s,
   'List Group actions must move onto a deliberate second line at compact widths',
 );
 assert.match(
-  css,
-  /@media \(forced-colors:\s*active\)\s*\{[\s\S]*?\.lv-group-hd::before\s*\{[^}]*background:\s*Highlight;[^}]*forced-color-adjust:\s*none;/s,
-  'the List filing locator must survive forced-colors mode',
+  spaceListCss,
+  /@media \(forced-colors:\s*active\)\s*\{[\s\S]*?\.spc \.lv-group\.spc-lg,[\s\S]*?\{ border: 1px solid CanvasText; \}/s,
+  'a List Group keeps its outline in forced-colors mode',
 );
 assert.match(
   buildGroupColSource,

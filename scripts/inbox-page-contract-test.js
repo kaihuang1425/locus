@@ -314,7 +314,7 @@ function testWiring() {
   ok(/classList\.remove\('is-located'\);\n\s*void target\.offsetWidth;\n\s*target\.classList\.add\('is-located'\);/.test(located), 'the located ring restarts the Today way');
   const identity = extract('focusIdentityTarget');
   ok(identity.indexOf('.lv-group[data-gid') < identity.indexOf('.ibx[data-gid="${value}"] .ibx-card[tabindex="0"]'), 'a capture receipt’s Show saved item focuses the Inbox card after the column fallbacks');
-  ok(/typeof isInboxPageActive === 'function' && isInboxPageActive\(\)\) return openInboxBulkMovePicker\(review, opener\);\n\s*return openMoveTargetPicker\(review, opener\);/.test(extract('runBatchAction')), 'the toolbar Move uses the filterable picker on this page only');
+  ok(/\(typeof isInboxPageActive === 'function' && isInboxPageActive\(\)\)\n\s*\|\| \(typeof isSpacePageActive === 'function' && isSpacePageActive\(\)\)\) return openInboxBulkMovePicker\(review, opener\);\n\s*return openMoveTargetPicker\(review, opener\);/.test(extract('runBatchAction')), 'the toolbar Move uses the filterable picker on the Inbox and Space pages only');
   ok(/openInboxView\(createLandingInboxContext\(\), event\.currentTarget\)/.test(newtab), 'the rail still opens the exact Inbox');
 }
 
