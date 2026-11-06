@@ -4933,3 +4933,42 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   390 px, and reduced motion.
 
   **Implemented: yes. Verified: partial. User-validated: no. Released: no.**
+
+- **2026-11-06 - Plan: Upcoming, Sort inbox, Calendar, and Auto-plan (canvas step 3).**
+  A Plan item joins the rail between Inbox and All Links, with an orange "N today"
+  count. Plan is one planning place with three views on the existing calendar
+  surface: **Upcoming** (`#/ws/<id>/plan`), **Sort inbox** (`?view=sort`), and the
+  **Calendar** (month, week, agenda), which now carries the Plan header. "Plan with
+  AI" moved from the Calendar toolbar into that header; the planner sheet and every
+  guarantee it makes (preview before apply, one confirmed write with Undo, idempotent
+  import) are unchanged.
+
+  Upcoming shows a dark **This week** bar chart (today orange, a day with more than
+  five things orange when the warning rule is on) with **Even out <day>**, and lanes
+  for Today (tinted), Tomorrow, This week, Next week, Later (only when used), and
+  Someday. A card shows a colour dot, a time chip, and "↻ 2×" once it has been moved
+  twice; its move menu (hover or focus) offers Later today, Tonight, Tomorrow morning,
+  This weekend, Next week, Someday, and Pick a date…. Sort inbox shows one undated
+  Inbox item at a time with Today / This week / Someday / Archive (keys 1, 2, 3, A)
+  and Skip (→), a red count of what is left, and a done screen that tallies the
+  session.
+
+  Planned means "has a reminder": moves reuse `setReminder`/`clearReminder` and the
+  saved-page and board-local Archive transactions; Even out and roll-over use one
+  snapshot and one acknowledged write with alarm reconciliation. Auto-plan has two
+  rules: "Warn me when a day has more than 5" (display only) and "Unfinished things
+  move to tomorrow" (on the first open of a day, open to-dos whose date has passed
+  come to today at their own time or the next whole hour, reported as "Moved N to
+  today" with Undo). Both are settings keys; a profile without them keeps today's
+  behaviour (no roll-over), and new profiles start with both on. Someday marks for
+  Inbox pages and the move counts behind "↻" are per-device `localStorage` view state
+  (`locus.plan.someday`, `locus.plan.moves`), like Today's Later order. No schema,
+  permission, or manifest change.
+
+  Evidence: `plan-page-contract-test.js` (237 checks), the updated planner wiring
+  check, every suite and the quality gates; a throwaway Edge 156 profile over CDP for
+  roll-over at boot, the rail, move menu, Auto-plan menu, Even out, a move, Sort keys
+  to the done screen, the Calendar view, Light/Dark, 1440/390 px, reduced motion, and
+  zh-TW.
+
+  **Implemented: yes. Verified: partial. User-validated: no. Released: no.**

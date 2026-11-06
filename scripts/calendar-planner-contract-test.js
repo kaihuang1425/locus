@@ -378,7 +378,12 @@ async function main() {
   ok(/handleCalendarTaskGlobalKey\(e\)\) return;\n\s*if \(typeof handlePlannerGlobalKey === 'function' && handlePlannerGlobalKey\(e\)\) return;/.test(newtab), 'the planner owns global keys while open');
   ok((newtab.match(/'calendar-task-overlay','planner-overlay'/g) || []).length === 2, 'Escape layering knows the planner');
   ok(/bindCalendarTaskDialog\(\);\n\s*if \(typeof bindPlannerDialog === 'function'\) bindPlannerDialog\(\);/.test(newtab), 'init binds the planner');
-  ok(/id = 'cal-plan-btn'[\s\S]{0,200}openPlannerDialog\(plan\)/.test(newtab), 'the Calendar toolbar opens the planner');
+  // One planning place: the Plan header opens the planner for Upcoming, Sort
+  // inbox, and the Calendar view; the Calendar toolbar has no second entry.
+  const planPage = read('plan.js');
+  ok(/id="plan-ai-btn"[\s\S]{0,600}openPlannerDialog\(ai\)/.test(planPage), 'the Plan header opens the planner');
+  ok(!/cal-plan-btn/.test(newtab), 'the Calendar toolbar no longer has its own planner button');
+  ok(/buildPlanHeader\(ws, 'calendar'\)/.test(newtab), 'the Calendar view carries the Plan header');
   const openBody = planner.slice(planner.indexOf('function openPlannerDialog('), planner.indexOf('function closePlannerDialog('));
   for (const id of ['state-recovery-overlay', 'calendar-task-overlay', 'reminder-overlay', 'welcome', 'quota-overlay', 'settings-drawer']) {
     ok(openBody.includes(`'${id}'`), `the planner refuses to open over #${id}`);

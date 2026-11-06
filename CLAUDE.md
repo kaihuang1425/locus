@@ -33,8 +33,11 @@ Run one full improvement cycle with the `/iterate` command (`.claude/commands/it
 - `newtab.html` / `newtab.js` (~14k lines) / `newtab.css` — the whole newtab app.
 - `plan-contract.js` — `locus.plan/v1` AI planning contract (request, validator, DST/
   time-zone rules, idempotency keys, prompt profiles, JSON Schemas). Pure; shared by
-  the new tab and `companion/`. `planner.js` — Calendar **Plan with AI** sheet, loaded
-  before newtab.js; applies drafts through one acknowledged State receipt.
+  the new tab and `companion/`. `planner.js` — **Plan with AI** sheet (opened from the
+  Plan header), loaded before newtab.js; applies drafts through one acknowledged State
+  receipt.
+- `plan.js` — the Plan page (Upcoming lanes, This week bar, Sort inbox, Auto-plan
+  rules) on the calendar surface; loaded before newtab.js, functions only.
 - `companion/` — optional local stdio MCP server + Native Messaging host + setup CLI
   (Node, no dependencies). Not loaded by the extension. Optional permission
   `nativeMessaging` is requested only from the planner's Connect button. Setup and

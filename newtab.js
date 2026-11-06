@@ -27,6 +27,62 @@ function appLocale() {
 
 const I18N = {
   en: {
+    'nav.plan': 'Plan',
+    'plan.title': 'Plan',
+    'plan.viewGroup': 'Plan view',
+    'plan.upcoming': 'Upcoming',
+    'plan.sortInbox': 'Sort inbox',
+    'plan.leftToSort': '{count} left to sort',
+    'plan.navToday': '{count} today',
+    'plan.autoTitle': 'Auto-plan',
+    'plan.autoOn': 'Auto-plan is on',
+    'plan.autoOff': 'Auto-plan is off',
+    'plan.rule.rollOver': 'Unfinished things move to tomorrow',
+    'plan.rule.warn': 'Warn me when a day has more than 5',
+    'plan.ruleFailed': 'Couldn’t save that rule',
+    'plan.rolledOverOne': 'Moved 1 to today',
+    'plan.rolledOver': 'Moved {count} to today',
+    'plan.rollOverFailed': 'Couldn’t move yesterday’s unfinished to-dos',
+    'plan.history.rollOver': 'Move unfinished to-dos to today',
+    'plan.history.evenOut': 'Even out a day',
+    'plan.thisWeek': 'This week',
+    'plan.weekShape': 'Things per day this week: {days}',
+    'plan.lane.today': 'Today',
+    'plan.lane.tomorrow': 'Tomorrow',
+    'plan.lane.week': 'This week',
+    'plan.lane.next': 'Next week',
+    'plan.lane.later': 'Later',
+    'plan.lane.someday': 'Someday',
+    'plan.laneEmpty': 'Nothing yet',
+    'plan.overloaded': '{day} has {count}',
+    'plan.evenOut': 'Even out {day}',
+    'plan.evenedOne': 'Moved 1 off {day}',
+    'plan.evened': 'Moved {count} off {day}',
+    'plan.moveFailed': 'Couldn’t move them. Nothing changed.',
+    'plan.more': '+{count} more',
+    'plan.untitled': 'Untitled',
+    'plan.movedTimes': 'Moved {count} times',
+    'plan.moveNamed': 'Move {name}',
+    'plan.moveTo': 'Move to',
+    'plan.move.laterToday': 'Later today',
+    'plan.move.tonight': 'Tonight',
+    'plan.move.tomorrow': 'Tomorrow morning',
+    'plan.move.weekend': 'This weekend',
+    'plan.move.nextWeek': 'Next week',
+    'plan.move.someday': 'Someday',
+    'plan.move.pick': 'Pick a date…',
+    'plan.sortKeys': 'Sort inbox. Keys: 1 today, 2 this week, 3 someday, A archive, right arrow skip',
+    'plan.skip': 'Skip',
+    'plan.savedAge': 'Saved {age}',
+    'plan.sorted': '{count} sorted.',
+    'plan.sortNone': 'Nothing sorted. That’s fine.',
+    'plan.inboxClear': 'Inbox is clear.',
+    'plan.tally.today': 'today',
+    'plan.tally.week': 'this week',
+    'plan.tally.someday': 'someday',
+    'plan.tally.archive': 'archived',
+    'plan.sortSkipped': 'Sort {count} skipped',
+    'plan.backToToday': 'Back to Today',
     'shell.openTabs': 'open tabs',
     'shell.filterTabs': 'Filter tabs',
     'shell.views': 'Views',
@@ -1654,6 +1710,62 @@ const I18N = {
     'detail.history.updateFields': 'Update custom fields'
   },
   'zh-TW': {
+    'nav.plan': '規劃',
+    'plan.title': '規劃',
+    'plan.viewGroup': '規劃檢視',
+    'plan.upcoming': '接下來',
+    'plan.sortInbox': '整理收件匣',
+    'plan.leftToSort': '還有 {count} 項待整理',
+    'plan.navToday': '今天 {count} 項',
+    'plan.autoTitle': '自動規劃',
+    'plan.autoOn': '自動規劃已開啟',
+    'plan.autoOff': '自動規劃已關閉',
+    'plan.rule.rollOver': '沒做完的事自動移到明天',
+    'plan.rule.warn': '一天超過 5 項時提醒我',
+    'plan.ruleFailed': '無法儲存這項規則',
+    'plan.rolledOverOne': '已將 1 項移到今天',
+    'plan.rolledOver': '已將 {count} 項移到今天',
+    'plan.rollOverFailed': '無法移動昨天沒做完的待辦',
+    'plan.history.rollOver': '把沒做完的待辦移到今天',
+    'plan.history.evenOut': '分散一天的事項',
+    'plan.thisWeek': '本週',
+    'plan.weekShape': '本週每天的事項數：{days}',
+    'plan.lane.today': '今天',
+    'plan.lane.tomorrow': '明天',
+    'plan.lane.week': '本週',
+    'plan.lane.next': '下週',
+    'plan.lane.later': '之後',
+    'plan.lane.someday': '有空再說',
+    'plan.laneEmpty': '目前沒有事項',
+    'plan.overloaded': '{day}有 {count} 項',
+    'plan.evenOut': '分散{day}的事項',
+    'plan.evenedOne': '已從{day}移出 1 項',
+    'plan.evened': '已從{day}移出 {count} 項',
+    'plan.moveFailed': '無法移動，內容沒有變更。',
+    'plan.more': '還有 {count} 項',
+    'plan.untitled': '未命名',
+    'plan.movedTimes': '已改期 {count} 次',
+    'plan.moveNamed': '改期：{name}',
+    'plan.moveTo': '移到',
+    'plan.move.laterToday': '今天稍晚',
+    'plan.move.tonight': '今晚',
+    'plan.move.tomorrow': '明天早上',
+    'plan.move.weekend': '這個週末',
+    'plan.move.nextWeek': '下週',
+    'plan.move.someday': '有空再說',
+    'plan.move.pick': '選擇日期…',
+    'plan.sortKeys': '整理收件匣。快捷鍵：1 今天、2 本週、3 有空再說、A 封存、右方向鍵略過',
+    'plan.skip': '略過',
+    'plan.savedAge': '{age}儲存',
+    'plan.sorted': '已整理 {count} 項。',
+    'plan.sortNone': '這次沒有整理，也沒關係。',
+    'plan.inboxClear': '收件匣已清空。',
+    'plan.tally.today': '今天',
+    'plan.tally.week': '本週',
+    'plan.tally.someday': '有空再說',
+    'plan.tally.archive': '已封存',
+    'plan.sortSkipped': '整理略過的 {count} 項',
+    'plan.backToToday': '回到今天',
     'shell.openTabs': '開啟分頁',
     'shell.filterTabs': '篩選分頁',
     'shell.views': '檢視',
@@ -3441,6 +3553,9 @@ const State = (() => {
       popupHibernateScope:'window', popupHibernateKeepPinned:true,
       popupHibernateKeepAudio:true, popupHibernateSaveBefore:false,
       popupHibernateSelectedTabIds:[], popupSaveMode:'group',
+      // Auto-plan (plan.js). New profiles start with both rules on; a profile
+      // without the keys keeps today's behaviour (no roll-over).
+      planRollOver:true, planWarnOverload:true,
       onboarding: { welcomeSeen:false, hintsSeen:{}, disabled:false }
     }
   });
@@ -4364,6 +4479,9 @@ let activeCalendar = null;
 // to reminders. Ephemeral; reset each time the calendar is entered.
 let calendarFilter = '';
 const CAL_VIEWS = ['month', 'week', 'agenda'];
+// Plan (plan.js) shares the calendar surface: Upcoming and Sort inbox are Plan
+// views, and the calendar views above are the Calendar inside Plan.
+const PLAN_VIEWS = ['upcoming', 'sort'];
 
 function currentDetailItemId() {
   return activeGroupPage ? (activeGroupPage.itemId || null) : (boardDetailItemId || null);
@@ -4389,6 +4507,7 @@ const Router = (() => {
     if (seg[2] === 'group' && seg[3]) return { type: 'group', wsId, groupId: decodeURIComponent(seg[3]), itemId: seg[4] === 'item' ? decodeURIComponent(seg[5] || '') : null, query };
     if (seg[2] === 'library' && seg[3]) return { type: 'library', wsId, mode: decodeURIComponent(seg[3]), query };
     if (seg[2] === 'calendar') return { type: 'calendar', wsId, query };
+    if (seg[2] === 'plan') return { type: 'calendar', wsId, query: { cal: query.view === 'sort' ? 'sort' : 'upcoming' } };
     if (seg[2] === 'search') return { type: 'search', wsId, query };
     if (seg[2] === 'home') return { type: 'home', wsId, query };
     return { type: 'board', wsId, catId: null, query };
@@ -4404,6 +4523,8 @@ const Router = (() => {
       if (route.itemId) path += `/item/${encodeURIComponent(route.itemId)}`;
     } else if (route.type === 'library' && ['all', 'favorites', 'read-later', 'archive', 'trash'].includes(route.mode)) {
       path = `/ws/${ws}/library/${encodeURIComponent(route.mode)}`;
+    } else if (route.type === 'calendar' && PLAN_VIEWS.includes(route.query?.cal)) {
+      return `/ws/${ws}/plan` + (route.query.cal === 'sort' ? '?view=sort' : '');
     } else if (route.type === 'calendar') {
       path = `/ws/${ws}/calendar`;
     } else if (route.type === 'search') {
@@ -4526,9 +4647,12 @@ const Router = (() => {
       // now), and the filter resets so a deep link opens a clean calendar.
       if (activeGroupPage) { activeGroupPage = null; changed = true; }
       if (boardDetailItemId) { boardDetailItemId = null; changed = true; }
-      const view = CAL_VIEWS.includes(route.query && route.query.cal) ? route.query.cal : 'month';
+      const requested = route.query && route.query.cal;
+      const view = CAL_VIEWS.includes(requested) || PLAN_VIEWS.includes(requested) ? requested : 'month';
       if (!activeCalendar) { activeCalendar = { view, anchor: Date.now() }; calendarFilter = ''; changed = true; }
       else if (activeCalendar.view !== view) { activeCalendar.view = view; changed = true; }
+      // Plan's Calendar button returns to the calendar view used last.
+      if (CAL_VIEWS.includes(view)) activeCalendar.lastCalendarView = view;
       return changed;
     }
 
@@ -4857,6 +4981,11 @@ function initAfterLoad() {
   renderAll();
   persistBootChanges();
   startStateStorageSync();
+  // Auto-plan: on the first open of a day, bring unfinished to-dos forward
+  // (plan.js). It reports with an Undo toast and only runs when turned on.
+  if (typeof runPlanRollOver === 'function') {
+    setTimeout(() => { runPlanRollOver().catch(error => console.error('Plan roll-over failed', error)); }, 0);
+  }
   // Returning users may explicitly opt into the calm landing. First run owns
   // one task and never hands off into a second full-screen layer.
   if (State.get().settings.showLanding === true
@@ -16318,6 +16447,7 @@ function topbarContextPresentation({
   if (surface === 'home') return { label: tr('nav.home'), symbol: '🏠' };
   if (surface === 'search') return { label: tr('search.title'), symbol: '⌕' };
   if (surface === 'calendar') return { label: tr('cal.title'), symbol: '📅' };
+  if (surface === 'plan') return { label: tr('nav.plan'), symbol: '📅' };
   if (surface === 'library') {
     const mode = libraryKeys[libraryMode] ? libraryMode : 'all';
     return { label: tr(libraryKeys[mode]), symbol: librarySymbols[mode] };
@@ -16340,7 +16470,7 @@ function renderTopbarContext() {
   const surface = activeSearch
     ? 'search'
     : activeCalendar
-      ? 'calendar'
+      ? (typeof PLAN_VIEWS !== 'undefined' && PLAN_VIEWS.includes(activeCalendar.view) ? 'plan' : 'calendar')
       : activeGroupPage
         ? 'group'
         : activeLibraryMode
@@ -16637,7 +16767,7 @@ function renderBoard() {
   // Home is a block-scrolling surface; clear its class up front so the calendar
   // and group-page gates (which early-return below) never inherit it. renderHome()
   // re-adds it when Home is the active surface.
-  document.getElementById('board').classList.remove('home-mode', 'library-mode', 'archive-mode', 'trash-mode', 'read-later-mode', 'search-mode');
+  document.getElementById('board').classList.remove('home-mode', 'library-mode', 'archive-mode', 'trash-mode', 'read-later-mode', 'search-mode', 'plan-mode');
   // Reflect the active surface on <body> (diagnostic / styling hook), computed
   // from the flags so it stays correct through every early-returning gate.
   document.body.dataset.surface = activeSearch ? 'search' : activeCalendar ? 'calendar' : activeGroupPage ? 'group' : activeLibraryMode ? 'library' : activeHome ? 'home' : 'board';
@@ -20836,8 +20966,19 @@ function updateNavChrome() {
     const label = inboxNav.querySelector('.nav-lbl');
     if (label) label.textContent = scopedLabel;
   }
+  // Plan owns the calendar surface (Upcoming, Sort inbox, and the Calendar).
+  const planNav = document.getElementById('nav-plan');
+  if (planNav) {
+    planNav.classList.toggle('active', !!activeCalendar);
+    if (activeCalendar) planNav.setAttribute('aria-current', 'page'); else planNav.removeAttribute('aria-current');
+    let todayCount = 0;
+    try { todayCount = typeof planTodayCount === 'function' ? planTodayCount(ws) : 0; } catch {}
+    const planCount = document.getElementById('nav-plan-count');
+    if (planCount) planCount.textContent = todayCount > 0 ? tr('plan.navToday', { count: todayCount }) : '';
+    planNav.setAttribute('aria-label', todayCount > 0 ? `${tr('nav.plan')}, ${tr('plan.navToday', { count: todayCount })}` : tr('nav.plan'));
+  }
   const moreNav = document.getElementById('nav-more');
-  if (moreNav) moreNav.classList.toggle('active', !!activeSearch || !!activeCalendar || ['favorites', 'read-later', 'archive', 'trash'].includes(activeLibraryMode));
+  if (moreNav) moreNav.classList.toggle('active', !!activeSearch || (!!activeCalendar && !planNav) || ['favorites', 'read-later', 'archive', 'trash'].includes(activeLibraryMode));
   let pending = 0;
   try { pending = collectPendingReminders({ scope: ws ? ws.id : undefined }).length; } catch {}
   _pendingReminderCount = pending;
@@ -29320,7 +29461,9 @@ function openCalendar() {
   const ws = activeWs(); if (!ws) return;
   let reminderCount = 0;
   try { reminderCount = collectPendingReminders({ scope: ws.id }).length; } catch {}
-  const view = activeCalendar ? activeCalendar.view : (reminderCount < 5 ? 'agenda' : 'month');
+  const current = activeCalendar && CAL_VIEWS.includes(activeCalendar.view) ? activeCalendar.view : null;
+  const last = activeCalendar && CAL_VIEWS.includes(activeCalendar.lastCalendarView) ? activeCalendar.lastCalendarView : null;
+  const view = current || last || (reminderCount < 5 ? 'agenda' : 'month');
   Router.navigate({ type: 'calendar', wsId: ws.id, query: view !== 'month' ? { cal: view } : {} });
 }
 function closeCalendar() {
@@ -30102,17 +30245,8 @@ function buildCalToolbar(shownCount, totalCount) {
   });
   bar.appendChild(seg);
 
-  // AI planning opens a reviewed sheet; drafts only become Calendar to-dos
-  // through its explicit, receipt-gated Apply.
-  if (typeof openPlannerDialog === 'function') {
-    const plan = document.createElement('button');
-    plan.type = 'button';
-    plan.id = 'cal-plan-btn';
-    plan.className = 'cal-plan-btn';
-    plan.textContent = tr('planner.title');
-    plan.onclick = () => openPlannerDialog(plan);
-    bar.appendChild(plan);
-  }
+  // AI planning lives in Plan's header (plan.js), one planning place shared by
+  // Upcoming, Sort inbox, and this Calendar view.
 
   // Right: filter input (the differentiator, §5.2).
   const filter = document.createElement('div');
@@ -30354,6 +30488,10 @@ function renderCalendarBreadcrumb(ws) {
 function renderCalendar() {
   const ws = activeWs();
   if (!ws || !activeCalendar) { activeCalendar = null; return false; }
+  if (PLAN_VIEWS.includes(activeCalendar.view)) {
+    if (typeof renderPlanSurface === 'function') return renderPlanSurface(ws);
+    activeCalendar.view = 'month';
+  }
   renderCalendarBreadcrumb(ws);
 
   const $b = document.getElementById('board');
@@ -30367,6 +30505,8 @@ function renderCalendar() {
 
   const wrap = document.createElement('div');
   wrap.className = 'cal-wrap';
+  // The Calendar is a view inside Plan, so it carries Plan's header.
+  if (typeof buildPlanHeader === 'function') wrap.appendChild(buildPlanHeader(ws, 'calendar'));
   wrap.appendChild(buildCalToolbar(shown.length, all.length));
   const view = activeCalendar.view;
   if (!all.length) {
@@ -33022,6 +33162,8 @@ function bindStatic() {
   document.getElementById('nav-favorites').onclick = () => openLibrarySurface('favorites');
   document.getElementById('nav-read-later').onclick = () => openLibrarySurface('read-later');
   document.getElementById('nav-inbox').onclick = event => openInboxView(createLandingInboxContext(), event.currentTarget);
+  const navPlan = document.getElementById('nav-plan');
+  if (navPlan && typeof openPlan === 'function') navPlan.onclick = () => openPlan('upcoming');
   document.getElementById('nav-archive').onclick = () => openLibrarySurface('archive');
   document.getElementById('nav-trash').onclick = () => openLibrarySurface('trash');
   document.getElementById('nav-more').onclick = e => openSidebarMoreMenu(e.currentTarget);
@@ -33386,7 +33528,7 @@ function bindStatic() {
     else if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z' && !inField) { e.preventDefault(); performUndo(); }
     else if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'z' && !inField) { e.preventDefault(); performRedo(); }
     else if (e.key === 's' && !inField && focusOpenTabFilter()) { e.preventDefault(); }
-    else if (e.key.toLowerCase() === 'c' && !inField && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) { e.preventDefault(); if (activeCalendar) closeCalendar(); else openCalendar(); }
+    else if (e.key.toLowerCase() === 'c' && !inField && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) { e.preventDefault(); if (activeCalendar && CAL_VIEWS.includes(activeCalendar.view)) closeCalendar(); else openCalendar(); }
     else if (e.key === '?' && !inField && !e.ctrlKey && !e.metaKey) { e.preventDefault(); openCheatsheet(); }
     else if (e.key === 'Escape') {
       // The reminder picker is nested above saved-item detail. Its own handler
@@ -33513,7 +33655,7 @@ function bindStatic() {
 
   // View modes + calendar + overflow (⋯) menu (selection / reorder / save all)
   document.getElementById('view-mode-btn').onclick = (e) => openLayoutMenu(e.currentTarget);
-  document.getElementById('calendar-btn').onclick = () => { if (activeCalendar) closeCalendar(); else openCalendar(); };
+  document.getElementById('calendar-btn').onclick = () => { if (activeCalendar && CAL_VIEWS.includes(activeCalendar.view)) closeCalendar(); else openCalendar(); };
   document.getElementById('more-btn').onclick = (e) => openMoreMenu(e.currentTarget);
   // Topbar app menu (replaces the fake avatar): Settings, Plugins, Theme,
   // Guide, Workspaces, and About. plugins-btn is wired in

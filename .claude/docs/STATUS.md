@@ -297,6 +297,17 @@ Slices, in order:
 
 ## Done (newest first)
 
+- **2026-11-06 - Plan page (canvas step 3: Upcoming, Sort inbox, Auto-plan)**
+  - **What:** `plan.js` adds the Plan surface on the calendar route (Upcoming lanes,
+    This week bar with Even out, Sort inbox, Auto-plan pill) and the rail Plan item;
+    the Calendar is a Plan view and "Plan with AI" lives in the Plan header. Two
+    settings keys (`planWarnOverload`, `planRollOver`); no schema change.
+  - **Evidence:** `plan-page-contract-test.js` (237 checks); throwaway Edge 156 pass.
+  - **Not done:** "After 3 moves, ask if it still matters" and "Each Monday, bring
+    back one Someday item" (left for later on purpose); "Put in a space" in Sort
+    inbox; Group and Space reminders appear in the Calendar view only, not in lanes.
+    Someday marks and move counts are per device and are not exported.
+
 - **2026-11-06 - Today board (canvas steps 1 and 2: palette, fonts, Home)**
   - **What:** canvas palette and brand font tokens in `themes.css`; Bricolage
     Grotesque bundled with its OFL notice; Home rebuilt as Today (rolling clock, Now

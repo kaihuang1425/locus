@@ -188,7 +188,7 @@ for (const file of htmlFiles) {
   if (duplicates.length) fail(`${file} contains duplicate ids: ${duplicates.join(', ')}`);
 }
 
-const runtimeFiles = ['newtab.js', 'popup.js', 'suspended.js', 'background.js', 'import-utils.js', 'prepaint.js', 'plan-contract.js', 'planner.js'];
+const runtimeFiles = ['newtab.js', 'popup.js', 'suspended.js', 'background.js', 'import-utils.js', 'prepaint.js', 'plan-contract.js', 'planner.js', 'plan.js'];
 for (const file of runtimeFiles) {
   const source = read(file);
   validateExtensionNetworkSource(file, source, 'runtime');

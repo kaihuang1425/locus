@@ -45,6 +45,7 @@ node scripts/plan-contract-test.js
 node scripts/plan-companion-contract-test.js
 node scripts/calendar-planner-contract-test.js
 node scripts/today-contract-test.js
+node scripts/plan-page-contract-test.js
 git diff --check
 ```
 
