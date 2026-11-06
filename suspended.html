@@ -102,6 +102,9 @@
       .card, body.is-loading .prog, body.is-loaded .status-mark { animation: none; }
       .btn { transition: none; }
     }
+    /* Locus's own "Animations off" setting, read from its settings mirror. */
+    body[data-anim="off"] .card, body[data-anim="off"].is-loading .prog, body[data-anim="off"].is-loaded .status-mark { animation: none; }
+    body[data-anim="off"] .btn { transition: none; }
     @media (forced-colors: active) { .card { border: 2px solid CanvasText; } }
   </style>
 </head>

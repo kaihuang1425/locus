@@ -249,10 +249,13 @@ assert.match(css, /@media \(max-width: 800px\)[\s\S]*\.wc-route\s*\{[^}]*grid-te
 assert.match(css, /@media \(forced-colors: active\)[\s\S]*\.wc-route-line/,
   'the Welcome locator must remain visible in forced colors');
 assert.ok(source.includes("'welcome.eyebrow': 'First save'"), 'English Welcome must name the single first-save task');
-assert.ok(source.includes("'welcome.taskTitle': 'Save one tab. Find it again.'"), 'English Welcome must teach the core loop directly');
+// The rendered headline is the slogan (2026-11 canvas): #wc-task-title holds
+// welcome.sloganLead and welcome.sloganRest; welcome.taskTitle is no longer shown.
+assert.ok(source.includes("'welcome.sloganLead': 'Never',") && source.includes("'welcome.sloganRest': ' lose a tab again.',"), 'English Welcome headline is the slogan');
+assert.match(html, /<h2 id="wc-task-title" class="wc-h"><span class="wc-never" data-i18n="welcome\.sloganLead">[^<]*<\/span><span data-i18n="welcome\.sloganRest">/, 'the Welcome headline renders the slogan keys');
 assert.ok(source.includes("'welcome.save': 'Stamp, save & close tab'"), 'English Welcome must name the source consequence (2026-11 canvas: the stamp metaphor, same consequence)');
 assert.ok(source.includes("'welcome.eyebrow': '第一次儲存'"), 'zh-TW Welcome must name the single first-save task naturally');
-assert.ok(source.includes("'welcome.taskTitle': '儲存一個分頁，之後找得回來'"), 'zh-TW Welcome must teach the core loop in native Taiwan wording');
+assert.ok(source.includes("'welcome.sloganLead': '再也不會',") && source.includes("'welcome.sloganRest': '弄丟分頁。',"), 'zh-TW Welcome headline is the slogan in native Taiwan wording');
 assert.ok(source.includes("'welcome.save': '蓋章儲存並關閉分頁'"), 'zh-TW Welcome must name the source consequence (2026-11 canvas)');
 assert.ok(source.includes("'welcome.error': 'Locus couldn’t check your open tabs. Try again, or explore without saving.'"), 'English query failure copy must be localized');
 assert.ok(source.includes("'welcome.error': 'Locus 無法讀取開啟中的分頁。請再試一次，或先開始使用。'"), 'zh-TW query failure copy must be localized');
@@ -3218,6 +3221,8 @@ function buildHarness(query, save = async () => false, options = {}) {
     homeTrailPathParts(ws, cat, groupName) { return [ws?.name, cat?.name, groupName].filter(Boolean); },
     homeTrailPathText(parts) { return parts.join(' › '); },
     homeTrailPathHtml(parts) { return `<ol class="home-trail-path">${parts.map(part => `<li>${part}</li>`).join('')}</ol>`; },
+    // The Welcome postmark formats its date in the app language (S7).
+    appLocale() { return 'en'; },
     tr(key) {
       const copy = {
         'nav.inbox': 'Inbox',

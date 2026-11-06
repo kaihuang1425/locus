@@ -36,6 +36,8 @@ const I18N = {
     'welcome.sloganRest': ' lose a tab again.',
     'welcome.stampSlot': 'STAMP',
     'welcome.stampLabel': '1 TAB',
+    'welcome.postmarkBrand': 'LOCUS',
+    'welcome.postmarkInbox': 'INBOX',
     'welcome.savedTitle': 'It’s in your Inbox.',
     'welcome.private': 'Private to this browser. No account.',
     'dueCard.label': 'Reminder',
@@ -1761,6 +1763,8 @@ const I18N = {
     'welcome.sloganRest': '弄丟分頁。',
     'welcome.stampSlot': '郵票',
     'welcome.stampLabel': '1 個分頁',
+    'welcome.postmarkBrand': 'LOCUS',
+    'welcome.postmarkInbox': '收件匣',
     'welcome.savedTitle': '已放進收件匣。',
     'welcome.private': '只存在這個瀏覽器，不需要帳號。',
     'dueCard.label': '提醒',
@@ -17842,10 +17846,21 @@ function showLandingLayer() {
   layer.classList.remove('landing-in');
   void layer.offsetWidth;
   layer.classList.add('landing-in');
-  clearInterval(_landingClockTimer);
-  _landingClockTimer = setInterval(updateLandingClock, 30000);
+  scheduleLandingClock();
   setTimeout(() => document.getElementById('landing-search-input')?.focus({ preventScroll: true }), 50);
   return true;
+}
+
+// The flip clock turns on the minute: each tick schedules the next at the next
+// minute boundary (plus a small margin), instead of polling every 30 s (S6).
+// closeLandingLayer's clearInterval also clears it: timer IDs share one pool.
+function scheduleLandingClock(now = Date.now()) {
+  clearTimeout(_landingClockTimer);
+  _landingClockTimer = setTimeout(() => {
+    updateLandingClock();
+    scheduleLandingClock();
+  }, 60000 - (now % 60000) + 50);
+  return _landingClockTimer;
 }
 
 function closeLandingLayer({ immediate = false } = {}) {
@@ -33726,8 +33741,10 @@ async function playWelcomeStamp() {
   const now = new Date();
   const date = ov.querySelector?.('.wc-pm-date');
   const time = ov.querySelector?.('.wc-pm-time');
-  if (date) date.textContent = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }).toUpperCase();
-  if (time) time.textContent = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  // The postmark follows the app language (S7); the time is a 24-hour clock.
+  const stampLocale = appLocale() === 'zh-TW' ? 'zh-TW' : 'en-GB';
+  if (date) date.textContent = now.toLocaleDateString(stampLocale, { day: 'numeric', month: 'short' }).toUpperCase();
+  if (time) time.textContent = now.toLocaleTimeString(stampLocale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
   const status = document.getElementById('wc-status');
   if (status) status.textContent = tr('welcome.savedTitle');
   ov.classList.add('is-stamped');

@@ -77,7 +77,6 @@ function testRestingPage() {
   ok(/if \(e\.key === 'Enter' \|\| e\.key === ' '\) \{ e\.preventDefault\(\); load\(\); \}/.test(suspendedJs), 'Enter loads the page');
   ok(/if \(e\.target && e\.target\.closest && e\.target\.closest\('a, button'\)\) return;\n\s*if \(e\.key === 'Enter'/.test(suspendedJs), 'Enter on the Change link opens it instead of loading the page');
   ok(/<span class="kb" aria-hidden="true">Enter<\/span>/.test(suspendedHtml), 'the button shows the Enter hint');
-  ok(/document\.body\.classList\.add\('is-loaded'\);/.test(suspendedJs), 'Loaded is shown as the page loads');
   ok(/<link rel="stylesheet" href="media\/fonts\/fonts\.css">/.test(suspendedHtml), 'bundled fonts only');
   ok(!/https?:\/\/(?!127\.0\.0\.1)/.test(suspendedHtml), 'no external resources');
   ok(/@media \(prefers-reduced-motion: reduce\)/.test(suspendedHtml), 'reduced motion is respected');
@@ -95,6 +94,133 @@ function testRemainingSurfaces() {
   ok(/aria-describedby="[^"]*general-hibernate-hint/.test(html) || /general-hibernate-hint/.test(newtab), 'Settings hints stay referenced for assistive technology');
   ok(/body\[data-theme\] \.gcol \.item \{\n\s*\/\*[^*]*\*\/\n\s*flex-shrink: 0;/.test(layer), 'a full board column scrolls instead of shrinking its cards');
   ok(/@media \(prefers-reduced-motion: reduce\) \{\n\s*body\[data-theme\] :is\(\.library-row, \.archive-row, \.search-result-row, \.gcol \.item\) \{ transition: none; \}/.test(layer), 'card hover motion stops under reduced motion');
+}
+
+function extract(name) {
+  const start = newtab.indexOf(`function ${name}(`);
+  assert.ok(start >= 0, `${name} is extractable`);
+  const open = newtab.indexOf('{', newtab.indexOf(')', start));
+  let depth = 0;
+  for (let index = open; index < newtab.length; index += 1) {
+    if (newtab[index] === '{') depth += 1;
+    else if (newtab[index] === '}') { depth -= 1; if (depth === 0) return newtab.slice(start, index + 1); }
+  }
+  throw new Error(name);
+}
+
+// S6: the flip clock turns on the minute, not up to 30 s late.
+function testClockOnTheMinute() {
+  const timers = [];
+  let ticks = 0;
+  const context = vm.createContext({
+    Date: { now: () => 1_700_000_012_345 },
+    setTimeout: (fn, ms) => { timers.push({ fn, ms }); return timers.length; },
+    clearTimeout() {},
+    updateLandingClock: () => { ticks += 1; },
+  });
+  vm.runInContext(`let _landingClockTimer = null;\n${extract('scheduleLandingClock')}\nglobalThis.__schedule = scheduleLandingClock;`, context);
+  context.__schedule(1_700_000_012_345);
+  eq(timers[0].ms, 60000 - (1_700_000_012_345 % 60000) + 50, 'the next tick is scheduled just after the next minute boundary');
+  timers[0].fn();
+  eq([ticks, timers.length], [1, 2], 'each tick paints the clock and schedules the next one');
+  ok(/layer\.classList\.add\('landing-in'\);\n\s*scheduleLandingClock\(\);/.test(newtab) && !/setInterval\(updateLandingClock, 30000\)/.test(newtab), 'opening the calm new tab starts the minute clock, with no 30 s poll');
+}
+
+// S7: the Welcome postmark follows the app language.
+function testPostmarkLanguage() {
+  const strings = i18n();
+  ok(/class="wc-pm-word" data-i18n="welcome\.postmarkBrand">LOCUS<\/text>/.test(html) && /class="wc-pm-word" data-i18n="welcome\.postmarkInbox">INBOX<\/text>/.test(html), 'the postmark words come from I18N keys');
+  eq([strings.en['welcome.postmarkInbox'], strings['zh-TW']['welcome.postmarkInbox'], strings['zh-TW']['welcome.postmarkBrand']], ['INBOX', '收件匣', 'LOCUS'], 'Inbox is translated and the brand stays');
+  const stamp = extract('playWelcomeStamp');
+  ok(/const stampLocale = appLocale\(\) === 'zh-TW' \? 'zh-TW' : 'en-GB';/.test(stamp) && !/toLocaleDateString\('en-GB'/.test(stamp), 'the postmark date uses the app language');
+  const date = new Date(2026, 10, 6, 14, 5);
+  eq([date.toLocaleDateString('zh-TW', { day: 'numeric', month: 'short' }), date.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })], ['11月6日', '14:05'], 'zh-TW postmark reads 11月6日 14:05');
+}
+
+// suspended.js run in a VM (S2, S4, S9): Enter, the Change link, Loading until
+// the real page replaces this one, a stall that frees Retry, and Locus settings.
+function restingPage({ url = 'https://example.com/a', mirror = null, browser = 'en-US' } = {}) {
+  const classes = () => {
+    const set = new Set();
+    return { add: (...names) => names.forEach(name => set.add(name)), remove: (...names) => names.forEach(name => set.delete(name)), contains: name => set.has(name) };
+  };
+  const els = new Map();
+  const el = id => {
+    const element = { id, textContent: '', style: {}, src: '', closest: () => null, addEventListener(type, fn) { this[`on_${type}`] = fn; } };
+    els.set(id, element);
+    return element;
+  };
+  ['status-text', 'load-label', 'placeholder-note', 'change-link', 'fav', 'title', 'url', 'load-btn'].forEach(el);
+  const docListeners = {};
+  const winListeners = {};
+  const timers = new Map();
+  let nextTimer = 1;
+  const replaced = [];
+  const body = { classList: classes(), dataset: {}, addEventListener(type, fn) { this[`on_${type}`] = fn; } };
+  const document = {
+    title: '', body, documentElement: { lang: 'en' }, head: { appendChild() {} }, visibilityState: 'hidden',
+    hasFocus: () => false,
+    getElementById: id => els.get(id) || null,
+    createElement: () => ({}),
+    addEventListener: (type, fn) => { docListeners[type] = fn; },
+  };
+  const context = vm.createContext({
+    document, URL, URLSearchParams, JSON, String,
+    navigator: { languages: [browser], language: browser },
+    localStorage: { getItem: key => (key === 'te_settings_mirror' && mirror ? JSON.stringify(mirror) : null) },
+    location: { hash: `#url=${encodeURIComponent(url)}&title=Example`, replace: target => replaced.push(target) },
+    chrome: { runtime: { getURL: path => `chrome-extension://locus/${path}` } },
+    window: {
+      addEventListener: (type, fn) => { winListeners[type] = fn; },
+      removeEventListener: (type, fn) => { if (winListeners[type] === fn) delete winListeners[type]; },
+    },
+    setTimeout: (fn, ms) => { const id = nextTimer; nextTimer += 1; timers.set(id, { fn, ms }); return id; },
+    clearTimeout: id => { timers.delete(id); },
+  });
+  vm.runInContext(suspendedJs, context, { filename: 'suspended.js' });
+  const key = (name, target = body) => {
+    const event = { key: name, target, prevented: false, preventDefault() { this.prevented = true; } };
+    docListeners.keydown(event);
+    return event;
+  };
+  return { els, body, document, replaced, timers, winListeners, key, status: () => els.get('status-text').textContent };
+}
+
+function testRestingPageRuns() {
+  let page = restingPage();
+  eq([page.status(), page.els.get('load-label').textContent, page.replaced.length], ['Not loaded yet', 'Load page', 0], 'a background placeholder waits, in the browser language');
+  page.key('Enter');
+  eq([page.replaced, page.status(), page.body.classList.contains('is-loading'), page.body.classList.contains('is-loaded')],
+    [['https://example.com/a'], 'Loading…', true, false], 'Enter loads the page and shows Loading…, not Loaded, while it is fetched (S2)');
+  page.winListeners.pagehide();
+  eq([page.status(), page.els.get('load-label').textContent, page.body.classList.contains('is-loaded')], ['Loaded', 'Loaded', true], 'Loaded shows as the real page replaces this one');
+
+  page = restingPage();
+  page.key('Enter');
+  const [stall] = [...page.timers.values()];
+  ok(stall && stall.ms === 20000, 'a load that never leaves is released after 20 s');
+  stall.fn();
+  eq([page.status(), page.body.classList.contains('is-loading'), page.els.get('load-label').textContent], ['Couldn’t load. Try again.', false, 'Load page'], 'a stalled load says so and offers the button again');
+  page.key('Enter');
+  eq(page.replaced.length, 2, 'Retry loads again');
+
+  page = restingPage();
+  const change = page.els.get('change-link');
+  change.closest = selector => (selector === 'a, button' ? change : null);
+  const onLink = page.key('Enter', change);
+  eq([onLink.prevented, page.replaced.length], [false, 0], 'Enter on the Change link opens it instead of loading the page');
+
+  page = restingPage({ url: 'javascript:alert(1)' });
+  page.key('Enter');
+  eq([page.replaced.length, page.status()], [0, 'This page can’t be restored.'], 'only web and file addresses ever load');
+
+  // S4: Locus's own language and motion settings win over the browser's.
+  page = restingPage({ mirror: { language: 'zh-TW', anim: 'off' }, browser: 'en-US' });
+  eq([page.status(), page.els.get('load-label').textContent, page.document.documentElement.lang, page.body.dataset.anim], ['尚未載入', '載入頁面', 'zh-TW', 'off'],
+    'Locus set to 繁體中文 with animations off is followed in an English browser');
+  page = restingPage({ mirror: { language: 'en' }, browser: 'zh-TW' });
+  eq(page.status(), 'Not loaded yet', 'Locus set to English is followed in a Chinese browser');
+  ok(/body\[data-anim="off"\] \.card, body\[data-anim="off"\]\.is-loading \.prog/.test(suspendedHtml), 'the page stops moving when Locus animations are off');
 }
 
 // Selectors checked against markup, not against themselves (R1, R3, S9/R5).
@@ -161,5 +287,8 @@ testWelcome();
 testCalmNewTab();
 testRestingPage();
 testRemainingSurfaces();
+testRestingPageRuns();
+testClockOnTheMinute();
+testPostmarkLanguage();
 testSelectorsMatchMarkup();
-console.log(`Canvas page contracts passed: ${checks} checks (Welcome envelope and stamp, calm new tab clock, recent pages and tone, resting page copy and loading)`);
+console.log(`Canvas page contracts passed: ${checks} checks (Welcome envelope, stamp and localized postmark, calm new tab clock on the minute, recent pages and tone, resting page run in a VM, selectors checked against markup)`);

@@ -9,9 +9,14 @@
       fav:   params.get('fav')   || ''
     };
   }
-  // This page has no access to Locus settings, so it follows the browser
-  // language for its few words, like the rest of Locus does by default.
-  var zh = /^zh(?:[-_]|$)/i.test(String((navigator.languages && navigator.languages[0]) || navigator.language || ''));
+  // This page is on the extension origin, so it can read the settings mirror
+  // the new tab writes (prepaint.js reads the same one): Locus's language and
+  // motion choice come first, the browser language only when there is none.
+  var mirror = {};
+  try { mirror = JSON.parse(localStorage.getItem('te_settings_mirror') || '{}') || {}; } catch (e) { mirror = {}; }
+  var language = String(mirror.language || (navigator.languages && navigator.languages[0]) || navigator.language || '');
+  var zh = /^zh(?:[-_]|$)/i.test(language);
+  if (mirror.anim === 'off' && document.body) document.body.dataset.anim = 'off';
   var copy = zh ? {
     rest: '尚未載入', load: '載入頁面', loading: '載入中…', loaded: '已載入',
     note: '以預留頁開啟', change: '變更', untitled: '已儲存的頁面',
@@ -79,7 +84,27 @@
   // data:, or blob: navigation on the extension page.
   var navigable = /^(?:https?|ftp|file):/i.test(url);
 
+  // "Loading…" stays while the real page is fetched; "Loaded" shows only as
+  // this page is replaced by it (pagehide). If the tab is still here after
+  // LOAD_STALL_MS, the load is released so the button can try again.
+  var LOAD_STALL_MS = 20000;
   var loading = false;
+  var stallTimer = null;
+  function markLoaded() {
+    var st = document.getElementById('status-text');
+    document.body.classList.add('is-loaded');
+    if (st) st.textContent = copy.loaded;
+    setText('load-label', copy.loaded);
+  }
+  function release(message) {
+    var st = document.getElementById('status-text');
+    loading = false;
+    clearTimeout(stallTimer);
+    window.removeEventListener('pagehide', markLoaded);
+    document.body.classList.remove('is-loading', 'is-loaded');
+    if (st) st.textContent = message;
+    setText('load-label', copy.load);
+  }
   function load() {
     if (loading || !url) return;
     var st = document.getElementById('status-text');
@@ -90,16 +115,14 @@
     loading = true;
     document.body.classList.add('is-loading');
     if (st) st.textContent = copy.loading;
+    setText('load-label', copy.loading);
+    window.addEventListener('pagehide', markLoaded);
+    clearTimeout(stallTimer);
+    stallTimer = setTimeout(function () { if (loading) release(copy.failed); }, LOAD_STALL_MS);
     try {
-      // Mark the moment it loads, then hand the tab to the real page.
-      document.body.classList.add('is-loaded');
-      if (st) st.textContent = copy.loaded;
-      setText('load-label', copy.loaded);
       location.replace(url);
     } catch (e) {
-      loading = false;
-      document.body.classList.remove('is-loading', 'is-loaded');
-      if (st) st.textContent = copy.failed;
+      release(copy.failed);
     }
   }
 
