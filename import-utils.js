@@ -269,7 +269,7 @@
     const used = collectEntityIds(existingState);
     const allocate = createAllocator(used, makeId);
     const idMap = new Map();
-    // The receiving state may already be at schema 12, so its normal migration
+    // The receiving state may already be at schema 12 or newer, so its normal migration
     // will not revisit older imported records. Repair reminder identities on the
     // cloned import before merging without mutating the preview payload.
     ensureImportedReminderIds(data, allocate);

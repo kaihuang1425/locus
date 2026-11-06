@@ -21,14 +21,22 @@ const popupCaptureHelperStart = popupSource.indexOf('function beginPopupCapture(
 const popupCaptureHelperEnd = popupSource.indexOf('\nconst THEME_IDS', popupCaptureHelperStart);
 const popupDoSaveStart = popupSource.indexOf('async function doSave(');
 const popupDoSaveEnd = popupSource.indexOf('\nfunction loadHibernatePrefs', popupDoSaveStart);
+const popupHibernateStart = popupSource.indexOf('function popupHibernateSourceDescriptor(');
+const popupHibernateEnd = popupSource.indexOf('\nasync function hibernateSelectedScope', popupHibernateStart);
+const popupHibernateSelectedStart = popupHibernateEnd + 1;
+const popupHibernateSelectedEnd = popupSource.indexOf('\nasync function saveTabsBeforeHibernate', popupHibernateSelectedStart);
 assert.ok(popupWriterStart >= 0 && popupWriterEnd > popupWriterStart, 'Popup state writer must be extractable');
 assert.ok(popupCloneStart >= 0 && popupCloneEnd > popupCloneStart, 'Popup state clone helper must be extractable');
 assert.ok(popupCaptureHelperStart >= 0 && popupCaptureHelperEnd > popupCaptureHelperStart, 'Popup capture mutex must be extractable');
 assert.ok(popupDoSaveStart >= 0 && popupDoSaveEnd > popupDoSaveStart, 'Popup single-tab capture must be extractable');
+assert.ok(popupHibernateStart >= 0 && popupHibernateEnd > popupHibernateStart, 'Popup single-tab Hibernate must be extractable');
+assert.ok(popupHibernateSelectedStart > 0 && popupHibernateSelectedEnd > popupHibernateSelectedStart, 'Popup bulk Hibernate must be extractable');
 const popupWriterSource = popupSource.slice(popupWriterStart, popupWriterEnd);
 const popupCloneSource = popupSource.slice(popupCloneStart, popupCloneEnd);
 const popupCaptureHelperSource = popupSource.slice(popupCaptureHelperStart, popupCaptureHelperEnd);
 const popupDoSaveSource = popupSource.slice(popupDoSaveStart, popupDoSaveEnd);
+const popupHibernateSource = popupSource.slice(popupHibernateStart, popupHibernateEnd);
+const popupHibernateSelectedSource = popupSource.slice(popupHibernateSelectedStart, popupHibernateSelectedEnd);
 
 const clone = value => value == null ? value : JSON.parse(JSON.stringify(value));
 
@@ -316,6 +324,22 @@ async function deterministicPopupCaptureFailureOverlap() {
       `let nextUid = 1;\n` +
       `const uid = () => 'capture-' + nextUid++;\n` +
       `const captureFields = tab => ({ title: tab.title || tab.url, fav: '' });\n` +
+      `const popupCaptureTargetDescriptor = ({ ws, cat, group }) => ({ workspaceId: ws.id, categoryId: cat.id, groupId: group.id });\n` +
+      `const createPopupCaptureIdAllocator = () => uid;\n` +
+      `const materializePopupCaptureTarget = (candidate, descriptor) => {\n` +
+      `  const ws = candidate.workspaces.find(entry => entry.id === descriptor.workspaceId);\n` +
+      `  const cat = ws?.categories.find(entry => entry.id === descriptor.categoryId);\n` +
+      `  const group = cat?.groups.find(entry => entry.id === descriptor.groupId);\n` +
+      `  if (!ws || !cat || !group) throw new Error('Popup capture target unavailable');\n` +
+      `  return { ws, cat, group };\n` +
+      `};\n` +
+      `const popupCaptureError = (code, message) => Object.assign(new Error(message), { code });\n` +
+      `const closeOrdinaryPopupSavedTab = async (tab, shouldClose) => {\n` +
+      `  if (!shouldClose) return { closed: false, reason: 'disabled' };\n` +
+      `  await chrome.tabs.remove(tab.id);\n` +
+      `  return { closed: true, reason: null };\n` +
+      `};\n` +
+      `let activeTabId = null;\n` +
       `${popupWriterSource}\n${popupCaptureHelperSource}\n${popupCloneSource}\n` +
       `async function recoverCaptureWriteFailure(_error, snapshot) { state = structuredClone(snapshot); }\n` +
       `${popupDoSaveSource}\n` +
@@ -333,7 +357,12 @@ async function deterministicPopupCaptureFailureOverlap() {
   );
 
   const first = context.__popupCapture.save(1, 'https://first-capture.test');
-  await firstStarted;
+  await Promise.race([
+    firstStarted,
+    first.then(outcome => {
+      throw new Error(`Popup capture returned ${String(outcome)} before dispatching its state write`);
+    }),
+  ]);
   const second = await context.__popupCapture.save(2, 'https://overlapping-capture.test');
   assert.equal(second, false, 'An overlapping popup capture must fail closed while the first receipt is pending');
   assert.equal(sent.length, 1, 'The overlapping popup capture must not enqueue another write');
@@ -348,6 +377,224 @@ async function deterministicPopupCaptureFailureOverlap() {
 
   assert.equal(await context.__popupCapture.save(3, 'https://retry-capture.test'), true, 'The popup capture mutex must release after failure');
   assert.deepEqual(removed, [3], 'Only the later confirmed retry may close its source tab');
+  clientCaptureCases++;
+}
+
+async function deterministicPopupHibernateCaptureInterlock() {
+  const updates = [];
+  const tabGets = [];
+  const loads = [];
+  const toasts = [];
+  const liveTabs = new Map([
+    [41, { id: 41, windowId: 7, active: false, url: 'https://hibernate-first.test' }],
+    [43, { id: 43, windowId: 7, active: false, url: 'https://hibernate-failure.test' }],
+  ]);
+  let signalUpdateStarted;
+  let releaseUpdate;
+  let rejectUpdate = false;
+  let releasePriorWrite;
+  const updateStarted = new Promise(resolve => { signalUpdateStarted = resolve; });
+  const updateWait = new Promise(resolve => { releaseUpdate = resolve; });
+  const priorWrite = new Promise(resolve => { releasePriorWrite = resolve; });
+  const context = vm.createContext({
+    chrome: {
+      tabs: {
+        async get(tabId) {
+          tabGets.push(tabId);
+          const value = liveTabs.get(tabId);
+          if (value instanceof Error) throw value;
+          return clone(value);
+        },
+        async update(tabId, change) {
+          updates.push({ tabId, change: clone(change) });
+          signalUpdateStarted();
+          await updateWait;
+          if (rejectUpdate) throw new Error('Injected single-tab Hibernate failure');
+          return { id: tabId, ...change };
+        },
+      },
+    },
+    document: {
+      activeElement: null,
+      body: { classList: { add() {}, remove() {} } },
+    },
+  });
+
+  vm.runInContext(
+      `let popupStateRecoveryRequired = false;\n` +
+      `let popupCapturePending = false;\n` +
+      `let popupCaptureControl = null;\n` +
+      `let popupStateWriteQueue = globalThis.__priorWrite;\n` +
+      `const $ = () => ({ setAttribute() {}, removeAttribute() {} });\n` +
+      `const tr = key => key;\n` +
+      `const toast = message => globalThis.__toasts.push(message);\n` +
+      `const showCaptureFailure = () => {};\n` +
+      `const buildSuspendedUrl = ({ url }) => 'suspended:' + url;\n` +
+      `const localFaviconUrl = () => 'local-favicon';\n` +
+      `async function load() { globalThis.__loads.push('load'); }\n` +
+      `${popupCaptureHelperSource}\n${popupHibernateSource}\n` +
+      `globalThis.__hibernateFlow = {\n` +
+      `  hibernate: hibernateSingle,\n` +
+      `  descriptor: popupHibernateSourceDescriptor,\n` +
+      `  matches: popupHibernateSourceStillMatches,\n` +
+      `  setQueue: value => { popupStateWriteQueue = value; },\n` +
+      `  begin: beginPopupCapture,\n` +
+      `  finish: finishPopupCapture,\n` +
+      `};`,
+    Object.assign(context, { __loads: loads, __priorWrite: priorWrite, __toasts: toasts }),
+    { filename: 'popup-hibernate-capture-flow.js' },
+  );
+
+  const reviewed = context.__hibernateFlow.descriptor({
+    id: 44,
+    windowId: 7,
+    active: false,
+    url: 'https://reviewed.test',
+    title: 'Reviewed tab',
+  });
+  assert.ok(reviewed && Object.isFrozen(reviewed), 'Hibernate must freeze a valid reviewed source descriptor');
+  assert.equal(context.__hibernateFlow.descriptor({
+    id: -1,
+    windowId: 7,
+    active: false,
+    url: 'https://reviewed.test',
+  }), null, 'Hibernate must reject an invalid source descriptor');
+  assert.equal(context.__hibernateFlow.matches({
+    id: 44,
+    windowId: 7,
+    active: false,
+    url: 'https://reviewed.test',
+    pendingUrl: 'https://reviewed.test',
+  }, reviewed), true, 'Hibernate must accept the exact reviewed source and matching redirect state');
+  const changedSources = [
+    null,
+    { id: 44, windowId: 8, active: false, url: 'https://reviewed.test' },
+    { id: 44, windowId: 7, active: true, url: 'https://reviewed.test' },
+    { id: 44, windowId: 7, active: false, url: 'https://changed.test' },
+    { id: 44, windowId: 7, active: false, url: 'https://reviewed.test', pendingUrl: 'https://redirecting.test' },
+    { id: 44, windowId: 7, active: false, url: 'https://reviewed.test', pendingUrl: {} },
+  ];
+  changedSources.forEach((tab, index) => {
+    assert.equal(
+      context.__hibernateFlow.matches(tab, reviewed),
+      false,
+      `Hibernate must reject changed source case ${index + 1}`,
+    );
+  });
+
+  const firstTab = {
+    id: 41,
+    windowId: 7,
+    active: false,
+    url: 'https://hibernate-first.test',
+    title: 'Hibernate first',
+  };
+  const first = context.__hibernateFlow.hibernate(firstTab);
+  firstTab.url = 'https://mutated-after-review.test';
+  firstTab.title = 'Mutated after review';
+  await Promise.resolve();
+  const updateStartedBeforePriorWrite = updates.length > 0;
+  releasePriorWrite();
+  await updateStarted;
+  const competingCapture = context.__hibernateFlow.begin();
+  if (competingCapture) context.__hibernateFlow.finish();
+  releaseUpdate();
+
+  assert.equal(await first, true, 'A confirmed one-tab Hibernate must report success');
+  assert.equal(updateStartedBeforePriorWrite, false, 'One-tab Hibernate must drain an earlier popup write before its browser effect');
+  assert.equal(competingCapture, false, 'A pending one-tab Hibernate must block a competing capture');
+  assert.equal(updates.length, 1, 'A one-tab Hibernate must update its reviewed tab once');
+  assert.equal(updates[0].change.url, 'suspended:https://hibernate-first.test', 'Hibernate must use the immutable pre-wait source URL');
+  assert.deepEqual(tabGets, [41], 'One-tab Hibernate must fresh-read its reviewed tab once before replacement');
+  assert.deepEqual(loads, ['load'], 'A confirmed one-tab Hibernate must refresh the popup once');
+  assert.ok(toasts.includes('captureBusy'), 'The blocked competing capture must use existing busy feedback');
+
+  assert.equal(context.__hibernateFlow.begin(), true, 'The Hibernate interlock must release after success');
+  const updateCount = updates.length;
+  const loadCount = loads.length;
+  assert.equal(await context.__hibernateFlow.hibernate({
+    id: 42,
+    windowId: 7,
+    active: false,
+    url: 'https://capture-first.test',
+    title: 'Capture first',
+  }), false, 'A pending capture must refuse one-tab Hibernate');
+  assert.equal(updates.length, updateCount, 'Blocked one-tab Hibernate must not navigate a tab');
+  assert.equal(loads.length, loadCount, 'Blocked one-tab Hibernate must not reload popup state');
+  context.__hibernateFlow.finish();
+
+  let releaseChangedSourceWrite;
+  const changedSourceWrite = new Promise(resolve => { releaseChangedSourceWrite = resolve; });
+  context.__hibernateFlow.setQueue(changedSourceWrite);
+  liveTabs.set(44, {
+    id: 44,
+    windowId: 7,
+    active: false,
+    url: 'https://reviewed.test',
+  });
+  const changedUpdateCount = updates.length;
+  const changedLoadCount = loads.length;
+  const changed = context.__hibernateFlow.hibernate({
+    id: 44,
+    windowId: 7,
+    active: false,
+    url: 'https://reviewed.test',
+    title: 'Reviewed tab',
+  });
+  liveTabs.set(44, {
+    id: 44,
+    windowId: 7,
+    active: true,
+    url: 'https://reviewed.test',
+  });
+  releaseChangedSourceWrite();
+  assert.equal(await changed, false, 'A tab that becomes active during the write wait must stay open');
+  assert.equal(updates.length, changedUpdateCount, 'Changed one-tab Hibernate must not navigate the source');
+  assert.equal(loads.length, changedLoadCount, 'Changed one-tab Hibernate must not reload popup state');
+
+  liveTabs.set(45, new Error('Injected missing Hibernate source'));
+  const missingUpdateCount = updates.length;
+  const missingLoadCount = loads.length;
+  assert.equal(await context.__hibernateFlow.hibernate({
+    id: 45,
+    windowId: 7,
+    active: false,
+    url: 'https://missing-source.test',
+    title: 'Missing source',
+  }), false, 'An unavailable reviewed source must stay open');
+  assert.equal(updates.length, missingUpdateCount, 'Unavailable one-tab Hibernate must not navigate a tab');
+  assert.equal(loads.length, missingLoadCount, 'Unavailable one-tab Hibernate must not reload popup state');
+
+  rejectUpdate = true;
+  const failedUpdateCount = updates.length;
+  const failedLoadCount = loads.length;
+  assert.equal(await context.__hibernateFlow.hibernate({
+    id: 43,
+    windowId: 7,
+    active: false,
+    url: 'https://hibernate-failure.test',
+    title: 'Hibernate failure',
+  }), false, 'A failed one-tab Hibernate must report failure');
+  assert.equal(updates.length, failedUpdateCount + 1, 'A failed one-tab Hibernate must not retry its browser effect');
+  assert.equal(loads.length, failedLoadCount, 'A failed one-tab Hibernate must not reload popup state');
+  assert.ok(toasts.includes('couldNotHibernate'), 'A failed one-tab Hibernate must retain existing failure feedback');
+  assert.equal(context.__hibernateFlow.begin(), true, 'The Hibernate interlock must release after failure');
+  context.__hibernateFlow.finish();
+  assert.match(
+    popupHibernateSelectedSource,
+    /await popupStateWriteQueue;[\s\S]*?const targets = await getHibernateCandidates\(\);/,
+    'Bulk Hibernate must drain earlier popup writes before reading or updating browser tabs',
+  );
+  assert.match(
+    popupHibernateSource,
+    /async function confirmPopupHibernateSource\(descriptor\)[\s\S]*?chrome\.tabs\.get\(descriptor\.tabId\)[\s\S]*?popupHibernateSourceStillMatches\(current, descriptor\)/,
+    'Hibernate must fresh-read and revalidate the immutable source before replacement',
+  );
+  assert.match(
+    popupHibernateSelectedSource,
+    /const sourceDescriptors = targets\.map\(popupHibernateSourceDescriptor\)[\s\S]*?saveTabsBeforeHibernate\(targets\)[\s\S]*?for \(const descriptor of sourceDescriptors\)[\s\S]*?confirmPopupHibernateSource\(descriptor\)[\s\S]*?chrome\.tabs\.update\(descriptor\.tabId/,
+    'Bulk Save-before-Hibernate must fresh-confirm every immutable source after persistence before replacement',
+  );
   clientCaptureCases++;
 }
 
@@ -669,6 +916,7 @@ async function runRandomizedLocklessStress() {
   await deterministicPopupQueueFailureInvalidation();
   await deterministicPopupReceiverAvailability();
   await deterministicPopupCaptureFailureOverlap();
+  await deterministicPopupHibernateCaptureInterlock();
   await runDeterministicMatrix();
   const totals = await runRandomizedLocklessStress();
   console.log(

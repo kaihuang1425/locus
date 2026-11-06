@@ -31,7 +31,7 @@
       <label class="popup-search" for="ps">
         <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         <input id="ps" type="search" data-pop-placeholder="searchTabs" placeholder="Search open tabs…" autocomplete="off">
-        <kbd>⌘ K</kbd>
+        <kbd id="search-shortcut" aria-hidden="true">Ctrl K</kbd>
       </label>
 
       <div class="window-heading">
@@ -123,10 +123,10 @@
       <div class="subhead" data-pop-i18n="suggestedTags">Suggested tags</div>
       <div class="sw-tags" id="sw-tags-row">
         <span id="sw-tags"></span>
-        <input id="sw-tag-input" type="text" data-pop-placeholder="addTag" placeholder="+ Add tag" autocomplete="off">
+        <input id="sw-tag-input" type="text" data-pop-placeholder="addTag" data-pop-aria="tagInputLabel" placeholder="+ Add tag" aria-label="Add a tag" autocomplete="off">
       </div>
       <div class="subhead" data-pop-i18n="saveOptions">Save options</div>
-      <div id="sw-modes" class="sw-modes" role="radiogroup" aria-label="Save options">
+      <div id="sw-modes" class="sw-modes" role="radiogroup" data-pop-aria="saveOptions" aria-label="Save options">
         <button type="button" class="sw-mode" role="radio" data-val="links" aria-checked="false">
           <span class="sw-radio" aria-hidden="true"></span>
           <span class="sw-mode-copy"><span class="sw-mode-title" data-pop-i18n="saveLinksOnly">Save links only</span><span class="sw-mode-desc" data-pop-i18n="saveLinksOnlyDesc">Lightweight and fast</span></span>
@@ -140,9 +140,9 @@
           <span class="sw-mode-copy"><span class="sw-mode-title" data-pop-i18n="saveQueue">Save as reading queue</span><span class="sw-mode-desc" data-pop-i18n="saveQueueDesc">Review later in Read Later</span></span>
         </button>
       </div>
-      <label class="hib-toggle"><input type="checkbox" id="sw-close"><span class="hib-tog-box"></span><span data-pop-i18n="closeAfterSave">Close tabs after saving</span></label>
+      <label class="hib-toggle"><input type="checkbox" id="sw-close"><span class="hib-tog-box"></span><span data-pop-i18n="closeAfterSave">Close other tabs after saving</span></label>
       <label class="hib-toggle"><input type="checkbox" id="sw-note-toggle"><span class="hib-tog-box"></span><span data-pop-i18n="addNote">Add note</span></label>
-      <textarea id="sw-note" class="sw-note hidden" rows="2" data-pop-placeholder="notePlaceholder" placeholder="A note saved alongside these tabs…"></textarea>
+      <textarea id="sw-note" class="sw-note hidden" rows="2" data-pop-placeholder="notePlaceholder" data-pop-aria="noteInputLabel" placeholder="A note saved alongside these tabs…" aria-label="Window note"></textarea>
       <button id="sw-go" class="pa-btn primary hib-go" type="button"><span data-pop-i18n="save">Save</span> <b id="sw-go-count">0</b> <span data-pop-i18n="tabs">tabs</span></button>
     </section>
 
@@ -165,8 +165,8 @@
           <span id="stg-locate-result-message"></span>
         </div>
         <div class="capture-result-actions">
-          <button id="stg-open-locus" class="pa-btn primary" type="button" data-pop-i18n="openLocus">Open Locus</button>
-          <button id="stg-done" class="pa-btn" type="button" data-pop-i18n="done">Close</button>
+          <button id="stg-open-locus" class="pa-btn primary" type="button" data-pop-i18n="openLocus" aria-describedby="save-context save-tab-title stg-locate-result-message">Open Locus</button>
+          <button id="stg-done" class="pa-btn" type="button" data-pop-i18n="done" data-pop-aria="closePopup" aria-label="Close popup">Close</button>
         </div>
       </div>
     </section>
