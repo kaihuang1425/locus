@@ -597,13 +597,22 @@ assert.match(newtab, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*#toast\s
 assert.match(newtab, /@media \(forced-colors:\s*active\)[\s\S]*#toast\s*\{[^}]*border-left-color:\s*Highlight/,
   'forced colors must preserve the receipt locator');
 assert.doesNotMatch(newtab, /@keyframes\s+toastIn|#toast\s*\{[^}]*animation:\s*toastIn|#toast\.hidden\s*\{[^}]*scale\(/,
-  'the shared receipt must remove spring, scale, and ornamental entrance residue');
+  'the shared receipt must not keep the legacy toastIn entrance');
+// 2026-11 canvas (owner-approved Notifications board): receipts enter with a
+// spring and morph in place, and all of it stops under reduced motion.
+assert.match(newtab, /@media \(prefers-reduced-motion: reduce\) \{\s*body\[data-theme\] #toast,[\s\S]*?animation: none !important; transition: none !important;[\s\S]*?\.toast-drain \{ display: none; \}/,
+  'the notification entrance, morph, and drain must stop under reduced motion');
 assert.match(newtabJs, /function dismissToast\(\{ restoreFocus = false \} = \{\}\)/,
   'one dismissal owner must clear receipt timing and optionally restore focus');
 assert.match(newtabJs, /const actionable\s*=\s*hasAction\s*\|\|\s*undoActionId\s*!=\s*null\s*\|\|\s*opts\.persistent\s*===\s*true/,
-  'Undo and continuation receipts must be classified as durable actions');
-assert.match(newtabJs, /if \(!actionable && duration > 0\)\s*toastTimer\s*=\s*setTimeout/,
-  'only passive feedback may receive an expiry timer');
+  'Undo and continuation receipts must be classified as actionable');
+// Timing changed with the 2026-11 Notifications board: an Undo receipt drains
+// over TOAST_UNDO_MS and pauses while hovered or focused (Ctrl+Z still undoes
+// from history after it leaves); continuation and persistent receipts wait for
+// an answer; passive feedback keeps its bounded duration.
+assert.match(newtabJs, /const TOAST_UNDO_MS = 5200;/, 'Undo receipts drain over 5.2 seconds');
+assert.match(newtabJs, /const waitsForAnswer = hasAction \|\| opts\.persistent === true;[\s\S]*const total = waitsForAnswer \? 0 : \(undoActionId != null \? TOAST_UNDO_MS : duration\);/,
+  'only continuation and persistent receipts wait without a timer');
 assert.match(newtabJs, /tone === 'error'[\s\S]*setAttribute\('role',\s*assertive \? 'alert' : 'status'\)[\s\S]*setAttribute\('aria-live',\s*assertive \? 'assertive' : 'polite'\)/,
   'errors must announce assertively without upgrading ordinary receipts');
 assert.match(newtabJs, /toast-close[\s\S]*dismissToast\(\{ restoreFocus:\s*true \}\)[\s\S]*event\.key === 'Escape'/,
@@ -709,8 +718,9 @@ vm.runInContext(
   toastControllerContext,
 );
 toastControllerContext.__toast('Saved to Inbox', { undo: true, duration: 10 });
-assert.equal(toastHost.dataset.actionable, 'true', 'Undo must make a receipt durable');
-assert.equal(activeToastTimers.size, 0, 'an Undo receipt must ignore an expiry duration');
+assert.equal(toastHost.dataset.actionable, 'true', 'Undo must make a receipt actionable');
+assert.equal(activeToastTimers.size, 1, 'an Undo receipt drains on one timer');
+assert.equal([...activeToastTimers.values()][0].duration, 5200, 'an Undo receipt ignores the requested duration and drains over 5.2 seconds');
 assert.equal(toastHost.getAttribute('role'), 'status');
 assert.equal(toastHost.getAttribute('aria-live'), 'polite');
 assert.equal(toastUndo.classList.contains('hidden'), false);
@@ -721,9 +731,14 @@ toastControllerContext.__toast('Saved to Research', {
   action: () => { continuationRuns += 1; },
   duration: 10,
 });
-assert.equal(activeToastTimers.size, 0, 'a continuation receipt must remain until acted on or dismissed');
+assert.equal(activeToastTimers.size, 0, 'a continuation receipt waits for an answer, and the receipt behind it is paused');
 toastAction.onclick();
 assert.equal(continuationRuns, 1);
+assert.equal(toastHost.classList.contains('hidden'), false, 'answering the front receipt brings the one behind it forward');
+assert.equal(toastMessage.textContent, 'Saved to Inbox');
+assert.equal(toastUndo.classList.contains('hidden'), false, 'the earlier Undo is still offered');
+assert.equal(activeToastTimers.size, 1, 'the earlier receipt resumes its drain');
+toastControllerContext.__dismissToast();
 assert.equal(toastHost.classList.contains('hidden'), true);
 
 toastDocument.activeElement = toastOpener;
@@ -733,6 +748,8 @@ assert.equal(activeToastTimers.size, 1, 'passive feedback may retain one bounded
 assert.equal([...activeToastTimers.values()][0].duration, 2500);
 toastHost.events.get('focusin')();
 assert.equal(activeToastTimers.size, 0, 'focus must stop passive feedback from disappearing under the user');
+toastHost.events.get('focusout')({ relatedTarget: toastOpener });
+assert.equal(activeToastTimers.size, 1, 'leaving the receipt resumes its time');
 
 toastControllerContext.__toast('Storage failed', { danger: true, duration: 7000 });
 assert.equal(toastHost.dataset.tone, 'error');
@@ -741,8 +758,29 @@ assert.equal(toastHost.getAttribute('aria-live'), 'assertive');
 assert.equal(activeToastTimers.size, 1);
 toastDocument.activeElement = toastClose;
 toastClose.onclick();
-assert.equal(toastHost.classList.contains('hidden'), true);
 assert.equal(toastOpener.focusCount, 1, 'Close must return focus to the connected receipt opener');
+assert.equal(toastMessage.textContent, 'Updated elsewhere', 'closing the newest receipt reveals the one tucked behind');
+toastControllerContext.__dismissToast();
+assert.equal(toastHost.classList.contains('hidden'), true);
+
+// At most two receipts: a third drops the oldest. An Undo result replaces the
+// receipt that offered it, in place.
+toastControllerContext.__toast('First', { tone: 'info' });
+toastControllerContext.__toast('Second', { undo: 41 });
+toastControllerContext.__toast('Third', { tone: 'info' });
+toastControllerContext.__dismissToast();
+assert.equal(toastMessage.textContent, 'Second', 'the second-newest receipt waits behind the newest');
+toastControllerContext.__dismissToast();
+assert.equal(toastHost.classList.contains('hidden'), true, 'the oldest of three was dropped');
+toastControllerContext.__toast('Moved 2 to today', { undo: 42 });
+toastUndo.onclick();
+assert.deepEqual(undoCalls, [42], 'Undo on the receipt undoes exactly its own action');
+toastControllerContext.__toast('Undid move', { tone: 'info', glyph: 'undo', duration: 1600, replaceUndo: 42 });
+assert.equal(toastMessage.textContent, 'Undid move');
+assert.equal(toastHost.dataset.glyph, 'undo');
+toastControllerContext.__dismissToast();
+assert.equal(toastHost.classList.contains('hidden'), true, 'the Undo result replaced its receipt instead of stacking');
+undoCalls.length = 0;
 
 toastDocument.activeElement = toastOpener;
 toastControllerContext.__toast('Review this save', { persistent: true, tone: 'warning' });

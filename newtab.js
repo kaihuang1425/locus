@@ -27,6 +27,19 @@ function appLocale() {
 
 const I18N = {
   en: {
+    'dueCard.label': 'Reminder',
+    'dueCard.due': 'Due {time}',
+    'dueCard.dueIn': 'Due {time} · {place}',
+    'dueCard.done': 'Done',
+    'dueCard.snooze': 'Snooze',
+    'dueCard.back': 'Back',
+    'dueCard.in10': '10 min',
+    'dueCard.in1h': '1 hour',
+    'dueCard.tomorrow': 'Tomorrow 9:00',
+    'dueCard.dismiss': 'Dismiss reminder',
+    'dueCard.doneToast': 'Done',
+    'dueCard.snoozed': 'Back at {time}',
+    'dueCard.failed': 'Couldn’t save that. The reminder is unchanged.',
     'nav.plan': 'Plan',
     'plan.title': 'Plan',
     'plan.viewGroup': 'Plan view',
@@ -1710,6 +1723,19 @@ const I18N = {
     'detail.history.updateFields': 'Update custom fields'
   },
   'zh-TW': {
+    'dueCard.label': '提醒',
+    'dueCard.due': '{time} 到期',
+    'dueCard.dueIn': '{time} 到期 · {place}',
+    'dueCard.done': '完成',
+    'dueCard.snooze': '稍後提醒',
+    'dueCard.back': '返回',
+    'dueCard.in10': '10 分鐘',
+    'dueCard.in1h': '1 小時',
+    'dueCard.tomorrow': '明天 9:00',
+    'dueCard.dismiss': '關閉提醒',
+    'dueCard.doneToast': '已完成',
+    'dueCard.snoozed': '{time} 再提醒',
+    'dueCard.failed': '無法儲存，提醒沒有變更。',
     'nav.plan': '規劃',
     'plan.title': '規劃',
     'plan.viewGroup': '規劃檢視',
@@ -4986,6 +5012,8 @@ function initAfterLoad() {
   if (typeof runPlanRollOver === 'function') {
     setTimeout(() => { runPlanRollOver().catch(error => console.error('Plan roll-over failed', error)); }, 0);
   }
+  // A to-do that comes due while this page is open gets a card that waits for an answer.
+  if (typeof startPlanDueWatch === 'function') startPlanDueWatch();
   // Returning users may explicitly opt into the calm landing. First run owns
   // one task and never hands off into a second full-screen layer.
   if (State.get().settings.showLanding === true
@@ -7737,16 +7765,220 @@ function handleToastMessageScrollKey(event) {
   return true;
 }
 
+// One shared notification component (2026-11 canvas). Every receipt is a dark
+// card with a coloured icon circle, a short message, an optional mono sub-label,
+// and an action. Undo receipts drain over TOAST_UNDO_MS and pause while hovered
+// or focused; Ctrl+Z still undoes after one leaves, because Undo lives in the
+// history, not in the card. Continuation and persistent receipts stay until they
+// are answered. At most two are visible: the newest in front and the previous
+// one tucked behind, paused. Content morphs in place: Undo becomes "Undone", and
+// an action that returns a promise shows a spinner until it settles.
+const TOAST_UNDO_MS = 5200;
+let toastEntries = [];
+let toastSeq = 0;
+let toastTimerStartedAt = 0;
+let toastHeld = false;
+
+function toastFront() {
+  return toastEntries[toastEntries.length - 1] || null;
+}
+
+function pauseToastFront() {
+  const front = toastFront();
+  if (toastTimer && front && front.remaining > 0) {
+    front.remaining = Math.max(0, front.remaining - (Date.now() - toastTimerStartedAt));
+  }
+  clearTimeout(toastTimer);
+  toastTimer = null;
+}
+
+function setToastDrain(entry, running) {
+  const t = document.getElementById('toast');
+  const drain = document.getElementById('toast-drain');
+  const timed = !!entry && entry.total > 0;
+  if (t) t.dataset.draining = String(timed);
+  if (!drain || !drain.style || !drain.classList) return;
+  drain.classList.remove('is-running');
+  if (!timed) return;
+  drain.style.setProperty('--toast-ms', `${entry.total}ms`);
+  drain.style.setProperty('--toast-elapsed', `-${Math.max(0, entry.total - entry.remaining)}ms`);
+  void drain.offsetWidth;
+  drain.classList.add('is-running');
+  drain.classList.toggle('is-paused', !running);
+}
+
+function startToastTimer(entry) {
+  clearTimeout(toastTimer);
+  toastTimer = null;
+  if (!entry || !(entry.remaining > 0) || toastHeld) {
+    setToastDrain(entry, false);
+    return;
+  }
+  toastTimerStartedAt = Date.now();
+  toastTimer = setTimeout(() => dismissToast(), entry.remaining);
+  setToastDrain(entry, true);
+}
+
+function holdToast() {
+  if (toastHeld) return;
+  pauseToastFront();
+  toastHeld = true;
+  const t = document.getElementById('toast');
+  if (t?.classList) t.classList.add('is-held');
+  const drain = document.getElementById('toast-drain');
+  if (drain?.classList) drain.classList.add('is-paused');
+}
+
+function releaseToast() {
+  if (!toastHeld) return;
+  toastHeld = false;
+  const t = document.getElementById('toast');
+  if (t?.classList) t.classList.remove('is-held');
+  const front = toastFront();
+  if (!t || t.classList.contains('hidden') || !front) return;
+  if (front.remaining > 0) front.remaining = Math.max(front.remaining, 1200);
+  startToastTimer(front);
+}
+
+function restartToastAnimation(t, className) {
+  if (!t?.classList) return;
+  t.classList.remove('is-entering', 'is-morphing', 'is-promoted');
+  if (!className) return;
+  void t.offsetWidth;
+  t.classList.add(className);
+}
+
+function paintToastBehind(entry) {
+  const behind = document.getElementById('toast-behind');
+  if (!behind?.classList) return;
+  if (!entry) {
+    behind.classList.add('hidden');
+    return;
+  }
+  behind.dataset.tone = entry.tone;
+  const text = typeof behind.querySelector === 'function' ? behind.querySelector('.toast-behind-msg') : null;
+  if (text) text.textContent = entry.msg;
+  behind.classList.remove('hidden');
+}
+
+function paintToast(entry, { animation = '' } = {}) {
+  const t = document.getElementById('toast');
+  const m = document.getElementById('toast-msg');
+  const a = document.getElementById('toast-action');
+  const u = document.getElementById('toast-undo');
+  const sub = document.getElementById('toast-sub');
+  if (!t || !m || !entry) return false;
+  const assertive = entry.tone === 'error';
+  t.dataset.tone = entry.tone;
+  t.dataset.actionable = String(entry.actionable);
+  t.dataset.glyph = entry.glyph;
+  t.dataset.busy = String(entry.busy);
+  t.classList.toggle('danger', assertive);
+  t.setAttribute('role', assertive ? 'alert' : 'status');
+  t.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
+  m.textContent = entry.msg;
+  m.scrollTop = 0;
+  if (sub) {
+    sub.textContent = entry.sub;
+    sub.hidden = !entry.sub;
+  }
+  if (a) {
+    if (entry.action) {
+      a.textContent = entry.actionLabel;
+      a.classList.remove('hidden');
+      a.disabled = entry.busy;
+      a.onclick = () => runToastAction(entry);
+    } else {
+      a.textContent = '';
+      a.classList.add('hidden');
+      a.onclick = null;
+    }
+  }
+  if (u && entry.undoActionId != null) {
+    u.classList.remove('hidden');
+    u.disabled = entry.busy;
+    u.onclick = () => undoFromToast(entry);
+  }
+  else if (u) {
+    u.classList.add('hidden');
+    u.onclick = null;
+  }
+  t.classList.remove('hidden');
+  restartToastAnimation(t, animation);
+  paintToastBehind(toastEntries[toastEntries.length - 2] || null);
+  syncToastMessageScrollAccess();
+  requestAnimationFrame(syncToastMessageScrollAccess);
+  return true;
+}
+
+function removeToastEntry(entry, options = {}) {
+  const index = toastEntries.indexOf(entry);
+  if (index < 0) return false;
+  if (index === toastEntries.length - 1) return dismissToast(options);
+  toastEntries.splice(index, 1);
+  paintToastBehind(toastEntries[toastEntries.length - 2] || null);
+  return true;
+}
+
+function runToastAction(entry) {
+  if (!entry?.action || entry.busy) return;
+  let result;
+  try {
+    result = entry.action();
+  } catch (error) {
+    console.error('Notification action failed', error);
+  }
+  if (result && typeof result.then === 'function') {
+    entry.busy = true;
+    if (toastFront() === entry) paintToast(entry, { animation: 'is-morphing' });
+    Promise.resolve(result).catch(() => {}).then(() => { removeToastEntry(entry); });
+    return;
+  }
+  removeToastEntry(entry);
+}
+
+function undoFromToast(entry) {
+  if (!entry || entry.undoActionId == null || entry.busy) return;
+  entry.busy = true;
+  const t = document.getElementById('toast');
+  const focusWasInside = !!t && t.contains(document.activeElement);
+  if (toastFront() === entry) paintToast(entry, { animation: 'is-morphing' });
+  if (focusWasInside) restoreToastFocus();
+  void performUndo(entry.undoActionId);
+}
+
 function dismissToast({ restoreFocus = false } = {}) {
   const t = document.getElementById('toast');
   clearTimeout(toastTimer);
   toastTimer = null;
   if (!t) return false;
   const focusWasInside = t.contains(document.activeElement);
+  toastEntries.pop();
+  const next = toastFront();
+  if (next && !t.classList.contains('hidden')) {
+    // The receipt that waited behind comes forward with its own time left.
+    if (next.remaining > 0) next.remaining = Math.max(next.remaining, 1500);
+    paintToast(next, { animation: 'is-promoted' });
+    startToastTimer(next);
+    if (restoreFocus && focusWasInside) restoreToastFocus();
+    return true;
+  }
+  toastEntries = [];
   t.classList.add('hidden');
   t.dataset.actionable = 'false';
+  paintToastBehind(null);
+  setToastDrain(null, false);
   syncToastMessageScrollAccess();
   if (restoreFocus && focusWasInside) restoreToastFocus();
+  return true;
+}
+
+// Escape from the page dismisses the newest receipt when no dialog, menu, or
+// sheet sits above it.
+function dismissToastForEscape() {
+  const t = document.getElementById('toast');
+  if (!t || t.classList.contains('hidden')) return false;
+  dismissToast({ restoreFocus: true });
   return true;
 }
 
@@ -7763,12 +7995,18 @@ function bindToastReceipt(t) {
     event.stopPropagation();
     dismissToast({ restoreFocus: true });
   });
-  const holdForReading = () => {
-    clearTimeout(toastTimer);
-    toastTimer = null;
-  };
-  t.addEventListener('focusin', holdForReading);
-  t.addEventListener('pointerenter', holdForReading);
+  // Hover or focus holds the receipt (and its drain bar); leaving resumes it.
+  t.addEventListener('focusin', holdToast);
+  t.addEventListener('pointerenter', holdToast);
+  t.addEventListener('pointerleave', () => {
+    if (!t.contains(document.activeElement)) releaseToast();
+  });
+  t.addEventListener('focusout', event => {
+    const next = event?.relatedTarget || null;
+    if (next && t.contains(next)) return;
+    const hovered = typeof t.matches === 'function' && t.matches(':hover');
+    if (!hovered) releaseToast();
+  });
   if (typeof window !== 'undefined') {
     window.addEventListener('resize', rafThrottle(syncToastMessageScrollAccess));
   }
@@ -7777,8 +8015,6 @@ function bindToastReceipt(t) {
 function toast(msg, opts = {}) {
   const t = document.getElementById('toast');
   const m = document.getElementById('toast-msg');
-  const a = document.getElementById('toast-action');
-  const u = document.getElementById('toast-undo');
   if (!t || !m) return false;
   bindToastReceipt(t);
   const active = document.activeElement;
@@ -7791,57 +8027,56 @@ function toast(msg, opts = {}) {
   const hasAction = !!(actionLabel && typeof opts.action === 'function');
   const undoActionId = opts.undo === true ? State.latestActionId() : opts.undo;
   const actionable = hasAction || undoActionId != null || opts.persistent === true;
-  const assertive = tone === 'error';
-
-  t.dataset.tone = tone;
-  t.dataset.actionable = String(actionable);
-  t.classList.toggle('danger', assertive);
-  t.setAttribute('role', assertive ? 'alert' : 'status');
-  t.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
-  m.textContent = String(msg ?? '');
-  m.scrollTop = 0;
-  if (a) {
-    if (hasAction) {
-      a.textContent = actionLabel;
-      a.classList.remove('hidden');
-      a.onclick = () => {
-        dismissToast();
-        opts.action();
-      };
-    } else {
-      a.textContent = '';
-      a.classList.add('hidden');
-      a.onclick = null;
-    }
-  }
-  if (u && undoActionId != null) {
-    u.classList.remove('hidden');
-    u.onclick = () => {
-      dismissToast({ restoreFocus: true });
-      void performUndo(undoActionId);
-    };
-  }
-  else if (u) {
-    u.classList.add('hidden');
-    u.onclick = null;
-  }
-
-  clearTimeout(toastTimer);
-  toastTimer = null;
+  // Continuation and persistent receipts wait for an answer; an Undo receipt
+  // drains over TOAST_UNDO_MS; passive feedback keeps its own bounded duration.
+  const waitsForAnswer = hasAction || opts.persistent === true;
   const requestedDuration = opts.duration == null ? 4000 : Number(opts.duration);
   const duration = Number.isFinite(requestedDuration) ? Math.max(0, requestedDuration) : 4000;
-  t.classList.remove('hidden');
-  syncToastMessageScrollAccess();
-  requestAnimationFrame(syncToastMessageScrollAccess);
-  if (!actionable && duration > 0) toastTimer = setTimeout(() => dismissToast(), duration);
+  const total = waitsForAnswer ? 0 : (undoActionId != null ? TOAST_UNDO_MS : duration);
+  const entry = {
+    id: ++toastSeq,
+    msg: String(msg ?? ''),
+    sub: String(opts.sub || ''),
+    tone,
+    glyph: String(opts.glyph || ''),
+    actionLabel,
+    action: hasAction ? opts.action : null,
+    undoActionId: undoActionId ?? null,
+    actionable,
+    total,
+    remaining: total,
+    busy: false,
+  };
+
+  const visible = !t.classList.contains('hidden');
+  const front = visible ? toastFront() : null;
+  // An Undo result replaces the receipt that offered it, in place.
+  const replace = !!front
+    && opts.replaceUndo != null
+    && front.undoActionId != null
+    && (opts.replaceUndo === true || front.undoActionId === opts.replaceUndo);
+  if (replace) {
+    toastEntries[toastEntries.length - 1] = entry;
+  } else {
+    if (!visible) toastEntries = [];
+    else pauseToastFront();
+    toastEntries.push(entry);
+    while (toastEntries.length > 2) toastEntries.shift();
+  }
+  toastHeld = t.contains(document.activeElement);
+  if (t.classList) t.classList.toggle('is-held', toastHeld);
+  paintToast(entry, { animation: replace ? 'is-morphing' : 'is-entering' });
+  startToastTimer(entry);
   return true;
 }
 async function performUndo(expectedActionId = null) {
+  const undoneId = expectedActionId ?? (typeof State.latestActionId === 'function' ? State.latestActionId() : true);
   try {
     const label = await State.undo(expectedActionId);
     if (label) {
       renderAll();
-      toast(tr('history.undid', { action: label }));
+      // Morph the receipt that offered this Undo into its result, in place.
+      toast(tr('history.undid', { action: label }), { tone: 'info', glyph: 'undo', duration: 1600, replaceUndo: undoneId });
       reconcileRemindersAfterHistoryChange();
     }
   } catch (error) {
@@ -7851,7 +8086,7 @@ async function performUndo(expectedActionId = null) {
       LOCUS_UNDO_PENDING: 'history.undoPending',
       LOCUS_UNDO_INTERRUPTED: 'history.undoInterrupted',
     }[error?.code] || 'history.undoFailed';
-    toast(tr(key), { danger: true, duration: 7000 });
+    toast(tr(key), { danger: true, duration: 7000, replaceUndo: undoneId });
   }
 }
 async function performRedo() {
@@ -33569,6 +33804,9 @@ function bindStatic() {
       // sitting beneath a modal/menu/tool overlay.
       const _escBlockers = ['state-recovery-overlay','paste-overlay','rich-text-link-overlay','reminder-overlay','calendar-task-overlay','planner-overlay','landing-layer','cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','trash-delete-overlay','organization-name-overlay','organization-delete-overlay','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub'];
       const _overlayWasOpen = _escBlockers.some(id => { const el = document.getElementById(id); return el && !el.classList.contains('hidden'); });
+      // The newest notification is the topmost transient layer once no dialog,
+      // sheet, or menu is open.
+      if (!_overlayWasOpen && !higherLayerOpen && dismissToastForEscape()) { e.preventDefault(); return; }
       if (!_overlayWasOpen && handleOpenTabsEscape(e)) return;
       closeCommandPalette();
       toggleSearchBar(false);

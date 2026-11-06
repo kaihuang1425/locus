@@ -2462,15 +2462,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
       if (!found) return;
       const { item: it } = found;
       if (!reminderMatchesAlarm(it.reminder, alarm)) return;
-      const title = it.type === 'tab' ? it.title : (it.type === 'todo' ? 'To-do reminder' : 'Note reminder');
-      const msg = it.type === 'tab' ? (it.url || '') : (stripHtml(it.html || it.text || '').slice(0, 120));
-      await createNativeNotification('te-notif-' + itemId, {
-        type: 'basic',
-        iconUrl: chrome.runtime.getURL('icons/icon128.png'),
-        title: '⏰ ' + title,
-        message: msg,
-        priority: 2
-      });
+      await createNativeNotification('te-notif-' + itemId, reminderNoticeOptions(s, found, it.reminder.at));
       // Recurring reminders re-arm for their next occurrence; one-shots are
       // marked notified so they stop surfacing as pending.
       const itNext = nextRecurTime(it.reminder.at, it.reminder.recur);
@@ -2542,6 +2534,93 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     console.error('Locus alarm failed:', alarm.name, err);
   }
 });
+
+// System reminders can't take Locus styling, so they carry what matters: the
+// Locus icon, the task title, when and where it is due, and two answers. A to-do
+// offers Done and Snooze 10 min; a page or note offers Snooze 10 min.
+const REMINDER_SNOOZE_MS = 10 * 60000;
+const REMINDER_NOTICE_COPY = {
+  en: {
+    due: (time, place) => (place ? `Due ${time} · ${place}` : `Due ${time}`),
+    done: 'Done',
+    snooze: 'Snooze 10 min',
+    untitled: 'Reminder',
+    failedTitle: 'Reminder update needs attention',
+    failedBody: 'Locus could not save that answer. Open Locus to review the reminder.',
+  },
+  'zh-TW': {
+    due: (time, place) => (place ? `${time} 到期 · ${place}` : `${time} 到期`),
+    done: '完成',
+    snooze: '10 分鐘後再提醒',
+    untitled: '提醒',
+    failedTitle: '提醒需要確認',
+    failedBody: 'Locus 無法儲存這個回覆，請開啟 Locus 查看提醒。',
+  },
+};
+
+function reminderNoticeCopy(state) {
+  return REMINDER_NOTICE_COPY[appLocale(state)] || REMINDER_NOTICE_COPY.en;
+}
+
+function reminderNoticeOptions(state, found, at) {
+  const copy = reminderNoticeCopy(state);
+  const it = found.item;
+  const rawTitle = it.type === 'tab' ? (it.title || it.url || '') : stripHtml(it.html || it.text || '');
+  const title = String(rawTitle).replace(/\s+/g, ' ').trim().slice(0, 120) || copy.untitled;
+  const locale = appLocale(state) === 'zh-TW' ? 'zh-TW' : 'en-GB';
+  const time = new Date(at).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+  const place = String(found.cat?.name || '').trim();
+  return {
+    type: 'basic',
+    iconUrl: chrome.runtime.getURL('icons/icon128.png'),
+    title,
+    message: copy.due(time, place),
+    priority: 2,
+    buttons: it.type === 'todo' ? [{ title: copy.done }, { title: copy.snooze }] : [{ title: copy.snooze }],
+  };
+}
+
+// Answer a reminder from its system notification. The change goes through the
+// same serialized state writer as every other background write, then alarms are
+// reconciled so a snoozed reminder fires again.
+async function answerReminderNotice(notifId, buttonIndex, now = Date.now()) {
+  if (typeof notifId !== 'string' || !notifId.startsWith('te-notif-')) return { ok: false, reason: 'not-a-reminder' };
+  const itemId = notifId.slice('te-notif-'.length);
+  const s = await getState();
+  const found = s ? findItemById(s, itemId) : null;
+  if (!found) {
+    await clearNativeNotification(notifId).catch(() => {});
+    return { ok: false, reason: 'missing' };
+  }
+  const it = found.item;
+  const action = it.type === 'todo' && buttonIndex === 0 ? 'done' : 'snooze';
+  if (action === 'done') {
+    if (it.done === true) {
+      await clearNativeNotification(notifId).catch(() => {});
+      return { ok: true, action, changed: false };
+    }
+    it.done = true;
+  } else {
+    const reminder = it.reminder && typeof it.reminder === 'object' ? it.reminder : {};
+    it.reminder = Object.assign({}, reminder, { at: now + REMINDER_SNOOZE_MS, notified: false });
+  }
+  try {
+    await setState(s);
+  } catch (error) {
+    const copy = reminderNoticeCopy(s);
+    await showReminderAttention(notifId, copy.failedTitle, copy.failedBody);
+    return { ok: false, reason: 'write', action };
+  }
+  await requestReminderAlarmReconciliation('reminder-notice-' + action);
+  await clearNativeNotification(notifId).catch(() => {});
+  return { ok: true, action, changed: true };
+}
+
+if (chrome.notifications?.onButtonClicked?.addListener) {
+  chrome.notifications.onButtonClicked.addListener((notifId, buttonIndex) => {
+    answerReminderNotice(notifId, buttonIndex).catch(error => console.error('Could not answer the Locus reminder:', error));
+  });
+}
 
 function stripHtml(html) {
   return String(html).replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();

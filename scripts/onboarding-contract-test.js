@@ -6300,13 +6300,21 @@ assert.match(
 assert.match(html, /id="toast-action"[^>]*class="hidden"/, 'the shared toast must expose one optional action control');
 assert.match(html, /id="toast-close"[^>]*data-i18n-aria-label="feedback\.dismiss"/,
   'the shared receipt must expose one localized native Close control');
+// The 2026-11 notification component keeps the entry model in toast() and
+// paints it in paintToast(); the action is bound only when one was supplied.
+const paintToastSource = extractFunction('paintToast');
 assert.match(
   toastSource,
-  /toast-action[\s\S]*actionLabel[\s\S]*onclick[\s\S]*opts\.action/,
-  'the toast must bind the optional receipt action only when supplied',
+  /const hasAction = !!\(actionLabel && typeof opts\.action === 'function'\);[\s\S]*action: hasAction \? opts\.action : null/,
+  'the toast must keep the optional receipt action only when supplied',
 );
-assert.match(toastSource, /const actionable\s*=\s*hasAction\s*\|\|\s*undoActionId\s*!=\s*null[\s\S]*if \(!actionable && duration > 0\)/,
-  'Undo and destination receipts must remain until acted on or dismissed');
+assert.match(
+  paintToastSource,
+  /toast-action[\s\S]*if \(entry\.action\) \{[\s\S]*a\.onclick = \(\) => runToastAction\(entry\)/,
+  'the receipt action is bound only when supplied',
+);
+assert.match(toastSource, /const actionable\s*=\s*hasAction\s*\|\|\s*undoActionId\s*!=\s*null[\s\S]*const waitsForAnswer = hasAction \|\| opts\.persistent === true;/,
+  'destination receipts wait for an answer; Undo receipts drain and stay undoable with Ctrl+Z');
 const toastScrollAttributes = {};
 let toastScrollHidden = false;
 const toastScrollMessage = {
@@ -6366,7 +6374,7 @@ assert.match(bindToastReceiptSource, /addEventListener\('resize'[\s\S]*syncToast
   'receipt keyboard access must stay synchronized when the viewport changes');
 assert.match(bindToastReceiptSource, /toast-msg[\s\S]*addEventListener\('keydown',\s*handleToastMessageScrollKey\)/,
   'the shared receipt must bind keyboard scrolling to its message only');
-assert.match(toastSource, /m\.scrollTop\s*=\s*0[\s\S]*classList\.remove\('hidden'\)[\s\S]*syncToastMessageScrollAccess/,
+assert.match(paintToastSource, /m\.scrollTop\s*=\s*0[\s\S]*classList\.remove\('hidden'\)[\s\S]*syncToastMessageScrollAccess/,
   'each newly shown receipt must start at the beginning before overflow access is measured');
 assert.match(css, /#toast\s*\{[^}]*width:\s*min\([^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto 40px/s,
   'the receipt container must stay bounded and reserve a stable Close rail');

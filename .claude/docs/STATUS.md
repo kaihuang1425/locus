@@ -297,6 +297,17 @@ Slices, in order:
 
 ## Done (newest first)
 
+- **2026-11-06 - One notification style (canvas step 4)**
+  - **What:** shared dark receipt card with icon circle, sub-label, drain bar, two-deep
+    stack, in-place Undo/Retry morphs, Escape; popup receipt restyled; in-Locus due
+    reminder card (Done / Snooze); system reminders show title, "Due HH:MM · Space",
+    and Done / Snooze 10 min buttons answered by the background.
+  - **Changed decision:** Undo receipts drain over 5.2 s (pause on hover/focus);
+    previously they stayed until dismissed. See DESIGN.md 2026-11-06.
+  - **Evidence:** `notifications-contract-test.js` (74 checks); Edge 156 pass.
+  - **Not done:** system notifications were not seen on screen; inline form status
+    lines were left inline on purpose.
+
 - **2026-11-06 - Plan page (canvas step 3: Upcoming, Sort inbox, Auto-plan)**
   - **What:** `plan.js` adds the Plan surface on the calendar route (Upcoming lanes,
     This week bar with Even out, Sort inbox, Auto-plan pill) and the rail Plan item;

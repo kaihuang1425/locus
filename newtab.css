@@ -13725,7 +13725,7 @@ body[data-surface="calendar"] #main { background: var(--today-ground); }
   cursor: pointer;
 }
 .plan-card-title { display: block; font-size: 14.5px; font-weight: 600; line-height: 1.35; overflow-wrap: anywhere; }
-.plan-card-meta { display: flex; align-items: center; gap: 7px; min-height: 22px; margin-top: 8px; }
+.plan-card-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; min-height: 22px; margin-top: 8px; }
 .plan-dot { width: 8px; height: 8px; flex-shrink: 0; border-radius: 3px; background: var(--dot); }
 .plan-chip {
   display: inline-flex;
@@ -13738,6 +13738,7 @@ body[data-surface="calendar"] #main { background: var(--today-ground); }
   font-family: var(--today-mono);
   font-size: 11.5px;
   font-weight: 600;
+  white-space: nowrap;
 }
 .plan-card.is-overdue .plan-chip { background: var(--today-when); color: #19231f; }
 .plan-rolled {
@@ -13876,3 +13877,292 @@ body[data-surface="calendar"] #main { background: var(--today-ground); }
   .plan *, .plan *::before, .plan *::after,
   .cal-wrap .plan-hd * { animation: none !important; transition: none !important; }
 }
+
+/* --------------------------------------------------------------------------
+   NOTIFICATIONS (2026-11 canvas): one style everywhere.
+   A dark card, a coloured icon circle (green saved, orange when, red problem,
+   neutral info), a short message, an optional mono sub-label, and an action.
+   Timed receipts drain an orange bar that pauses while hovered or focused. The
+   previous receipt waits tucked behind the newest one. The base #toast rules
+   above keep layout, focus, and forced-colors behaviour; this layer restyles.
+   -------------------------------------------------------------------------- */
+body[data-theme] #toast,
+body[data-theme] #toast-behind {
+  --toast-ink: #f6f3eb;
+  --toast-muted: #aeb9b3;
+  --toast-icon: #197654;
+  width: auto;
+  min-width: min(340px, calc(100vw - 24px));
+  max-width: min(620px, calc(100vw - 24px));
+  min-height: 56px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  padding: 8px 8px 8px 14px;
+  border: 0;
+  border-radius: 17px;
+  background: var(--today-now, #19231f);
+  color: var(--toast-ink);
+  font: 500 14.5px var(--font);
+  box-shadow: 0 18px 40px rgba(25, 35, 31, .25);
+  overflow: hidden;
+  transition: opacity .3s ease, visibility 0s linear 0s, box-shadow .2s ease;
+}
+body[data-theme] #toast.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .2s ease, visibility 0s linear .2s;
+}
+body[data-theme] #toast.is-held { box-shadow: 0 22px 48px rgba(25, 35, 31, .32); }
+body[data-theme] #toast.is-entering { animation: locus-toast-in .5s cubic-bezier(.34, 1.56, .64, 1) both; }
+body[data-theme] #toast.is-promoted { animation: locus-toast-promote .42s cubic-bezier(.34, 1.56, .64, 1) both; }
+body[data-theme] #toast.is-morphing .toast-copy { animation: locus-toast-swap .32s cubic-bezier(.22, 1, .36, 1); }
+@keyframes locus-toast-in { from { opacity: 0; transform: translate(-50%, 26px) scale(.95); } to { opacity: 1; transform: translate(-50%, 0); } }
+@keyframes locus-toast-promote { from { opacity: .6; transform: translate(-50%, -14px) scale(.94); } to { opacity: 1; transform: translate(-50%, 0); } }
+@keyframes locus-toast-swap { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: none; } }
+
+body[data-theme] #toast[data-tone="info"],
+body[data-theme] #toast-behind[data-tone="info"] { --toast-icon: #35423c; }
+body[data-theme] #toast[data-tone="warning"],
+body[data-theme] #toast-behind[data-tone="warning"] { --toast-icon: #ff5b2e; }
+body[data-theme] #toast[data-tone="error"],
+body[data-theme] #toast.danger,
+body[data-theme] #toast-behind[data-tone="error"] { --toast-icon: #e0281b; }
+
+body[data-theme] #toast .toast-copy {
+  flex: 1 1 220px;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 12px;
+}
+body[data-theme] #toast-mark {
+  grid-row: 1 / span 2;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  border-radius: 50%;
+  background: var(--toast-icon);
+  color: #ffffff;
+  animation: locus-toast-pop .5s cubic-bezier(.34, 1.9, .64, 1) .08s both;
+}
+body[data-theme] #toast-mark svg { width: 14px; height: 14px; stroke-dasharray: 16; animation: locus-toast-check .35s ease .22s both; }
+body[data-theme] #toast-mark::before { width: auto; height: auto; border: 0; border-radius: 0; color: #ffffff; font: 800 13px/1 var(--font); }
+body[data-theme] #toast[data-glyph="undo"] #toast-mark svg { display: none; }
+body[data-theme] #toast[data-glyph="undo"] #toast-mark::before { display: grid; content: '\21B6'; font-size: 15px; }
+body[data-theme] #toast[data-busy="true"] #toast-mark svg { display: none; }
+body[data-theme] #toast[data-busy="true"] #toast-mark::before {
+  display: block;
+  content: '';
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, .35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: locus-toast-spin .8s linear infinite;
+}
+@keyframes locus-toast-pop { from { transform: scale(.3); } to { transform: scale(1); } }
+@keyframes locus-toast-check { from { stroke-dashoffset: 16; } to { stroke-dashoffset: 0; } }
+@keyframes locus-toast-spin { to { transform: rotate(360deg); } }
+body[data-theme] #toast-msg {
+  grid-column: 2;
+  color: var(--toast-ink);
+  font-size: 14.5px;
+  line-height: 1.35;
+}
+body[data-theme] #toast .toast-sub {
+  grid-column: 2;
+  color: var(--toast-muted);
+  font: 500 12.5px/1.3 var(--font-brand-mono, var(--font-mono));
+}
+body[data-theme] #toast .toast-sub[hidden] { display: none; }
+body[data-theme] #toast .toast-actions { flex: 0 0 auto; gap: 2px; flex-wrap: nowrap; }
+body[data-theme] #toast-action,
+body[data-theme] #toast-undo {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: #b9c8ff;
+  font: 700 14px var(--font);
+  transition: background .12s ease, transform .1s ease;
+}
+body[data-theme] #toast-action:hover,
+body[data-theme] #toast-undo:hover { background: rgba(246, 243, 235, .08); border: 0; color: #d6defe; }
+body[data-theme] #toast-action:active,
+body[data-theme] #toast-undo:active { transform: scale(.94); }
+body[data-theme] #toast-action:disabled,
+body[data-theme] #toast-undo:disabled { opacity: .5; cursor: default; }
+body[data-theme] #toast-close {
+  width: 32px;
+  min-height: 32px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--toast-muted);
+  opacity: 0;
+  transition: opacity .15s ease, background .12s ease;
+}
+body[data-theme] #toast:hover #toast-close,
+body[data-theme] #toast:focus-within #toast-close { opacity: 1; }
+body[data-theme] #toast-close:hover { background: rgba(246, 243, 235, .08); color: #ffffff; }
+@media (hover: none) { body[data-theme] #toast-close { opacity: 1; } }
+body[data-theme] #toast :is(#toast-action, #toast-undo, #toast-close, #toast-msg):focus-visible { outline: 2px solid #b9c8ff; outline-offset: 2px; }
+
+.toast-drain {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--when, #ff5b2e);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  pointer-events: none;
+}
+#toast[data-draining="true"] .toast-drain.is-running {
+  animation: locus-toast-drain var(--toast-ms, 5200ms) linear var(--toast-elapsed, 0ms) forwards;
+}
+#toast .toast-drain.is-paused,
+#toast.is-held .toast-drain { animation-play-state: paused; }
+@keyframes locus-toast-drain { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+body[data-theme] #toast-behind {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: calc(var(--z-menu) - 1);
+  max-width: min(560px, calc(100vw - 48px));
+  transform: translate(-50%, -14px) scale(.94);
+  opacity: .6;
+  filter: saturate(.7);
+  pointer-events: none;
+  transition: transform .42s cubic-bezier(.34, 1.56, .64, 1), opacity .3s ease;
+}
+body[data-theme] #toast-behind.hidden { display: none; }
+body[data-surface="home"] #toast-behind { bottom: 108px; }
+.toast-behind-mark { width: 28px; height: 28px; flex-shrink: 0; border-radius: 50%; background: var(--toast-icon); }
+.toast-behind-msg { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-theme] #toast,
+  body[data-theme] #toast *,
+  body[data-theme] #toast *::before,
+  body[data-theme] #toast-behind { animation: none !important; transition: none !important; }
+  .toast-drain { display: none; }
+}
+body[data-anim="off"] .toast-drain { display: none; }
+@media (forced-colors: active) {
+  body[data-theme] #toast { border: 1px solid CanvasText; }
+  body[data-theme] #toast-mark { background: Highlight; color: HighlightText; }
+  .toast-drain { background: Highlight; }
+}
+
+/* Reminder due inside Locus: one dark card that waits for an answer. */
+body[data-theme] #toast[data-glyph="clock"] #toast-mark svg { display: none; }
+body[data-theme] #toast[data-glyph="clock"] #toast-mark::before { display: grid; content: '\25F7'; font-size: 15px; }
+.plan-due {
+  position: fixed;
+  top: 24px;
+  right: 58px;
+  z-index: calc(var(--z-menu) + 1);
+  width: min(368px, calc(100vw - 32px));
+  padding: 18px 20px 20px;
+  border-radius: 24px;
+  background: var(--today-now, #19231f);
+  color: #f6f3eb;
+  font-family: var(--font);
+  box-shadow: 0 26px 50px rgba(25, 35, 31, .28);
+  animation: plan-due-in .6s cubic-bezier(.34, 1.4, .64, 1) both;
+}
+.plan-due :where(button) { font: inherit; color: inherit; }
+.plan-due.is-leaving { animation: plan-due-out .34s cubic-bezier(.4, 0, 1, 1) forwards; }
+@keyframes plan-due-in { from { opacity: 0; transform: translateX(60px) scale(.96); } to { opacity: 1; transform: none; } }
+@keyframes plan-due-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(-10px) scale(.95); } }
+.plan-due-hd { display: flex; align-items: center; gap: 10px; }
+.plan-due-ring { position: relative; display: grid; place-items: center; width: 26px; height: 26px; flex-shrink: 0; border: 2px solid #ff5b2e; border-radius: 50%; }
+.plan-due-ring span { width: 8px; height: 8px; border-radius: 50%; background: #ff5b2e; animation: plan-due-beat 1.8s ease-in-out infinite; }
+@keyframes plan-due-beat { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 91, 46, .55); } 70% { box-shadow: 0 0 0 8px rgba(255, 91, 46, 0); } }
+.plan-due-when { flex: 1; min-width: 0; color: #ff9670; font: 600 12.5px var(--font-brand-mono, var(--font-mono)); }
+.plan-due-x { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 9px; background: transparent; color: #aeb9b3; cursor: pointer; }
+.plan-due-x:hover { background: rgba(246, 243, 235, .08); color: #ffffff; }
+.plan-due-title {
+  margin: 14px 0 18px;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  text-decoration-line: line-through;
+  text-decoration-thickness: 2px;
+  text-decoration-color: transparent;
+  transition: text-decoration-color .42s cubic-bezier(.22, 1, .36, 1), color .25s ease;
+}
+.plan-due.is-done .plan-due-title { text-decoration-color: #aeb9b3; color: #aeb9b3; }
+.plan-due-actions, .plan-due-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.plan-due-actions[hidden], .plan-due-chips[hidden] { display: none; }
+.plan-due-done {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 18px 0 15px;
+  border: 0;
+  border-radius: 14px;
+  background: #f6f3eb;
+  color: #19231f !important;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .2s ease, color .2s ease, transform .18s cubic-bezier(.34, 1.56, .64, 1);
+}
+.plan-due-done:hover { background: #ffffff; }
+.plan-due-done:active { transform: scale(.94); }
+.plan-due-done.is-on { background: #197654; color: #ffffff !important; transform: scale(1.04); }
+.plan-due-burst { position: absolute; inset: 0; pointer-events: none; }
+.plan-due-burst i { position: absolute; left: 50%; top: 50%; width: 7px; height: 7px; margin: -3.5px; border-radius: 50%; background: #ff5b2e; opacity: 0; transform: rotate(var(--a)) translateX(30px); }
+.plan-due-burst i:nth-child(odd) { background: #59c29a; }
+.plan-due-done.is-on .plan-due-burst i { animation: plan-due-burst .65s cubic-bezier(.22, 1, .36, 1) forwards; }
+@keyframes plan-due-burst { from { opacity: 1; transform: rotate(var(--a)) translateX(30px) scale(1); } to { opacity: 0; transform: rotate(var(--a)) translateX(66px) scale(.2); } }
+.plan-due-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 16px;
+  border: 1px solid rgba(246, 243, 235, .18);
+  border-radius: 14px;
+  background: transparent;
+  color: #c9d1cc !important;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.plan-due-ghost:hover { background: rgba(246, 243, 235, .08); color: #ffffff !important; }
+.plan-due-chip {
+  height: 40px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 12px;
+  background: #26322d;
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  animation: plan-due-chip .38s cubic-bezier(.34, 1.56, .64, 1) both;
+}
+.plan-due-chip:nth-child(3) { animation-delay: .04s; }
+.plan-due-chip:nth-child(4) { animation-delay: .08s; }
+.plan-due-chip:hover { background: #ff5b2e; color: #ffffff; }
+@keyframes plan-due-chip { from { opacity: 0; transform: translateX(-10px) scale(.9); } to { opacity: 1; transform: none; } }
+.plan-due-back { display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 12px; background: transparent; color: #aeb9b3; cursor: pointer; }
+.plan-due-back:hover { background: rgba(246, 243, 235, .08); color: #ffffff; }
+.plan-due :focus-visible { outline: 2px solid #b9c8ff; outline-offset: 2px; }
+@media (max-width: 520px) { .plan-due { top: 12px; right: 12px; left: 12px; width: auto; } }
+@media (prefers-reduced-motion: reduce) {
+  .plan-due, .plan-due *, .plan-due *::before { animation: none !important; transition: none !important; }
+}
+@media (forced-colors: active) { .plan-due { border: 1px solid CanvasText; } }

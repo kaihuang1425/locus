@@ -4972,3 +4972,41 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   zh-TW.
 
   **Implemented: yes. Verified: partial. User-validated: no. Released: no.**
+
+- **2026-11-06 - One notification style (canvas step 4).** Every toast, receipt,
+  and popup receipt is now one dark registry card: a coloured icon circle (green
+  saved, orange when, red problem, neutral info), a short message, an optional mono
+  sub-label, and its action (Undo, Retry, or a continuation such as Open
+  destination). The newest receipt enters with a spring; the previous one waits
+  tucked behind it (at most two) and comes forward when the newest is answered or
+  dismissed. Undo morphs the receipt into "Undid …" in place, and an action that
+  returns a promise shows a spinner until it settles. Escape dismisses the newest
+  receipt when no dialog, sheet, or menu is open; Ctrl+Z still undoes from history.
+
+  **Changed decision:** an Undo receipt now drains over 5.2 s (orange bar, paused
+  while hovered or focused) instead of staying until dismissed, as the
+  Notifications board specifies. Continuation and persistent receipts still wait
+  for an answer, and Undo stays available with Ctrl+Z after the card leaves. The
+  `core-visual-system` and `onboarding` assertions that encoded the old durable
+  rule were updated with this note. To restore it, make `waitsForAnswer` include
+  `undoActionId != null` in `toast()`.
+
+  A to-do whose reminder comes due while Locus is open gets one card top right
+  that waits for an answer: Done (strike, green check, the Board to-do completion
+  transaction with Undo) or Snooze (10 min, 1 hour, tomorrow 09:00 through
+  `setReminder`, reported as "Back at HH:MM" with Undo). System reminder
+  notifications keep the Locus icon and now show the task title, "Due HH:MM ·
+  Space", and buttons (Done and Snooze 10 min for a to-do, Snooze 10 min for a page
+  or note); the background answers through its serialized state writer and then
+  reconciles alarms. `notifications` was already granted; no permission change.
+  Inline form status lines in dialogs and Settings stay inline: they report the
+  form they belong to and are not pop-ups.
+
+  Evidence: new `notifications-contract-test.js` (74 checks), the updated toast
+  controller walkthrough in `core-visual-system-contract-test.js`, every suite; a
+  throwaway Edge 156 profile over CDP (real receipt draining, two stacked, hover
+  hold, Undo morph, Retry spinner, Escape, the due card with Snooze chips and Done,
+  the popup receipt, Dark, 390 px zh-TW, reduced motion). System notifications
+  were not seen on screen; their options and answers are covered by the suite.
+
+  **Implemented: yes. Verified: partial. User-validated: no. Released: no.**

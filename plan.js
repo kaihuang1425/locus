@@ -988,3 +988,171 @@ function planTodayCount(ws) {
   const lanes = planLaneModel(planCollect(ws), Date.now());
   return lanes.find(lane => lane.id === 'today')?.items.length || 0;
 }
+
+// ── Reminders that come due while Locus is open ────────────────
+// A to-do whose reminder comes due while this page is open gets one card that
+// waits for an answer: Done (the Board to-do completion transaction, with Undo)
+// or Snooze (10 min, 1 hour, tomorrow 09:00, through setReminder). The system
+// notification from the background still fires; this is the in-Locus answer.
+const PLAN_DUE_POLL_MS = 20000;
+const planDueOpenedAt = Date.now();
+const planDueAnswered = new Set();
+let planDueShown = null;
+let planDueTimer = null;
+let planDueBusy = false;
+
+function planDueKey(id, at) {
+  return `${id}@${at}`;
+}
+// Pure: the latest open to-do in the workspace whose reminder came due after
+// `since` and not later than `now`, and was not answered here yet.
+function planDueCandidate(workspace, now, since, answered = new Set()) {
+  let best = null;
+  planCollect(workspace).dated.forEach(entry => {
+    if (entry.type !== 'todo' || entry.at > now || entry.at <= since) return;
+    if (answered.has(planDueKey(entry.id, entry.at))) return;
+    if (!best || entry.at > best.at) best = entry;
+  });
+  return best;
+}
+function planDueSnoozeAt(choice, now = Date.now()) {
+  if (choice === '10m') return now + 10 * 60000;
+  if (choice === '1h') return now + 60 * 60000;
+  return planAtTime(planAddDays(planDayStart(now), 1), 9);
+}
+
+function startPlanDueWatch() {
+  if (planDueTimer) return;
+  planDueTimer = setInterval(checkPlanDue, PLAN_DUE_POLL_MS);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) checkPlanDue(); });
+  checkPlanDue();
+}
+
+function checkPlanDue(now = Date.now()) {
+  if (planDueBusy) return null;
+  const ws = activeWs();
+  if (planDueShown) {
+    const still = ws && planCollect(ws).dated.find(entry => entry.id === planDueShown.id && entry.at === planDueShown.at && entry.type === 'todo');
+    if (!still) hidePlanDueCard();
+    return planDueShown;
+  }
+  if (!ws || State.isRecoveryRequired?.()) return null;
+  const candidate = planDueCandidate(ws, now, planDueOpenedAt - 60000, planDueAnswered);
+  if (candidate) showPlanDueCard(candidate);
+  return candidate;
+}
+
+function planDueWhen(entry) {
+  const space = activeWs()?.categories?.find(cat => cat.id === entry.spaceId);
+  const time = new Date(entry.at).toLocaleTimeString(appLocale(), { hour: '2-digit', minute: '2-digit' });
+  const place = String(space?.name || '').trim();
+  return place ? tr('dueCard.dueIn', { time, place }) : tr('dueCard.due', { time });
+}
+
+function showPlanDueCard(entry) {
+  hidePlanDueCard({ immediate: true });
+  planDueShown = { id: entry.id, at: entry.at, title: entry.title };
+  const card = document.createElement('section');
+  card.id = 'plan-due';
+  card.className = 'plan-due';
+  card.setAttribute('role', 'region');
+  card.setAttribute('aria-label', tr('dueCard.label'));
+  card.innerHTML = `
+    <div class="plan-due-hd">
+      <span class="plan-due-ring" aria-hidden="true"><span></span></span>
+      <span class="plan-due-when">${esc(planDueWhen(entry))}</span>
+      <button type="button" class="plan-due-x" aria-label="${esc(tr('dueCard.dismiss'))}">${planSvg('M4 4l8 8M12 4l-8 8', 14, 1.8)}</button>
+    </div>
+    <h2 class="plan-due-title" role="alert">${esc(entry.title || tr('plan.untitled'))}</h2>
+    <div class="plan-due-actions">
+      <button type="button" class="plan-due-done"><span class="plan-due-burst" aria-hidden="true">${Array.from({ length: 8 }, (_, i) => `<i style="--a:${i * 45}deg"></i>`).join('')}</span>${planSvg(PLAN_ICONS.check, 15, 2.4)}<span>${esc(tr('dueCard.done'))}</span></button>
+      <button type="button" class="plan-due-ghost plan-due-snooze" aria-expanded="false">${planSvg(PLAN_ICONS.clock, 15, 1.6)}<span>${esc(tr('dueCard.snooze'))}</span></button>
+    </div>
+    <div class="plan-due-chips" hidden>
+      <button type="button" class="plan-due-back" aria-label="${esc(tr('dueCard.back'))}">${planSvg('M10 3.5 5.5 8 10 12.5', 15, 1.8)}</button>
+      <button type="button" class="plan-due-chip" data-snooze="10m">${esc(tr('dueCard.in10'))}</button>
+      <button type="button" class="plan-due-chip" data-snooze="1h">${esc(tr('dueCard.in1h'))}</button>
+      <button type="button" class="plan-due-chip" data-snooze="tomorrow">${esc(tr('dueCard.tomorrow'))}</button>
+    </div>`;
+  const actions = card.querySelector('.plan-due-actions');
+  const chips = card.querySelector('.plan-due-chips');
+  const snooze = card.querySelector('.plan-due-snooze');
+  const setChips = open => {
+    actions.hidden = open;
+    chips.hidden = !open;
+    snooze.setAttribute('aria-expanded', String(open));
+    requestAnimationFrame(() => (open ? chips.querySelector('[data-snooze]') : snooze)?.focus());
+  };
+  card.querySelector('.plan-due-x').onclick = () => {
+    planDueAnswered.add(planDueKey(entry.id, entry.at));
+    hidePlanDueCard();
+  };
+  card.querySelector('.plan-due-done').onclick = event => planDueDone(entry, card, event.currentTarget);
+  snooze.onclick = () => setChips(true);
+  card.querySelector('.plan-due-back').onclick = () => setChips(false);
+  chips.querySelectorAll('[data-snooze]').forEach(button => {
+    button.onclick = () => planDueSnooze(entry, card, button.dataset.snooze);
+  });
+  card.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (!chips.hidden) { setChips(false); return; }
+    planDueAnswered.add(planDueKey(entry.id, entry.at));
+    hidePlanDueCard();
+  });
+  document.body.appendChild(card);
+}
+
+function hidePlanDueCard({ immediate = false } = {}) {
+  const card = document.getElementById('plan-due');
+  planDueShown = null;
+  if (!card) return;
+  if (immediate || planReducedMotion()) { card.remove(); return; }
+  card.classList.add('is-leaving');
+  setTimeout(() => card.remove(), 360);
+}
+
+async function planDueDone(entry, card, button) {
+  if (planDueBusy) return;
+  planDueBusy = true;
+  card.classList.add('is-done');
+  button.classList.add('is-on');
+  const reduce = planReducedMotion();
+  const ok = await commitTodayTodoToggle(entry.id, button);
+  planDueBusy = false;
+  if (!ok) {
+    card.classList.remove('is-done');
+    button.classList.remove('is-on');
+    toast(tr('dueCard.failed'), { tone: 'warning' });
+    return;
+  }
+  planDueAnswered.add(planDueKey(entry.id, entry.at));
+  setTimeout(() => {
+    hidePlanDueCard();
+    renderBoard();
+    toast(tr('dueCard.doneToast'), { sub: entry.title, undo: true });
+  }, reduce ? 0 : 520);
+}
+
+async function planDueSnooze(entry, card, choice) {
+  if (planDueBusy) return;
+  planDueBusy = true;
+  const at = planDueSnoozeAt(choice);
+  const ok = await setReminder(entry.id, at);
+  planDueBusy = false;
+  if (!ok) {
+    toast(tr('dueCard.failed'), { tone: 'warning' });
+    return;
+  }
+  planDueAnswered.add(planDueKey(entry.id, entry.at));
+  hidePlanDueCard();
+  // Morph the reminder receipt into the answer, with the same Undo.
+  toast(tr('dueCard.snoozed', { time: new Date(at).toLocaleTimeString(appLocale(), { hour: '2-digit', minute: '2-digit' }) }), {
+    tone: 'warning',
+    glyph: 'clock',
+    sub: entry.title,
+    undo: true,
+    replaceUndo: true,
+  });
+}

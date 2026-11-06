@@ -84,7 +84,9 @@ for (const key of [
 assert.ok(source.includes("'organization.workspace.confirmEmpty': '“{name}” has no groups, saved items, or reminders. The workspace and its Space structure will be removed from this browser profile. Other workspaces won’t change. After deleting, choose Undo on this page before reloading or closing Locus.'"), 'English empty-workspace copy must state prerequisites, scope, retained data, and the bounded recovery instruction');
 assert.ok(source.includes("'organization.space.blockedBody': '請先封存或移動所有群組，再移除此空間的提醒。這次沒有刪除任何內容。'"), 'zh-TW populated-Space copy must name the recovery step and confirm no deletion');
 assert.match(source, /State\.snapshot\(tr\(`organization\.\$\{dialogCtx\.kind\}\.deleteHistory`/, 'Undo history labels must localize the exact deleted organization');
-assert.match(source, /async function performUndo[\s\S]*?if \(label\) \{[\s\S]*?renderAll\(\);[\s\S]*?toast\(tr\('history\.undid', \{ action: label \}\)\);[\s\S]*?reconcileRemindersAfterHistoryChange\(\);/, 'The resulting Undo toast must preserve the active locale before post-receipt reminder reconciliation');
+// The result may carry presentation options (it morphs the receipt that
+// offered Undo in place); the localized message and the order are the contract.
+assert.match(source, /async function performUndo[\s\S]*?if \(label\) \{[\s\S]*?renderAll\(\);[\s\S]*?toast\(tr\('history\.undid', \{ action: label \}\)(?:, \{[^}\n]*\})?\);[\s\S]*?reconcileRemindersAfterHistoryChange\(\);/, 'The resulting Undo toast must preserve the active locale before post-receipt reminder reconciliation');
 
 class ClassList {
   constructor(...initial) { this.values = new Set(initial); }

@@ -938,3 +938,40 @@ body {
   .destination-card,
   .capture-result { border: 2px solid CanvasText; }
 }
+
+/* Notifications (2026-11 canvas): the popup receipt matches the new tab's dark
+   card with a coloured icon circle. */
+#pop-toast {
+  --pop-toast-icon: #197654;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 7px 12px 7px 9px;
+  border-radius: 14px;
+  background: #19231f;
+  color: #f6f3eb;
+  font-size: 12.5px;
+  box-shadow: 0 14px 32px rgba(25, 35, 31, .28);
+  transition: opacity .2s ease, transform .42s cubic-bezier(.34, 1.56, .64, 1);
+}
+#pop-toast::before {
+  content: '\2713';
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--pop-toast-icon);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+}
+#pop-toast[data-tone="error"] { --pop-toast-icon: #e0281b; }
+#pop-toast[data-tone="error"]::before { content: '!'; }
+#pop-toast.interactive { border-radius: 14px; }
+#pop-toast .pop-toast-action { border: 0; border-radius: 9px; background: transparent; color: #b9c8ff; font-weight: 700; }
+#pop-toast .pop-toast-action:hover { background: rgba(246, 243, 235, .08); }
+@media (prefers-reduced-motion: reduce) { #pop-toast { transition: none; } }
+@media (forced-colors: active) { #pop-toast { border: 1px solid CanvasText; } #pop-toast::before { background: Highlight; color: HighlightText; } }

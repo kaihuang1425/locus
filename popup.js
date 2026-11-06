@@ -2502,6 +2502,9 @@ function toast(message, { persistent = false } = {}) {
   const el = $('pop-toast');
   el.classList.remove('interactive');
   el.textContent = message;
+  // Same notification style as the new tab: a persistent popup receipt reports
+  // a problem, a passing one confirms.
+  el.dataset.tone = persistent ? 'error' : 'success';
   el.setAttribute('role', persistent ? 'alert' : 'status');
   requestAnimationFrame(() => el.classList.add('show'));
   clearTimeout(toastTimer);

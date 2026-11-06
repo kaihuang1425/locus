@@ -1658,12 +1658,14 @@
       </div>
     </div>
   </div>
+  <div id="toast-behind" class="hidden" aria-hidden="true" inert><span class="toast-behind-mark"></span><span class="toast-behind-msg"></span></div>
   <div id="toast" class="hidden" role="status" aria-live="polite" aria-atomic="true" data-tone="success" data-actionable="false">
     <div class="toast-copy">
       <span id="toast-mark" aria-hidden="true">
         <svg width="14" height="14" viewBox="0 0 14 14" focusable="false"><path d="M2 7l3 3 7-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
       </span>
       <span id="toast-msg">Saved</span>
+      <span id="toast-sub" class="toast-sub" hidden></span>
     </div>
     <div id="toast-actions" class="toast-actions">
       <button id="toast-action" class="hidden" type="button"></button>
@@ -1672,6 +1674,7 @@
     <button id="toast-close" class="toast-close" type="button" data-i18n-aria-label="feedback.dismiss" aria-label="Dismiss notification">
       <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" focusable="false"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
     </button>
+    <span id="toast-drain" class="toast-drain" aria-hidden="true"></span>
   </div>
 
   <!-- ══════ WELCOME / FIRST-SAVE TASK ══════ -->
