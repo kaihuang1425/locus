@@ -5043,3 +5043,22 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   and an unsafe address that refuses to load).
 
   **Implemented: yes. Verified: partial. User-validated: no. Released: no.**
+
+- **2026-11-06 - Remaining pages move onto the canvas (canvas step 6).** Inbox and
+  Space boards, All links, Favorites, Read later, Archive, Trash, Search, Item
+  details, the command palette, Settings, the Calendar, and the toolbar popup share
+  the warm ground, white cards with the light rule, Bricolage page headings, mono
+  times and paths, and the blue action. One CSS layer does it; markup, IDs, and
+  behaviour are unchanged and the left rail keeps its original registry design.
+  Trimmed: page sub-lines under All links, Archive, and Search, the workspace
+  location line, the Read later storage note, the Archive "local" tile, and the rail
+  drag hint. Settings toggle hints are hidden visually and stay as accessible
+  descriptions. Fixed on the way: a board column with many cards squeezed each card
+  to its header (flex shrink with hidden overflow); cards now keep their height and
+  the column scrolls.
+
+  Evidence: `canvas-pages-contract-test.js` (now 60 checks), every suite; throwaway
+  Edge 156 over CDP for all ten surfaces in Light and Dark at 1440 px, four at 390 px,
+  zh-TW, reduced motion, and the popup.
+
+  **Implemented: yes. Verified: partial. User-validated: no. Released: no.**

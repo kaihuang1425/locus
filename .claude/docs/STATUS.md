@@ -297,6 +297,14 @@ Slices, in order:
 
 ## Done (newest first)
 
+- **2026-11-06 - Remaining pages on the canvas (canvas step 6)**
+  - **What:** one CSS layer for boards, Library modes, Archive/Trash, Search, Item
+    details, command palette, Settings, Calendar, and popup; sub-lines trimmed;
+    board cards no longer shrink in a full column.
+  - **Evidence:** `canvas-pages-contract-test.js` (60 checks); Edge 156 pass.
+  - **Not done:** these boards were not reviewed by Kai yet, so layout and behaviour
+    changes beyond restyling were left alone on purpose.
+
 - **2026-11-06 - Welcome, calm new tab, resting page (canvas step 5)**
   - **What:** Welcome envelope with stamp, postmark, and Inbox tray around the
     unchanged first-save transaction; calm new tab flip clock, three recent pages,

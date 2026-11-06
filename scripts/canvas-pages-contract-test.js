@@ -81,7 +81,22 @@ function testRestingPage() {
   ok(/@media \(prefers-reduced-motion: reduce\)/.test(suspendedHtml), 'reduced motion is respected');
 }
 
+function testRemainingSurfaces() {
+  const layer = css.slice(css.indexOf('REMAINING SURFACES (2026-11 canvas)'));
+  ok(layer.length > 1000, 'the surfaces layer is present');
+  ok(!/(?:linear|radial|conic)-gradient\s*\(/.test(layer), 'no CSS gradients');
+  const canvasLayers = css.slice(css.indexOf('PLAN (2026-11 canvas)'));
+  ok(!/#sidebar\b/.test(canvasLayers), 'the canvas layers leave the original rail alone');
+  ok(/body\[data-theme\] \.library-head > div > p,\nbody\[data-theme\] \.search-page-head p,/.test(layer), 'page sub-lines are trimmed in CSS only');
+  ok(/<p>\$\{esc\(tr\(subtitleKey\)\)\}<\/p>/.test(newtab), 'the trimmed copy is still in the markup');
+  ok(/#settings-drawer \.toggle-row small\[id\$="-hint"\] \{\n\s*position: absolute;\n\s*width: 1px;/.test(layer), 'Settings hints are hidden visually, not removed');
+  ok(/aria-describedby="[^"]*general-hibernate-hint/.test(html) || /general-hibernate-hint/.test(newtab), 'Settings hints stay referenced for assistive technology');
+  ok(/body\[data-theme\] \.gcol \.item \{\n\s*\/\*[^*]*\*\/\n\s*flex-shrink: 0;/.test(layer), 'a full board column scrolls instead of shrinking its cards');
+  ok(/@media \(prefers-reduced-motion: reduce\) \{\n\s*body\[data-theme\] :is\(\.library-row, \.archive-row, \.search-result-row, \.gcol \.item\) \{ transition: none; \}/.test(layer), 'card hover motion stops under reduced motion');
+}
+
 testWelcome();
 testCalmNewTab();
 testRestingPage();
+testRemainingSurfaces();
 console.log(`Canvas page contracts passed: ${checks} checks (Welcome envelope and stamp, calm new tab clock, recent pages and tone, resting page copy and loading)`);

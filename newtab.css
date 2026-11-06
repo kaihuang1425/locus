@@ -14587,7 +14587,7 @@ body[data-theme] #landing-layer .landing-search-results { border-color: var(--ca
 
 /* The Inbox chip moves to the top right with its red count. */
 body[data-theme] #landing-layer .landing-footer { position: relative; z-index: 3; inset: auto; height: 0; }
-body[data-theme] #landing-layer .landing-chips { position: absolute; z-index: 5; top: 13px; right: clamp(150px, 14vw, 190px); display: flex; gap: 8px; }
+body[data-theme] #landing-layer .landing-chips { position: absolute; z-index: 5; top: 13px; right: clamp(150px, 14vw, 190px); display: flex; gap: 8px; padding: 0; border: 0; background: transparent; box-shadow: none; }
 body[data-theme] #landing-layer .landing-chip { height: 44px; padding: 0 16px; border: 1px solid var(--calm-rule); border-radius: 14px; background: var(--calm-chip); color: var(--calm-fg); font-weight: 600; }
 body[data-theme] #landing-layer #landing-unsorted-count { display: grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: #e0281b; color: #ffffff; font-size: 11.5px; }
 body[data-theme] #landing-layer #landing-unsorted-count[hidden] { display: none; }
@@ -14601,4 +14601,182 @@ body[data-theme] #landing-layer :focus-visible { outline: 2px solid #8fa8ff; out
   .fl-card.is-flipping .fl-ftop,
   .fl-card.is-flipping .fl-fbot { animation: none !important; visibility: hidden; }
   .landing-recent-page { transition: none; }
+}
+
+/* --------------------------------------------------------------------------
+   REMAINING SURFACES (2026-11 canvas): Inbox and Space boards, All links,
+   Favorites, Read later, Archive, Trash, Search, Item details, the command
+   palette, Settings, and the Calendar move onto the same ground, cards, and
+   type as Today and Plan. This layer restyles and trims; behaviour, markup, and
+   IDs are unchanged, and the left rail keeps its original registry design.
+   Explanatory sub-lines are hidden; Settings hints stay available to assistive
+   technology through their aria-describedby links.
+   -------------------------------------------------------------------------- */
+body[data-theme]:not([data-surface="home"]) #main,
+body[data-theme]:not([data-surface="home"]) #board { background: var(--today-ground); }
+body[data-theme]:not([data-surface="home"]) #topbar { background: var(--today-ground); border-bottom-color: var(--today-rule); }
+body[data-theme] #ws-title { font-family: var(--today-display); font-weight: 800; letter-spacing: -.02em; }
+
+/* Page headings */
+body[data-theme] .library-head { padding-inline: 0; border: 0; background: transparent; }
+body[data-theme] .library-head h1,
+body[data-theme] .search-page-head h2 {
+  margin: 0;
+  font-family: var(--today-display);
+  font-size: clamp(34px, 4.4vw, 48px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -.035em;
+  color: var(--text);
+}
+body[data-theme] .library-head > div > p,
+body[data-theme] .search-page-head p,
+body[data-theme] .library-location,
+body[data-theme] .library-local-note,
+body[data-theme] .archive-summary .archive-local,
+body[data-theme] .rail-sub { display: none; }
+
+/* Fields */
+body[data-theme] .library-search,
+body[data-theme] .search-query-box {
+  min-height: 48px;
+  border: 1px solid var(--today-rule);
+  border-radius: 14px;
+  background: var(--today-card);
+  transition: border-color .15s ease, box-shadow .2s ease;
+}
+body[data-theme] .library-search:focus-within,
+body[data-theme] .search-query-box:focus-within { border-color: var(--index-locator, var(--accent)); box-shadow: 0 0 0 4px color-mix(in srgb, var(--index-locator, var(--accent)) 16%, transparent); }
+body[data-theme] .search-query-box { min-height: 56px; border-radius: 18px; }
+body[data-theme] .library-sort select,
+body[data-theme] .search-sort { border-radius: 10px; }
+
+/* Rows as quiet cards: All links, Favorites, Read later, Archive, Trash, Search */
+body[data-theme] .library-list,
+body[data-theme] #search-result-list { display: flex; flex-direction: column; gap: 8px; }
+body[data-theme] .library-row,
+body[data-theme] .archive-row,
+body[data-theme] .search-result-row {
+  border: 1px solid var(--today-rule);
+  border-radius: 14px;
+  background: var(--today-card);
+  box-shadow: none;
+  transition: transform .16s var(--today-ease), box-shadow .2s ease, border-color .14s ease;
+}
+body[data-theme] .library-row:hover,
+body[data-theme] .archive-row:hover,
+body[data-theme] .search-result-row:hover { transform: translateY(-1px); border-color: var(--today-rule-strong); box-shadow: 0 10px 24px rgba(25, 35, 31, .07); }
+body[data-theme] .library-row .library-title { font-weight: 600; }
+body[data-theme] .archive-summary > div {
+  border: 1px solid var(--today-rule);
+  border-radius: 16px;
+  background: var(--today-card);
+}
+body[data-theme] .archive-summary strong { font-family: var(--today-display); font-size: 30px; font-weight: 800; letter-spacing: -.03em; }
+
+/* Search content-type tabs as one segmented control */
+body[data-theme] .search-type-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--today-rule) 70%, transparent);
+}
+body[data-theme] .search-type-tabs button {
+  min-height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text2);
+  font-weight: 600;
+}
+body[data-theme] .search-type-tabs button[aria-pressed="true"] { background: var(--today-card); color: var(--text); box-shadow: 0 1px 2px rgba(25, 35, 31, .08); }
+body[data-theme] .search-filters,
+body[data-theme] .search-results,
+body[data-theme] .search-detail { border-color: var(--today-rule); border-radius: 18px; background: var(--today-card); }
+
+/* Inbox and Space boards: columns and cards */
+body[data-theme] .gcol {
+  border: 1px solid var(--today-rule);
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--today-card) 70%, var(--today-ground));
+  box-shadow: none;
+}
+body[data-theme] .gcol-hd .gcol-name { font-family: var(--today-display); font-size: 17px; font-weight: 800; letter-spacing: -.02em; }
+body[data-theme] .gcol .item {
+  /* A full column scrolls; cards keep their height instead of shrinking. */
+  flex-shrink: 0;
+  border: 1px solid var(--today-rule);
+  border-radius: 12px;
+  background: var(--today-card);
+  box-shadow: none;
+  transition: transform .16s var(--today-ease), box-shadow .2s ease, border-color .14s ease;
+}
+body[data-theme] .gcol .item:hover { transform: translateY(-1px); border-color: var(--today-rule-strong); box-shadow: 0 8px 20px rgba(25, 35, 31, .07); }
+
+/* Item details */
+body[data-theme] .idp-panel {
+  border-left: 1px solid var(--today-rule);
+  border-radius: 24px 0 0 24px;
+  background: var(--today-card);
+  box-shadow: -24px 0 60px rgba(25, 35, 31, .16);
+}
+body[data-theme] .idp-title-input,
+body[data-theme] .idp-heading {
+  font-family: var(--today-display);
+  font-weight: 800;
+  letter-spacing: -.025em;
+}
+body[data-theme] .idp-sec-t { font-family: var(--today-display); font-weight: 800; letter-spacing: -.01em; }
+body[data-theme] .idp-rem-when,
+body[data-theme] .idp-location { font-family: var(--today-mono); }
+body[data-theme] .idp-tag { border-radius: 999px; }
+
+/* Command palette */
+body[data-theme] .cmdp-box {
+  overflow: hidden;
+  border: 1px solid var(--today-rule);
+  border-radius: 22px;
+  background: var(--today-card);
+  box-shadow: 0 40px 90px rgba(25, 35, 31, .28);
+}
+body[data-theme] .cmdp-inputrow { min-height: 60px; border-bottom: 1px solid var(--today-rule); font-size: 17px; }
+body[data-theme] .cmdp-list [aria-selected="true"],
+body[data-theme] .cmdp-list .active { border-radius: 12px; background: var(--today-where-soft); color: var(--today-where-soft-text); }
+body[data-theme] .cmdp-footer { border-top: 1px solid var(--today-rule); color: var(--text2); font-family: var(--today-mono); font-size: 11.5px; }
+
+/* Settings */
+body[data-theme] #settings-drawer .sp-main { background: var(--today-ground); }
+body[data-theme] #settings-drawer .drawer-sec {
+  border: 1px solid var(--today-rule);
+  border-radius: 18px;
+  background: var(--today-card);
+}
+body[data-theme] #settings-drawer .sp-hd h2,
+body[data-theme] #settings-drawer .drawer-sec > h3,
+body[data-theme] #settings-drawer .sp-side-title { font-family: var(--today-display); font-weight: 800; letter-spacing: -.02em; }
+body[data-theme] #settings-drawer .toggle-row small[id$="-hint"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+body[data-theme] #settings-drawer .toggle-row br { display: none; }
+body[data-theme] #settings-drawer .tog:has(input:checked),
+body[data-theme] #settings-drawer input:checked + .tog { background: var(--index-locator, var(--accent)); }
+
+/* Calendar inside Plan */
+body[data-theme] .cal-toolbar button,
+body[data-theme] .cal-seg { border-radius: 12px; }
+body[data-theme] .cal-month .cal-cell,
+body[data-theme] .cal-week .cal-col { border-color: var(--today-rule); background: var(--today-card); }
+body[data-theme] .cal-dot { border-radius: 8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  body[data-theme] :is(.library-row, .archive-row, .search-result-row, .gcol .item) { transition: none; }
+  body[data-theme] :is(.library-row, .archive-row, .search-result-row, .gcol .item):hover { transform: none; }
 }

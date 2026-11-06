@@ -530,7 +530,11 @@ function openPlan(view = 'upcoming') {
   Router.navigate({ type: 'calendar', wsId: ws.id, query: { cal: PLAN_VIEWS.includes(view) ? view : 'upcoming' } });
 }
 function setPlanView(view) {
-  if (!activeCalendar) { openPlan(view); return; }
+  if (!activeCalendar) {
+    if (view === 'calendar') openCalendar();
+    else openPlan(view);
+    return;
+  }
   const ws = activeWs();
   if (!ws) return;
   if (view === 'calendar') {
