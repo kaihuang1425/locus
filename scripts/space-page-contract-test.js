@@ -446,6 +446,7 @@ function testStyles() {
     ok(new RegExp(`\\n${selector} \\{[^}]*${size}`, 's').test(spaceCss), `${selector} keeps a 44 px target`);
   }
   ok(/\.spc \.item \.item-title\.item-primary::after,[\s\S]*?\{ content: ''; position: absolute; inset: 0;/.test(spaceCss), 'the whole card is its main action, as on the board');
+  ok(/\n\.spc \.item > \.item-detail-meta \{ position: relative; z-index: 1;/.test(spaceCss), 'the Details… summary sits above the stretched open action, so it opens Details');
   ok(/\.spc \.item \.board-record-menu \{[^}]*position: absolute;[^}]*opacity: 0;/s.test(spaceCss) && /@media \(hover: none\) \{\n\s*\.spc \.item \.board-record-menu \{ opacity: 1; \}/.test(spaceCss), 'More is the card’s hover action; always shown on touch');
   ok(/@container \(max-width: 640px\) \{[\s\S]*\.spc-board \{ grid-template-columns: minmax\(0, 1fr\); \}[\s\S]*\.spc-gh \[data-act="open-all"\] \{ display: none; \}[\s\S]*\.spc \.spc-lg \.lv-row \.item:not\(\.stack\) \{\n\s*grid-template-columns: 28px minmax\(0, 1fr\);/.test(spaceCss),
     'at phone width columns take the full width and List titles get the row with their meta under them');

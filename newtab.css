@@ -16839,7 +16839,9 @@ body[data-page="space"]:has(#item-sel-toolbar) :is(#toast, #toast-behind) { bott
 }
 .spc .item .rem-badge.past { box-shadow: inset 0 0 0 1.5px var(--today-when); }
 .spc .item > .item-tags { grid-area: tags; margin-top: 6px; }
-.spc .item > .item-detail-meta { grid-area: facts; justify-self: start; margin-top: 6px; }
+/* The Details… summary sits above the card's stretched open action, so it
+   opens Details as it does on every other page. */
+.spc .item > .item-detail-meta { position: relative; z-index: 1; grid-area: facts; justify-self: start; margin-top: 6px; }
 /* More: the card's one hover action, top right */
 .spc .item .board-record-menu {
   position: absolute;
