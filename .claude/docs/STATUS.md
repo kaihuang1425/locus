@@ -297,6 +297,28 @@ Slices, in order:
 
 ## Done (newest first)
 
+- **2026-11-06 - Triage section 1 fixed (second review of the canvas branch)**
+  - **What:** the 46 "fix now" findings, one commit per area: Today capture
+    parsing (passed default times roll, spaced and full-width zh-TW times, 12
+    tonight, `today's`, quoting), repeating to-dos on Today, Someday on Today,
+    focus kept across repaints; Plan roll-over (duplicate ids, partial batch,
+    instant claim, landing-day toast), Even out on the bar's count, Sort tally
+    and repaint, move counts following Undo, focus after moves; receipts (dead
+    Undo never promoted, drain really pauses, hover flag, Retry and Keep result
+    states, no native confirm/alert), due card across workspaces, pages and
+    notes, 24-hour times, fired-occurrence keys; popup layer root, selected
+    rows, calendar cells, toggle contrast; resting page Loading/Loaded and Locus
+    settings, minute clock, localized postmark.
+  - **New stored field:** `reminder.firedAt` (optional, item reminders only):
+    the occurrence the background last fired for a repeating reminder. Today
+    and the due card read it; a time the user sets clears it. No schema bump.
+  - **Evidence:** all 41 suites on Node 26 after each commit and on Node 22 at
+    HEAD; Edge 156 computed-style and behaviour checks; a fresh-context review
+    whose findings 1-7 were then fixed.
+  - **Left for the owner:** P2 roll-over scope, P14 wording, T5 bare `3點`, T7
+    undated to-dos at midnight, S3, S8, R4, and T6 two-digit bare times (see
+    the triage report in the session notes).
+
 - **2026-11-06 - Review fixes for the canvas steps**
   - **What:** thirteen findings from a fresh-context review fixed (roll-over
     hydration default, due card Done/Undo/focus, repeating and stale Snooze,
