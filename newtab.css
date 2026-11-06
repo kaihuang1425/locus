@@ -13204,7 +13204,8 @@ body[data-surface="home"] .topbar-search:hover {
 .today-card.is-checking .today-card-title-text { text-decoration-color: var(--text3); }
 .today-card.is-unchecking .today-card-title-text { text-decoration-color: transparent; }
 
-/* Capture: one quiet field that adds a to-do. */
+/* Capture: the input text is transparent and a mirror underneath draws the
+   same characters with understood words marked. */
 .today-capture {
   position: sticky;
   bottom: 16px;
@@ -13271,12 +13272,12 @@ body[data-surface="home"] .topbar-search:hover {
   border: 0;
   outline: none;
   background: transparent;
-  color: var(--text);
+  color: transparent;
   caret-color: var(--text);
 }
 .today-capture-input:focus-visible { outline: none; }
 .today-capture-input::placeholder { color: var(--text2); }
-.today-capture-input::selection { background: color-mix(in srgb, var(--index-locator) 24%, transparent); }
+.today-capture-input::selection { background: color-mix(in srgb, var(--index-locator) 24%, transparent); color: transparent; }
 .today-hl { border-radius: 5px; background: none; color: inherit; }
 /* A 2px halo keeps neighbouring marks (one space apart) from covering text. */
 .today-hl.is-when {

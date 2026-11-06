@@ -230,6 +230,15 @@ match(extractFunction('buildTodayBoard'), /todayTaskModel\(workspace, now, readT
 match(extractFunction('buildTodayNow'), /if \(model\.open\.length > 1\)[\s\S]*today-now-later/, 'Later is offered only when another open task can take its place');
 match(extractFunction('toggleTodayCard'), /commitTodayTodoToggle\(itemId, button\)/, 'a Rest card check uses the same completion transaction');
 
+// ── Capture highlighting ──
+const mirror = extractFunction('paintTodayCaptureMirror');
+match(mirror, /parseTodayCapture\(value, \{ spaces: todayCaptureSpaces\(\) \}\)/, 'highlights come from the same parser that saves the task');
+match(mirror, /createElement\('mark'\)[\s\S]*today-hl is-\$\{token\.kind\}/, 'understood words are marked as when or where');
+match(mirror, /today-capture-mirror-line/, 'the mirror keeps one inline line so spaces between marks survive');
+match(extractFunction('buildTodayCapture'), /today-capture-mirror" aria-hidden="true"/, 'the mirror is hidden from assistive technology; the input stays the accessible field');
+match(css, /\.today-capture-input\s*\{[^}]*color: transparent;[^}]*caret-color: var\(--text\)/, 'the real input keeps the caret while the mirror draws the text');
+match(css, /@media \(forced-colors: active\)[\s\S]*\.today-capture-mirror \{ display: none; \}[\s\S]*\.today-capture-input \{ color: CanvasText; \}/, 'forced colors show the plain input instead of the mirror');
+
 // ── Locale parity ──
 const enStart = source.indexOf('const I18N = {');
 const zhStart = source.indexOf("'zh-TW': {", enStart);

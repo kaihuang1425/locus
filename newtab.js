@@ -19543,6 +19543,7 @@ let todayLaterMemory = { day: '', ids: [] };
 let todayCaptureDraft = '';
 let todayCapturePending = null;
 let todayCaptureComposing = false;
+let todayCaptureTokenKeys = new Set();
 let todayRenderDeferred = false;
 let todayMotionPending = false;
 let todayClockTimer = null;
@@ -20269,6 +20270,7 @@ function buildTodayCapture() {
     <div class="today-capture-box">
       <span class="today-capture-plus" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
       <div class="today-capture-field">
+        <div class="today-capture-mirror" aria-hidden="true"></div>
         <input id="today-capture-input" class="today-capture-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" writingsuggestions="false" enterkeyhint="done" aria-describedby="today-capture-status">
       </div>
       <kbd class="today-capture-enter" aria-hidden="true">${esc(tr('today.capture.enter'))}</kbd>
@@ -20299,15 +20301,55 @@ function setTodayCaptureBusy(wrap, busy) {
   wrap?.classList.toggle('is-busy', !!busy);
 }
 
+// The input text is transparent; this mirror draws the same characters with
+// the understood words marked. Only newly understood words animate in.
+function paintTodayCaptureMirror(wrap) {
+  const input = wrap?.querySelector('.today-capture-input');
+  const mirror = wrap?.querySelector('.today-capture-mirror');
+  if (!input || !mirror) return;
+  const value = input.value;
+  const parsed = parseTodayCapture(value, { spaces: todayCaptureSpaces() });
+  const nextKeys = new Set();
+  const seen = new Map();
+  // One inline line inside the (flex-centred) mirror: a flex container would
+  // drop the whitespace-only text between two marks and drift from the input.
+  const line = document.createElement('span');
+  line.className = 'today-capture-mirror-line';
+  mirror.textContent = '';
+  mirror.appendChild(line);
+  let cursor = 0;
+  parsed.tokens.forEach(token => {
+    if (token.start > cursor) line.appendChild(document.createTextNode(value.slice(cursor, token.start)));
+    const text = value.slice(token.start, token.end);
+    const base = `${token.kind}:${text.toLowerCase()}`;
+    const occurrence = (seen.get(base) || 0) + 1;
+    seen.set(base, occurrence);
+    const key = `${base}:${occurrence}`;
+    const mark = document.createElement('mark');
+    mark.className = `today-hl is-${token.kind}${todayCaptureTokenKeys.has(key) ? '' : ' is-new'}`;
+    mark.textContent = text;
+    line.appendChild(mark);
+    nextKeys.add(key);
+    cursor = token.end;
+  });
+  if (cursor < value.length) line.appendChild(document.createTextNode(value.slice(cursor)));
+  todayCaptureTokenKeys = nextKeys;
+  wrap.querySelector('.today-capture-box')?.classList.toggle('has-text', !!value.trim());
+  mirror.scrollLeft = input.scrollLeft;
+}
+
 function bindTodayCapture(wrap) {
   const input = wrap.querySelector('.today-capture-input');
-  if (!input) return;
-  const box = wrap.querySelector('.today-capture-box');
-  const syncText = () => box?.classList.toggle('has-text', !!input.value.trim());
+  const mirror = wrap.querySelector('.today-capture-mirror');
+  if (!input || !mirror) return;
+  const sync = () => { mirror.scrollLeft = input.scrollLeft; };
   input.addEventListener('input', () => {
     todayCaptureDraft = input.value;
     setTodayCaptureStatus(wrap, '');
-    syncText();
+    paintTodayCaptureMirror(wrap);
+  });
+  ['scroll', 'keyup', 'click', 'select', 'focus'].forEach(type => {
+    input.addEventListener(type, () => requestAnimationFrame(sync));
   });
   input.addEventListener('compositionstart', () => { todayCaptureComposing = true; });
   input.addEventListener('compositionend', () => {
@@ -20330,10 +20372,12 @@ function bindTodayCapture(wrap) {
       input.value = '';
       todayCaptureDraft = '';
       setTodayCaptureStatus(wrap, '');
-      syncText();
+      paintTodayCaptureMirror(wrap);
+      return;
     }
+    requestAnimationFrame(sync);
   });
-  syncText();
+  paintTodayCaptureMirror(wrap);
 }
 
 async function submitTodayCapture(input) {
@@ -20503,6 +20547,7 @@ async function commitTodayCapture(parsed, wrap = null) {
   if (todayCapturePending !== transaction) return false;
   todayCapturePending = null;
   todayCaptureDraft = '';
+  todayCaptureTokenKeys = new Set();
   todayJustAddedId = todo.id;
   setTodayCaptureBusy(wrap, false);
   renderBoard();
