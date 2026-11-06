@@ -5199,3 +5199,44 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   reduced motion, other themes, 1440 and 390 px).
 
   **Implemented: yes. Verified: partial. User-validated: no. Released: no.**
+
+- **2026-11-06 - Item details follows its board (pages build, page 4).** The
+  panel for a saved item is the canvas Details board: one 480 px layer docked
+  right that slides in when it opens (not on each repaint after an edit). This
+  replaces the Field Desk docket look (2026-08: dark registry header, bordered
+  primary box, 104 px label column, 40 px controls).
+  - Header: a colour band (the cover, else the group colour), the kind pill in
+    registry ink, the complete Workspace › Space › Group location (still
+    wrapping, never cut) and Close. The location is the Move control: it folds
+    the Inbox page's filterable Space picker open under it and moves through
+    the same selected-item move transaction with its Undo receipt ("Moved to
+    …"). When the item stays on the page it was opened from (Today, Search,
+    Library, or another group of the same Space), the panel stays and the new
+    location rolls in; when it leaves that page, the panel closes, as a moved
+    item always has (the existing rule that a detail route is valid only on
+    its own surface, `validDetailItemIdForSurface`).
+  - The title is the display line and edits in place (a page's title, a
+    to-do's text) through the same receipt-gated field commit as before. Enter
+    commits like Escape (first Escape still commits, a decision kept); the
+    underline is blue while editing and turns green once the edit is stored.
+    Notes, stacks and their editors are unchanged.
+  - A page shows Open link, Favorite and Read later (the Library's toggles,
+    with Undo receipts) and Copy URL; Archive sits in the footer (the card
+    menus' archive paths, with Undo).
+  - Reminder: the orange "when" chip, its repeat and Change / Clear; Change or
+    Set reminder… folds open the quick times and Pick a time… (the full
+    picker). A new time fills the chip with a tick once. Every path is the
+    exact-item Details reminder controller and its Undo.
+  - The rich-text formatting bar and Link review take the board's look while
+    Details is open (44 px keys, the selection quoted on a blue edge, the
+    address field shakes when refused); their behaviour is unchanged.
+  - One floating layer: opening Details closes a menu and the Today open-tabs
+    drawer, and S no longer opens that drawer behind it.
+
+  Evidence: `item-detail-contract-test.js` (extended, 23 mutations caught with
+  `core-visual-system`), every suite; a throwaway Edge 156 profile (101
+  behaviour checks, Light, Dark, zh-TW, reduced motion, other themes, 1440 and
+  390 px, Details from Today, Inbox, Library, all seven Space views, Search and
+  Plan).
+
+  **Implemented: yes. Verified: partial. User-validated: no. Released: no.**

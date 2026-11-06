@@ -1206,9 +1206,19 @@ function testModalAndHierarchyContracts() {
     'detail identity must read as one filing docket line');
   assert.match(render, /<h2\s+class="idp-heading sr-only"\s+id="idp-heading">/,
     'the primary record field must not repeat a second visible title while the dialog keeps its accessible heading');
-  assert.match(render, /<p\s+class="idp-location"\s+id="idp-location">/);
+  // 2026-11 board: the location is the panel's Move control (a span inside the
+  // button, or plain text when the item cannot move); it still names the full
+  // path and stays the dialog's description.
+  assert.match(render, /<span class="idp-location\$\{locationRolls \? ' is-moved' : ''\}" id="idp-location">\$\{esc\(locationLabel\)\}<\/span>/,
+    'the location must remain the dialog description and roll in when it changes');
   assert.match(render, /const locationLabel = \[info\.ws\?\.name \|\| ws\?\.name, info\.cat\?\.name, info\.group\?\.name\][\s\S]*?\.join\(' › '\)/,
     'the docket must expose the complete wrapping Workspace to Group filing path');
+  assert.match(render, /\$\{movable\s*\?\s*`<button type="button" class="dtl-loc" data-idp-focus="move" aria-expanded="false" aria-label="\$\{esc\(tr\('detail\.moveFrom', \{ location: locationLabel \}\)\)\}"[\s\S]*?:\s*`<span class="dtl-loc is-static">\$\{locationMarkup\}<\/span>`\}/,
+    'the location must be the Move control only when the item can move');
+  assert.match(render, /const movable = !!createSelectedItemMutationContext\(\[String\(it\.id\)\]\)/,
+    'Move must be offered only for an item the shared move transaction can resolve');
+  assert.match(render, /if \(moveButton\) moveButton\.onclick = \(\) => openItemDetailMovePicker\(it, moveButton\)/,
+    'the location control must open the shared Space picker');
   assert.match(render, /aria-label="\$\{esc\(tr\('detail\.close'\)\)\}"/);
   assert.match(render, /root\.onkeydown\s*=\s*event\s*=>\s*handleItemDetailKeydown\(event, root\)/);
   assert.ok(extractFunction('ensureItemDetailRoot').includes(
@@ -3466,42 +3476,91 @@ function testLocalization() {
 }
 
 function testResponsiveAndMotionCss() {
-  assert.match(css, /\/\* Saved-item detail is a docked recovery sheet[\s\S]*?\.idp-panel\s*\{[\s\S]*?width:\s*min\(560px,\s*calc\(100vw - 24px\)\);/,
-    'the Field Desk detail sheet must give the saved record enough width at 1280px and 800px');
+  // 2026-11 board. The Field Desk docket (560 px sheet, bordered primary box,
+  // 104 px label column, 40 px controls) gave way to the board's panel: one
+  // 480 px layer docked right, labels above their content, 44 px targets.
+  // Kept decisions: the location wraps in full, the note body is bounded, the
+  // wide page stays visible, the narrow page dims, full width on phones.
+  const start = css.indexOf('ITEM DETAIL PANE');
+  const end = css.indexOf('PHASE 3 — EXPLORER', start);
+  assert.ok(start >= 0 && end > start, 'the Item details block (with its card hints) must stay one bounded CSS section');
+  const block = css.slice(start, end);
   for (const contract of [
-    /\.idp-docket-line\s*\{[^}]*display:\s*flex/,
-    /\.idp-location\s*\{[^}]*white-space:\s*normal[^}]*overflow-wrap:\s*anywhere/,
-    /\.idp-primary-sec \.idp-primary\s*\{[^}]*border:/,
-    /\.idp-primary-sec \.idp-note-editor\s*\{[^}]*max-height:\s*220px/,
-    /\.idp-primary-sec \.idp-todo-check\s*\{[^}]*width:\s*40px[^}]*height:\s*40px/,
-    /\.idp-context-sec\s*\{[^}]*display:\s*grid[^}]*grid-template-columns:\s*104px minmax\(0,\s*1fr\)/,
-    /\.idp-context-sec \.idp-btn\s*\{[^}]*min-height:\s*40px/,
-    /\.idp-open\s*\{[^}]*min-height:\s*40px/,
-    /\.idp-close\s*\{[^}]*width:\s*40px[^}]*height:\s*40px/,
-    /@media \(max-width: 560px\)[\s\S]*?\.idp-context-sec\s*\{[^}]*grid-template-columns:\s*1fr/,
-  ]) assert.match(css, contract, `saved-item docket CSS contract must hold: ${contract}`);
-  assert.match(css, /@media\s*\(min-width:\s*900px\)\s*\{\s*#item-detail\s+\.idp-scrim\s*\{\s*background:\s*transparent;/,
+    /#item-detail \.idp-panel\s*\{[^}]*top:\s*0;\s*right:\s*0;\s*bottom:\s*0;[^}]*width:\s*min\(480px,\s*100vw\)/,
+    /#item-detail\.is-entering \.idp-panel\s*\{\s*animation:\s*dtl-panel-in/,
+    /#item-detail \.idp-docket-line\s*\{[^}]*display:\s*flex;/,
+    /\.dtl-loc\s*\{\s*flex:\s*0 1 auto;[^}]*min-width:\s*0;/,
+    /#item-detail \.idp-location\s*\{[^}]*white-space:\s*normal;[^}]*overflow-wrap:\s*anywhere/,
+    /#item-detail \.idp-note-editor\s*\{[^}]*max-height:\s*220px/,
+    /#item-detail \.idp-sec\s*\{[^}]*flex-direction:\s*column/,
+    /#item-detail \.idp-context-sec\s*\{[^}]*display:\s*flex/,
+    /#item-detail \.dtl-title,\s*#item-detail \.idp-identity-button\s*\{[^}]*font:\s*800 23px\/1\.2 var\(--today-display/,
+    /\.dtl-title:focus \+ \.dtl-tline\s*\{\s*transform:\s*scaleX\(1\);/,
+    /\.dtl-tline\.is-saved\s*\{\s*animation:\s*dtl-saved/,
+    /\.dtl-chip\s*\{[^}]*background:\s*var\(--today-when-soft/,
+    /\.dtl-chip\.is-fill\s*\{\s*animation:\s*dtl-chip-fill/,
+    /@keyframes dtl-chip-fill\s*\{[^}]*background:\s*var\(--today-when/,
+    /\.dtl-chip\.is-fill \.dtl-chip-tick\s*\{[^}]*animation:\s*dtl-chip-tick/,
+  ]) assert.match(block, contract, `Item details CSS contract must hold: ${contract}`);
+  for (const target of [
+    /#item-detail \.idp-close\s*\{[^}]*width:\s*44px;\s*height:\s*44px/,
+    /#item-detail \.idp-open\s*\{[^}]*height:\s*44px;\s*min-height:\s*44px/,
+    /\.dtl-loc\s*\{[^}]*min-height:\s*44px/,
+    /\.dtl-ib\s*\{[^}]*width:\s*44px;\s*height:\s*44px/,
+    /\.dtl-tgl\s*\{[^}]*width:\s*44px;\s*height:\s*44px/,
+    /#item-detail \.dtl-url\s*\{[^}]*height:\s*44px;\s*min-height:\s*44px/,
+    /#item-detail \.idp-todo-check\s*\{[^}]*width:\s*44px;\s*height:\s*44px/,
+    /\.dtl-lnk\s*\{[^}]*height:\s*44px/,
+    /\.dtl-btn\s*\{[^}]*height:\s*44px/,
+    /\.dtl-sho\s*\{[^}]*min-height:\s*48px/,
+    /\.idp-tag-x::after\s*\{[^}]*inset:\s*-8px/,
+    /\.idp-swatch::after\s*\{[^}]*inset:\s*-7px/,
+    /#item-detail \.idp-cl-check\s*\{[^}]*width:\s*44px;\s*height:\s*44px/,
+    /#item-detail :is\(\.idp-cl-x, \.idp-cf-x\)\s*\{[^}]*width:\s*44px;\s*height:\s*44px/,
+    /#item-detail :is\(\.idp-tag-input, \.idp-cl-text, \.idp-cl-add, \.idp-cf-label, \.idp-cf-value\)\s*\{[^}]*height:\s*44px;\s*min-height:\s*44px/,
+    /#item-detail \.idp-cover-emoji\s*\{[^}]*height:\s*44px/,
+    /#item-detail \.idp-cover-clear,\s*#item-detail \.idp-add-field\s*\{[^}]*height:\s*44px/,
+    /\.dtl-fbtn\s*\{[^}]*height:\s*44px/,
+  ]) assert.match(block, target, `every Item details control must be a 44 px target: ${target}`);
+  assert.doesNotMatch(block, /(?:linear|radial|conic)-gradient\s*\(/, 'the Item details block must not use gradients');
+  assert.match(block, /@media\s*\(min-width:\s*900px\)\s*\{\s*#item-detail\s+\.idp-scrim\s*\{\s*background:\s*transparent;/,
     'wide layouts must preserve visible inert context');
-  assert.match(css, /@media\s*\(max-width:\s*899px\)\s*\{\s*#item-detail\.open\s+\.idp-scrim\s*\{\s*opacity:\s*1;/,
+  assert.match(block, /@media\s*\(max-width:\s*899px\)\s*\{\s*#item-detail\.open\s+\.idp-scrim\s*\{\s*opacity:\s*1;/,
     '800px layouts must visibly dim the inert background');
 
-  const narrowStart = css.indexOf('@media (max-width: 520px) {', css.indexOf('ITEM DETAIL PANE'));
-  const narrowEnd = css.indexOf('\n}', narrowStart) + 2;
-  const narrow = css.slice(narrowStart, narrowEnd);
-  assert.ok(narrow.includes('.idp-panel { width: 100vw; border-left: 0; }'));
-  assert.ok(narrow.includes('.idp-hd { flex-wrap: wrap; }'));
-  assert.ok(narrow.includes('.idp-actions { width: 100%; justify-content: flex-end; }'));
-  assert.ok(narrow.includes('.idp-cf-row { align-items: stretch; flex-wrap: wrap; }'));
-  assert.ok(narrow.includes('.idp-cf-label, .idp-cf-value { flex: 1 1 100%; min-width: 0; }'));
+  const narrowStart = block.indexOf('@media (max-width: 560px) {');
+  const narrowEnd = block.indexOf('\n}', narrowStart) + 2;
+  const narrow = block.slice(narrowStart, narrowEnd);
+  assert.ok(narrowStart >= 0, 'the Item details block must keep its phone layout');
+  assert.ok(narrow.includes('#item-detail .idp-panel { width: 100vw; box-shadow: none; }'),
+    'the panel must take the full phone width');
+  assert.ok(narrow.includes('.dtl-sheet { grid-template-columns: 1fr; }'),
+    'quick reminder times must stack at full width on a phone');
+  assert.ok(narrow.includes('#item-detail .idp-cf-row { grid-template-columns: minmax(0, 1fr) 44px; }'),
+    'custom field label and value must stack at full width on a phone');
 
-  const reducedStart = css.indexOf('@media (prefers-reduced-motion: reduce) {', narrowEnd);
-  const reducedEnd = css.indexOf('\n}', reducedStart) + 2;
-  const reduced = css.slice(reducedStart, reducedEnd);
-  assert.ok(reduced.includes('.idp-panel, #item-detail .idp-scrim, .idp-swatch, .idp-marker-choice, .idp-advanced-summary::after { transition: none; }'));
-  assert.ok(reduced.includes('.idp-panel { transform: none; }'));
+  const reducedStart = block.indexOf('@media (prefers-reduced-motion: reduce) {', narrowEnd);
+  const reducedEnd = block.indexOf('\n}', reducedStart) + 2;
+  const reduced = block.slice(reducedStart, reducedEnd);
+  assert.ok(reduced.includes('#item-detail *, #item-detail *::before, #item-detail *::after { animation: none !important; transition: none !important; }'),
+    'reduced motion must stop every Item details animation and transition');
 
-  assert.match(css, /@media \(forced-colors: active\)[\s\S]*?\.idp-primary-sec \.idp-primary,[\s\S]*?\.idp-context-sec,[\s\S]*?border-color:\s*CanvasText/,
-    'forced colors must preserve the primary record and recovery-context boundaries');
+  assert.match(block, /@media \(forced-colors: active\)\s*\{[\s\S]*?#item-detail \.idp-panel\s*\{\s*border-left:\s*2px solid CanvasText;[\s\S]*?#item-detail :is\(\.idp-advanced, \.dtl-foot\)\s*\{\s*border-color:\s*CanvasText;/,
+    'forced colors must preserve the panel edge and its section boundaries');
+
+  // The Link review over Details takes the board's look and keeps its markup.
+  for (const contract of [
+    /body\.detail-open #rt-toolbar button\s*\{[^}]*width:\s*44px;\s*height:\s*44px/,
+    /body\.detail-open #rt-toolbar \.rt-color\s*\{[^}]*width:\s*44px !important;\s*height:\s*44px !important/,
+    /body\.detail-open \.rich-text-link-description\s*\{[^}]*position:\s*absolute;[^}]*clip:\s*rect\(0 0 0 0\)/,
+    /body\.detail-open \.rich-text-link-selection\s*\{[^}]*box-shadow:\s*inset 3px 0 0 var\(--today-where-soft/,
+    /body\.detail-open #rich-text-link-input\s*\{[^}]*height:\s*44px/,
+    /body\.detail-open #rich-text-link-input\.is-shake\s*\{\s*animation:\s*dtl-shake/,
+    /body\.detail-open \.rich-text-link-panel \.modal-ft button\s*\{[^}]*min-height:\s*44px/,
+  ]) assert.match(block, contract, `rich-text Link review CSS must hold: ${contract}`);
+  const shake = extractFunction('setRichTextLinkError');
+  assert.match(shake, /if \(errorKey && field\?\.classList\) \{\s*field\.classList\.remove\('is-shake'\);\s*void field\.offsetWidth;\s*field\.classList\.add\('is-shake'\);/,
+    'a refused address must restart the shake the way Today restarts its animations');
 
   const homeRowRule = css.match(/\.home-prow\s*\{([\s\S]*?)\}/)?.[1] || '';
   assert.match(homeRowRule, /width:\s*100%/,
@@ -3680,6 +3739,185 @@ function testDetailMarkerPickerBehavior() {
   assert.equal(item.color, 'red', 'an explicit named marker must use the supplied Details commit boundary');
 }
 
+// 2026-11 board: inline title edit, the reminder chip and quick times, Move
+// inside the panel, the page's marks and Archive. Every write is an existing
+// transaction; the panel adds layout and motion only.
+async function testBoardDetailsContracts() {
+  const render = extractFunction('renderItemDetail');
+  const primary = extractFunction('detailPrimaryEditor');
+
+  // Inline title edit stays on the one receipt-gated field commit.
+  assert.match(primary, /const t = detailTitleField\(it\.title, tr\('detail\.title'\), 'title'\);[\s\S]*?void commit\(tr\('detail\.history\.editTitle'\), live => \{ live\.title = t\.value; \}, \{\s*pane: false,\s*afterSuccess: \(\) => flashDetailTitleSaved\(t\),/,
+    'the page title edits inline through the receipt-gated Details commit and flashes once it is stored');
+  assert.match(primary, /const t = detailTitleField\(it\.text, tr\('detail\.task'\), 'task'\);[\s\S]*?void commit\(tr\('detail\.history\.updateTask'\), live => \{ live\.text = t\.value; \}, \{\s*pane: false,\s*afterSuccess: \(\) => flashDetailTitleSaved\(t\),/,
+    'the to-do text edits inline through the same commit');
+  assert.doesNotMatch(primary, /State\.(?:snapshot|persist)|chrome\.storage/,
+    'the Details editors must not open a second write path');
+  assert.match(primary, /copy\.onclick = \(\) => \{ void copySavedTabUrl\(it\.url\); \};/,
+    'Copy URL reuses the card menu’s copy helper');
+
+  const fieldListeners = {};
+  let blurs = 0;
+  let focused = null;
+  const panelElement = { id: 'panel' };
+  const field = {
+    className: '', rows: 0, value: '', placeholder: '', dataset: {}, style: {}, spellcheck: true,
+    scrollHeight: 58, selectionStart: 3, attributes: {},
+    setAttribute(name, value) { this.attributes[name] = value; },
+    addEventListener(type, handler) { (fieldListeners[type] ||= []).push(handler); },
+    setSelectionRange(start, end) { this.selection = [start, end]; },
+    blur() { blurs += 1; },
+    closest(selector) { return selector === '.idp-panel' ? panelElement : null; },
+  };
+  const titleContext = loadFunctions(['detailTitleField'], {
+    document: { createElement(tag) { assert.equal(tag, 'textarea'); return field; } },
+    requestAnimationFrame: callback => callback(),
+    focusItemDetailTarget: target => { focused = target; return true; },
+  });
+  const made = titleContext.detailTitleField('A saved page', 'Title', 'title');
+  assert.equal(made, field);
+  assert.equal(field.className, 'idp-title-input dtl-title');
+  assert.equal(field.rows, 1, 'the display title starts as one line and grows');
+  assert.equal(field.value, 'A saved page');
+  assert.equal(field.dataset.idpFocus, 'title', 'Edit title… keeps its initial-focus key');
+  assert.equal(field.attributes['aria-label'], 'Title');
+  assert.equal(field.style.height, '58px', 'the title grows to its content');
+  field.value = 'one\ntwo';
+  fieldListeners.input[0]();
+  assert.equal(field.value, 'one two', 'a pasted line break becomes a space: titles stay one line');
+  const composing = { ...eventFor('Enter', field), isComposing: true };
+  fieldListeners.keydown[0](composing);
+  assert.equal(composing.defaultPrevented, false, 'Enter while an IME composes must not commit');
+  assert.equal(blurs, 0);
+  const letter = eventFor('a', field);
+  fieldListeners.keydown[0](letter);
+  assert.equal(letter.defaultPrevented, false);
+  const enter = eventFor('Enter', field);
+  fieldListeners.keydown[0](enter);
+  assert.equal(enter.defaultPrevented, true, 'Enter must not insert a line break');
+  assert.equal(blurs, 1, 'Enter commits the title by blurring it (the change event is the one write)');
+  assert.equal(focused, panelElement, 'focus stays in the dialog after Enter (never on <body>)');
+
+  const tline = { classList: tokenList('dtl-tline', 'is-saved'), offsetWidth: 1 };
+  const flashContext = loadFunctions(['flashDetailTitleSaved']);
+  flashContext.flashDetailTitleSaved({ parentElement: { querySelector: selector => (selector === '.dtl-tline' ? tline : null) } });
+  assert.equal(tline.classList.contains('is-saved'), true, 'the saved underline restarts by class, as Today restarts its motion');
+  assert.match(extractFunction('flashDetailTitleSaved'), /classList\.remove\('is-saved'\);\s*void line\.offsetWidth;\s*line\.classList\.add\('is-saved'\);/);
+
+  // The reminder chip and its quick times use the exact-item receipt controller.
+  assert.match(render, /SPACE_QUICK_TIMES\.map\(\(\[offset, key\], index\) => `<button type="button" class="dtl-sho" data-offset="\$\{offset\}" data-idp-focus="reminder-quick-\$\{index\}"/,
+    'quick reminder times reuse the Space sheet’s quick times');
+  assert.match(render, /void commitItemDetailReminderMutation\(mutationContext, \{ at: Date\.now\(\) \+ Number\(button\.dataset\.offset\), recur: it\.reminder\?\.recur \}\);/,
+    'a quick time sets the reminder through the Details receipt controller and keeps its repeat');
+  assert.match(render, /sheet\.querySelector\('\.is-custom'\)\.onclick = \(\) => openReminderPicker\(it\.id, mutationContext\);/,
+    'Pick a time… opens the full picker with the frozen item context');
+  assert.match(render, /const reminderFills = sameItem && !!storedReminderAt && root\.dataset\.reminderAt != null\s*&& root\.dataset\.reminderAt !== storedReminderAt;/,
+    'the chip fills only when this item’s stored reminder time changed since the last paint');
+  assert.match(render, /<span class="dtl-chip\$\{past \? ' is-past' : ''\}\$\{reminderFills \? ' is-fill' : ''\}">\$\{detailSvg\('clock', 14, 1\.7, 'dtl-chip-clock'\)\}\$\{detailSvg\('check', 14, 2\.6, 'dtl-chip-tick'\)\}/,
+    'the chip carries its clock and the tick it shows while it fills');
+  assert.match(render, /sheet\.addEventListener\('keydown', event => \{\s*if \(event\.key !== 'Escape'\) return;\s*event\.preventDefault\(\);\s*event\.stopPropagation\(\);\s*toggleItemDetailReminderSheet\(root, false\);/,
+    'Escape folds the quick times before it can close the panel');
+  const sheetButton = { id: 'first quick time' };
+  const sheet = { hidden: true, classList: tokenList('dtl-sheet'), offsetWidth: 1, querySelector: () => sheetButton };
+  const toggle = { attributes: {}, setAttribute(name, value) { this.attributes[name] = value; } };
+  const sheetRoot = { querySelector: selector => (selector === '.dtl-sheet' ? sheet : selector === '[data-dtl-sheet-toggle]' ? toggle : null) };
+  let sheetFocus = null;
+  const sheetContext = loadFunctions(['toggleItemDetailReminderSheet'], { focusItemDetailTarget: target => { sheetFocus = target; return true; } });
+  assert.equal(sheetContext.toggleItemDetailReminderSheet(sheetRoot), true);
+  assert.equal(sheet.hidden, false);
+  assert.equal(sheet.classList.contains('is-opening'), true, 'opening the sheet replays its quick-time entrance');
+  assert.equal(toggle.attributes['aria-expanded'], 'true');
+  assert.equal(sheetFocus, sheetButton, 'focus moves to the first quick time');
+  sheetContext.toggleItemDetailReminderSheet(sheetRoot);
+  assert.equal(sheet.hidden, true);
+  assert.equal(toggle.attributes['aria-expanded'], 'false');
+  sheetContext.toggleItemDetailReminderSheet(sheetRoot, false);
+  assert.equal(sheet.hidden, true, 'an explicit close never opens the sheet');
+
+  // Move inside the panel: the Inbox page's picker, the shared move transaction.
+  assert.match(render, /const movable = !!createSelectedItemMutationContext\(\[String\(it\.id\)\]\);/);
+  assert.match(render, /if \(inboxSpacePicker\?\.el && root\?\.contains\(inboxSpacePicker\.el\)\) closeInboxSpacePicker\(\);/,
+    'a repaint must close a picker folded inside the panel');
+  assert.match(render, /const locationRolls = sameItem && root\.dataset\.location != null && root\.dataset\.location !== locationLabel;/,
+    'the location rolls in only when this item’s location changed (a Move or its Undo)');
+  const pickerSource = extractFunction('openInboxSpacePicker');
+  assert.match(pickerSource, /if \(host\) \{\s*host\.appendChild\(el\);\s*\} else \{\s*document\.body\.appendChild\(el\);/,
+    'the one Space picker mounts inline when given a host and floats otherwise');
+  assert.match(pickerSource, /!anchor\.contains\(event\.relatedTarget\)\) closeInboxSpacePicker\(\);/,
+    'focus moving back to the anchor keeps the picker so the anchor toggles it');
+  assert.match(extractFunction('commitSelectedItemMove'), /toast\(tr\(messageKey \|\| \(count === 1 \? 'selection\.movedToOne' : 'selection\.movedToMany'\), \{[\s\S]*?undo: actionId,/,
+    'the move receipt may be worded by its surface and keeps its Undo');
+  const pickerHost = { id: 'fold' };
+  const anchor = { closest: selector => (selector === '.idp-panel' ? { querySelector: inner => (inner === '.dtl-move' ? pickerHost : null) } : null) };
+  const pickerCalls = [];
+  const movePickerContext = loadFunctions(['openItemDetailMovePicker'], {
+    openInboxItemMovePicker: (...args) => { pickerCalls.push(args); return true; },
+    commitItemDetailMove: (option, owner) => { pickerCalls.push(['commit', option, owner]); return Promise.resolve(true); },
+  });
+  const movingItem = { id: 'item-1' };
+  assert.equal(movePickerContext.openItemDetailMovePicker(movingItem, anchor), true);
+  assert.equal(pickerCalls[0][0], movingItem);
+  assert.equal(pickerCalls[0][1], anchor);
+  assert.equal(pickerCalls[0][3].host, pickerHost, 'the picker folds open inside the panel');
+  pickerCalls[0][2]('option', 'owner');
+  assert.deepEqual(pickerCalls[1], ['commit', 'option', 'owner']);
+  assert.equal(movePickerContext.openItemDetailMovePicker(movingItem, { closest: () => null }), false);
+  const moveCalls = [];
+  let moveResult = true;
+  const moveContext = loadFunctions(['commitItemDetailMove'], {
+    commitSelectedItemMove: async (review, destination, opener, options) => { moveCalls.push({ review, destination, opener, options: plain(options) }); return moveResult; },
+    renderItemDetail: () => { moveCalls.push('render'); },
+  });
+  assert.equal(await moveContext.commitItemDetailMove({ review: 'R', destinationContext: 'D' }, 'O'), true);
+  assert.deepEqual(moveCalls, [{ review: 'R', destination: 'D', opener: 'O', options: { messageKey: 'detail.movedTo' } }, 'render'],
+    'Move uses the shared transaction, then repaints the panel at the new location (or closes it)');
+  moveResult = false;
+  assert.equal(await moveContext.commitItemDetailMove({ review: 'R', destinationContext: 'D' }, 'O'), false);
+  assert.equal(moveCalls.length, 3);
+  assert.notEqual(moveCalls[2], 'render', 'a refused move leaves the panel as it was');
+  assert.equal(await moveContext.commitItemDetailMove(null, 'O'), false);
+
+  // The page's marks and Archive reuse the card and Library transactions.
+  assert.match(render, /const changed = await toggle\(it, button, receipt\);\s*if \(!changed\) return;/);
+  assert.match(render, /star\.onclick = toggleFrom\(star, toggleFavorite, 'favorite'\);\s*later\.onclick = toggleFrom\(later, toggleReadLater, 'later'\);/,
+    'Favorite and Read later use the receipt-gated toggles');
+  assert.match(render, /const receipt = \{ undo: true, sub: /, 'their receipts offer Undo, as on the Library');
+  assert.match(render, /if \(it\.type === 'tab'\) changed = await archiveSavedPage\(it, archiveButton\);\s*else if \(it\.type === 'stack'\) changed = archiveItem\(it\.id\) !== false;\s*else changed = await archiveBoardLocalItem\(it, archiveButton\);\s*if \(changed\) renderItemDetail\(\);/,
+    'Archive uses the same archive paths as the card menus');
+  assert.match(render, /root\.classList\.toggle\('is-entering', !wasOpen\);/,
+    'the panel slides in when it opens, not on every repaint');
+  assert.match(render, /if \(!wasOpen\) \{\s*hideContextMenu\(\);\s*if \(typeof isTodayTabsDrawerOpen === 'function' && isTodayTabsDrawerOpen\(\)\) \{\s*setTodayTabsDrawer\(false, \{ restoreFocus: false \}\);/,
+    'opening Details closes an open menu and the Today drawer: one floating layer');
+  const drawerCalls = [];
+  let detailOpen = true;
+  const railFocus = loadFunctions(['focusOpenTabFilter'], {
+    isOpenTabsRailAvailable: () => true,
+    todayTabsDrawerAvailable: () => true,
+    setTodayTabsDrawer: open => { drawerCalls.push(open); return open; },
+    focusTodayTabsDrawerTarget: () => true,
+    document: { activeElement: null, getElementById: id => (id === 'item-detail' ? { classList: { contains: name => name === 'open' && detailOpen } } : null) },
+  });
+  assert.equal(railFocus.focusOpenTabFilter(), false, 'S must not open the drawer behind an open Details panel');
+  assert.deepEqual(drawerCalls, []);
+  detailOpen = false;
+  assert.equal(railFocus.focusOpenTabFilter(), true, 'S still opens the Today drawer when Details is closed');
+  assert.deepEqual(drawerCalls, [true]);
+  assert.match(extractFunction('setItemDetailMutationBusy'), /'\.idp-actions button, \.idp-hd button\.dtl-loc, \.dtl-foot button, /,
+    'the Move control and Archive join the pending guard');
+  const staleStart = render.indexOf('if (!info)');
+  const stale = render.slice(staleStart, render.indexOf('\n    return;', staleStart));
+  assert.ok(stale.includes('delete root.dataset.location;') && stale.includes('delete root.dataset.reminderAt;'),
+    'the last-paint memory must not leak into the next Details session');
+
+  const i18n = readI18n();
+  for (const key of ['detail.kind.tab', 'detail.kind.note', 'detail.kind.todo', 'detail.kind.stack', 'detail.moveFrom', 'detail.movedTo']) {
+    assert.ok(i18n.en[key]?.trim() && i18n['zh-TW'][key]?.trim(), `${key} must exist in English and zh-TW`);
+    const holes = text => (text.match(/\{[a-z]+\}/gi) || []).sort().join();
+    assert.equal(holes(i18n['zh-TW'][key]), holes(i18n.en[key]), `${key} must keep its placeholders in zh-TW`);
+  }
+  assert.equal(i18n['zh-TW']['detail.kind.tab'], '已儲存分頁');
+}
+
 async function main() {
   testLibraryRouting();
   testSurfaceRouteValidation();
@@ -3707,8 +3945,9 @@ async function main() {
   testLocalRecordDetailConvergence();
   testDetailMarkerPickerBehavior();
   testResponsiveAndMotionCss();
+  await testBoardDetailsContracts();
 
-  console.log('Item detail contracts passed: receipt-gated fields/direct reminders, read-only local cards, Details-owned editing/markers, rich-text Link review, Home recovery, routing, modal focus, localization, hierarchy, and responsive motion.');
+  console.log('Item detail contracts passed: receipt-gated fields/direct reminders, read-only local cards, Details-owned editing/markers, rich-text Link review, Home recovery, routing, modal focus, localization, hierarchy, responsive motion, and the 2026-11 board (inline title, reminder chip and quick times, Move in the panel, marks and Archive).');
 }
 
 main().catch(error => {

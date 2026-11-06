@@ -321,24 +321,29 @@ assert.match(newtabIndex, /#topbar[\s\S]*border-top:\s*3px solid var\(--index-lo
   'the shared top bar must expose the location marker');
 assert.doesNotMatch(newtabIndex, /font-family:\s*'Lora'/,
   'core surfaces must not override the user-selected font with an editorial face');
-for (const selector of ['#ws-title', '.home-trail-head h2', '.wc-h', '.idp-heading', '.rail-title']) {
+for (const selector of ['#ws-title', '.home-trail-head h2', '.wc-h', '.rail-title']) {
   const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   assert.match(newtabIndex, new RegExp(`${escaped}[\\s\\S]*?font-family:\\s*var\\(--font-display\\)`),
     `${selector} must use the shared selected-font display role`);
 }
+// 2026-11: Item details is its own block (the board's panel) before the Index
+// layer; its accessible heading keeps the display role there.
+const newtabDetail = section(newtab, 'ITEM DETAIL PANE');
+assert.match(newtabDetail, /\.idp-heading\s*\{[^}]*font-family:\s*var\(--font-display\)/,
+  '.idp-heading must use the shared selected-font display role');
 assert.match(newtabIndex, /\.home-trail[\s\S]*border-radius:\s*6px/,
   'Home recovery must use the ruled-record shape');
 assert.match(newtabIndex, /\.home-loop-zone[\s\S]*border-top:\s*3px solid var\(--index-receipt\)/,
   'the accepted-result zone must use the receipt marker');
 assert.match(newtabIndex, /\.wc-task[\s\S]*grid-template-columns:/,
   'Welcome must use the same index-sheet hierarchy');
-assert.match(newtabIndex, /\.idp-hd[\s\S]*background:\s*var\(--index-registry\)/,
-  'saved-item detail must use the registry header');
+assert.match(newtabDetail, /#item-detail \.idp-type\s*\{[^}]*background:\s*var\(--index-registry\)[^}]*color:\s*var\(--index-registry-text\)/,
+  'saved-item detail must carry the registry ink in its header (the kind pill of the board header)');
 assert.match(newtabIndex, /:where\([^)]*button[\s\S]*:focus-visible[\s\S]*outline:\s*3px solid var\(--index-focus\)/,
   'the redesign must retain a strong shared focus treatment');
 assert.match(newtabIndex, /@media \(max-width:\s*800px\)[\s\S]*\.wc-task[\s\S]*grid-template-columns:\s*1fr/,
   'Welcome must stack at the required narrow layout');
-assert.match(newtabIndex, /@media \(max-width:\s*560px\)[\s\S]*\.idp-panel[\s\S]*width:\s*100vw/,
+assert.match(newtabDetail, /@media \(max-width:\s*560px\)\s*\{\s*#item-detail \.idp-panel\s*\{[^}]*width:\s*100vw/,
   'saved-item detail must remain full-width at the narrow boundary');
 assert.match(newtabIndex, /@media \(forced-colors:\s*active\)/,
   'the core system must keep a forced-colors boundary');

@@ -1769,6 +1769,12 @@ const I18N = {
     'detail.fieldValue': 'Value',
     'detail.removeField': 'Remove custom field “{label}”',
     'detail.addField': 'Add field',
+    'detail.kind.tab': 'Saved tab',
+    'detail.kind.note': 'Note',
+    'detail.kind.todo': 'To-do',
+    'detail.kind.stack': 'Stack',
+    'detail.moveFrom': 'Move. Saved in {location}',
+    'detail.movedTo': 'Moved to {destination}',
     'detail.saving': 'Saving changes…',
     'detail.saved': 'Changes saved',
     'detail.changed': 'This item changed or moved. Reopen its details, then try again.',
@@ -3526,6 +3532,12 @@ const I18N = {
     'detail.fieldValue': '內容',
     'detail.removeField': '移除自訂欄位「{label}」',
     'detail.addField': '新增欄位',
+    'detail.kind.tab': '已儲存分頁',
+    'detail.kind.note': '筆記',
+    'detail.kind.todo': '待辦事項',
+    'detail.kind.stack': '堆疊',
+    'detail.moveFrom': '移動項目，目前位置：{location}',
+    'detail.movedTo': '已移到 {destination}',
     'detail.saving': '正在儲存變更…',
     'detail.saved': '變更已儲存',
     'detail.changed': '這個項目已變更或移動。請重新開啟詳細資料後再試一次。',
@@ -16590,6 +16602,8 @@ function setOpenTabsRailCollapsed(collapsed, options = {}) {
 
 function focusOpenTabFilter() {
   if (!isOpenTabsRailAvailable()) return false;
+  // Item details is the one floating layer; S stays off while it is open.
+  if (document.getElementById('item-detail')?.classList.contains('open')) return false;
   const rail = document.getElementById('tabrail');
   // Today keeps the rail behind its edge tab: S opens that drawer instead of
   // changing the saved collapsed preference.
@@ -23984,7 +23998,8 @@ function selectedItemMoveDestinationTarget(review, destinationContext) {
   return { targets: resolved.targets, destination };
 }
 
-async function commitSelectedItemMove(review, destinationContext, opener = null) {
+// `messageKey` lets a single-item surface (Item details) word its receipt.
+async function commitSelectedItemMove(review, destinationContext, opener = null, { messageKey = '' } = {}) {
   if (!review || !destinationContext || selectedItemMutationBlocked()) return false;
   const transaction = { kind: 'move', review, destinationContext, opener };
   selectedItemMutationPending = transaction;
@@ -24037,7 +24052,7 @@ async function commitSelectedItemMove(review, destinationContext, opener = null)
   else renderBoard();
   requestAnimationFrame(() => focusSelectedItemMutationTarget(moved[0]?.id || null));
   if (resolveCaptureDestinationReceiptTarget(receipt)) {
-    toast(tr(count === 1 ? 'selection.movedToOne' : 'selection.movedToMany', {
+    toast(tr(messageKey || (count === 1 ? 'selection.movedToOne' : 'selection.movedToMany'), {
       count,
       destination: destinationText,
     }), {
@@ -24426,6 +24441,13 @@ function setRichTextLinkError(errorKey) {
   if (!richTextLinkContext) return false;
   richTextLinkContext.errorKey = errorKey;
   paintRichTextLinkDialog();
+  // The address field shakes once per rejected address.
+  const field = document.getElementById('rich-text-link-input');
+  if (errorKey && field?.classList) {
+    field.classList.remove('is-shake');
+    void field.offsetWidth;
+    field.classList.add('is-shake');
+  }
   const recovery = document.getElementById('state-recovery-overlay');
   if (!recovery || recovery.classList.contains('hidden')) requestAnimationFrame(focusRichTextLinkInput);
   return false;
@@ -28322,7 +28344,9 @@ function inboxSpaceOptions(review) {
   });
 }
 
-function openInboxSpacePicker(anchor, review, onPick) {
+// `host` mounts the same picker inline (Item details folds it open under its
+// location) instead of floating it beside the anchor.
+function openInboxSpacePicker(anchor, review, onPick, { host = null } = {}) {
   if (inboxSpacePicker && inboxSpacePicker.owner === anchor) return closeInboxSpacePicker({ restoreFocus: true });
   closeInboxSpacePicker();
   hideContextMenu();
@@ -28333,8 +28357,8 @@ function openInboxSpacePicker(anchor, review, onPick) {
     return false;
   }
   const el = document.createElement('div');
-  el.className = 'ibx-pop';
-  el.setAttribute('role', 'dialog');
+  el.className = host ? 'ibx-pop is-inline' : 'ibx-pop';
+  el.setAttribute('role', host ? 'group' : 'dialog');
   el.setAttribute('aria-label', tr('inbox.moveToSpace'));
   el.innerHTML = `
     <label class="ibx-pf">${inboxIcon('search', 14, 1.6)}<span class="sr-only">${esc(tr('inbox.findSpace'))}</span><input type="text" autocomplete="off" spellcheck="false" placeholder="${esc(tr('inbox.findSpace'))}"></label>
@@ -28385,20 +28409,25 @@ function openInboxSpacePicker(anchor, review, onPick) {
     // Page keys (1, 2, 3, A, /, C) stay out of the picker.
     event.stopPropagation();
   });
-  document.body.appendChild(el);
-  const rect = anchor.getBoundingClientRect();
-  const width = Math.min(320, window.innerWidth - 32);
-  el.style.width = `${width}px`;
-  el.style.left = `${Math.max(16, Math.min(rect.left, window.innerWidth - width - 16))}px`;
-  if (window.innerHeight - rect.bottom >= 300 || rect.top < 300) el.style.top = `${Math.round(rect.bottom + 8)}px`;
-  else el.style.bottom = `${Math.round(window.innerHeight - rect.top + 8)}px`;
+  if (host) {
+    host.appendChild(el);
+  } else {
+    document.body.appendChild(el);
+    const rect = anchor.getBoundingClientRect();
+    const width = Math.min(320, window.innerWidth - 32);
+    el.style.width = `${width}px`;
+    el.style.left = `${Math.max(16, Math.min(rect.left, window.innerWidth - width - 16))}px`;
+    if (window.innerHeight - rect.bottom >= 300 || rect.top < 300) el.style.top = `${Math.round(rect.bottom + 8)}px`;
+    else el.style.bottom = `${Math.round(window.innerHeight - rect.top + 8)}px`;
+  }
   anchor.setAttribute('aria-expanded', 'true');
   const outside = event => {
     if (el.contains(event.target) || anchor.contains(event.target)) return;
     closeInboxSpacePicker();
   };
+  // Focus moving back to the anchor keeps the picker, so that click closes it.
   const leave = event => {
-    if (event.relatedTarget && !el.contains(event.relatedTarget)) closeInboxSpacePicker();
+    if (event.relatedTarget && !el.contains(event.relatedTarget) && !anchor.contains(event.relatedTarget)) closeInboxSpacePicker();
   };
   document.addEventListener('pointerdown', outside, true);
   el.addEventListener('focusout', leave);
@@ -28412,10 +28441,10 @@ function openInboxSpacePicker(anchor, review, onPick) {
   return true;
 }
 
-function openInboxItemMovePicker(item, anchor, onPick) {
+function openInboxItemMovePicker(item, anchor, onPick, options = {}) {
   const review = createSelectedItemMutationContext([String(item?.id || '')]);
   if (!review) return reportSelectedItemMutationUnavailable(anchor);
-  return openInboxSpacePicker(anchor, review, onPick);
+  return openInboxSpacePicker(anchor, review, onPick, options);
 }
 
 function openInboxBulkMovePicker(review, opener) {
@@ -29132,6 +29161,9 @@ const normalizeTag = s => String(s || '').trim().replace(/\s+/g, ' ').replace(/,
 let itemDetailMutationPending = null;
 let itemReminderMutationPending = null;
 let itemDetailStatusTimer = null;
+// A favourite or Read later toggle repaints the panel; the next paint plays its
+// pop once ({ itemId, kind }).
+let itemDetailFx = null;
 
 function isItemDetailMutationPending() {
   return !!itemDetailMutationPending || !!itemReminderMutationPending;
@@ -29263,7 +29295,7 @@ function setItemDetailMutationBusy(root, busy) {
   // announce “Saving…” immediately instead of deferring it until completion.
   const busyRegion = root.querySelector('.idp-body');
   if (busyRegion) busyRegion.setAttribute('aria-busy', String(busy));
-  const selector = '.idp-actions button, .idp-body button, .idp-body input, .idp-body textarea, .idp-body select, .idp-body summary, .idp-body [contenteditable]';
+  const selector = '.idp-actions button, .idp-hd button.dtl-loc, .dtl-foot button, .idp-body button, .idp-body input, .idp-body textarea, .idp-body select, .idp-body summary, .idp-body [contenteditable]';
   if (busy) {
     root.querySelectorAll(selector).forEach(control => {
       if (control.dataset.idpBusyControl === 'true') return;
@@ -29606,6 +29638,108 @@ function detailRecurLabel(recur) {
   return '';
 }
 
+const DETAIL_PATHS = {
+  chevron: 'M4.5 6.5 8 10l3.5-3.5',
+  copy: 'M5.5 5.5h8v8h-8zM2.5 10.5v-8h8',
+  clock: 'M8 14A6 6 0 1 0 8 2a6 6 0 0 0 0 12zM8 5v3.2l2 1.3',
+  check: 'M3.5 8.5l3 3 6-7',
+  repeat: 'M13 8a5 5 0 1 1-1.5-3.6M13 2.5v3h-3',
+  archive: 'M2.5 3.5h11v3h-11zM3.5 6.5v6h9v-6M6.5 9h3',
+};
+
+function detailSvg(name, size = 16, stroke = 1.6, cls = '') {
+  return `<svg${cls ? ` class="${cls}"` : ''} width="${size}" height="${size}" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="${stroke}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${DETAIL_PATHS[name] || ''}"/></svg>`;
+}
+
+// The reminder chip's time: Today/Tomorrow/weekday as the Inbox rows say it,
+// then the date with its time further out.
+function detailWhenLabel(at, now = Date.now()) {
+  const day = planDayStart(at);
+  const today = planDayStart(now);
+  if (day >= today && day < planAddDays(today, 7)) return inboxWhenLabel(at, now);
+  return `${new Date(at).toLocaleDateString(appLocale(), { month: 'short', day: 'numeric' })} ${planTimeLabel(at)}`;
+}
+
+// A page title or a to-do's text is the panel's display title: one line of
+// text that wraps and grows. Enter commits it, as Escape does.
+function detailTitleField(value, label, focusKey) {
+  const field = document.createElement('textarea');
+  field.className = 'idp-title-input dtl-title';
+  field.rows = 1;
+  field.value = value || '';
+  field.placeholder = label;
+  field.setAttribute('aria-label', label);
+  field.dataset.idpFocus = focusKey;
+  field.spellcheck = false;
+  const fit = () => {
+    field.style.height = 'auto';
+    if (field.scrollHeight) field.style.height = `${field.scrollHeight}px`;
+  };
+  field.addEventListener('input', () => {
+    if (/[\r\n]/.test(field.value)) {
+      const caret = field.selectionStart;
+      field.value = field.value.replace(/[\r\n]+/g, ' ');
+      field.setSelectionRange(caret, caret);
+    }
+    fit();
+  });
+  field.addEventListener('keydown', event => {
+    if (event.key !== 'Enter' || event.isComposing) return;
+    event.preventDefault();
+    field.blur();
+    focusItemDetailTarget(field.closest('.idp-panel'));
+  });
+  requestAnimationFrame(fit);
+  return field;
+}
+
+// The underline under the title turns green once the edit is stored.
+function flashDetailTitleSaved(field) {
+  const line = field?.parentElement?.querySelector('.dtl-tline');
+  if (!line) return;
+  line.classList.remove('is-saved');
+  void line.offsetWidth;
+  line.classList.add('is-saved');
+}
+
+// Move from the panel: the Inbox page's filterable Space picker, folded open
+// under the location, then the same move transaction and its Undo receipt.
+// The panel repaints at the new location, or closes when the item has left
+// the page it was opened from.
+function openItemDetailMovePicker(it, anchor) {
+  const host = anchor?.closest('.idp-panel')?.querySelector('.dtl-move');
+  if (!host) return false;
+  return openInboxItemMovePicker(it, anchor, (option, owner) => {
+    void commitItemDetailMove(option, owner);
+  }, { host });
+}
+
+async function commitItemDetailMove(option, opener) {
+  if (!option?.review || !option.destinationContext) return false;
+  const changed = await commitSelectedItemMove(option.review, option.destinationContext, opener, { messageKey: 'detail.movedTo' });
+  if (changed) renderItemDetail();
+  return changed;
+}
+
+// The quick reminder sheet folds open under the Reminder row.
+function toggleItemDetailReminderSheet(root, open) {
+  const sheet = root?.querySelector('.dtl-sheet');
+  const toggle = root?.querySelector('[data-dtl-sheet-toggle]');
+  if (!sheet || !toggle) return false;
+  const next = open ?? sheet.hidden;
+  if (next) {
+    sheet.hidden = false;
+    sheet.classList.remove('is-opening');
+    void sheet.offsetWidth;
+    sheet.classList.add('is-opening');
+  } else {
+    sheet.hidden = true;
+  }
+  toggle.setAttribute('aria-expanded', String(next));
+  if (next) focusItemDetailTarget(sheet.querySelector('button'));
+  return true;
+}
+
 function syncItemDetailHeading(it) {
   const heading = document.getElementById('idp-heading');
   if (heading) heading.textContent = _searchItemTitle(it) || _searchTypeLabel(it.type);
@@ -29713,22 +29847,28 @@ function detailPrimaryEditor(it, commit) {
     wrap.appendChild(editor);
     return wrap;
   }
-  const mk = (cls, val, label, focusKey) => {
-    const input = document.createElement('input');
-    input.className = cls;
-    input.value = val || '';
-    input.placeholder = label;
-    input.setAttribute('aria-label', label);
-    input.dataset.idpFocus = focusKey;
-    input.spellcheck = false;
-    return input;
-  };
+  // Pages and stacks lead with their mark; a to-do leads with its check.
+  wrap.classList.add('dtl-prim');
+  const titleWrap = document.createElement('div');
+  titleWrap.className = 'dtl-tw';
+  const line = '<span class="dtl-tline" aria-hidden="true"></span>';
   if (it.type === 'tab') {
-    const t = mk('idp-title-input', it.title, tr('detail.title'), 'title');
-    const u = mk('idp-url-input', it.url, tr('detail.url'), 'url');
+    wrap.insertAdjacentHTML('afterbegin', inboxFavMarkup(it, true));
+    const t = detailTitleField(it.title, tr('detail.title'), 'title');
+    const u = document.createElement('input');
+    u.className = 'idp-url-input dtl-url';
+    u.value = it.url || '';
+    u.placeholder = tr('detail.url');
+    u.setAttribute('aria-label', tr('detail.url'));
+    u.dataset.idpFocus = 'url';
+    u.spellcheck = false;
+    u.autocomplete = 'off';
     t.addEventListener('change', () => {
       if (t.value !== it.title) {
-        void commit(tr('detail.history.editTitle'), live => { live.title = t.value; }, { pane: false });
+        void commit(tr('detail.history.editTitle'), live => { live.title = t.value; }, {
+          pane: false,
+          afterSuccess: () => flashDetailTitleSaved(t),
+        });
       }
     });
     u.addEventListener('change', () => {
@@ -29736,26 +29876,50 @@ function detailPrimaryEditor(it, commit) {
         void commit(tr('detail.history.editUrl'), live => { live.url = u.value; }, { pane: false });
       }
     });
-    wrap.appendChild(t); wrap.appendChild(u);
+    const urlRow = document.createElement('div');
+    urlRow.className = 'dtl-urow';
+    const copy = document.createElement('button');
+    copy.type = 'button';
+    copy.className = 'dtl-ib';
+    copy.dataset.idpFocus = 'copy-url';
+    copy.setAttribute('aria-label', tr('itemAction.copyUrl'));
+    copy.title = tr('itemAction.copyUrl');
+    copy.innerHTML = detailSvg('copy', 15, 1.5);
+    copy.onclick = () => { void copySavedTabUrl(it.url); };
+    urlRow.appendChild(u);
+    urlRow.appendChild(copy);
+    titleWrap.appendChild(t);
+    titleWrap.insertAdjacentHTML('beforeend', line);
+    titleWrap.appendChild(urlRow);
+    wrap.appendChild(titleWrap);
+    bindInboxFavicons(wrap);
     return wrap;
   }
   if (it.type === 'todo') {
-    const row = document.createElement('div'); row.className = 'idp-todo-row';
+    wrap.classList.add('idp-todo-row');
     const chk = document.createElement('button'); chk.type = 'button'; chk.className = 'idp-todo-check' + (it.done ? ' done' : '');
     chk.dataset.idpFocus = 'todo-toggle';
     chk.setAttribute('aria-label', tr(it.done ? 'detail.markIncomplete' : 'detail.markComplete'));
     chk.setAttribute('aria-pressed', String(!!it.done));
+    chk.innerHTML = `<span class="dtl-chk" aria-hidden="true">${detailSvg('check', 12, 2.6)}</span>`;
     chk.onclick = () => { void commit(tr('detail.history.updateTask'), live => { live.done = !live.done; }); };
-    const t = mk('idp-title-input', it.text, tr('detail.task'), 'task');
+    const t = detailTitleField(it.text, tr('detail.task'), 'task');
     t.addEventListener('change', () => {
       if (t.value !== it.text) {
-        void commit(tr('detail.history.updateTask'), live => { live.text = t.value; }, { pane: false });
+        void commit(tr('detail.history.updateTask'), live => { live.text = t.value; }, {
+          pane: false,
+          afterSuccess: () => flashDetailTitleSaved(t),
+        });
       }
     });
-    row.appendChild(chk); row.appendChild(t); wrap.appendChild(row);
+    titleWrap.appendChild(t);
+    titleWrap.insertAdjacentHTML('beforeend', line);
+    wrap.appendChild(chk);
+    wrap.appendChild(titleWrap);
     return wrap;
   }
   // stack
+  wrap.insertAdjacentHTML('afterbegin', inboxFavMarkup(it, true));
   const edit = document.createElement('button');
   edit.type = 'button';
   edit.className = 'idp-title-input idp-identity-button';
@@ -29771,7 +29935,8 @@ function detailPrimaryEditor(it, commit) {
       stackId: it.id,
     }, event.currentTarget);
   };
-  wrap.appendChild(edit);
+  titleWrap.appendChild(edit);
+  wrap.appendChild(titleWrap);
   return wrap;
 }
 
@@ -29804,6 +29969,8 @@ function renderItemDetail() {
   const returnItemId = root?.dataset.returnItemId || previousItemId || id || '';
   const returnFocusKey = root?.dataset.returnFocusKey || '';
   const initialFocusKey = root?.dataset.initialFocusKey || '';
+  // The Move picker folds open inside the panel; a repaint replaces it.
+  if (inboxSpacePicker?.el && root?.contains(inboxSpacePicker.el)) closeInboxSpacePicker();
 
   // Nothing open, or a stale/deleted id in the URL → tear the pane down and drop
   // the dead id so Router.sync() normalizes the address bar on the next tick.
@@ -29814,6 +29981,7 @@ function renderItemDetail() {
     if (reminderOverlay && !reminderOverlay.classList.contains('hidden')) closeReminderPicker();
     if (root) {
       root.classList.remove('open');
+      root.classList.remove('is-entering');
       setElementInertOwner(root, 'reminder', false);
       root.onkeydown = null;
       root.innerHTML = '';
@@ -29822,6 +29990,8 @@ function renderItemDetail() {
       delete root.dataset.advancedOpen;
       delete root.dataset.returnFocusKey;
       delete root.dataset.initialFocusKey;
+      delete root.dataset.location;
+      delete root.dataset.reminderAt;
     }
     document.body.classList.remove('detail-open');
     setItemDetailBackgroundInert(false);
@@ -29850,6 +30020,15 @@ function renderItemDetail() {
   if (!sameItem) root.dataset.returnItemId = String(id);
   delete root.dataset.initialFocusKey;
   root.classList.add('open');
+  // The panel slides in when it opens, not on every repaint after an edit.
+  root.classList.toggle('is-entering', !wasOpen);
+  // Details is the one floating layer: an open menu or the Today drawer gives way.
+  if (!wasOpen) {
+    hideContextMenu();
+    if (typeof isTodayTabsDrawerOpen === 'function' && isTodayTabsDrawerOpen()) {
+      setTodayTabsDrawer(false, { restoreFocus: false });
+    }
+  }
   const reminderOverlay = document.getElementById('reminder-overlay');
   setElementInertOwner(root, 'reminder', !!(reminderOverlay && !reminderOverlay.classList.contains('hidden')));
   root.onkeydown = event => handleItemDetailKeydown(event, root);
@@ -29866,31 +30045,60 @@ function renderItemDetail() {
     .filter(Boolean)
     .join(' › ');
   const canOpenDetailTab = it.type === 'tab' && isOpenableSavedTabUrl(it.url);
+  // What the last paint showed for this item: a new location rolls in after a
+  // Move (or its Undo), and a new reminder time fills the chip once.
+  const locationRolls = sameItem && root.dataset.location != null && root.dataset.location !== locationLabel;
+  const storedReminderAt = it.reminder?.at ? String(it.reminder.at) : '';
+  const reminderFills = sameItem && !!storedReminderAt && root.dataset.reminderAt != null
+    && root.dataset.reminderAt !== storedReminderAt;
+  root.dataset.location = locationLabel;
+  root.dataset.reminderAt = storedReminderAt;
+  const fx = itemDetailFx?.itemId === String(id) ? itemDetailFx.kind : '';
+  itemDetailFx = null;
+  const movable = !!createSelectedItemMutationContext([String(it.id)]);
+  const kind = ['tab', 'note', 'todo', 'stack'].includes(it.type) ? it.type : 'tab';
+  const groupColor = reminderDotColor(info.group?.color || null);
+  const bandColor = typeof it.cover?.color === 'string' && it.cover.color ? it.cover.color : groupColor;
+  const locationMarkup = `<span class="dtl-dot" aria-hidden="true" style="--dot:${esc(groupColor)}"></span><span class="idp-location${locationRolls ? ' is-moved' : ''}" id="idp-location">${esc(locationLabel)}</span>`;
   root.innerHTML = `
     <div class="idp-scrim" aria-hidden="true"></div>
     <aside class="idp-panel" role="dialog" aria-modal="true" aria-labelledby="idp-heading" aria-describedby="idp-location" tabindex="-1">
+      <div class="dtl-band" aria-hidden="true" style="--dtl-band:${esc(bandColor)}"></div>
       <header class="idp-hd">
         <div class="idp-hd-copy">
           <div class="idp-docket-line">
-            <span class="idp-type idp-type-${esc(it.type)}">${esc(_searchTypeLabel(it.type))}</span>
-            <p class="idp-location" id="idp-location">${esc(locationLabel)}</p>
+            <span class="idp-type idp-type-${esc(it.type)}">${esc(tr(`detail.kind.${kind}`))}</span>
+            ${movable
+              ? `<button type="button" class="dtl-loc" data-idp-focus="move" aria-expanded="false" aria-label="${esc(tr('detail.moveFrom', { location: locationLabel }))}" title="${esc(tr('inbox.moveToSpace'))}">${locationMarkup}${detailSvg('chevron', 12, 1.9, 'dtl-loc-chev')}</button>`
+              : `<span class="dtl-loc is-static">${locationMarkup}</span>`}
           </div>
           <h2 class="idp-heading sr-only" id="idp-heading">${esc(heading)}</h2>
           <span class="idp-save-status" data-idp-save-status role="status" aria-live="polite" aria-atomic="true"></span>
         </div>
         <div class="idp-actions">
-          ${canOpenDetailTab ? `<button class="idp-open idp-btn primary" type="button" data-idp-focus="open">${esc(tr('detail.open'))}</button>` : ''}
           <button class="idp-close" type="button" data-idp-focus="close" title="${esc(tr('detail.closeTitle'))}" aria-label="${esc(tr('detail.close'))}">
-            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
           </button>
         </div>
       </header>
+      <div class="dtl-move"></div>
       <div class="idp-body"></div>
+      <footer class="dtl-foot">
+        <button type="button" class="dtl-fbtn" data-idp-focus="archive">${detailSvg('archive', 15, 1.5)}<span>${esc(tr('itemAction.archive'))}</span></button>
+      </footer>
     </aside>`;
   root.querySelector('.idp-scrim').onclick = closeItemDetail;
   root.querySelector('.idp-close').onclick = closeItemDetail;
-  const openButton = root.querySelector('.idp-open');
-  if (openButton) openButton.onclick = () => openSavedTabItem(it, { focus: true, opener: openButton });
+  const moveButton = root.querySelector('button.dtl-loc');
+  if (moveButton) moveButton.onclick = () => openItemDetailMovePicker(it, moveButton);
+  const archiveButton = root.querySelector('.dtl-fbtn');
+  archiveButton.onclick = async () => {
+    let changed;
+    if (it.type === 'tab') changed = await archiveSavedPage(it, archiveButton);
+    else if (it.type === 'stack') changed = archiveItem(it.id) !== false;
+    else changed = await archiveBoardLocalItem(it, archiveButton);
+    if (changed) renderItemDetail();
+  };
   const body = root.querySelector('.idp-body');
 
   const section = (title, parent = body, extraClass = '') => {
@@ -29904,6 +30112,36 @@ function renderItemDetail() {
   // ── Primary editor ───────────────────────────────────────────────
   const primarySection = section(null, body, 'idp-primary-sec');
   primarySection.appendChild(detailPrimaryEditor(it, commit));
+  // A page's actions: Open, then its Favorite and Read later marks, which use
+  // the Library's receipt-gated toggles and their Undo receipts.
+  if (it.type === 'tab') {
+    const favoriteLabel = tr(it.favorite ? 'itemAction.removeFavorite' : 'itemAction.addFavorite');
+    const laterLabel = tr(it.readLaterAt ? 'itemAction.removeReadLater' : 'itemAction.saveReadLater');
+    const burst = fx === 'favorite'
+      ? `<span class="dtl-burst" aria-hidden="true">${INBOX_BURST_RAYS.map(angle => `<span class="ibx-ray" style="--a:${angle}deg"><span class="dtl-pt"></span></span>`).join('')}</span>`
+      : '';
+    const acts = document.createElement('div');
+    acts.className = 'dtl-acts';
+    acts.innerHTML = `
+      ${canOpenDetailTab ? `<button class="idp-open idp-btn primary" type="button" data-idp-focus="open">${esc(tr('detail.open'))}</button>` : ''}
+      <button type="button" class="dtl-tgl dtl-star${it.favorite ? ' is-on' : ''}${fx === 'favorite' ? ' is-pop' : ''}" data-idp-focus="favorite" aria-pressed="${!!it.favorite}" aria-label="${esc(favoriteLabel)}" title="${esc(favoriteLabel)}">${librarySvg('star', 19, 1.35)}${burst}</button>
+      <button type="button" class="dtl-tgl dtl-later${it.readLaterAt ? ' is-on' : ''}${fx === 'later' ? ' is-pop' : ''}" data-idp-focus="read-later" aria-pressed="${!!it.readLaterAt}" aria-label="${esc(laterLabel)}" title="${esc(laterLabel)}">${libraryLaterSvg(18)}</button>`;
+    primarySection.appendChild(acts);
+    const receipt = { undo: true, sub: planSortMeta(it).domain || it.url || '' };
+    const toggleFrom = (button, toggle, kindOn) => async () => {
+      const turningOn = button.getAttribute('aria-pressed') !== 'true';
+      const changed = await toggle(it, button, receipt);
+      if (!changed) return;
+      itemDetailFx = turningOn ? { itemId: String(it.id), kind: kindOn } : null;
+      renderItemDetail();
+    };
+    const star = acts.querySelector('.dtl-star');
+    const later = acts.querySelector('.dtl-later');
+    star.onclick = toggleFrom(star, toggleFavorite, 'favorite');
+    later.onclick = toggleFrom(later, toggleReadLater, 'later');
+  }
+  const openButton = root.querySelector('.idp-open');
+  if (openButton) openButton.onclick = () => openSavedTabItem(it, { focus: true, opener: openButton });
 
   if (it.type === 'note' || it.type === 'todo') {
     const markerSection = section(tr('itemColor.menuLabel'), body, 'idp-context-sec idp-marker-sec');
@@ -29942,28 +30180,49 @@ function renderItemDetail() {
   cov.appendChild(covRow);
 
   // ── Reminder ─────────────────────────────────────────────────────
+  // The orange "when" chip, its repeat, and Change / Clear; Change (or Set
+  // reminder…) folds open quick times and "Pick a time…" for the full picker.
+  // Every path is the same exact-item receipt controller with its Undo.
   const rem = section(tr('detail.reminder'), null, 'idp-context-sec');
   const remWrap = document.createElement('div'); remWrap.className = 'idp-rem';
+  const now = Date.now();
   if (it.reminder && it.reminder.at) {
-    const past = it.reminder.at < Date.now();
-    const when = document.createElement('span');
-    when.className = 'idp-rem-when' + (past ? ' past' : '');
+    const at = pendingReminderTime(it.reminder, now) ?? Number(it.reminder.at);
+    const past = at < now;
     const recur = it.reminder.recur ? detailRecurLabel(it.reminder.recur) : '';
-    when.textContent = [
-      past ? tr('detail.pastDue') : '',
-      new Date(it.reminder.at).toLocaleString(appLocale()),
-      fmtTimeRelative(it.reminder.at),
-      recur ? tr('detail.repeats', { schedule: recur }) : '',
-    ].filter(Boolean).join(' · ');
-    remWrap.appendChild(when);
-    const change = document.createElement('button'); change.type = 'button'; change.className = 'idp-btn'; change.textContent = tr('detail.changeReminder'); change.dataset.idpFocus = 'reminder-change'; change.onclick = () => openReminderPicker(it.id, mutationContext);
-    const clr2 = document.createElement('button'); clr2.type = 'button'; clr2.className = 'idp-btn danger'; clr2.textContent = tr('detail.clearReminder'); clr2.dataset.idpFocus = 'reminder-clear'; clr2.onclick = () => { void commitItemDetailReminderMutation(mutationContext, null); };
-    remWrap.appendChild(change); remWrap.appendChild(clr2);
+    const whenText = [past ? tr('detail.pastDue') : '', detailWhenLabel(at, now)].filter(Boolean).join(' · ');
+    remWrap.innerHTML = `<span class="dtl-chip${past ? ' is-past' : ''}${reminderFills ? ' is-fill' : ''}">${detailSvg('clock', 14, 1.7, 'dtl-chip-clock')}${detailSvg('check', 14, 2.6, 'dtl-chip-tick')}<span>${esc(whenText)}</span></span>${recur ? `<span class="dtl-rep">${detailSvg('repeat', 11, 2)}${esc(tr('detail.repeats', { schedule: recur }))}</span>` : ''}<span class="dtl-remacts"></span>`;
+    const remActs = remWrap.querySelector('.dtl-remacts');
+    const change = document.createElement('button'); change.type = 'button'; change.className = 'dtl-lnk'; change.textContent = tr('detail.changeReminder'); change.dataset.idpFocus = 'reminder-change'; change.dataset.dtlSheetToggle = 'true'; change.setAttribute('aria-expanded', 'false');
+    const clr2 = document.createElement('button'); clr2.type = 'button'; clr2.className = 'dtl-lnk is-quiet'; clr2.textContent = tr('detail.clearReminder'); clr2.dataset.idpFocus = 'reminder-clear'; clr2.onclick = () => { void commitItemDetailReminderMutation(mutationContext, null); };
+    remActs.appendChild(change); remActs.appendChild(clr2);
   } else {
-    const set = document.createElement('button'); set.type = 'button'; set.className = 'idp-btn primary'; set.textContent = tr('detail.setReminder'); set.dataset.idpFocus = 'reminder-set'; set.onclick = () => openReminderPicker(it.id, mutationContext);
+    const set = document.createElement('button'); set.type = 'button'; set.className = 'dtl-btn'; set.innerHTML = `${detailSvg('clock', 15, 1.6)}<span>${esc(tr('detail.setReminder'))}</span>`; set.dataset.idpFocus = 'reminder-set'; set.dataset.dtlSheetToggle = 'true'; set.setAttribute('aria-expanded', 'false');
     remWrap.appendChild(set);
   }
   rem.appendChild(remWrap);
+  const sheet = document.createElement('div');
+  sheet.className = 'dtl-sheet';
+  sheet.hidden = true;
+  sheet.setAttribute('role', 'group');
+  sheet.setAttribute('aria-label', tr('space.reminderFor', { name: heading }));
+  sheet.innerHTML = `${SPACE_QUICK_TIMES.map(([offset, key], index) => `<button type="button" class="dtl-sho" data-offset="${offset}" data-idp-focus="reminder-quick-${index}" style="--dtl-d:${index * 30}ms"><span>${esc(tr(key))}</span><span class="dtl-mono">${esc(inboxWhenLabel(now + offset, now))}</span></button>`).join('')}
+    <button type="button" class="dtl-sho is-custom" data-idp-focus="reminder-custom" style="--dtl-d:120ms"><span>${esc(tr('space.reminderCustom'))}</span></button>`;
+  sheet.querySelectorAll('[data-offset]').forEach(button => {
+    button.onclick = () => {
+      void commitItemDetailReminderMutation(mutationContext, { at: Date.now() + Number(button.dataset.offset), recur: it.reminder?.recur });
+    };
+  });
+  sheet.querySelector('.is-custom').onclick = () => openReminderPicker(it.id, mutationContext);
+  sheet.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    event.preventDefault();
+    event.stopPropagation();
+    toggleItemDetailReminderSheet(root, false);
+    focusItemDetailTarget(root.querySelector('[data-dtl-sheet-toggle]'));
+  });
+  rem.appendChild(sheet);
+  rem.querySelector('[data-dtl-sheet-toggle]').onclick = () => toggleItemDetailReminderSheet(root);
 
   // ── Notes annotation (rich text, reuses the .note-text RT toolbar) ─
   const nsec = section(tr('detail.whySaved'), null, 'idp-context-sec');

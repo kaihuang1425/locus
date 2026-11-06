@@ -299,6 +299,25 @@ Slices, in order:
 
 ## Done (newest first)
 
+- **2026-11-06 - Item details built from its canvas board (pages build, page 4 of 9)**
+  - **What:** the details panel is the board's 480 px layer: a colour band,
+    the kind pill, the full location as the Move control (the Inbox page's
+    Space picker folds open under it; same move transaction and Undo; the new
+    location rolls in, or the panel closes when the item left the page) and
+    Close; the title edits in place through the existing receipt-gated field
+    commit (blue underline, green once stored); Open link, Favorite and Read
+    later with Undo, Copy URL; why it was saved; the orange reminder chip with
+    Change / Clear, quick times and Pick a time…, filling with a tick when set;
+    tags; More details; Archive in the footer. The Link review and formatting
+    bar take the board's look while Details is open. Opening Details closes a
+    menu and the Today drawer, and S stays off behind it. Phone: full width,
+    fields stacked, 44 px targets, no horizontal scroll.
+  - **Evidence:** `item-detail-contract-test.js` extended (board contracts in
+    a VM, ported CSS and location assertions) and `core-visual-system` ported;
+    23 mutations caught; all 44 `scripts/*.js` checks pass; Edge 156 proof
+    (101 checks) with screenshots in the shared notes
+    `locus-redesign-evidence/pages/details/`.
+
 - **2026-11-06 - Space page built from its canvas board (pages build, page 3 of 9)**
   - **What:** a Space opens on one page: its name with a rolling item count
     and an orange reminder chip, one More for Rename, reminder and Delete, and
