@@ -2240,15 +2240,25 @@ function testGroupFocusSelectorOrderAfterRerender() {
 }
 
 function testSharedGroupActionMenuModel() {
-  const group = { id: 'group-1', name: 'Inbox', collapsed: false, items: [] };
+  // Open all is offered only when the Group holds a page Reopen accepts
+  // (see saved-page-reopen-contract-test.js), so the fixture carries one.
+  const group = {
+    id: 'group-1',
+    name: 'Inbox',
+    collapsed: false,
+    items: [{ id: 'tab-1', type: 'tab', title: 'Docs', url: 'https://docs.example.test/' }],
+  };
   const opener = { id: 'group-more' };
   const calls = { identity: [], openAll: [], move: [], archive: [] };
   let resolvedGroup = group;
   const factory = vm.runInNewContext(`(() => {
+    ${extractFunction('isOpenableSavedTabUrl')}
+    ${extractFunction('groupHasReopenableSavedTab')}
     ${extractFunction('groupRecordCreationMenuItems')}
     ${extractFunction('groupActionMenuItems')}
     return groupActionMenuItems;
   })()`, {
+    URL,
     identityGroupTarget(groupId) {
       if (groupId !== 'group-1' || !resolvedGroup) return null;
       return {
@@ -2298,6 +2308,12 @@ function testSharedGroupActionMenuModel() {
     'Open all must retain the exact rendered Group and actual opener');
   items.find(item => item.text === 'groupAction.collapse').action();
   assert.equal(toggles, 1, 'the shared collapse action must invoke only the supplied surface controller');
+
+  const savedItems = group.items;
+  group.items = [];
+  assert.ok(!factory(group, opener).some(item => item.text === 'groupAction.openAll'),
+    'a Group with no reopenable page must not advertise Open all');
+  group.items = savedItems;
 
   resolvedGroup = { ...group };
   assert.deepEqual(plain(factory(group, opener)), [],
