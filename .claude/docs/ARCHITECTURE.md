@@ -422,6 +422,43 @@ Schema 11 extends `popupHibernateScope` with `selected`, persists the live
 `popupHibernateSaveBefore` safety setting. Existing profiles keep current-window
 scope and do not save implicitly before hibernating.
 
+### Today board (Home since 2026-11)
+
+`renderHome()` builds the Today board from the 2026-11 canvas; the Trail, Inbox
+zone, and Space register described above are no longer rendered on Home. Today is a
+derived projection with no stored field. `todayTaskModel()` walks the active
+Workspace's to-dos (Stacks included) and keeps: a reminder `at` inside today (`due`
+when it has passed, `upcoming` otherwise), an open to-do whose reminder is on an
+earlier day (`overdue`), and a to-do with no reminder created today (`anytime`).
+Duplicate stable IDs are left out. Order is overdue, due, anytime (by `createdAt`),
+upcoming; then IDs deferred with Later; done to-dos last. The first open task is the
+Now card.
+
+Completion (`commitTodayTodoToggle`) is the Board to-do transaction with Today's
+presentation: `createBoardTodoCompletionContext` / `resolveBoardTodoCompletionTarget`,
+the shared `boardTodoCompletionMutationPending` token, one localized snapshot, one
+awaited `persistNow()`. Capture (`commitTodayCapture`) resolves one exact Space (the
+`#space` in the line, else the active Space) and zero or one Inbox
+(`createTodayCaptureContext` / `resolveTodayCaptureTarget`, the Calendar Add-task
+rules without the active-Space requirement), allocates IDs, snapshots, pushes one
+to-do (with `reminder { at, notified: false }` only when a time was parsed), and
+awaits one write (`reconcileReminders` when a reminder was added) before rendering
+and the Undo receipt. `parseTodayCapture()` reads English and zh-TW date words and
+`#space` tags and does the zone, day, and DST arithmetic with `LocusPlan`
+(`todayInZone`, `addDays`, `weekdayIndex`, `zonedWallToEpoch`); its tokens drive the
+capture mirror's highlights.
+
+Later (`deferTodayTask`) is per-device view order in `localStorage.locus.today.later`
+(`{ day, ids }`, ignored on any other day, in-memory fallback). It never enters
+Undo or the stored graph. The edge tab (`#today-tabs-ear`) opens the existing
+`#tabrail` as a drawer through `body.today-tabs-open`; `setTodayTabsDrawer()` never
+calls `setOpenTabsRailCollapsed()`, so the saved `railCollapsed` preference is
+unchanged. The shared rail helpers (`updateRailToggleLabel`, `focusOpenTabFilter`,
+`handleOpenTabsEscape`, `restoreOpenTabSelectionFocus`, `setOpenTabRailCount`) read
+that body class through `typeof`-guarded calls. At 820 px and below the edge tab is
+hidden, matching the rail. A repaint keeps the capture draft, focus, and caret, and
+is deferred while an IME composition is open.
+
 `localStorage.te_settings_mirror` mirrors theme/size/font/width/anim/language for the
 packaged `prepaint.js` script loaded by newtab.html (prevents theme flash). Keep both
 in sync via `applySettings()` — never write it by hand.
@@ -441,7 +478,8 @@ in sync via `applySettings()` — never write it by hand.
 | Apply settings → DOM | `applySettings` (body datasets, seg/toggle sync) |
 | Focus/overlay infra | `rememberOpener`, `restoreOpener`, `focusFirstIn`, `trapTabKey` |
 | Rich-text Link review | `captureRichTextLinkSelection`, `richTextLinkContextStillMatches`, `normalizeRichTextLinkUrl`, `openRichTextLinkDialog`, `applyRichTextLink`, `handleRichTextLinkGlobalKey`; `#rt-toolbar`, `#rich-text-link-overlay` |
-| Home surface | `renderHome`, `buildHomeTrail`, `newestHomeRows`, `newestHomeItems`, `recentSaveCandidate`, `homeTrailSaveCandidate`, `homeTrailBlockedDestinationActionPlan`, `resolveHomeTrailSpaceReviewTarget`, `openHomeTrailSpaceReview`, `homeProgressiveZonePlan`, `buildHomeInboxZone`, `createLandingInboxContext`, `openInboxView`, `createSavedItemRecoveryContext`, `resolveSavedItemRecoveryTarget`, `saveHomeTrailCandidate`, `buildHomePreviewRow`, `resolveUniqueHomePreviewItem`, `openHomePreviewItem` |
+| Today board (Home since 2026-11) | `renderHome`, `buildTodayBoard`, `todayTaskModel`, `parseTodayCapture`, `buildTodayClock`, `paintTodayClock`, `startTodayClock`, `buildTodayNow`, `buildTodayCard`, `commitTodayTodoToggle`, `checkTodayNow`, `laterTodayNow`, `toggleTodayCard`, `deferTodayTask`, `readTodayLaterIds`, `createTodayCaptureContext`, `resolveTodayCaptureTarget`, `commitTodayCapture`, `paintTodayCaptureMirror`, `setTodayTabsDrawer`, `syncTodayTabsEar`, `bindTodayBoard`; `#today-tabs-ear`, `#today-tabs-scrim` |
+| Former Home builders (not rendered since 2026-11; kept with their tests until a cleanup slice) | `buildHomeTrail`, `newestHomeRows`, `newestHomeItems`, `recentSaveCandidate`, `homeTrailSaveCandidate`, `homeTrailBlockedDestinationActionPlan`, `resolveHomeTrailSpaceReviewTarget`, `openHomeTrailSpaceReview`, `homeProgressiveZonePlan`, `buildHomeInboxZone`, `createLandingInboxContext`, `openInboxView`, `createSavedItemRecoveryContext`, `resolveSavedItemRecoveryTarget`, `saveHomeTrailCandidate`, `buildHomePreviewRow`, `resolveUniqueHomePreviewItem`, `openHomePreviewItem` |
 | Zen launch layer | `showLandingLayer`, `renderLandingLayer`, `paintLandingResults`, `bindLandingLayer` |
 | Library recovery ledger | `activeLibraryState`, `libraryStateFromRoute`, `libraryRouteQuery`, `collectWorkspaceTabs`, `libraryRowsForState`, `libraryDetailItemIdForRoute`, `libraryDestinationText`, `libraryLedgerRowModel`, `createLibraryRecoveryContext`, `resolveLibraryRecoveryTarget`, `activateLibraryRecovery`, `buildLibraryLedgerRow`, `bindLibraryQueryControl`, `renderLibraryLedgerSurface`, `focusLibraryLedgerTarget`, `openLibrarySurface`, `renderLibrarySurface`, `renderReadLaterSurface`; Archive/Trash remain `renderArchiveSurface` / `renderTrashSurface` |
 | Archive + Trash lifecycle | `archiveItem`, `archiveGroup`, `moveArchiveEntriesToTrash`, `restoreStoredEntries`, `createArchivedLocalItemRestoreContext`, `commitArchivedLocalItemRestore`, `createArchivedLocalItemBatchRestoreContext`, `commitArchivedLocalItemBatchRestore`, `openArchivedLocalItemRestoreReview`, `createArchivedGroupRestoreContext`, `commitArchivedGroupRestore`, `createArchivedGroupBatchRestoreContext`, `commitArchivedGroupBatchRestore`, `openArchivedGroupRestoreReview`, `permanentlyDeleteTrashEntries`, `confirmTrashDelete`, `bindTrashDeleteDialog`, `normalizeExpiredTrash`, `purgeExpiredTrash` |

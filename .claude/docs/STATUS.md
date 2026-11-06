@@ -7,7 +7,7 @@ Product priorities and evidence language follow
 [`docs/PRODUCT_SUCCESS_SYSTEM.md`](../../docs/PRODUCT_SUCCESS_SYSTEM.md). A "Done"
 entry records a completed implementation cycle; it does not by itself mean verified,
 user-validated, or released.
-Last updated: 2026-11-05.
+Last updated: 2026-11-06.
 
 ## Design system track (decided 2026-08-31)
 
@@ -296,6 +296,26 @@ Slices, in order:
    promoted view earns fresh rendered and user-flow evidence.
 
 ## Done (newest first)
+
+- **2026-11-06 - Today board (canvas steps 1 and 2: palette, fonts, Home)**
+  - **What:** canvas palette and brand font tokens in `themes.css`; Bricolage
+    Grotesque bundled with its OFL notice; Home rebuilt as Today (rolling clock, Now
+    card with check and Later, Rest of today, highlighting capture bar, open-tabs
+    edge tab over the existing rail). Today is derived from existing to-do fields;
+    no permission, manifest, or schema change. Later order is per-device
+    `localStorage` (`locus.today.later`), scoped to the day.
+  - **Evidence:** `today-contract-test.js` (189 checks); updated Home assertions in
+    onboarding, organization delete/removal/naming, item-detail, and the quality
+    gate; throwaway Edge 156 profile over CDP (capture en/zh-TW, check, Later, card
+    toggle, drawer open/Escape/scrim, Light/Dark, 1440/390 px, reduced motion).
+  - **Not done:** the Trail, Home Inbox zone, and Space register builders are no
+    longer rendered but are still in `newtab.js` with their tests; remove them in a
+    cleanup slice. Space rename/delete/reminder now live only in the sidebar Space
+    context menu (the Home card's visible More is gone). A "today" flag for to-dos
+    without a reminder would need a schema field; for now they count only on the
+    day they are created. At 820 px and below the edge tab is hidden, like the rail.
+    Installed-extension screen-reader output was not checked.
+  - **Implemented: yes. Verified: partial. User-validated: no. Released: no.**
 
 - **2026-11-06 - AI planning for day, week, and month (Calendar planner + local MCP companion)**
   - **What:** `plan-contract.js` (`locus.plan/v1`), `planner.js` (Calendar **Plan with

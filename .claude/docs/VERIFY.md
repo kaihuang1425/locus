@@ -44,8 +44,19 @@ node scripts/state-storage-order-contract-test.js
 node scripts/plan-contract-test.js
 node scripts/plan-companion-contract-test.js
 node scripts/calendar-planner-contract-test.js
+node scripts/today-contract-test.js
 git diff --check
 ```
+
+`today-contract-test.js` (2026-11-06) runs `todayTaskModel()` and
+`parseTodayCapture()` in a VM with a fixed Europe/London clock: task order, Later,
+duplicate IDs, English and zh-TW date words, `#space` prefixes, rolled times, and a
+London DST gap through `plan-contract.js`. It also checks the reused completion and
+capture transactions, the edge tab's rail reuse, locale parity, reduced motion,
+bundled fonts, and that permissions, CSP, and schema did not move. It does not
+render the board; the installed-browser pass for Today is a throwaway Edge profile
+driven over CDP (capture, check, Later, card toggle, drawer, themes, 1440 and
+390 px, reduced motion).
 
 The deterministic suites prove only the contracts they model. They do not promote
 a capability to installed-extension runtime verification.

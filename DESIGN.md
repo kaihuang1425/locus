@@ -4900,3 +4900,36 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   was not exercised because the per-user registry registration was not run.
 
   **Implemented: yes. Verified: partial. User-validated: no. Released: no.**
+
+- **2026-11-06 - Home becomes the Today board (canvas steps 1 and 2).**
+  First two steps of the 2026-11 design canvas. Step 1 adds the canvas palette to the
+  Light and Dark themes as tokens (raised registry greens, `--registry-card`, warm
+  `--ground`, `--card`, the orange `--when` family that means "when", the blue
+  `--where-soft` pair, and the red `--badge`) plus two brand font tokens. Bricolage
+  Grotesque ships as local woff2 subsets with its OFL notice; DM Sans and JetBrains
+  Mono were already bundled. The CSP is unchanged. The rail, logo, and registry tokens
+  (`--registry-bg #19231f`, `--locator #3158db`) are untouched.
+
+  Step 2 replaces Home's Trail headline, Inbox card, and Space register with the Today
+  board: a 208 px Bricolage clock whose digits roll, an orange colon that breathes, a
+  bar that fills over each minute, and the date; one **Now** card on the registry
+  green-black with a large check (strike, burst, next task slides in) and **Later**;
+  **Rest of today** as cards with a check circle, a time (orange), **Anytime**, or
+  **Done** (green), and the title; a capture bar that marks dates and times in orange
+  and `#space` names in blue as you type; and an edge tab with a red count badge that
+  opens the existing Opened Tabs rail as a drawer. Today is derived, not stored:
+  to-dos in the active Workspace with a reminder today, an open reminder from an
+  earlier day, or no reminder and created today. Completion reuses the Board to-do
+  transaction (one snapshot, one acknowledged write, Undo); capture writes one to-do
+  to the exact Space Inbox (`#space` or the active Space) and offers Undo; **Later**
+  is per-device view order in `localStorage` for the day. The parser understands
+  English and zh-TW date words and does its day and DST arithmetic with
+  `plan-contract.js`. No permission, manifest, or schema change.
+
+  Evidence: new `today-contract-test.js` (189 checks), quality gates, and every suite
+  except the three that already failed on the base; a throwaway Edge 156 profile over
+  CDP for capture (en and zh-TW), check, Later, card toggle, the drawer (click, Escape,
+  scrim, focus return, saved rail preference unchanged), Light and Dark, 1440 and
+  390 px, and reduced motion.
+
+  **Implemented: yes. Verified: partial. User-validated: no. Released: no.**
