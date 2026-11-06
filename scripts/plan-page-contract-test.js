@@ -259,11 +259,342 @@ async function testRollOverRunsOncePerDay() {
   items.y.reminder.at = at(2026, 11, 10, 9);
   vm.runInContext('planRollOverRunning = false;', harness.context);
   const claimed = harness.context.runPlanRollOver(NOW);
-  eq(harness.store.get('locus.plan.rolloverDay'), '2026-11-11', 'the day is claimed before the write starts');
+  eq(harness.store.get('locus.plan.rolloverDay'), String(NOW), 'the day is claimed (as the run instant) before the write starts');
   await claimed;
   settings.planRollOver = false;
   const off = await harness.context.runPlanRollOver(at(2026, 11, 12, 8));
   eq([off.ran, off.reason], [false, 'off'], 'turned off, it does nothing');
+}
+
+// ── The real State block, loaded in its own VM (P6) ──
+function stateSlice() {
+  const start = newtab.indexOf('let loadedSchema = 0;\nconst State = (() => {');
+  const end = newtab.indexOf('\n})();', start) + '\n})();'.length;
+  assert.ok(start >= 0 && end > start, 'the State block is extractable from newtab.js');
+  return newtab.slice(start, end);
+}
+function newtabFunction(name) {
+  const start = newtab.indexOf(`function ${name}(`);
+  assert.ok(start >= 0, `${name} is extractable from newtab.js`);
+  const open = newtab.indexOf('{', start);
+  let depth = 0;
+  for (let index = open; index < newtab.length; index += 1) {
+    if (newtab[index] === '{') depth += 1;
+    else if (newtab[index] === '}') {
+      depth -= 1;
+      if (depth === 0) return newtab.slice(start, index + 1);
+    }
+  }
+  throw new Error(`${name} is unterminated`);
+}
+function realState(stored) {
+  const writes = [];
+  const context = vm.createContext({
+    console, structuredClone, setTimeout, clearTimeout, Promise,
+    globalThis: {},
+    navigator: { language: 'en-US' },
+    chrome: {
+      storage: { local: { get: async () => (stored ? { te: JSON.parse(JSON.stringify(stored)) } : {}) } },
+      runtime: {
+        sendMessage: async message => {
+          writes.push(JSON.parse(JSON.stringify(message.state)));
+          return { ok: true, revision: message.state._revision + 1, reminderReconciliation: { ok: true } };
+        },
+      },
+    },
+    browserLanguage: () => 'en',
+    normalizeLanguage: value => value || 'en',
+    createOrganizationIdAllocator: () => { let n = 0; return () => `new${n += 1}`; },
+    handleStorageError: () => {},
+    refreshStorageUsage: () => {},
+  });
+  vm.runInContext(`${stateSlice()}\n${newtabFunction('ensureDefault')}\nthis.State = State; this.ensureDefault = ensureDefault;`, context, { filename: 'state.js' });
+  return { State: context.State, ensureDefault: context.ensureDefault, writes };
+}
+// Reminder targets resolved against the live graph, as the page's identity
+// helpers do: a context binds the exact record, and a duplicated id resolves
+// to nothing.
+function liveTargets(getState) {
+  const find = id => {
+    const found = [];
+    const walk = items => (items || []).forEach(item => {
+      if (String(item.id) === id) found.push(item);
+      if (item.type === 'stack') walk(item.items);
+    });
+    getState().workspaces.forEach(ws => ws.categories.forEach(space => space.groups.forEach(group => walk(group.items))));
+    return found.length === 1 ? found[0] : null;
+  };
+  return {
+    isReminderMutationPending: () => false,
+    createItemReminderMutationContext: id => { const item = find(String(id)); return item ? { id: String(id), item } : null; },
+    resolveItemReminderMutationTarget: context => (context && find(context.id) === context.item ? { item: context.item } : null),
+    isItemDetailRecord: value => !!value && typeof value === 'object' && !Array.isArray(value),
+    cloneItemDetailJson: value => JSON.parse(JSON.stringify(value)),
+  };
+}
+
+async function testRulesWithRealState() {
+  const { context } = sandbox();
+  const legacy = {
+    schema: 14, _revision: 41, activeWsId: 'ws1',
+    settings: { theme: 'folio', language: 'en' },
+    workspaces: [workspace({ work: [todo('y', { reminder: rem(at(2026, 11, 10, 9)) })] })],
+  };
+  const old = realState(legacy);
+  await old.State.load();
+  old.ensureDefault();
+  eq(context.planRuleOn(old.State.get().settings, 'planRollOver'), false, 'a profile saved before Plan loads through the real State with roll-over off');
+  eq(context.planRuleOn(old.State.get().settings, 'planWarnOverload'), true, 'and with the overload warning on');
+  const fresh = realState(null);
+  await fresh.State.load();
+  fresh.ensureDefault();
+  eq(context.planRuleOn(fresh.State.get().settings, 'planRollOver'), true, 'a brand-new profile starts with roll-over on');
+
+  // Export → import (replace) keeps both rule settings.
+  const ImportUtils = require(path.join(root, 'import-utils.js'));
+  const exported = { ...old.State.get(), settings: { ...old.State.get().settings, planRollOver: true, planWarnOverload: false } };
+  delete exported._revision;
+  const payload = JSON.parse(JSON.stringify({ app: 'locus', schema: 14, data: exported }));
+  let nextId = 0;
+  const incoming = ImportUtils.normalizeForReplace(payload.data, { makeId: () => `imp${nextId += 1}`, now: NOW, retentionMs: 30 * 86400000 });
+  const merged = { ...fresh.State.get().settings, ...incoming.settings };
+  const imported = realState({ ...incoming, settings: merged, _revision: 1 });
+  await imported.State.load();
+  eq([context.planRuleOn(imported.State.get().settings, 'planRollOver'), context.planRuleOn(imported.State.get().settings, 'planWarnOverload')], [true, false],
+    'export then import keeps planRollOver and planWarnOverload');
+  ok(/const mergedSettings = \{\n\s*\.\.\.currentSettings,\n\s*\.\.\.\(incoming\.settings \|\| \{\}\),/.test(newtab), 'import replace lets the file’s settings win, as the round trip assumes');
+}
+
+async function testRollOverUndoWithRealState() {
+  const stored = {
+    schema: 14, _revision: 5, activeWsId: 'ws1',
+    settings: { language: 'en', planRollOver: true },
+    workspaces: [workspace({ work: [todo('y', { reminder: rem(at(2026, 11, 10, 9)) }), todo('z', { reminder: rem(at(2026, 11, 9, 14)) })] })],
+  };
+  const real = realState(stored);
+  await real.State.load();
+  const toasts = [];
+  const harness = sandbox(Object.assign({
+    State: real.State,
+    renderBoard: () => {},
+    toast: (message, options) => toasts.push([message, options]),
+  }, liveTargets(() => real.State.get())));
+  vm.runInContext('var itemReminderMutationPending = null;', harness.context);
+  const result = await harness.context.runPlanRollOver(NOW);
+  const items = () => real.State.get().workspaces[0].categories[0].groups[1].items;
+  eq([result.ran, result.moved, items().map(item => item.reminder.at)], [true, 2, [at(2026, 11, 11, 11), at(2026, 11, 11, 14)]], 'roll-over moves both through one real write');
+  eq(real.writes.length, 1, 'one acknowledged write');
+  const actionId = toasts.at(-1)[1].undo;
+  ok(typeof actionId === 'number', 'the toast carries the real Undo action');
+  eq(JSON.parse(harness.store.get('locus.plan.moves')), { y: 1, z: 1 }, 'each moved to-do counts one move');
+  await real.State.undo(actionId);
+  harness.context.planUndoMoves(actionId);
+  eq(items().map(item => item.reminder.at), [at(2026, 11, 10, 9), at(2026, 11, 9, 14)], 'real State.undo restores the original times');
+  eq(JSON.parse(harness.store.get('locus.plan.moves')), {}, 'Undo takes the moves back off the ↻ count (P10)');
+  ok(/if \(typeof planUndoMoves === 'function' && undoneId !== true\) planUndoMoves\(undoneId\);/.test(newtab), 'performUndo drops the moves of the action it undid');
+}
+
+async function testRollOverTwoTabs() {
+  // Two Locus pages share one localStorage (same extension origin) but each has
+  // its own plan.js globals, so only the shared claim can stop the second.
+  const shared = new Map();
+  const background = { revision: 7, writes: 0 };
+  const page = () => {
+    const state = { _revision: 7, settings: { planRollOver: true }, workspaces: [workspace({ work: [todo('y', { reminder: rem(at(2026, 11, 10, 9)) })] })] };
+    const harness = sandbox(Object.assign({
+      State: {
+        get: () => state,
+        isRecoveryRequired: () => false,
+        snapshot: () => 1,
+        async persistNow() {
+          await new Promise(resolve => setTimeout(resolve, 5));
+          if (background.revision !== state._revision) throw Object.assign(new Error('conflict'), { code: 'LOCUS_STATE_CONFLICT' });
+          background.revision += 1;
+          background.writes += 1;
+          state._revision = background.revision;
+          return { reminderReconciliation: { ok: true } };
+        },
+      },
+      renderBoard: () => {},
+      toast: () => {},
+    }, liveTargets(() => state)));
+    harness.context.localStorage = {
+      getItem: key => (shared.has(key) ? shared.get(key) : null),
+      setItem: (key, value) => { shared.set(key, String(value)); },
+      removeItem: key => { shared.delete(key); },
+    };
+    vm.runInContext('var itemReminderMutationPending = null;', harness.context);
+    return harness.context;
+  };
+  const a = page();
+  const b = page();
+  const [ra, rb] = await Promise.all([a.runPlanRollOver(NOW), b.runPlanRollOver(NOW)]);
+  eq([ra.ran, ra.moved, rb.ran, rb.reason, background.writes], [true, 1, false, 'done-today', 1], 'the second page sees the first page’s claim and writes nothing');
+  eq(shared.get('locus.plan.rolloverDay'), String(NOW), 'the claim is the UTC instant of the run (P13)');
+}
+
+function testRollOverEdges() {
+  const { context } = sandbox();
+  // P4: an id in two workspaces can't be resolved, so it is left out; the rest move.
+  const ws1 = workspace({ work: [todo('t1', { reminder: rem(at(2026, 11, 10, 9)) }), todo('shared', { reminder: rem(at(2026, 11, 10, 9)) })] });
+  const ws2 = Object.assign(workspace({ work: [todo('shared', { reminder: rem(at(2026, 11, 10, 9)) })] }), { id: 'ws2' });
+  eq(context.planRollOverChanges([ws1, ws2], NOW).map(change => change.id), ['t1'], 'a cross-workspace duplicate id is left out of roll-over');
+  // P13: the claim compares instants with the local day start.
+  const dayRan = (last, now) => context.planRollOverRanToday(last, now);
+  eq([dayRan(String(at(2026, 11, 11, 9)), at(2026, 11, 11, 23)), dayRan(String(at(2026, 11, 10, 23, 59)), at(2026, 11, 11, 0, 5)), dayRan(null, NOW)], [true, false, false],
+    'a run counts for the local day it fell in, not for the next one');
+  eq([dayRan('2026-11-11', NOW), dayRan('2026-11-10', NOW)], [true, false], 'an old YYYY-MM-DD claim is still honoured');
+  // P14: the toast names where the to-dos landed.
+  const today = at(2026, 11, 11, 15);
+  const tomorrow = at(2026, 11, 12, 9);
+  eq([
+    context.planRollOverToastKey([{ to: today }], NOW),
+    context.planRollOverToastKey([{ to: today }, { to: today }], NOW),
+    context.planRollOverToastKey([{ to: tomorrow }], NOW),
+    context.planRollOverToastKey([{ to: tomorrow }, { to: tomorrow }], NOW),
+    context.planRollOverToastKey([{ to: today }, { to: tomorrow }], NOW),
+  ], ['plan.rolledOverOne', 'plan.rolledOver', 'plan.rolledOverTomorrowOne', 'plan.rolledOverTomorrow', 'plan.rolledOverSplit'], 'the toast names today, tomorrow, or both');
+}
+
+async function testPartialBatch() {
+  const items = { a: todo('a', { reminder: rem(1) }) };
+  const contexts = {};
+  let writes = 0;
+  const harness = sandbox({
+    State: { isRecoveryRequired: () => false, snapshot: () => 9, persistNow: async () => { writes += 1; return { reminderReconciliation: { ok: true } }; } },
+    isReminderMutationPending: () => false,
+    createItemReminderMutationContext: id => (items[id] ? (contexts[id] = { id }) : null),
+    resolveItemReminderMutationTarget: context => (context && contexts[context.id] === context ? { item: items[context.id] } : null),
+    isItemDetailRecord: value => !!value && typeof value === 'object',
+    cloneItemDetailJson: value => JSON.parse(JSON.stringify(value)),
+  });
+  vm.runInContext('var itemReminderMutationPending = null;', harness.context);
+  const result = await harness.context.commitPlanReminderBatch([{ id: 'a', to: 50 }, { id: 'gone', to: 60 }], 'plan.history.rollOver', { partial: true });
+  eq([result.ok, result.moved, result.skipped, result.ids, items.a.reminder.at, writes], [true, 1, 1, ['a'], 50, 1], 'a partial batch moves what still resolves and reports what it skipped');
+  const none = await harness.context.commitPlanReminderBatch([{ id: 'gone', to: 60 }], 'plan.history.rollOver', { partial: true });
+  eq([none.ok, none.moved, writes], [true, 0, 1], 'a partial batch with nothing left writes nothing');
+}
+
+function testEvenOutMatchesBar() {
+  // P9: four overdue to-dos and five later today make the bar show 9 for today;
+  // Even out must bring that same count back to five.
+  const { context } = sandbox();
+  const overdue = [0, 1, 2, 3].map(index => todo(`o${index}`, { reminder: rem(at(2026, 11, 9, 9 + index)) }));
+  const later = [12, 13, 14, 15, 16].map(hour => todo(`t${hour}`, { reminder: rem(at(2026, 11, 11, hour)) }));
+  const ws = workspace({ work: overdue.concat(later) });
+  const collected = context.planCollect(ws);
+  const before = context.planWeekModel(collected, NOW);
+  eq(before[2].count, 9, 'the bar counts overdue to-dos toward today');
+  const changes = context.planEvenOutChanges(collected, at(2026, 11, 11), NOW);
+  const byId = new Map(changes.map(change => [change.id, change.to]));
+  ws.categories[0].groups[1].items.forEach(item => { if (byId.has(item.id)) item.reminder.at = byId.get(item.id); });
+  const after = context.planWeekModel(context.planCollect(ws), NOW);
+  eq([changes.length, after[2].count, after[2].over], [4, 5, false], 'Even out moves exactly enough to bring today back under the limit');
+}
+
+function testSortTally() {
+  // P8: the tally counts only answers still in effect.
+  const { context } = sandbox();
+  vm.runInContext('planSortSession = null;', context);
+  const session = context.planSortState();
+  ['a', 'b', 'c'].forEach(id => session.decided.set(id, 'today'));
+  const queueAfterUndo = [tab('c'), tab('d')];
+  eq(context.planSortTally(session, queueAfterUndo), { today: 2, week: 0, someday: 0, archive: 0 }, 'an answer whose Undo put the item back is not counted');
+  ok(/if \(typeof planSortSession !== 'undefined' && planSortSession && activeCalendar\?\.view !== 'sort'\) planSortSession = null;/.test(newtab), 'leaving Sort ends its session');
+  ok(/session\.holdRender = true;[\s\S]*await leaveDone;[\s\S]*session\.holdRender = false;/.test(planSource), 'Sort holds its repaint until the leaving card has gone (P7)');
+  ok(/\.plan-sort\.is-first \{ animation: plan-rise/.test(read('newtab.css')) && !/\.plan-sort \{[^}]*animation/.test(read('newtab.css')), 'the Sort rise plays on first entry only (P7)');
+}
+
+// ── A small element tree, enough to build real Plan markup in a VM (X4) ──
+function miniDocument() {
+  const camel = name => name.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+  class Node {
+    constructor(tag, text = '') {
+      this.tagName = tag ? tag.toUpperCase() : '#text';
+      this.children = [];
+      this.attributes = {};
+      this.dataset = {};
+      this.text = text;
+      this.parentNode = null;
+      this.onclick = null;
+    }
+    get id() { return this.attributes.id || ''; }
+    set id(value) { this.setAttribute('id', value); }
+    get className() { return this.attributes.class || ''; }
+    set className(value) { this.setAttribute('class', value); }
+    setAttribute(name, value) {
+      this.attributes[name] = String(value);
+      if (name.startsWith('data-')) this.dataset[camel(name.slice(5))] = String(value);
+    }
+    getAttribute(name) { return Object.prototype.hasOwnProperty.call(this.attributes, name) ? this.attributes[name] : null; }
+    appendChild(child) { child.parentNode = this; this.children.push(child); return child; }
+    remove() { if (this.parentNode) this.parentNode.children = this.parentNode.children.filter(child => child !== this); }
+    get textContent() { return this.text + this.children.map(child => child.textContent).join(''); }
+    set innerHTML(html) {
+      this.children = [];
+      const stack = [this];
+      const token = /<\/([a-zA-Z0-9-]+)\s*>|<([a-zA-Z0-9-]+)((?:\s+[\w:-]+(?:="[^"]*")?)*)\s*(\/?)>|([^<]+)/g;
+      let match;
+      while ((match = token.exec(html))) {
+        const top = stack[stack.length - 1];
+        if (match[1]) { stack.pop(); continue; }
+        if (match[5] != null) { if (match[5].trim()) top.appendChild(new Node(null, match[5].trim())); continue; }
+        const element = new Node(match[2]);
+        for (const attr of (match[3] || '').matchAll(/([\w:-]+)(?:="([^"]*)")?/g)) element.setAttribute(attr[1], attr[2] ?? '');
+        top.appendChild(element);
+        if (!match[4]) stack.push(element);
+      }
+    }
+    matches(selector) {
+      if (selector.startsWith('#')) return this.id === selector.slice(1);
+      if (selector.startsWith('.')) return this.className.split(/\s+/).includes(selector.slice(1));
+      const attr = selector.match(/^\[([\w-]+)(?:="([^"]*)")?\]$/);
+      if (attr) return attr[2] == null ? this.getAttribute(attr[1]) != null : this.getAttribute(attr[1]) === attr[2];
+      return this.tagName === selector.toUpperCase();
+    }
+    querySelectorAll(selector) {
+      const found = [];
+      const walk = node => node.children.forEach(child => { if (child.tagName !== '#text' && child.matches(selector)) found.push(child); walk(child); });
+      walk(this);
+      return found;
+    }
+    querySelector(selector) { return this.querySelectorAll(selector)[0] || null; }
+  }
+  return { createElement: tag => new Node(tag) };
+}
+
+function testPlanHeaderBuilds() {
+  const views = [];
+  const opened = [];
+  const inbox = { id: 'inbox', items: [tab('a'), tab('b'), tab('c', { reminder: rem(at(2026, 11, 12, 9)) })] };
+  const esc = value => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+  const build = (mode, withPlanner = true) => {
+    const extra = {
+      document: miniDocument(),
+      esc,
+      resolveLandingInboxTarget: () => ({ group: inbox }),
+      createLandingInboxContext: () => ({}),
+    };
+    if (withPlanner) extra.openPlannerDialog = opener => opened.push(opener.id);
+    const { context } = sandbox(extra);
+    context.setPlanView = view => views.push(view);
+    return context.buildPlanHeader({ id: 'ws1' }, mode);
+  };
+  const head = build('sort');
+  const viewButtons = head.querySelectorAll('[data-plan-view]');
+  eq(viewButtons.map(button => [button.dataset.planView, button.getAttribute('aria-pressed')]), [['upcoming', 'false'], ['sort', 'true'], ['calendar', 'false']],
+    'the header builds Upcoming, Sort, and Calendar controls with the right pressed state');
+  eq(head.querySelector('#plan-title').textContent, 'plan.title', 'the header carries the page title that labels the page');
+  eq(head.querySelector('.plan-bub-badge').textContent, '2', 'the Sort badge counts what is left to sort');
+  viewButtons.forEach(button => button.onclick());
+  eq(views, ['upcoming', 'sort', 'calendar'], 'each view control switches to its own view');
+  const ai = head.querySelector('#plan-ai-btn');
+  ok(ai && ai.tagName === 'BUTTON', 'Plan with AI is a real button in the header');
+  ai.onclick();
+  eq(opened, ['plan-ai-btn'], 'Plan with AI opens the planner from its own button (the focus return target)');
+  eq(build('upcoming', false).querySelector('#plan-ai-btn'), null, 'without the planner, its button is not left behind');
+  eq(build('calendar').querySelector('[data-plan-view="calendar"]').getAttribute('aria-pressed'), 'true', 'the Calendar control is pressed on the Calendar views');
+  ok(/document\.getElementById\('plan-ai-btn'\)/.test(read('planner.js')) && !/cal-plan-btn/.test(read('planner.js')), 'the planner returns focus to Plan with AI, not the removed Calendar button (P11)');
 }
 
 function testWiring() {
@@ -290,7 +621,7 @@ function testLocalesAndPrivacy() {
     const prefix = `plan.${template[1]}.`;
     Object.keys(i18n.en).filter(key => key.startsWith(prefix)).forEach(key => used.add(key));
   }
-  ['plan.rolledOverOne', 'plan.rolledOver', 'plan.evenedOne', 'plan.evened', 'plan.autoOn', 'plan.autoOff', 'plan.sortNone', 'plan.inboxClear'].forEach(key => used.add(key));
+  ['plan.rolledOverOne', 'plan.rolledOver', 'plan.rolledOverTomorrowOne', 'plan.rolledOverTomorrow', 'plan.rolledOverSplit', 'plan.evenedOne', 'plan.evened', 'plan.autoOn', 'plan.autoOff', 'plan.sortNone', 'plan.inboxClear'].forEach(key => used.add(key));
   ok(used.size > 40, 'the plan.js strings were found');
   for (const key of used) {
     ok(typeof i18n.en[key] === 'string' && i18n.en[key], `${key} exists in English`);
@@ -316,9 +647,17 @@ async function main() {
   testRules();
   await testBatchCommit();
   await testRollOverRunsOncePerDay();
+  await testRulesWithRealState();
+  await testRollOverUndoWithRealState();
+  await testRollOverTwoTabs();
+  testRollOverEdges();
+  await testPartialBatch();
+  testEvenOutMatchesBar();
+  testSortTally();
+  testPlanHeaderBuilds();
   testWiring();
   testLocalesAndPrivacy();
-  console.log(`Plan page contracts passed: ${checks} checks (lanes, week bar, Even out, roll-over once per day, move and sort times, Sort queue, rule defaults, one-write batch with Undo, wiring, locales, privacy)`);
+  console.log(`Plan page contracts passed: ${checks} checks (lanes, week bar and Even out on one count, roll-over once per day across pages and zones, duplicate ids, landing-day toasts, real State defaults, export/import and Undo, move counts, Sort tally, header built in a VM, wiring, locales, privacy)`);
 }
 
 main().catch(error => {

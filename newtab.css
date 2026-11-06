@@ -13783,7 +13783,9 @@ body[data-surface="calendar"] #main { background: var(--today-ground); }
 .plan-more { height: 36px; padding: 0 6px; border: 0; background: transparent; color: var(--text2); font-size: 13px; font-weight: 600; cursor: pointer; }
 
 /* Sort inbox: one card at a time. */
-.plan-sort { max-width: 680px; margin: 34px auto 0; outline: none; animation: plan-rise .4s var(--today-ease) both; }
+.plan-sort { max-width: 680px; margin: 34px auto 0; outline: none; }
+/* The rise plays when Sort opens; each later card has its own enter motion. */
+.plan-sort.is-first { animation: plan-rise .4s var(--today-ease) both; }
 .plan-sort-progress { display: flex; align-items: center; gap: 14px; }
 .plan-sort-pos { font-family: var(--today-display); font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
 .plan-sort-track { flex: 1; height: 6px; overflow: hidden; border-radius: 6px; background: var(--today-rule); }

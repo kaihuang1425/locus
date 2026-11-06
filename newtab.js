@@ -66,7 +66,10 @@ const I18N = {
     'plan.ruleFailed': 'Couldn’t save that rule',
     'plan.rolledOverOne': 'Moved 1 to today',
     'plan.rolledOver': 'Moved {count} to today',
-    'plan.rollOverFailed': 'Couldn’t move yesterday’s unfinished to-dos',
+    'plan.rolledOverTomorrowOne': 'Moved 1 to tomorrow',
+    'plan.rolledOverTomorrow': 'Moved {count} to tomorrow',
+    'plan.rolledOverSplit': 'Moved {count} to today and tomorrow',
+    'plan.rollOverFailed': 'Couldn’t move overdue to-dos',
     'plan.history.rollOver': 'Move unfinished to-dos to today',
     'plan.history.evenOut': 'Even out a day',
     'plan.thisWeek': 'This week',
@@ -1773,7 +1776,10 @@ const I18N = {
     'plan.ruleFailed': '無法儲存這項規則',
     'plan.rolledOverOne': '已將 1 項移到今天',
     'plan.rolledOver': '已將 {count} 項移到今天',
-    'plan.rollOverFailed': '無法移動昨天沒做完的待辦',
+    'plan.rolledOverTomorrowOne': '已將 1 項移到明天',
+    'plan.rolledOverTomorrow': '已將 {count} 項移到明天',
+    'plan.rolledOverSplit': '已將 {count} 項移到今天和明天',
+    'plan.rollOverFailed': '無法移動過期的待辦',
     'plan.history.rollOver': '把沒做完的待辦移到今天',
     'plan.history.evenOut': '分散一天的事項',
     'plan.thisWeek': '本週',
@@ -8096,6 +8102,8 @@ async function performUndo(expectedActionId = null) {
   try {
     const label = await State.undo(expectedActionId);
     if (label) {
+      // Plan's "↻ 2×" counts follow Undo: a move that was undone did not happen.
+      if (typeof planUndoMoves === 'function' && undoneId !== true) planUndoMoves(undoneId);
       renderAll();
       // Morph the receipt that offered this Undo into its result, in place.
       toast(tr('history.undid', { action: label }), { tone: 'info', glyph: 'undo', duration: 1600, replaceUndo: undoneId });
@@ -17037,6 +17045,8 @@ function renderBoard() {
   if (document.body.dataset.surface !== 'home' && typeof isTodayTabsDrawerOpen === 'function' && isTodayTabsDrawerOpen()) {
     setTodayTabsDrawer(false, { restoreFocus: false });
   }
+  // Sort inbox's session (answers, skipped cards) lasts only while Sort shows.
+  if (typeof planSortSession !== 'undefined' && planSortSession && activeCalendar?.view !== 'sort') planSortSession = null;
   // The calendar (§5) and group pages (§4.1) are surfaces that sit above the
   // layout registry: when one is open every re-render keeps showing it. Each
   // renderer returns false if the user has navigated away, so we fall through to

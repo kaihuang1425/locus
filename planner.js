@@ -597,7 +597,7 @@ function plannerFocusApplied(transaction, context) {
     }
   }
   if (typeof focusIdentityTarget === 'function' && focusIdentityTarget('group', transaction.groupId)) return true;
-  const fallback = document.getElementById('cal-plan-btn');
+  const fallback = document.getElementById('plan-ai-btn');
   if (fallback) { try { fallback.focus({ preventScroll: true }); } catch {} }
   return document.activeElement === fallback;
 }
@@ -1410,7 +1410,7 @@ function closePlannerDialog({ restoreFocus = true } = {}) {
   plannerCtx = null;
   clearTimeout(plannerRebuildTimer);
   if (restoreFocus) {
-    if (!restoreOpener(overlay)) setTimeout(() => document.getElementById('cal-plan-btn')?.focus({ preventScroll: true }), 0);
+    if (!restoreOpener(overlay)) setTimeout(() => document.getElementById('plan-ai-btn')?.focus({ preventScroll: true }), 0);
   } else {
     _overlayOpeners.delete(overlay);
   }

@@ -95,15 +95,38 @@ function planMoveCounts() {
   const counts = planReadStore(PLAN_MOVES_KEY, {});
   return counts && !Array.isArray(counts) ? counts : {};
 }
-function planBumpMoves(ids) {
+// Each bump remembers the Undo action that made it, so pressing Undo takes the
+// move back off the count. Undo history lives for one page load, and so does
+// this link.
+const planMoveActions = new Map();
+function planBumpMoves(ids, actionId = null) {
   const counts = planMoveCounts();
-  (Array.isArray(ids) ? ids : [ids]).forEach(id => {
-    const key = String(id);
+  const list = (Array.isArray(ids) ? ids : [ids]).map(String);
+  list.forEach(key => {
     counts[key] = Math.min(99, (Number(counts[key]) || 0) + 1);
   });
   const keys = Object.keys(counts);
   if (keys.length > 500) keys.slice(0, keys.length - 500).forEach(key => { delete counts[key]; });
   planWriteStore(PLAN_MOVES_KEY, counts);
+  if (actionId != null) {
+    planMoveActions.set(actionId, list);
+    if (planMoveActions.size > 60) planMoveActions.delete(planMoveActions.keys().next().value);
+  }
+}
+function planUndoMoves(actionId) {
+  const list = planMoveActions.get(actionId);
+  if (!list) return false;
+  planMoveActions.delete(actionId);
+  const counts = planMoveCounts();
+  list.forEach(key => {
+    const left = (Number(counts[key]) || 0) - 1;
+    if (left > 0) counts[key] = left; else delete counts[key];
+  });
+  planWriteStore(PLAN_MOVES_KEY, counts);
+  return true;
+}
+function planLatestActionId() {
+  try { return typeof State.latestActionId === 'function' ? State.latestActionId() : null; } catch { return null; }
 }
 
 // ── Model: what is planned, and when ───────────────────────────
@@ -211,8 +234,15 @@ function planLaneModel(collected, now = Date.now(), somedayIds = new Set(), allR
     .map(id => ({ id, items: lanes[id] }));
 }
 
-// Seven days from Monday with how many planned things each holds. Overdue to-dos
-// count toward today, because that is where they wait.
+// The day a planned thing counts toward. Overdue to-dos count toward today,
+// because that is where they wait; a page or note whose time passed already
+// fired and counts nowhere. The week bar and Even out both use this, so Even
+// out can always bring the day the bar flags back under the limit.
+function planCountsOn(entry, b, now) {
+  if (entry.at < now && entry.type !== 'todo') return null;
+  return planDayStart(entry.at < b.today ? b.today : entry.at);
+}
+// Seven days from Monday with how many planned things each holds.
 function planWeekModel(collected, now = Date.now()) {
   const b = planBounds(now);
   const days = [];
@@ -221,9 +251,8 @@ function planWeekModel(collected, now = Date.now()) {
     days.push({ start, end: planAddDays(start, 1), count: 0, isToday: start === b.today, isPast: start < b.today });
   }
   collected.dated.forEach(entry => {
-    if (entry.at < now && entry.type !== 'todo') return;
-    const at = entry.at < b.today ? b.today : entry.at;
-    const day = days.find(d => at >= d.start && at < d.end);
+    const start = planCountsOn(entry, b, now);
+    const day = start == null ? null : days.find(d => d.start === start);
     if (day) day.count += 1;
   });
   days.forEach(day => { day.over = day.count > PLAN_OVERLOAD_LIMIT; });
@@ -235,14 +264,15 @@ function planOverloadedDay(days) {
 
 // Moves for "Even out <day>": keep the first five by time, and send each extra
 // one (latest first) to the lightest later day this week, then next week, at the
-// same time of day. Repeating reminders and anything already past stay put.
+// same time of day. The day holds what the week bar counts for it, overdue
+// to-dos included. Repeating reminders stay put, and so do pages and notes
+// whose time has passed (they are not counted either).
 function planEvenOutChanges(collected, dayStart, now = Date.now()) {
-  const dayEnd = planAddDays(dayStart, 1);
   const b = planBounds(now);
   const inDay = collected.dated
-    .filter(entry => entry.at >= dayStart && entry.at < dayEnd && !(entry.at < now && entry.type !== 'todo'))
+    .filter(entry => planCountsOn(entry, b, now) === dayStart)
     .sort((x, y) => x.at - y.at);
-  const extra = inDay.slice(PLAN_OVERLOAD_LIMIT).filter(entry => !entry.recur && entry.at > now).reverse();
+  const extra = inDay.slice(PLAN_OVERLOAD_LIMIT).filter(entry => !entry.recur).reverse();
   if (!extra.length) return [];
   const counts = new Map();
   const candidates = [];
@@ -253,7 +283,7 @@ function planEvenOutChanges(collected, dayStart, now = Date.now()) {
     counts.set(start, 0);
   }
   collected.dated.forEach(entry => {
-    const start = planDayStart(entry.at);
+    const start = planCountsOn(entry, b, now);
     if (counts.has(start)) counts.set(start, counts.get(start) + 1);
   });
   const changes = [];
@@ -276,13 +306,33 @@ function planEvenOutChanges(collected, dayStart, now = Date.now()) {
 // to-do whose date has passed comes forward to today at its own time, or the
 // next whole hour when that time is already gone. Repeating reminders re-arm on
 // their own and are left alone.
+// An id that appears more than once anywhere (planCollect dedupes inside one
+// workspace only) can't be resolved to one record, so it is left out rather
+// than blocking every other to-do.
+function planIdCounts(workspaces) {
+  const counts = new Map();
+  const walk = items => (Array.isArray(items) ? items : []).forEach(item => {
+    if (!item || typeof item !== 'object') return;
+    const id = String(item.id || '');
+    if (id) counts.set(id, (counts.get(id) || 0) + 1);
+    if (item.type === 'stack') walk(item.items);
+  });
+  (Array.isArray(workspaces) ? workspaces : []).forEach(workspace => {
+    (Array.isArray(workspace?.categories) ? workspace.categories : []).forEach(space => {
+      (Array.isArray(space?.groups) ? space.groups : []).forEach(group => walk(group?.items));
+    });
+  });
+  return counts;
+}
 function planRollOverChanges(workspaces, now = Date.now()) {
   const today = planDayStart(now);
   const tomorrow = planAddDays(today, 1);
   const changes = [];
+  const idCounts = planIdCounts(workspaces);
   (Array.isArray(workspaces) ? workspaces : []).forEach(workspace => {
     planCollect(workspace).dated.forEach(entry => {
       if (entry.type !== 'todo' || entry.recur || entry.at >= today) return;
+      if (idCounts.get(entry.id) !== 1) return;
       let to = planSameTimeOn(entry.at, today);
       if (to <= now) to = planNextWholeHour(now);
       if (to >= tomorrow) to = planSameTimeOn(entry.at, tomorrow);
@@ -347,19 +397,28 @@ function planSortQueue(inboxGroup, somedayIds = new Set()) {
 // ── One acknowledged write for several reminder moves ──────────
 // Mirrors commitItemReminderMutation: resolve every exact target first, take one
 // Undo snapshot, change the reminders, and wait for the write receipt with alarm
-// reconciliation. Nothing is written if any target changed.
+// reconciliation. Nothing is written if any target changed, unless the caller
+// passes `partial: true` (roll-over), which drops the targets that no longer
+// resolve and moves the rest.
 let planBatchPending = null;
-async function commitPlanReminderBatch(changes, historyKey) {
-  if (!Array.isArray(changes) || !changes.length) return { ok: true, moved: 0 };
+async function commitPlanReminderBatch(requested, historyKey, opts = {}) {
+  if (!Array.isArray(requested) || !requested.length) return { ok: true, moved: 0, ids: [], changes: [] };
   if (planBatchPending || isReminderMutationPending()) return { ok: false, code: 'busy' };
   if (State.isRecoveryRequired?.()) {
     if (typeof showStateRecoveryRequired === 'function') showStateRecoveryRequired();
     return { ok: false, code: 'recovery' };
   }
-  const contexts = changes.map(change => createItemReminderMutationContext(change.id));
-  if (contexts.some(context => !context)) return { ok: false, code: 'changed' };
-  const targets = contexts.map(context => resolveItemReminderMutationTarget(context));
-  if (targets.some(target => !target)) return { ok: false, code: 'changed' };
+  const partial = opts.partial === true;
+  let changes = requested;
+  let targets = changes.map(change => {
+    const context = createItemReminderMutationContext(change.id);
+    return context ? resolveItemReminderMutationTarget(context) : null;
+  });
+  if (partial) {
+    changes = changes.filter((_, index) => targets[index]);
+    targets = targets.filter(Boolean);
+    if (!changes.length) return { ok: true, moved: 0, ids: [], changes: [], skipped: requested.length };
+  } else if (targets.some(target => !target)) return { ok: false, code: 'changed' };
   const transaction = { kind: 'plan-batch', ids: changes.map(change => change.id) };
   planBatchPending = transaction;
   itemReminderMutationPending = transaction;
@@ -395,6 +454,9 @@ async function commitPlanReminderBatch(changes, historyKey) {
   return {
     ok: true,
     moved: changes.length,
+    ids: changes.map(change => change.id),
+    changes,
+    skipped: requested.length - changes.length,
     actionId,
     alarmsReconciled: receipt?.reminderReconciliation?.ok === true,
   };
@@ -442,53 +504,75 @@ async function commitPlanRuleSetting(key, on) {
   return true;
 }
 
-// Runs once per day, on the first open with the rule on. The day is recorded on
-// this device only after the move is confirmed (or there was nothing to move), so
-// a failed write tries again on the next open.
+// Runs once per day, on the first open with the rule on. The claim is the UTC
+// instant of the run, compared with the start of the current local day, so a
+// run in one time zone never blocks the next local day in another. A failed
+// write releases the claim and tries again on the next open.
 let planRollOverRunning = false;
+function planRollOverRanToday(last, now) {
+  if (last == null || last === '') return false;
+  // Before 2026-11-07 the claim was a local YYYY-MM-DD key.
+  if (/^\d{4}-\d{2}-\d{2}$/.test(last)) return last === planDayKey(now);
+  const at = Number(last);
+  return Number.isFinite(at) && at >= planDayStart(now) && at <= planAddDays(planDayStart(now), 1);
+}
+// Toast copy follows where the to-dos landed: after about 23:00 they go to
+// tomorrow, not today.
+function planRollOverToastKey(changes, now) {
+  const tomorrow = planAddDays(planDayStart(now), 1);
+  const later = changes.filter(change => change.to >= tomorrow).length;
+  const one = changes.length === 1;
+  if (later === changes.length) return one ? 'plan.rolledOverTomorrowOne' : 'plan.rolledOverTomorrow';
+  if (later === 0) return one ? 'plan.rolledOverOne' : 'plan.rolledOver';
+  return 'plan.rolledOverSplit';
+}
 async function runPlanRollOver(now = Date.now()) {
   if (planRollOverRunning) return { ran: false, reason: 'running' };
   const state = State.get();
   if (!planRuleOn(state?.settings, 'planRollOver')) return { ran: false, reason: 'off' };
   if (State.isRecoveryRequired?.()) return { ran: false, reason: 'recovery' };
-  const dayKey = planDayKey(now);
   let last = null;
   try { last = localStorage.getItem(PLAN_ROLLOVER_DAY_KEY); } catch {}
-  if (last === dayKey) return { ran: false, reason: 'done-today' };
+  if (planRollOverRanToday(last, now)) return { ran: false, reason: 'done-today' };
   // Claim the day before writing: two Locus tabs opened together (a restored
   // session) both reach this point, and only the first may move anything.
-  try { localStorage.setItem(PLAN_ROLLOVER_DAY_KEY, dayKey); } catch {}
+  const claim = String(now);
+  try { localStorage.setItem(PLAN_ROLLOVER_DAY_KEY, claim); } catch {}
   const release = () => {
     try {
-      if (localStorage.getItem(PLAN_ROLLOVER_DAY_KEY) !== dayKey) return;
+      if (localStorage.getItem(PLAN_ROLLOVER_DAY_KEY) !== claim) return;
       if (last) localStorage.setItem(PLAN_ROLLOVER_DAY_KEY, last); else localStorage.removeItem(PLAN_ROLLOVER_DAY_KEY);
     } catch {}
   };
-  const changes = planRollOverChanges(state.workspaces, now);
-  if (!changes.length) return { ran: true, moved: 0 };
+  const requested = planRollOverChanges(state.workspaces, now);
+  if (!requested.length) return { ran: true, moved: 0 };
   planRollOverRunning = true;
   let result;
   try {
-    result = await commitPlanReminderBatch(changes, 'plan.history.rollOver');
+    // A to-do that changed or vanished meanwhile is skipped, not allowed to
+    // block every other one.
+    result = await commitPlanReminderBatch(requested, 'plan.history.rollOver', { partial: true });
   } finally {
     planRollOverRunning = false;
   }
   if (!result.ok) {
-    // A target that changed meanwhile ('changed') would fail the same way on
-    // every open, so the day stays claimed. Anything else retries next open.
+    // A target that changed during the write ('changed') would fail the same
+    // way on every open, so the day stays claimed. Anything else retries.
     if (result.code !== 'changed') release();
     // A recovery dialog already explains a failed write; only a quiet failure
     // needs the warning.
     if (result.code !== 'busy' && !State.isRecoveryRequired?.()) toast(tr('plan.rollOverFailed'), { tone: 'warning' });
     return { ran: false, reason: result.code };
   }
-  planBumpMoves(changes.map(change => change.id));
+  const changes = result.changes || [];
+  if (!changes.length) return { ran: true, moved: 0, skipped: result.skipped || 0 };
+  planBumpMoves(changes.map(change => change.id), result.actionId);
   renderBoard();
-  toast(tr(changes.length === 1 ? 'plan.rolledOverOne' : 'plan.rolledOver', { count: changes.length }), {
+  toast(tr(planRollOverToastKey(changes, now), { count: changes.length }), {
     undo: result.actionId,
     tone: result.alarmsReconciled ? undefined : 'warning',
   });
-  return { ran: true, moved: changes.length };
+  return { ran: true, moved: changes.length, skipped: result.skipped || 0 };
 }
 
 // ── Surface ────────────────────────────────────────────────────
@@ -640,6 +724,12 @@ function buildPlanAutoPill() {
 function renderPlanSurface(ws) {
   if (!ws || !activeCalendar || !isPlanView(activeCalendar.view)) return false;
   hideBreadcrumb();
+  // A Sort answer is landing: keep the leaving card on screen; planSortChoose
+  // repaints once it has gone.
+  if (activeCalendar.view === 'sort' && planSortSession?.holdRender && document.getElementById('plan-sort')) {
+    document.getElementById('board').classList.add('calendar-mode', 'plan-mode');
+    return true;
+  }
   // Sort answers to 1, 2, 3, A, and → as soon as it opens, and keeps the keys
   // across re-renders while focus was on the card or nowhere in particular.
   const active = document.activeElement;
@@ -698,6 +788,8 @@ function buildPlanWeekBar(ws, collected, days) {
   const max = Math.max(PLAN_OVERLOAD_LIMIT + 1, ...days.map(day => day.count));
   const section = document.createElement('section');
   section.className = 'plan-week';
+  section.id = 'plan-week';
+  section.tabIndex = -1;
   section.setAttribute('aria-labelledby', 'plan-week-title');
   const dayName = day => new Date(day.start).toLocaleDateString(appLocale(), { weekday: 'short' });
   const summary = days.map(day => `${dayName(day)} ${day.count}`).join(', ');
@@ -749,11 +841,23 @@ async function planEvenOut(dayStart, dayName, button) {
     renderBoard();
     return;
   }
-  planBumpMoves(changes.map(change => change.id));
+  planBumpMoves(changes.map(change => change.id), result.actionId);
   renderBoard();
+  planFocusAfterMove(null);
   toast(tr(changes.length === 1 ? 'plan.evenedOne' : 'plan.evened', { count: changes.length, day: dayName }), {
     undo: result.actionId,
     tone: result.alarmsReconciled ? undefined : 'warning',
+  });
+}
+
+// After a move or Even out the board is rebuilt; focus goes to the moved card's
+// move button, else Even out (if it is still offered), else the week bar.
+function planFocusAfterMove(id) {
+  requestAnimationFrame(() => {
+    const card = id != null ? document.querySelector(`.plan-card[data-plan-id="${CSS.escape(String(id))}"] .plan-mv`) : null;
+    const target = card || document.getElementById('plan-even-out') || document.getElementById('plan-week');
+    if (!target) return;
+    try { target.focus({ preventScroll: !card }); } catch { try { target.focus(); } catch {} }
   });
 }
 
@@ -839,33 +943,53 @@ async function planMoveEntry(entry, option) {
     if (ok) planSetSomeday(entry.id, false);
   }
   if (ok) {
-    planBumpMoves(entry.id);
+    // A dated move went through the reminder transaction, whose Undo is now the
+    // latest action; an undated Someday mark has no Undo.
+    planBumpMoves(entry.id, entry.at == null && option.at == null ? null : planLatestActionId());
     planJustLanded = entry.id;
     renderBoard();
+    planFocusAfterMove(entry.id);
   }
   return ok;
 }
 
 // ── Sort inbox ─────────────────────────────────────────────────
+// One Sort session lasts while Sort is on screen (renderBoard drops it when
+// another view shows). `decided` maps each answered id to its choice.
 function planSortState() {
-  if (!planSortSession) planSortSession = { tally: { today: 0, week: 0, someday: 0, archive: 0 }, skipped: new Set(), busy: false, entering: false };
+  if (!planSortSession) {
+    planSortSession = { decided: new Map(), skipped: new Set(), busy: false, entering: false, shown: false, holdRender: false };
+  }
   return planSortSession;
+}
+// The tally counts only answers still in effect: an item whose Undo put it back
+// in the queue is no longer sorted.
+function planSortTally(session, queue) {
+  const waiting = new Set(queue.map(item => String(item.id)));
+  const tally = { today: 0, week: 0, someday: 0, archive: 0 };
+  session.decided.forEach((choice, id) => {
+    if (!waiting.has(id) && tally[choice] != null) tally[choice] += 1;
+  });
+  return tally;
 }
 function buildPlanSort(ws) {
   const session = planSortState();
   const inbox = planInboxGroup(ws);
   const queue = planSortQueue(inbox, planSomedayIds());
   const open = queue.filter(item => !session.skipped.has(String(item.id)));
-  const done = session.tally.today + session.tally.week + session.tally.someday + session.tally.archive;
+  const tally = planSortTally(session, queue);
+  const done = tally.today + tally.week + tally.someday + tally.archive;
   const total = done + queue.length;
   const wrap = document.createElement('div');
-  wrap.className = 'plan-sort';
+  // The rise plays when Sort opens, not on every card.
+  wrap.className = `plan-sort${session.shown ? '' : ' is-first'}`;
+  session.shown = true;
   wrap.tabIndex = -1;
   wrap.id = 'plan-sort';
   wrap.setAttribute('aria-label', tr('plan.sortKeys'));
   const current = open[0] || null;
   if (!current) {
-    wrap.appendChild(buildPlanSortDone(session, queue.length, done));
+    wrap.appendChild(buildPlanSortDone(session, queue.length, done, tally));
     return wrap;
   }
   const position = Math.min(done + 1, total);
@@ -923,10 +1047,9 @@ function planSortMeta(item) {
   return { domain, initial, age };
 }
 
-function buildPlanSortDone(session, remaining, done) {
+function buildPlanSortDone(session, remaining, done, tally) {
   const box = document.createElement('div');
   box.className = 'plan-sort-done';
-  const tally = session.tally;
   const title = done === 0
     ? tr(remaining ? 'plan.sortNone' : 'plan.inboxClear')
     : tr('plan.sorted', { count: done });
@@ -976,6 +1099,10 @@ async function planSortChoose(item, choice, opener = null) {
   const leavingCard = reduce ? null : document.querySelector(`.plan-sort-card[data-plan-id="${CSS.escape(id)}"]`);
   if (leavingCard) leavingCard.classList.add(`is-leaving-${choice}`);
   const leaveDone = new Promise(resolve => setTimeout(resolve, leavingCard ? 260 : 0));
+  // The reminder and archive writes repaint the board as soon as they land.
+  // Hold Sort's own repaint until the leaving card is gone, so the next card
+  // enters once.
+  session.holdRender = true;
   let ok = false;
   try {
     if (choice === 'skip') {
@@ -998,16 +1125,18 @@ async function planSortChoose(item, choice, opener = null) {
   }
   if (!ok) {
     session.busy = false;
+    session.holdRender = false;
     if (leavingCard) leavingCard.classList.remove(`is-leaving-${choice}`);
     renderBoard();
     planFocusSort();
     return;
   }
-  if (choice !== 'skip') session.tally[choice] += 1;
+  if (choice !== 'skip') session.decided.set(id, choice);
   await leaveDone;
   // Keys stay locked until the next card is on screen, so one press decides
   // one card.
   session.busy = false;
+  session.holdRender = false;
   session.entering = !reduce;
   renderBoard();
   session.entering = false;
