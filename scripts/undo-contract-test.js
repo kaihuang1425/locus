@@ -29,8 +29,8 @@ assert.match(
 );
 assert.equal(
   (source.match(/await handleTabDropIntoList\(drag\.data/g) || []).length,
-  6,
-  'Board, Group insertion, and List Stack single/multi drops must all delegate to the fresh-read controller',
+  7,
+  'Board, Group insertion, List Stack single/multi, and Inbox page drops must all delegate to the fresh-read controller',
 );
 const start = source.indexOf('const State = (() => {');
 const endMarker = '\n})();';

@@ -1096,6 +1096,24 @@ function planReducedMotion() {
     || (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches);
 }
 
+// The write behind one Sort answer. Plan's Sort and the Inbox page's triage
+// card both answer through here, so 1, 2, 3 and A mean the same thing on both.
+async function planSortDecide(item, choice, opener = null) {
+  const id = String(item.id);
+  if (choice === 'skip') return true;
+  if (choice === 'someday') {
+    planSetSomeday(id, true);
+    return true;
+  }
+  if (choice === 'archive') {
+    const archived = item.type === 'tab' ? await archiveSavedPage(item, opener) : await archiveBoardLocalItem(item, opener);
+    return archived === true;
+  }
+  const ws = activeWs();
+  const at = choice === 'today' ? planSortTodayAt() : planSortWeekAt(planCollect(ws));
+  return setReminder(id, at);
+}
+
 async function planSortChoose(item, choice, opener = null) {
   const session = planSortState();
   if (session.busy) return;
@@ -1112,20 +1130,8 @@ async function planSortChoose(item, choice, opener = null) {
   session.holdRender = true;
   let ok = false;
   try {
-    if (choice === 'skip') {
-      session.skipped.add(id);
-      ok = true;
-    } else if (choice === 'someday') {
-      planSetSomeday(id, true);
-      ok = true;
-    } else if (choice === 'archive') {
-      const archived = item.type === 'tab' ? await archiveSavedPage(item, opener) : await archiveBoardLocalItem(item, opener);
-      ok = archived === true;
-    } else {
-      const ws = activeWs();
-      const at = choice === 'today' ? planSortTodayAt() : planSortWeekAt(planCollect(ws));
-      ok = await setReminder(id, at);
-    }
+    if (choice === 'skip') session.skipped.add(id);
+    ok = await planSortDecide(item, choice, opener);
   } catch (error) {
     console.error('Sort inbox choice failed', error);
     ok = false;

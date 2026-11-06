@@ -3295,6 +3295,7 @@ function testRichTextLinkStaticContract() {
   for (const [name, functionName] of [
     ['Details Note body', 'detailPrimaryEditor'],
     ['Group README', 'renderGroupPage'],
+    ['Inbox description', 'buildInboxAbout'],
     ['item-detail notes', 'renderItemDetail'],
   ]) {
     assert.ok(extractFunction(functionName).includes('isRichTextLinkEditorOwned('),

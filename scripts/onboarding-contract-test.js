@@ -2703,7 +2703,7 @@ assert.match(
 assert.match(
   renderGroupPageSource,
   /buildGroupCol\(g,\s*\{\s*forceExpanded:\s*true\s*\}\)/,
-  'a focused Group or Inbox page must render its reusable column explicitly expanded',
+  'a focused Group page must render its reusable column explicitly expanded (the Inbox has its own page: scripts/inbox-page-contract-test.js)',
 );
 for (const contract of [
   /const forceExpanded = options\.forceExpanded === true;/,

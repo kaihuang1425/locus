@@ -423,7 +423,7 @@ if (!/function applyRichTextLink\(\)[\s\S]{0,1600}richTextLinkContextStillMatche
   || !newtab.includes('bindRichTextLinkDialog();')) {
   fail('Rich-text Link must revalidate once, remain focus-contained, and preserve editor-owned persistence');
 }
-for (const functionName of ['detailPrimaryEditor', 'renderGroupPage', 'renderItemDetail']) {
+for (const functionName of ['detailPrimaryEditor', 'renderGroupPage', 'buildInboxAbout', 'renderItemDetail']) {
   const start = newtab.indexOf(`function ${functionName}(`);
   const next = newtab.indexOf('\nfunction ', start + 10);
   const implementation = newtab.slice(start, next < 0 ? newtab.length : next);

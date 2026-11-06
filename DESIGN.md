@@ -5093,3 +5093,30 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   profile for each behaviour.
 
   **Implemented: yes. Verified: partial. User-validated: no. Released: no.**
+
+- **2026-11-06 - The Inbox gets its own page (pages build, page 1).** The Inbox
+  group no longer opens on the generic group page. Its page follows the canvas
+  Inbox board: a big heading with the red waiting count, one dark triage card,
+  and the Inbox items as quiet rows.
+  - The card answers 1, 2, 3, A and → through Plan's Sort (`planSortQueue`,
+    `planSortTally`, and `planSortDecide`, now shared by both). It leaves toward
+    where the item went; Undo from the receipt brings it back from there.
+  - Decisions kept from Plan: Today means later today, This week the lightest
+    day at 09:00, and Someday stays a per-device mark, so its receipt has no
+    Undo. Skip rotates the item to the back and is off for the last item.
+  - The waiting count is the Sort queue (undated, unfinished, not Someday). The
+    rail's Inbox count still counts every Inbox item.
+  - Rows are the Inbox in stored order, not grouped by day as on the board, so
+    drag reorder keeps one meaning. Planned, Someday and done rows carry a chip.
+  - The breadcrumb, Back button, description box and column are gone. The
+    description, group reminders, Save here, Add note / to-do / stack, Open all
+    and the group actions are in the header More menu.
+  - Other groups keep the group page. Welcome's hand-off and capture receipts
+    land on the card or row and ring it; popup Locate still opens Home with
+    details.
+
+  Evidence: `inbox-page-contract-test.js` (195 checks, 10 mutations caught) and
+  every suite; a throwaway Edge 156 profile (77 behaviour checks, Light, Dark,
+  zh-TW, reduced motion, 1440 and 390 px).
+
+  **Implemented: yes. Verified: partial. User-validated: no. Released: no.**

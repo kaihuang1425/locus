@@ -297,6 +297,21 @@ Slices, in order:
 
 ## Done (newest first)
 
+- **2026-11-06 - Inbox page built from its canvas board (pages build, page 1 of 9)**
+  - **What:** the Inbox group opens on its own page instead of the generic
+    group page: a big heading with the red waiting count that rolls, one dark
+    triage card (1/2/3/A/→ through Plan's `planSortQueue`/`planSortDecide`/
+    `planSortTally`; the card leaves toward its answer and Undo brings it back),
+    a filterable Move to a Space picker, clean rows with hover actions and
+    status chips, the dark selection bar, and an "Inbox is clear." moment with
+    the session tally. The breadcrumb, description box and column are gone; the
+    description, group reminders, record creation, Save here, Open all and the
+    group actions sit in the header More menu; rows keep the record menu, drag,
+    selection, reminders and details. Other groups keep the group page.
+  - **Evidence:** `inbox-page-contract-test.js` (195 checks, 10 mutations
+    caught); all 42 suites; Edge 156 proof with 77 behaviour checks and
+    screenshots in the shared notes `locus-redesign-evidence/pages/inbox/`.
+
 - **2026-11-06 - Roll-over moves only yesterday's to-dos (owner decision, P2)**
   - **What:** roll-over moves an open, non-repeating to-do only when it was due
     yesterday (the local calendar day before the run). Older overdue to-dos stay

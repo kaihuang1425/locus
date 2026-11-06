@@ -114,6 +114,23 @@ const I18N = {
     'plan.tally.archive': 'archived',
     'plan.sortSkipped': 'Sort {count} skipped',
     'plan.backToToday': 'Back to Today',
+    'inbox.more': 'More Inbox actions',
+    'inbox.items': 'Inbox items',
+    'inbox.sortedOf': '{done} of {total} sorted',
+    'inbox.moveToSpace': 'Move to a Space',
+    'inbox.moveToSpaceMenu': 'Move to a Space…',
+    'inbox.moveNamed': 'Move “{title}” to a Space',
+    'inbox.archiveNamed': 'Archive “{title}”',
+    'inbox.findSpace': 'Find a space',
+    'inbox.noSpaceMatch': 'No space matches',
+    'inbox.about': 'Description and reminders',
+    'inbox.description': 'Description',
+    'inbox.aboutPlaceholder': 'Add a description',
+    'inbox.somedaySaved': 'Saved for someday',
+    'inbox.status.done': 'Done',
+    'inbox.kind.note': 'Note',
+    'inbox.kind.todo': 'To-do',
+    'inbox.tally.moved': 'moved',
     'shell.openTabs': 'open tabs',
     'shell.filterTabs': 'Filter tabs',
     'shell.views': 'Views',
@@ -1841,6 +1858,23 @@ const I18N = {
     'plan.tally.archive': '已封存',
     'plan.sortSkipped': '整理略過的 {count} 項',
     'plan.backToToday': '回到今天',
+    'inbox.more': '更多收件匣操作',
+    'inbox.items': '收件匣項目',
+    'inbox.sortedOf': '已整理 {done} 項，共 {total} 項',
+    'inbox.moveToSpace': '移到空間',
+    'inbox.moveToSpaceMenu': '移到空間…',
+    'inbox.moveNamed': '將「{title}」移到空間',
+    'inbox.archiveNamed': '封存「{title}」',
+    'inbox.findSpace': '尋找空間',
+    'inbox.noSpaceMatch': '沒有符合的空間',
+    'inbox.about': '說明與提醒',
+    'inbox.description': '說明',
+    'inbox.aboutPlaceholder': '新增說明',
+    'inbox.somedaySaved': '已移到「有空再說」',
+    'inbox.status.done': '已完成',
+    'inbox.kind.note': '筆記',
+    'inbox.kind.todo': '待辦',
+    'inbox.tally.moved': '已移動',
     'shell.openTabs': '開啟分頁',
     'shell.filterTabs': '篩選分頁',
     'shell.views': '檢視',
@@ -4429,6 +4463,9 @@ function validDetailItemIdForSurface(itemId, surface) {
 // renderBoard() consults it as its dispatch point (mirroring the layout
 // registry), so any mutation that re-renders keeps the group page showing.
 let activeGroupPage = null;
+// The Inbox page's triage session and its open Space picker (see INBOX PAGE).
+let inboxPageSession = null;
+let inboxSpacePicker = null;
 
 // Home surface (Waypoint-style dashboard): true → the workspace overview (greeting
 // hero + one card per category) is showing instead of a category board. It sits
@@ -5969,7 +6006,11 @@ function itemFocusTarget(item) {
 function focusItem(id) {
   if (!id) return;
   const el = document.querySelector(`.item[data-id="${CSS.escape(id)}"]`);
-  if (!el) return;
+  if (!el) {
+    // The Inbox page draws its items as a triage card and rows, not cards.
+    if (typeof focusInboxPageItem === 'function') focusInboxPageItem(id);
+    return;
+  }
   const target = itemFocusTarget(el);
   if (!target) return;
   if (target === el && !el.hasAttribute('tabindex')) el.setAttribute('tabindex', '0');
@@ -15009,6 +15050,8 @@ function focusIdentityTarget(kind, id) {
         `.gcol[data-gid="${value}"] .gcol-toggle:not(.hidden)`,
         `.gcol[data-gid="${value}"] [data-act="more"]`,
         `.lv-group[data-gid="${value}"] .lv-group-toggle`,
+        `.ibx[data-gid="${value}"] .ibx-card[tabindex="0"]`,
+        `.ibx[data-gid="${value}"] .ibx-title`,
       ]
     : [
         detail?.dataset.itemId === String(id) ? '#item-detail [data-idp-focus="stack-identity"]' : '',
@@ -17244,6 +17287,12 @@ function renderBoard() {
   // and group-page gates (which early-return below) never inherit it. renderHome()
   // re-adds it when Home is the active surface.
   document.getElementById('board').classList.remove('home-mode', 'library-mode', 'archive-mode', 'trash-mode', 'read-later-mode', 'search-mode', 'plan-mode');
+  // The Inbox page keeps its marks through its own repaint, so the board's
+  // padding never drops out mid-render and clamps the scroll position.
+  if (activeSearch || activeCalendar || !isInboxPageActive()) {
+    document.getElementById('board').classList.remove('inbox-mode');
+    delete document.body.dataset.page;
+  }
   // Reflect the active surface on <body> (diagnostic / styling hook), computed
   // from the flags so it stays correct through every early-returning gate.
   document.body.dataset.surface = activeSearch ? 'search' : activeCalendar ? 'calendar' : activeGroupPage ? 'group' : activeLibraryMode ? 'library' : activeHome ? 'home' : 'board';
@@ -17254,6 +17303,11 @@ function renderBoard() {
   }
   // Sort inbox's session (answers, skipped cards) lasts only while Sort shows.
   if (typeof planSortSession !== 'undefined' && planSortSession && activeCalendar?.view !== 'sort') planSortSession = null;
+  // So does the Inbox page's triage session, and its Space picker.
+  if (inboxPageSession && !isInboxPageActive()) {
+    inboxPageSession = null;
+    closeInboxSpacePicker();
+  }
   // The calendar (§5) and group pages (§4.1) are surfaces that sit above the
   // layout registry: when one is open every re-render keeps showing it. Each
   // renderer returns false if the user has navigated away, so we fall through to
@@ -23376,6 +23430,9 @@ async function runBatchAction(act, opener) {
     return commitSelectedItemArchive(review, opener);
   }
   if (act === 'move') {
+    // The Inbox page moves through its filterable Space picker; the commit is
+    // the same selection transaction.
+    if (typeof isInboxPageActive === 'function' && isInboxPageActive()) return openInboxBulkMovePicker(review, opener);
     return openMoveTargetPicker(review, opener);
   }
   return false;
@@ -27440,6 +27497,8 @@ function renderGroupPage() {
     return false;
   }
   const g = info.group;
+  // The Inbox has its own page: a triage card over clean rows.
+  if (isInboxPageGroup(g)) return renderInboxPage(info);
 
   renderBreadcrumb(info.ws, cat, g);
 
@@ -27547,6 +27606,1067 @@ function renderGroupReminders(container, g) {
     ul.appendChild(row);
   });
   container.appendChild(ul);
+}
+
+// ════════════════════════════════════════════════════════════════
+// INBOX PAGE (2026-11 canvas)
+// ════════════════════════════════════════════════════════════════
+// The Inbox group opens on its own page instead of the generic group page: a
+// dark triage card for the next waiting item, then the other Inbox items as
+// quiet rows. The card answers 1, 2, 3, A and → like Plan's Sort, through the
+// same planSortQueue / planSortDecide / planSortTally, and leaves toward where
+// the item went. The group page's description, reminders, record creation,
+// Open all and group actions live in the header's More menu; rows keep the
+// item menu, drag, selection, reminders and details. Inbox is still an
+// ordinary group in the stored data.
+
+const INBOX_ICONS = {
+  save: 'M4.5 2.5h7a1 1 0 0 1 1 1v10L8 11l-4.5 2.5v-10a1 1 0 0 1 1-1z',
+  folder: 'M1.8 4.6a1 1 0 0 1 1-1h3.3l1.4 1.5h5.7a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H2.8a1 1 0 0 1-1-1z',
+  archive: 'M2 2.8h12v3.2H2zM3.1 6v6.8a1 1 0 0 0 1 1h7.8a1 1 0 0 0 1-1V6M6.4 8.7h3.2',
+  check: 'M3.5 8.5l3 3 6-7',
+  note: 'M4 4.5h8M4 8h8M4 11.5h5',
+  todo: 'M2.5 3.5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1zM5.2 8.2l2 2 3.8-4.4',
+  stack: 'M2 5l6-3 6 3-6 3zM2 8l6 3 6-3M2 11l6 3 6-3',
+  search: 'M7 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM10.6 10.6 13.5 13.5',
+  arrow: 'M3 8h10M9 4l4 4-4 4',
+  download: 'M8 2.5v7.5M4.8 7 8 10.2 11.2 7M2.5 13h11',
+};
+
+function inboxIcon(name, size = 16, stroke = 1.6) {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="${stroke}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${INBOX_ICONS[name] || ''}"/></svg>`;
+}
+
+function inboxDotsIcon(size = 16) {
+  return `<svg width="${size}" height="${size}" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="3.5" cy="8" r="1.3"/><circle cx="8" cy="8" r="1.3"/><circle cx="12.5" cy="8" r="1.3"/></svg>`;
+}
+
+function isInboxPageGroup(group) {
+  return !!group && group.name === 'Inbox';
+}
+
+function isInboxPageActive() {
+  if (!activeGroupPage) return false;
+  return isInboxPageGroup(findGroup(activeGroupPage.groupId)?.group);
+}
+
+// One triage session per visit, like Plan's Sort session: the answers behind
+// the tally, the skip order, and what the last paint showed so motion only
+// plays when something changed.
+function inboxPageState(groupId) {
+  if (!inboxPageSession || inboxPageSession.groupId !== groupId) {
+    inboxPageSession = {
+      groupId,
+      decided: new Map(),
+      skipped: [],
+      busy: false,
+      holdRender: false,
+      entering: false,
+      shown: false,
+      count: null,
+      cardId: null,
+      hadCard: false,
+      seen: null,
+      aboutOpen: false,
+      aboutOpening: false,
+    };
+  }
+  return inboxPageSession;
+}
+
+// What the page shows for one Inbox group. The waiting queue is Plan's Sort
+// queue; a skipped item waits at its end, so Skip rotates instead of hiding.
+function inboxPageModel(group, somedayIds, session, now = Date.now()) {
+  const items = (Array.isArray(group?.items) ? group.items : []).filter(item => item && typeof item === 'object');
+  const queue = planSortQueue(group, somedayIds);
+  const waiting = new Set(queue.map(item => String(item.id)));
+  const skipped = session.skipped.filter(id => waiting.has(id));
+  const order = queue.filter(item => !skipped.includes(String(item.id)))
+    .concat(skipped.map(id => queue.find(item => String(item.id) === id)));
+  const current = order[0] || null;
+  const tally = planSortTally(session, queue);
+  tally.move = 0;
+  session.decided.forEach((choice, id) => {
+    if (choice === 'move' && !waiting.has(id)) tally.move += 1;
+  });
+  const done = tally.today + tally.week + tally.someday + tally.archive + tally.move;
+  return {
+    items,
+    queue,
+    current,
+    canSkip: order.length > 1,
+    tally,
+    done,
+    total: done + queue.length,
+    somedayIds,
+    rows: items
+      .filter(item => item !== current)
+      .map(item => ({ item, waiting: waiting.has(String(item.id)), status: inboxItemStatus(item, somedayIds, now) })),
+  };
+}
+
+// The status chip on a row: when it is planned, Someday, or done.
+function inboxItemStatus(item, somedayIds, now = Date.now()) {
+  if (item?.type === 'todo' && item.done === true) return { kind: 'done', label: tr('inbox.status.done') };
+  const stored = Number(item?.reminder?.at);
+  if (item?.reminder && Number.isFinite(stored)) {
+    const at = pendingReminderTime(item.reminder, now) ?? stored;
+    return { kind: 'when', at, overdue: at < now, label: inboxWhenLabel(at, now) };
+  }
+  if (somedayIds.has(String(item?.id))) return { kind: 'someday', label: tr('plan.lane.someday') };
+  return { kind: '', label: '' };
+}
+
+function inboxWhenLabel(at, now = Date.now()) {
+  const day = planDayStart(at);
+  const today = planDayStart(now);
+  if (day === today) return `${tr('plan.lane.today')} ${planTimeLabel(at)}`;
+  if (day === planAddDays(today, 1)) return `${tr('plan.lane.tomorrow')} ${planTimeLabel(at)}`;
+  if (day > today && day < planAddDays(today, 7)) return `${planWeekdayLabel(at)} ${planTimeLabel(at)}`;
+  return new Date(at).toLocaleDateString(appLocale(), { month: 'short', day: 'numeric' });
+}
+
+// A waiting row's quiet right edge: the time it was saved today, the weekday
+// this week, else the date.
+function inboxSavedLabel(createdAt, now = Date.now()) {
+  const at = Number(createdAt);
+  if (!Number.isFinite(at) || at <= 0) return '';
+  const day = planDayStart(at);
+  const today = planDayStart(now);
+  if (day === today) return planTimeLabel(at);
+  if (day > planAddDays(today, -7)) return planWeekdayLabel(at);
+  return new Date(at).toLocaleDateString(appLocale(), { month: 'short', day: 'numeric' });
+}
+
+function inboxSpaceMatches(option, query) {
+  const words = String(query || '').toLocaleLowerCase().split(/\s+/).filter(Boolean);
+  const text = String(option?.label || '').toLocaleLowerCase();
+  return words.every(word => text.includes(word));
+}
+
+// Where a drop before (or after) a row lands in the group's stored order.
+function inboxDropIndex(items, targetId, after) {
+  const index = (Array.isArray(items) ? items : []).findIndex(item => String(item?.id) === String(targetId));
+  if (index < 0) return Array.isArray(items) ? items.length : 0;
+  return after ? index + 1 : index;
+}
+
+function inboxItemTitle(item) {
+  if (item?.type === 'stack') return String(item.name || '').trim() || tr('stackEditor.defaultName');
+  if (item?.type === 'note') return boardNotePreviewText(item) || tr('detail.emptyNote');
+  if (item?.type === 'todo') return String(item.text || '').trim() || tr('detail.emptyTodo');
+  return String(item?.title || '').trim() || dispUrl(item?.url || '') || tr('itemAction.untitled');
+}
+
+function inboxItemSource(item) {
+  if (item?.type === 'tab') return planSortMeta(item).domain || dispUrl(item.url || '');
+  if (item?.type === 'stack') {
+    const count = Array.isArray(item.items) ? item.items.length : 0;
+    return count === 1 ? tr('groupAction.oneItem') : tr('groupAction.items', { count });
+  }
+  return tr(item?.type === 'todo' ? 'inbox.kind.todo' : 'inbox.kind.note');
+}
+
+function inboxFavMarkup(item, large = false) {
+  const size = large ? ' is-lg' : '';
+  if (['note', 'todo', 'stack'].includes(item?.type)) {
+    return `<span class="ibx-fav is-${item.type}${size}" aria-hidden="true">${inboxIcon(item.type, large ? 20 : 15, 1.8)}</span>`;
+  }
+  const meta = planSortMeta(item);
+  const src = favUrl(item?.url, large ? 64 : 32);
+  return `<span class="ibx-fav${size}${src ? ' has-img' : ''}" aria-hidden="true"><span class="ibx-fav-letter">${esc(meta.initial)}</span>${src ? `<img src="${esc(src)}" alt="" decoding="async">` : ''}</span>`;
+}
+
+function bindInboxFavicons(root) {
+  root.querySelectorAll('.ibx-fav img').forEach(img => {
+    img.addEventListener('error', () => {
+      img.closest('.ibx-fav')?.classList.remove('has-img');
+      img.remove();
+    }, { once: true });
+  });
+}
+
+function inboxFocus(target) {
+  if (!target || typeof target.focus !== 'function') return false;
+  try { target.focus({ preventScroll: true }); } catch { try { target.focus(); } catch { return false; } }
+  return document.activeElement === target;
+}
+
+function inboxPageRoot() {
+  return document.querySelector('#board > .ibx');
+}
+
+function focusInboxCard(page = inboxPageRoot()) {
+  return inboxFocus(page?.querySelector('.ibx-card[tabindex="0"]') || page?.querySelector('.ibx-title'));
+}
+
+function focusInboxKey(key, page = inboxPageRoot()) {
+  if (!key || !page) return false;
+  return inboxFocus(page.querySelector(`[data-ibx-focus="${CSS.escape(String(key))}"]`));
+}
+
+// focusItem() lands here for the Inbox page (Welcome's first save, Locate
+// receipts): focus the card or row and ring it once.
+function focusInboxPageItem(id) {
+  const page = inboxPageRoot();
+  if (!page || !id) return false;
+  const key = CSS.escape(String(id));
+  const target = page.querySelector(`.ibx-card[data-id="${key}"]`) || page.querySelector(`.ibx-row[data-ibx-id="${key}"]`);
+  if (!target) return false;
+  inboxFocus(target);
+  try { target.scrollIntoView({ block: 'nearest' }); } catch {}
+  target.classList.remove('is-located');
+  void target.offsetWidth;
+  target.classList.add('is-located');
+  return true;
+}
+
+function inboxOpenItem(item, opener = null) {
+  if (!item) return false;
+  if (item.type === 'tab') return openSavedTabItem(item, { focus: true, opener });
+  if (item.type === 'note') return openBoardRecordDetail(item, opener, 'note-body');
+  if (item.type === 'todo') return openBoardRecordDetail(item, opener, 'task');
+  return openBoardRecordDetail(item, opener);
+}
+
+function inboxToggleStack(stack) {
+  State.snapshot('Toggle stack');
+  stack.expanded = !stack.expanded;
+  State.persist();
+  renderBoard();
+}
+
+// The to-do check reuses the Board's receipt-gated completion, which needs a
+// .todo-check button as its owner.
+async function inboxToggleTodo(item) {
+  const id = String(item?.id || '');
+  const button = document.querySelector(`.ibx [data-ibx-focus="done:${CSS.escape(id)}"]`);
+  if (!button) return false;
+  const changed = await toggleBoardTodoCompletion(item, button);
+  focusInboxKey(`done:${id}`);
+  return changed;
+}
+
+// ── Space picker: one filterable floating layer for card, row and bulk Move ──
+function closeInboxSpacePicker({ restoreFocus = false } = {}) {
+  const picker = inboxSpacePicker;
+  if (!picker) return false;
+  inboxSpacePicker = null;
+  picker.cleanup();
+  picker.el.remove();
+  const owner = picker.owner?.isConnected ? picker.owner : (picker.ownerKey ? document.querySelector(`[data-ibx-focus="${CSS.escape(picker.ownerKey)}"]`) : null);
+  owner?.setAttribute?.('aria-expanded', 'false');
+  if (restoreFocus) inboxFocus(owner);
+  return true;
+}
+
+function inboxSpaceOptions(review) {
+  const options = selectedItemMoveOptions(review);
+  if (!options) return null;
+  const ws = activeWs();
+  return options.map(option => {
+    const destination = option.destinationContext;
+    const group = destination.groupName === 'Inbox' ? tr('nav.inbox') : destination.groupName;
+    return {
+      review,
+      destinationContext: destination,
+      label: option.label,
+      space: destination.workspaceRef === ws ? destination.spaceName : `${destination.workspaceName} › ${destination.spaceName}`,
+      where: [group, ...destination.stackNames].filter(Boolean).join(' › '),
+      color: reminderDotColor(destination.groupRef?.color || null),
+    };
+  });
+}
+
+function openInboxSpacePicker(anchor, review, onPick) {
+  if (inboxSpacePicker && inboxSpacePicker.owner === anchor) return closeInboxSpacePicker({ restoreFocus: true });
+  closeInboxSpacePicker();
+  hideContextMenu();
+  const options = review ? inboxSpaceOptions(review) : null;
+  if (!options) return reportSelectedItemMutationUnavailable(anchor);
+  if (!options.length) {
+    toast(tr('selection.noMoveDestination'), { danger: true, duration: 5000 });
+    return false;
+  }
+  const el = document.createElement('div');
+  el.className = 'ibx-pop';
+  el.setAttribute('role', 'dialog');
+  el.setAttribute('aria-label', tr('inbox.moveToSpace'));
+  el.innerHTML = `
+    <label class="ibx-pf">${inboxIcon('search', 14, 1.6)}<span class="sr-only">${esc(tr('inbox.findSpace'))}</span><input type="text" autocomplete="off" spellcheck="false" placeholder="${esc(tr('inbox.findSpace'))}"></label>
+    <div class="ibx-pop-list" role="group" aria-label="${esc(tr('inbox.moveToSpace'))}"></div>`;
+  const input = el.querySelector('input');
+  const list = el.querySelector('.ibx-pop-list');
+  let shown = [];
+  const pick = option => {
+    const owner = anchor?.isConnected ? anchor : (anchor?.dataset?.ibxFocus ? document.querySelector(`[data-ibx-focus="${CSS.escape(anchor.dataset.ibxFocus)}"]`) : null);
+    closeInboxSpacePicker();
+    onPick(option, owner || anchor);
+  };
+  const paint = () => {
+    shown = options.filter(option => inboxSpaceMatches(option, input.value));
+    list.replaceChildren(...shown.map(option => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'ibx-mi';
+      button.innerHTML = `<span class="ibx-dot" aria-hidden="true" style="--dot:${esc(option.color)}"></span><span class="ibx-mi-space">${esc(option.space)}</span><span class="ibx-mi-where">› ${esc(option.where)}</span>`;
+      button.addEventListener('click', () => pick(option));
+      return button;
+    }));
+    if (!shown.length) {
+      const none = document.createElement('p');
+      none.className = 'ibx-pop-none';
+      none.textContent = tr('inbox.noSpaceMatch');
+      list.appendChild(none);
+    }
+  };
+  paint();
+  input.addEventListener('input', paint);
+  el.addEventListener('keydown', event => {
+    const buttons = [...list.querySelectorAll('.ibx-mi')];
+    const index = buttons.indexOf(document.activeElement);
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeInboxSpacePicker({ restoreFocus: true });
+    } else if (event.key === 'Enter' && event.target === input) {
+      event.preventDefault();
+      if (shown[0]) pick(shown[0]);
+    } else if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      inboxFocus(buttons[Math.min(index + 1, buttons.length - 1)] || input);
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      inboxFocus(index > 0 ? buttons[index - 1] : input);
+    }
+    // Page keys (1, 2, 3, A, /, C) stay out of the picker.
+    event.stopPropagation();
+  });
+  document.body.appendChild(el);
+  const rect = anchor.getBoundingClientRect();
+  const width = Math.min(320, window.innerWidth - 32);
+  el.style.width = `${width}px`;
+  el.style.left = `${Math.max(16, Math.min(rect.left, window.innerWidth - width - 16))}px`;
+  if (window.innerHeight - rect.bottom >= 300 || rect.top < 300) el.style.top = `${Math.round(rect.bottom + 8)}px`;
+  else el.style.bottom = `${Math.round(window.innerHeight - rect.top + 8)}px`;
+  anchor.setAttribute('aria-expanded', 'true');
+  const outside = event => {
+    if (el.contains(event.target) || anchor.contains(event.target)) return;
+    closeInboxSpacePicker();
+  };
+  const leave = event => {
+    if (event.relatedTarget && !el.contains(event.relatedTarget)) closeInboxSpacePicker();
+  };
+  document.addEventListener('pointerdown', outside, true);
+  el.addEventListener('focusout', leave);
+  inboxSpacePicker = {
+    el,
+    owner: anchor,
+    ownerKey: anchor.dataset?.ibxFocus || '',
+    cleanup: () => document.removeEventListener('pointerdown', outside, true),
+  };
+  inboxFocus(input);
+  return true;
+}
+
+function openInboxItemMovePicker(item, anchor, onPick) {
+  const review = createSelectedItemMutationContext([String(item?.id || '')]);
+  if (!review) return reportSelectedItemMutationUnavailable(anchor);
+  return openInboxSpacePicker(anchor, review, onPick);
+}
+
+function openInboxBulkMovePicker(review, opener) {
+  return openInboxSpacePicker(opener, review, (option, owner) => {
+    void commitSelectedItemMove(option.review, option.destinationContext, owner);
+  });
+}
+
+// ── Triage: the card's answers and the rows' quick actions ──
+async function inboxDecide(item, choice, opener, option) {
+  if (choice === 'move') {
+    if (!option?.review || !option.destinationContext) return false;
+    return commitSelectedItemMove(option.review, option.destinationContext, opener);
+  }
+  return planSortDecide(item, choice, opener);
+}
+
+// The card's answer: the card leaves toward where the item went (Plan's Sort
+// holds its repaint the same way), the count ticks down, and the next item
+// enters. Undo from the receipt brings the card back from that direction.
+async function inboxTriage(groupId, item, choice, opener = null, option = null) {
+  const session = inboxPageState(groupId);
+  if (session.busy || !item) return false;
+  const group = findGroup(groupId)?.group;
+  if (!group) return false;
+  if (choice === 'skip' && !inboxPageModel(group, planSomedayIds(), session).canSkip) return false;
+  const id = String(item.id);
+  session.busy = true;
+  const reduce = planReducedMotion();
+  const page = inboxPageRoot();
+  const leaving = reduce ? null : page?.querySelector(`.ibx-card-item[data-id="${CSS.escape(id)}"]`);
+  if (leaving) leaving.classList.add(`is-leaving-${choice}`);
+  page?.querySelector(`.ibx-card [data-sort="${choice}"]`)?.classList.add('is-hit');
+  const leaveDone = new Promise(resolve => setTimeout(resolve, leaving ? 260 : 0));
+  session.holdRender = true;
+  let ok = false;
+  try {
+    if (choice === 'skip') {
+      session.skipped = session.skipped.filter(skippedId => skippedId !== id).concat(id);
+      ok = true;
+    } else {
+      ok = await inboxDecide(item, choice, opener, option);
+    }
+  } catch (error) {
+    console.error('Inbox triage failed', error);
+    ok = false;
+  }
+  if (!ok) {
+    session.busy = false;
+    session.holdRender = false;
+    renderBoard();
+    focusInboxCard();
+    return false;
+  }
+  if (choice !== 'skip') session.decided.set(id, choice);
+  await leaveDone;
+  session.busy = false;
+  session.holdRender = false;
+  session.entering = !reduce;
+  renderBoard();
+  session.entering = false;
+  focusInboxCard();
+  if (choice === 'someday') toast(tr('inbox.somedaySaved'));
+  return true;
+}
+
+// A row's quick action: the row stamps where it went, or folds away when it
+// left the Inbox. Focus stays on the row, else moves to its neighbour.
+async function inboxRowAct(groupId, id, choice, opener = null, option = null) {
+  const session = inboxPageState(groupId);
+  if (session.busy) return false;
+  const group = findGroup(groupId)?.group;
+  const found = findItem(id);
+  const item = found?.item || null;
+  if (!group || !item || found.group !== group) return false;
+  const page = inboxPageRoot();
+  const key = CSS.escape(String(id));
+  const row = page?.querySelector(`.ibx-row[data-ibx-id="${key}"]`) || null;
+  const rows = page ? [...page.querySelectorAll('.ibx-list > .ibx-row')] : [];
+  const index = rows.indexOf(row);
+  const neighbor = rows[index + 1] || rows[index - 1] || null;
+  const leaves = choice === 'archive' || choice === 'move';
+  const reduce = planReducedMotion();
+  session.busy = true;
+  session.holdRender = true;
+  if (row && !reduce) {
+    if (leaves) row.classList.add('is-gone', `is-gone-${choice}`);
+    else {
+      const stamp = row.querySelector('.ibx-stamp');
+      const label = choice === 'someday'
+        ? tr('plan.lane.someday')
+        : inboxWhenLabel(choice === 'today' ? planSortTodayAt() : planSortWeekAt(planCollect(activeWs())));
+      if (stamp) {
+        stamp.classList.toggle('is-someday', choice === 'someday');
+        stamp.querySelector('span').textContent = label;
+      }
+      row.classList.add('is-stamp');
+    }
+  }
+  const settle = new Promise(resolve => setTimeout(resolve, row && !reduce ? (leaves ? 280 : 260) : 0));
+  let ok = false;
+  try {
+    ok = await inboxDecide(item, choice, opener, option);
+  } catch (error) {
+    console.error('Inbox row action failed', error);
+    ok = false;
+  }
+  if (ok) session.decided.set(String(id), choice);
+  await settle;
+  session.busy = false;
+  session.holdRender = false;
+  renderBoard();
+  const fresh = inboxPageRoot();
+  if (!ok || !leaves) {
+    if (!focusInboxKey(`row:${id}`, fresh)) focusInboxCard(fresh);
+  } else if (!(neighbor && focusInboxKey(neighbor.dataset.ibxFocus, fresh))) {
+    focusInboxCard(fresh);
+  }
+  if (ok && choice === 'someday') toast(tr('inbox.somedaySaved'));
+  return ok;
+}
+
+// The card item takes the card's motion; any other item acts as a row.
+function inboxAct(groupId, item, choice, opener = null, option = null) {
+  const card = inboxPageRoot()?.querySelector('.ibx-card[data-id]');
+  if (card && card.dataset.id === String(item?.id)) return inboxTriage(groupId, item, choice, opener, option);
+  return inboxRowAct(groupId, String(item?.id || ''), choice, opener, option);
+}
+
+// The same menu the Board's record cards offer, plus Move to a Space.
+function inboxItemMenuItems(group, item, opener, parentItems) {
+  const stableOpener = opener || null;
+  const wrap = action => () => {
+    focusDialogOpener(stableOpener);
+    return action();
+  };
+  const topLevel = parentItems === group.items;
+  const archiveAction = () => inboxAct(group.id, item, 'archive', stableOpener);
+  const move = topLevel ? [{
+    text: tr('inbox.moveToSpaceMenu'),
+    icon: cmIcons.move,
+    action: () => openInboxItemMovePicker(item, stableOpener, (option, owner) => inboxAct(group.id, item, 'move', owner, option)),
+  }] : [];
+  let items;
+  if (item.type === 'stack') {
+    items = [
+      ...stackActionMenuItems(item, stableOpener, { parentItems, group, toggleCollapse: () => inboxToggleStack(item), archiveAction }),
+      ...(move.length ? [{ sep: true }, ...move] : []),
+    ];
+    return items;
+  }
+  const common = commonActs(item, move, {
+    includeColor: item.type !== 'tab',
+    mutationOpener: stableOpener,
+    archiveAction,
+  });
+  if (item.type === 'tab') {
+    const url = typeof item.url === 'string' ? item.url : '';
+    const canOpen = isOpenableSavedTabUrl(url);
+    items = [
+      ...(canOpen ? [
+        { text: tr('itemAction.openFocused'), icon: cmIcons.open, action: () => openSavedTabItem(item, { focus: true, opener: stableOpener }) },
+        { text: tr('itemAction.openBackground'), icon: cmIcons.open, action: () => openSavedTabItem(item, { focus: false, reuse: false, opener: stableOpener }) },
+      ] : []),
+      ...(url ? [{ text: tr('itemAction.copyUrl'), icon: cmIcons.copy, action: () => copySavedTabUrl(url) }] : []),
+      { text: tr('itemAction.editTitle'), icon: cmIcons.edit, action: () => openItemDetail(item.id, { initialFocusKey: 'title' }) },
+      ...common,
+    ];
+  } else if (item.type === 'todo') {
+    items = [
+      { text: tr('itemAction.editTodo'), icon: cmIcons.edit, action: () => openBoardRecordDetail(item, stableOpener, 'task') },
+      { text: tr(item.done ? 'detail.markIncomplete' : 'detail.markComplete'), icon: cmIcons.edit, action: () => inboxToggleTodo(item) },
+      ...common,
+    ];
+  } else {
+    items = [
+      { text: tr('itemAction.editNote'), icon: cmIcons.edit, action: () => openBoardRecordDetail(item, stableOpener, 'note-body') },
+      ...common,
+    ];
+  }
+  return items.map(entry => (entry.action ? { ...entry, action: wrap(entry.action) } : entry));
+}
+
+// The header's More menu keeps every group-page action one click away.
+function inboxHeaderMenuItems(group, opener) {
+  const session = inboxPageState(group.id);
+  const openAsPage = tr('groupAction.openAsPage');
+  const groupItems = groupActionMenuItems(group, opener, { includeRecordCreation: false })
+    .filter(entry => entry.text !== openAsPage);
+  if (!groupItems.length) return [];
+  const reminders = Array.isArray(group.reminders) ? group.reminders.length : 0;
+  return [
+    { text: tr('groupAction.saveHere'), icon: MORE_MENU_ICONS.save, action: () => addSidebarOrActiveTabToGroup(group) },
+    ...groupRecordCreationMenuItems(group, opener),
+    { sep: true },
+    {
+      text: tr('inbox.about'),
+      icon: cmIcons.detail,
+      sub: session.aboutOpen ? '✓' : (reminders ? String(reminders) : ''),
+      action: () => toggleInboxAbout(group.id),
+    },
+    ...groupItems,
+  ];
+}
+
+function openInboxHeaderMenu(group, opener) {
+  const items = inboxHeaderMenuItems(group, opener);
+  if (!items.length) {
+    toast(tr('detail.changed'), { danger: true, duration: 6000 });
+    return false;
+  }
+  closeInboxSpacePicker();
+  focusDialogOpener(opener);
+  return showAnchoredContextMenu(opener, items, { ariaLabel: tr('inbox.more'), expandedOwner: opener });
+}
+
+function toggleInboxAbout(groupId) {
+  const session = inboxPageState(groupId);
+  session.aboutOpen = !session.aboutOpen;
+  session.aboutOpening = session.aboutOpen;
+  renderBoard();
+  session.aboutOpening = false;
+  if (session.aboutOpen) inboxFocus(document.querySelector('.ibx-about .gp-readme-editor'));
+  else focusInboxKey('more');
+}
+
+// ── Builders ──
+function buildInboxHeader(group, model, session) {
+  const head = document.createElement('header');
+  head.className = 'ibx-hd';
+  const count = model.queue.length;
+  const previous = session.count;
+  const changed = previous != null && previous !== count && count > 0;
+  const rolled = changed && previous > 0;
+  const direction = count < previous ? 'down' : 'up';
+  const digits = !rolled
+    ? `<span>${count}</span>`
+    : direction === 'up' ? `<span>${previous}</span><span>${count}</span>` : `<span>${count}</span><span>${previous}</span>`;
+  head.innerHTML = `
+    <h1 class="ibx-title" id="ibx-title" tabindex="-1" data-ibx-focus="title">${esc(tr('nav.inbox'))}</h1>
+    ${count ? `<span class="ibx-bub${changed ? ' is-bump' : ''}" role="img" aria-label="${esc(tr('plan.leftToSort', { count }))}"><span class="ibx-roll" aria-hidden="true"><span class="ibx-roll-stack${rolled ? ` is-${direction}` : ''}">${digits}</span></span></span>` : ''}
+    <span class="ibx-hd-gap" aria-hidden="true"></span>
+    <button type="button" class="ibx-btn" data-ibx-act="save" data-ibx-focus="save" aria-haspopup="menu" aria-expanded="false">${inboxIcon('save', 16, 1.6)}<span class="ibx-btn-label">${esc(tr('action.saveTab'))}</span></button>
+    <button type="button" class="ibx-ibtn" data-ibx-act="more" data-ibx-focus="more" aria-haspopup="menu" aria-expanded="false" aria-label="${esc(tr('inbox.more'))}" title="${esc(tr('inbox.more'))}">${inboxDotsIcon(18)}</button>`;
+  const save = head.querySelector('[data-ibx-act="save"]');
+  // The Space's Save tab review: the same menu the top bar's Save tab opens.
+  save.addEventListener('click', () => {
+    closeInboxSpacePicker();
+    focusDialogOpener(save);
+    void saveMostRecentOpenTab({ currentTarget: save });
+  });
+  const more = head.querySelector('[data-ibx-act="more"]');
+  more.addEventListener('click', () => openInboxHeaderMenu(group, more));
+  return head;
+}
+
+function buildInboxAbout(group, opening = false) {
+  const about = document.createElement('section');
+  about.className = `ibx-about${opening ? ' is-opening' : ''}`;
+  about.setAttribute('aria-label', tr('inbox.about'));
+  about.innerHTML = `
+    ${renderIntentPills(group)}
+    <div class="gp-readme ibx-readme"><div class="gp-readme-editor note-text" contenteditable="true" spellcheck="false" role="textbox" aria-multiline="true" aria-label="${esc(tr('inbox.description'))}" data-placeholder="${esc(tr('inbox.aboutPlaceholder'))}">${sanitizeHtml(group.readme || '')}</div></div>
+    <div class="gp-reminders"></div>`;
+  // The group page's description editor: blur saves with one Undo snapshot and
+  // stays out of the way while the Link dialog owns focus.
+  const editor = about.querySelector('.gp-readme-editor');
+  let dirty = false;
+  editor.addEventListener('input', () => { dirty = true; });
+  editor.addEventListener('blur', () => {
+    if (isRichTextLinkEditorOwned(editor)) return;
+    if (!dirty) return;
+    dirty = false;
+    const current = findGroup(group.id)?.group;
+    if (!current) return;
+    const html = sanitizeHtml(editor.innerHTML.trim());
+    if (html !== (current.readme || '')) {
+      State.snapshot('Edit group description');
+      current.readme = html;
+      State.persist();
+    }
+  });
+  renderGroupReminders(about.querySelector('.gp-reminders'), group);
+  return about;
+}
+
+function buildInboxCard(group, model, session) {
+  const card = document.createElement('section');
+  card.className = 'ibx-card';
+  const current = model.current;
+  if (!current) {
+    card.classList.add('is-clear');
+    card.appendChild(buildInboxClear(model, session));
+    return card;
+  }
+  const id = String(current.id);
+  card.tabIndex = 0;
+  card.dataset.ibxFocus = 'card';
+  card.dataset.id = id;
+  card.setAttribute('aria-label', tr('plan.sortKeys'));
+  card.setAttribute('aria-describedby', 'ibx-card-title');
+  let motion = '';
+  if (session.cardId !== id) {
+    const answered = session.decided.get(id);
+    if (answered) {
+      // Undo put this item back: it returns from where it went.
+      motion = ` is-back-${answered}`;
+      session.decided.delete(id);
+    } else if (session.entering || (session.shown && session.cardId == null)) {
+      motion = ' is-entering';
+    }
+  }
+  const meta = planSortMeta(current);
+  const title = inboxItemTitle(current);
+  const shown = Math.min(model.total, 24);
+  const filled = model.total ? Math.round((model.done / model.total) * shown) : 0;
+  const segments = Array.from({ length: shown }, (_, index) => `<span class="ibx-seg${index < filled ? ' is-done' : ''}"></span>`).join('');
+  const todoCheck = current.type === 'todo'
+    ? `<button type="button" class="todo-check ibx-todo-check${current.done ? ' checked' : ''}" aria-pressed="${!!current.done}" data-ibx-focus="done:${esc(id)}" aria-label="${esc(tr(current.done ? 'detail.markIncomplete' : 'detail.markComplete'))}">${inboxIcon('check', 12, 2.4)}</button>`
+    : '';
+  card.innerHTML = `
+    <div class="ibx-card-main">
+      <div class="ibx-card-item${motion}" data-id="${esc(id)}">
+        <div class="ibx-src">
+          ${inboxFavMarkup(current, true)}
+          <span class="ibx-src-text">
+            <span class="ibx-domain">${esc(inboxItemSource(current))}</span>
+            ${meta.age ? `<span class="ibx-age">${esc(meta.age)}</span>` : ''}
+          </span>
+          ${todoCheck}
+        </div>
+        <h2 class="ibx-card-title" id="ibx-card-title"><button type="button" class="ibx-card-open" data-ibx-focus="card-open">${esc(title)}</button></h2>
+      </div>
+      ${shown > 1 ? `<div class="ibx-segs" role="img" aria-label="${esc(tr('inbox.sortedOf', { done: model.done, total: model.total }))}">${segments}</div>` : ''}
+    </div>
+    <div class="ibx-card-side">
+      <div class="ibx-bigs">
+        <button type="button" class="ibx-big is-when" data-sort="today" data-ibx-focus="sort-today">${esc(tr('plan.lane.today'))}<span class="ibx-kbd" aria-hidden="true">1</span></button>
+        <button type="button" class="ibx-big" data-sort="week" data-ibx-focus="sort-week">${esc(tr('plan.lane.week'))}<span class="ibx-kbd" aria-hidden="true">2</span></button>
+        <button type="button" class="ibx-big" data-sort="someday" data-ibx-focus="sort-someday">${esc(tr('plan.lane.someday'))}<span class="ibx-kbd" aria-hidden="true">3</span></button>
+        <button type="button" class="ibx-big is-quiet" data-sort="archive" data-ibx-focus="sort-archive">${esc(tr('itemAction.archive'))}<span class="ibx-kbd" aria-hidden="true">A</span></button>
+      </div>
+      <div class="ibx-card-foot">
+        <button type="button" class="ibx-ghost is-where" data-sort="move" data-ibx-focus="card-move" aria-haspopup="dialog" aria-expanded="false">${inboxIcon('folder', 16, 1.5)}<span>${esc(tr('inbox.moveToSpace'))}</span></button>
+        <span class="ibx-gap" aria-hidden="true"></span>
+        <button type="button" class="ibx-ghost" data-sort="skip" data-ibx-focus="card-skip"${model.canSkip ? '' : ' aria-disabled="true"'}>${esc(tr('plan.skip'))}<span class="ibx-kbd" aria-hidden="true">→</span></button>
+      </div>
+    </div>`;
+  bindInboxFavicons(card);
+  const groupId = group.id;
+  card.querySelectorAll('[data-sort]').forEach(button => {
+    button.addEventListener('click', () => {
+      const choice = button.dataset.sort;
+      if (choice === 'move') {
+        openInboxItemMovePicker(current, button, (option, owner) => inboxTriage(groupId, current, 'move', owner, option));
+        return;
+      }
+      void inboxTriage(groupId, current, choice, button);
+    });
+  });
+  card.querySelector('.ibx-card-open').addEventListener('click', event => inboxOpenItem(current, event.currentTarget));
+  card.querySelector('.ibx-todo-check')?.addEventListener('click', event => {
+    event.stopPropagation();
+    void inboxToggleTodo(current);
+  });
+  card.addEventListener('keydown', event => {
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    if (event.target.closest?.('input, textarea, select, [contenteditable="true"]')) return;
+    const choice = { 1: 'today', 2: 'week', 3: 'someday', a: 'archive', A: 'archive', ArrowRight: 'skip' }[event.key];
+    if (choice) {
+      event.preventDefault();
+      event.stopPropagation();
+      void inboxTriage(groupId, current, choice, card.querySelector(`[data-sort="${choice}"]`));
+    } else if (event.key === 'ArrowDown') {
+      const first = inboxPageRoot()?.querySelector('.ibx-list > .ibx-row');
+      if (first) {
+        event.preventDefault();
+        inboxFocus(first);
+      }
+    } else if (event.key === 'Enter' && event.target === card) {
+      event.preventDefault();
+      inboxOpenItem(current, card.querySelector('.ibx-card-open'));
+    }
+  });
+  bindBoardItemContextMenu(card, opener => inboxItemMenuItems(group, current, opener, group.items));
+  return card;
+}
+
+const INBOX_BURST_RAYS = [0, 45, 90, 135, 180, 225, 270, 315];
+
+function buildInboxClear(model, session) {
+  const wrap = document.createElement('div');
+  // The burst plays once, when this visit sorted the last waiting item.
+  const burst = session.hadCard;
+  wrap.className = `ibx-clear${burst ? ' is-burst' : ''}`;
+  const tally = model.tally;
+  const counts = model.done ? [
+    ['today', tally.today, 'plan.tally.today'],
+    ['week', tally.week, 'plan.tally.week'],
+    ['someday', tally.someday, 'plan.tally.someday'],
+    ['archive', tally.archive, 'plan.tally.archive'],
+    ...(tally.move ? [['move', tally.move, 'inbox.tally.moved']] : []),
+  ] : [];
+  wrap.innerHTML = `
+    <span class="ibx-clear-mark${burst ? ' is-burst' : ''}" aria-hidden="true">${inboxIcon('check', 34, 2.4)}${burst ? `<span class="ibx-burst">${INBOX_BURST_RAYS.map(angle => `<span class="ibx-ray" style="--a:${angle}deg"><span class="ibx-pt"></span></span>`).join('')}</span>` : ''}</span>
+    <div class="ibx-clear-copy">
+      <h2 class="ibx-clear-title">${esc(tr('plan.inboxClear'))}</h2>
+      ${counts.length ? `<div class="ibx-tally">${counts.map(([key, count, label]) => `<div class="ibx-tally-item is-${key}"><span>${count}</span>${esc(tr(label))}</div>`).join('')}</div>` : ''}
+    </div>
+    <div class="ibx-clear-acts">
+      ${model.items.length ? '' : `<button type="button" class="ibx-ghost" data-ibx-act="import" data-ibx-focus="import">${inboxIcon('download', 16, 1.6)}<span>${esc(tr('empty.importBookmarks'))}</span></button>`}
+      <button type="button" class="ibx-ghost" data-ibx-act="home" data-ibx-focus="home"><span>${esc(tr('plan.backToToday'))}</span>${inboxIcon('arrow', 14, 1.8)}</button>
+    </div>`;
+  wrap.querySelector('[data-ibx-act="import"]')?.addEventListener('click', () => importBookmarks());
+  wrap.querySelector('[data-ibx-act="home"]').addEventListener('click', () => goHome());
+  return wrap;
+}
+
+function buildInboxList(group, model, session) {
+  const list = document.createElement('div');
+  list.className = 'ibx-list';
+  list.setAttribute('role', 'list');
+  list.setAttribute('aria-label', tr('inbox.items'));
+  const seen = session.seen;
+  model.rows.forEach(({ item, waiting, status }) => {
+    list.appendChild(buildInboxRow(group, item, {
+      status,
+      waiting,
+      parentItems: group.items,
+      fresh: !!seen && !seen.has(String(item.id)),
+    }));
+    if (item.type === 'stack' && item.expanded) {
+      (Array.isArray(item.items) ? item.items : []).filter(child => child && typeof child === 'object').forEach(child => {
+        list.appendChild(buildInboxRow(group, child, {
+          status: inboxItemStatus(child, model.somedayIds),
+          waiting: false,
+          parentItems: item.items,
+          child: true,
+        }));
+      });
+    }
+  });
+  return list;
+}
+
+function buildInboxRow(group, item, { status, waiting, parentItems, child = false, fresh = false }) {
+  const id = String(item.id);
+  const key = esc(id);
+  const title = inboxItemTitle(item);
+  const selected = selectedItemIds.has(id);
+  const row = document.createElement('div');
+  row.className = `ibx-row${selected ? ' is-selected' : ''}${child ? ' is-child' : ''}${fresh ? ' is-new' : ''}`;
+  row.dataset.ibxId = id;
+  row.dataset.ibxFocus = `row:${id}`;
+  row.dataset.kind = String(item.type || '');
+  row.tabIndex = 0;
+  row.draggable = true;
+  row.setAttribute('role', 'listitem');
+  row.setAttribute('aria-label', title);
+  applyBoardRecordMarker(row, item);
+  const chip = status.kind
+    ? `<span class="ibx-chip is-${status.kind}${status.overdue ? ' is-overdue' : ''}">${status.kind === 'done' ? inboxIcon('check', 12, 2.4) : ''}${esc(status.label)}</span>`
+    : `<span class="ibx-row-age">${esc(inboxSavedLabel(item.createdAt))}</span>`;
+  const sorts = waiting && !child ? `
+      <button type="button" class="ibx-ap is-when" data-row-sort="today" data-ibx-focus="today:${key}">${esc(tr('plan.lane.today'))}</button>
+      <button type="button" class="ibx-ap" data-row-sort="week" data-ibx-focus="week:${key}">${esc(tr('plan.lane.week'))}</button>
+      <button type="button" class="ibx-ap" data-row-sort="someday" data-ibx-focus="someday:${key}">${esc(tr('plan.lane.someday'))}</button>` : '';
+  row.innerHTML = `
+    <button type="button" class="ibx-pick" role="checkbox" aria-checked="${selected}" data-ibx-focus="pick:${key}" aria-label="${esc(tr(selected ? 'selection.deselectItem' : 'selection.selectItem', { title }))}">
+      ${inboxFavMarkup(item)}
+      <span class="ibx-cb" aria-hidden="true">${inboxIcon('check', 12, 2.6)}</span>
+    </button>
+    ${item.type === 'todo' ? `<button type="button" class="todo-check ibx-todo-check${item.done ? ' checked' : ''}" aria-pressed="${!!item.done}" data-ibx-focus="done:${key}" aria-label="${esc(tr(item.done ? 'detail.markIncomplete' : 'detail.markComplete'))}">${inboxIcon('check', 12, 2.4)}</button>` : ''}
+    <div class="ibx-row-main">
+      <button type="button" class="ibx-row-title" data-ibx-focus="title:${key}"${item.type === 'stack' ? ` aria-expanded="${!!item.expanded}"` : ''}>${esc(title)}</button>
+      <span class="ibx-row-sub">${status.kind ? `<span class="ibx-sub-status is-${status.kind}">${esc(status.label)}</span>` : ''}<span>${esc(inboxItemSource(item))}</span></span>
+    </div>
+    ${chip}
+    <div class="ibx-acts">${sorts}
+      ${child ? '' : `<button type="button" class="ibx-ai ibx-ai-move" data-row-act="move" data-ibx-focus="move:${key}" aria-haspopup="dialog" aria-expanded="false" aria-label="${esc(tr('inbox.moveNamed', { title }))}" title="${esc(tr('inbox.moveToSpace'))}">${inboxIcon('folder', 17, 1.4)}</button>`}
+      <button type="button" class="ibx-ai" data-row-act="archive" data-ibx-focus="archive:${key}" aria-label="${esc(tr('inbox.archiveNamed', { title }))}" title="${esc(tr('itemAction.archive'))}">${inboxIcon('archive', 17, 1.4)}</button>
+      <button type="button" class="ibx-ai" data-row-act="more" data-ibx-focus="rowmore:${key}" aria-haspopup="menu" aria-label="${esc(tr('library.moreActions', { title }))}" title="${esc(tr('library.moreActions', { title }))}">${inboxDotsIcon(17)}</button>
+    </div>
+    <span class="ibx-stamp" aria-hidden="true">${inboxIcon('check', 13, 2.6)}<span></span></span>`;
+  bindInboxFavicons(row);
+  const groupId = group.id;
+  row.querySelector('.ibx-pick').addEventListener('click', event => {
+    event.stopPropagation();
+    if (event.shiftKey) selectRangeTo(id);
+    else toggleItemSelect(id);
+  });
+  row.querySelector('.ibx-row-title').addEventListener('click', event => {
+    if (item.type === 'stack') inboxToggleStack(item);
+    else inboxOpenItem(item, event.currentTarget);
+  });
+  row.querySelector('.ibx-todo-check')?.addEventListener('click', event => {
+    event.stopPropagation();
+    void inboxToggleTodo(item);
+  });
+  row.querySelectorAll('[data-row-sort]').forEach(button => {
+    button.addEventListener('click', () => inboxRowAct(groupId, id, button.dataset.rowSort, button));
+  });
+  const moveButton = row.querySelector('[data-row-act="move"]');
+  moveButton?.addEventListener('click', () => {
+    openInboxItemMovePicker(item, moveButton, (option, owner) => inboxRowAct(groupId, id, 'move', owner, option));
+  });
+  const archiveButton = row.querySelector('[data-row-act="archive"]');
+  archiveButton.addEventListener('click', () => inboxRowAct(groupId, id, 'archive', archiveButton));
+  const menuButton = row.querySelector('[data-row-act="more"]');
+  bindBoardItemContextMenu(row, opener => inboxItemMenuItems(group, item, opener, parentItems), { menuButton });
+  // In select mode a click on the row's empty space selects it, as on cards.
+  row.addEventListener('click', event => {
+    if (!itemSelMode || event.target.closest('button')) return;
+    toggleItemSelect(id);
+  });
+  row.addEventListener('keydown', event => {
+    if (event.target !== row || event.ctrlKey || event.metaKey || event.altKey) return;
+    const choice = { 1: 'today', 2: 'week', 3: 'someday', a: 'archive', A: 'archive' }[event.key];
+    if (choice && (choice === 'archive' || (waiting && !child))) {
+      event.preventDefault();
+      event.stopPropagation();
+      void inboxRowAct(groupId, id, choice, row);
+    } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      const rows = [...(inboxPageRoot()?.querySelectorAll('.ibx-list > .ibx-row') || [])];
+      const index = rows.indexOf(row) + (event.key === 'ArrowDown' ? 1 : -1);
+      if (index < 0) focusInboxCard();
+      else inboxFocus(rows[index]);
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      row.querySelector('.ibx-row-title')?.click();
+    } else if (event.key === ' ') {
+      event.preventDefault();
+      toggleItemSelect(id);
+    }
+  });
+  attachItemDrag(row, item, parentItems, group);
+  return row;
+}
+
+// Rows reorder by drag (one Undo snapshot), take open tabs dragged in from the
+// open-tabs drawer, and a stack row takes a drop into the stack.
+function bindInboxDropZone(page, groupId) {
+  let line = null;
+  let into = null;
+  const clear = () => {
+    line?.remove();
+    line = null;
+    into?.classList.remove('is-drop-into');
+    into = null;
+  };
+  const targetAt = clientY => {
+    const rows = [...page.querySelectorAll('.ibx-list > .ibx-row:not(.is-child):not(.dragging)')];
+    for (const row of rows) {
+      const rect = row.getBoundingClientRect();
+      if (clientY < rect.top || clientY > rect.bottom) {
+        if (clientY < rect.top) return { row, after: false, stack: false };
+        continue;
+      }
+      const stack = row.dataset.kind === 'stack' && clientY > rect.top + rect.height * 0.25 && clientY < rect.bottom - rect.height * 0.25;
+      return { row, after: !stack && clientY > rect.top + rect.height / 2, stack };
+    }
+    return { row: rows[rows.length - 1] || null, after: true, stack: false };
+  };
+  page.addEventListener('dragover', event => {
+    if (!drag || drag.kind === 'group') return;
+    event.preventDefault();
+    event.dataTransfer.dropEffect = drag.kind === 'item' ? 'move' : 'copy';
+    const target = targetAt(event.clientY);
+    clear();
+    if (target.stack && target.row.dataset.ibxId !== String(drag.id || '')) {
+      into = target.row;
+      into.classList.add('is-drop-into');
+      return;
+    }
+    line = document.createElement('div');
+    line.className = 'ibx-drop-line';
+    line.setAttribute('aria-hidden', 'true');
+    const list = page.querySelector('.ibx-list');
+    if (!target.row) list?.appendChild(line);
+    else if (target.after) target.row.after(line);
+    else target.row.before(line);
+  });
+  page.addEventListener('dragleave', event => {
+    if (!page.contains(event.relatedTarget)) clear();
+  });
+  page.addEventListener('drop', async event => {
+    if (!drag || drag.kind === 'group') return;
+    event.preventDefault();
+    event.stopPropagation();
+    const target = targetAt(event.clientY);
+    clear();
+    const group = findGroup(groupId)?.group;
+    if (!group) return;
+    const stack = target.stack ? group.items.find(item => String(item?.id) === target.row.dataset.ibxId && item.type === 'stack') : null;
+    const list = stack ? stack.items : group.items;
+    const index = stack ? list.length : (target.row ? inboxDropIndex(group.items, target.row.dataset.ibxId, target.after) : group.items.length);
+    if (drag.kind === 'tab' || drag.kind === 'tabs-multi') {
+      await handleTabDropIntoList(drag.data, list, index);
+      return;
+    }
+    if (drag.kind !== 'item') return;
+    const info = findItem(drag.id);
+    if (!info || info.item === stack) return;
+    if (info.item.type === 'stack' && isDescendantOf(list, info.item)) {
+      toast(tr('feedback.stackSelf'), { danger: true });
+      return;
+    }
+    State.snapshot(stack ? 'Move to stack' : 'Move item');
+    const [moved] = info.parent.splice(info.index, 1);
+    let at = index;
+    if (info.parent === list && at > info.index) at -= 1;
+    list.splice(Math.min(at, list.length), 0, moved);
+    State.persist();
+    renderBoard();
+  });
+}
+
+// Renders the Inbox page into #board. The page root stays across repaints of
+// the same Inbox, so an open description editor keeps its caret; the header,
+// card and rows are rebuilt, and focus returns to the same control.
+function renderInboxPage(info) {
+  const group = info.group;
+  const session = inboxPageState(group.id);
+  const $b = document.getElementById('board');
+  document.body.dataset.page = 'inbox';
+  hideBreadcrumb();
+  $b.classList.remove('list-mode', 'canvas-mode', 'explorer-mode', 'timeline-mode', 'calendar-mode');
+  $b.classList.add('group-page-mode', 'inbox-mode');
+  let page = $b.querySelector(`:scope > .ibx[data-gid="${CSS.escape(String(group.id))}"]`);
+  // A triage answer is landing: keep the leaving card or row on screen until
+  // it has gone, then inboxTriage/inboxRowAct repaint once.
+  if (session.holdRender && page) return true;
+  const active = document.activeElement;
+  const focusKey = page && active && page.contains(active)
+    ? active.closest('[data-ibx-focus]')?.dataset.ibxFocus || null
+    : null;
+  const firstShow = !page;
+  const keepScroll = firstShow ? 0 : $b.scrollTop;
+  if (!page) {
+    $b.innerHTML = '';
+    page = document.createElement('div');
+    page.className = 'ibx';
+    page.dataset.gid = String(group.id);
+    page.setAttribute('aria-labelledby', 'ibx-title');
+    const live = document.createElement('div');
+    live.className = 'sr-only';
+    live.setAttribute('aria-live', 'polite');
+    live.dataset.ibxLive = 'true';
+    page.appendChild(live);
+    bindInboxDropZone(page, group.id);
+    $b.appendChild(page);
+  }
+  const model = inboxPageModel(group, planSomedayIds(), session);
+  const header = buildInboxHeader(group, model, session);
+  let about = page.querySelector(':scope > .ibx-about');
+  if (!session.aboutOpen) {
+    about?.remove();
+    about = null;
+  } else if (!about || !about.contains(document.activeElement)) {
+    const fresh = buildInboxAbout(group, session.aboutOpening);
+    if (about) about.replaceWith(fresh);
+    about = fresh;
+  }
+  const card = buildInboxCard(group, model, session);
+  const list = buildInboxList(group, model, session);
+  page.querySelectorAll(':scope > .ibx-hd, :scope > .ibx-card, :scope > .ibx-list').forEach(node => node.remove());
+  const live = page.querySelector(':scope > [data-ibx-live]');
+  if (about) {
+    if (!about.isConnected) live.after(about);
+    about.before(header);
+    about.after(card);
+  } else {
+    live.after(header);
+    header.after(card);
+  }
+  card.after(list);
+  const cardId = model.current ? String(model.current.id) : null;
+  if (!firstShow && cardId !== session.cardId) {
+    live.textContent = model.current ? inboxItemTitle(model.current) : tr('plan.inboxClear');
+  }
+  session.count = model.queue.length;
+  session.cardId = cardId;
+  session.hadCard = !!model.current;
+  session.seen = new Set(model.items.map(item => String(item.id)));
+  session.shown = true;
+  // A repaint keeps the reader where they were in a long Inbox.
+  if (!firstShow && $b.scrollTop !== keepScroll) $b.scrollTo({ top: keepScroll, behavior: 'instant' });
+  if (focusKey) {
+    if (!focusInboxKey(focusKey, page) && focusKey === 'card') focusInboxCard(page);
+  } else if (firstShow && !currentDetailItemId()) {
+    // Like Plan's Sort, the keys answer as soon as the page opens.
+    focusInboxCard(page);
+  }
+  return true;
 }
 
 // ════════════════════════════════════════════════════════════════
