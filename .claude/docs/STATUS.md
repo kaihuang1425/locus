@@ -326,8 +326,9 @@ Slices, in order:
     stack, in-place Undo/Retry morphs, Escape; popup receipt restyled; in-Locus due
     reminder card (Done / Snooze); system reminders show title, "Due HH:MM · Space",
     and Done / Snooze 10 min buttons answered by the background.
-  - **Changed decision:** Undo receipts drain over 5.2 s (pause on hover/focus);
-    previously they stayed until dismissed. See DESIGN.md 2026-11-06.
+  - **Changed decision (owner-confirmed 2026-11-06):** Undo receipts drain over
+    5.2 s (pause on hover/focus); previously they stayed until dismissed. See
+    DESIGN.md 2026-11-06.
   - **Evidence:** `notifications-contract-test.js` (74 checks); Edge 156 pass.
   - **Not done:** system notifications were not seen on screen; inline form status
     lines were left inline on purpose.

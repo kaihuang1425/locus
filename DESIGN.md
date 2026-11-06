@@ -4988,8 +4988,9 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   Notifications board specifies. Continuation and persistent receipts still wait
   for an answer, and Undo stays available with Ctrl+Z after the card leaves. The
   `core-visual-system` and `onboarding` assertions that encoded the old durable
-  rule were updated with this note. To restore it, make `waitsForAnswer` include
-  `undoActionId != null` in `toast()`.
+  rule were updated with this note. The owner confirmed the drain on 2026-11-06
+  after reviewing the overnight build. (Restoring the old rule would mean adding
+  `undoActionId != null` to `waitsForAnswer` in `toast()`.)
 
   A to-do whose reminder comes due while Locus is open gets one card top right
   that waits for an answer: Done (strike, green check, the Board to-do completion
