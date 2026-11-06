@@ -5062,3 +5062,30 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   zh-TW, reduced motion, and the popup.
 
   **Implemented: yes. Verified: partial. User-validated: no. Released: no.**
+
+- **2026-11-06 - Fixes from the fresh-context review of the canvas steps.** An
+  independent read-only review of steps 1 to 6 found thirteen issues; all are fixed.
+  - Roll-over is no longer a hydration default. `hydrateStoredState` fills missing
+    settings from `createInitialState()`, so the key there turned roll-over on for
+    existing profiles. It is now written only when a brand-new profile is seeded.
+  - The due card's Done checks that the to-do is still open (it no longer reopens
+    one finished elsewhere), binds its Undo to that exact completion, returns focus
+    when it closes, and the card closes on the next render when its to-do changes.
+  - Repeating reminders: Snooze is neither offered nor accepted (system notice or
+    card), because the series has already re-armed and moving it would shift every
+    later occurrence. A system notice left in the notification centre after its
+    reminder was moved no longer snoozes over the newer time.
+  - Someday works for an undated to-do written today; Sort answers 1, 2, 3, A, and
+    → as soon as it opens; the decided card leaves before the next one enters.
+  - Roll-over claims the day before it writes, so two tabs opened together do not
+    both move things; a failed write releases the claim.
+  - Escape reaches a notification only when no field, detail pane, search bar, or
+    Opened Tabs rail would take it. Enter on the resting page's Change link opens
+    it. The calm new tab's tone toggle keeps one label and reports aria-pressed.
+
+  Evidence: updated `plan-page` (243 checks), `notifications` (85), and
+  `canvas-pages` (62) suites with mutation checks for the hydration default and the
+  stale Snooze guard; every suite on Node 26 and Node 22; a throwaway Edge 156
+  profile for each behaviour.
+
+  **Implemented: yes. Verified: partial. User-validated: no. Released: no.**

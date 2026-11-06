@@ -119,6 +119,9 @@
 
   document.body.addEventListener('click', function (e) { if (!e.target.closest || !e.target.closest('a')) load(); });
   document.addEventListener('keydown', function (e) {
+    // Links and buttons answer their own keys (Change opens Locus; Load page
+    // clicks itself); anywhere else, Enter or Space loads the page.
+    if (e.target && e.target.closest && e.target.closest('a, button')) return;
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); load(); }
   });
   var btn = document.getElementById('load-btn');

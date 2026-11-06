@@ -13810,6 +13810,8 @@ body[data-surface="calendar"] #main { background: var(--today-ground); }
 .plan-sort-card.is-leaving-someday { transform: translate(70px, -24px) rotate(7deg); opacity: 0; }
 .plan-sort-card.is-leaving-archive { transform: translateY(46px) scale(.88); opacity: 0; }
 .plan-sort-card.is-leaving-skip { transform: translateX(140px) rotate(5deg); opacity: 0; }
+.plan-sort-card.is-entering { animation: plan-sort-enter .32s var(--today-ease) both; }
+@keyframes plan-sort-enter { from { opacity: 0; transform: translateY(13px) scale(.95); } to { opacity: 1; transform: none; } }
 .plan-sort-src { display: flex; align-items: center; gap: 12px; }
 .plan-sort-icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; background: var(--icon); color: #fff; font-size: 19px; font-weight: 800; }
 .plan-sort-src-text { display: flex; flex-direction: column; font-size: 13px; color: var(--text2); }

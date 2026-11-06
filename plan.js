@@ -185,8 +185,10 @@ function planLaneModel(collected, now = Date.now(), somedayIds = new Set(), allR
     lanes[lane].push(Object.assign({}, entry, { overdue: entry.at < b.today }));
   });
   collected.undated.forEach(entry => {
-    // Matches Today's "anytime": an undated to-do written today belongs to today.
-    if (entry.createdAt >= b.today && entry.createdAt < b.tomorrow) lanes.today.push(entry);
+    // Matches Today's "anytime": an undated to-do written today belongs to
+    // today, unless it was sent to Someday on this device.
+    const writtenToday = entry.createdAt >= b.today && entry.createdAt < b.tomorrow;
+    if (writtenToday && !somedayIds.has(entry.id)) lanes.today.push(entry);
     else lanes.someday.push(entry);
   });
   // Inbox items sent to Someday on this device, while they still have no date.
@@ -453,12 +455,17 @@ async function runPlanRollOver(now = Date.now()) {
   let last = null;
   try { last = localStorage.getItem(PLAN_ROLLOVER_DAY_KEY); } catch {}
   if (last === dayKey) return { ran: false, reason: 'done-today' };
+  // Claim the day before writing: two Locus tabs opened together (a restored
+  // session) both reach this point, and only the first may move anything.
+  try { localStorage.setItem(PLAN_ROLLOVER_DAY_KEY, dayKey); } catch {}
+  const release = () => {
+    try {
+      if (localStorage.getItem(PLAN_ROLLOVER_DAY_KEY) !== dayKey) return;
+      if (last) localStorage.setItem(PLAN_ROLLOVER_DAY_KEY, last); else localStorage.removeItem(PLAN_ROLLOVER_DAY_KEY);
+    } catch {}
+  };
   const changes = planRollOverChanges(state.workspaces, now);
-  const markDone = () => { try { localStorage.setItem(PLAN_ROLLOVER_DAY_KEY, dayKey); } catch {} };
-  if (!changes.length) {
-    markDone();
-    return { ran: true, moved: 0 };
-  }
+  if (!changes.length) return { ran: true, moved: 0 };
   planRollOverRunning = true;
   let result;
   try {
@@ -467,10 +474,14 @@ async function runPlanRollOver(now = Date.now()) {
     planRollOverRunning = false;
   }
   if (!result.ok) {
-    if (result.code !== 'busy') toast(tr('plan.rollOverFailed'), { tone: 'warning' });
+    // A target that changed meanwhile ('changed') would fail the same way on
+    // every open, so the day stays claimed. Anything else retries next open.
+    if (result.code !== 'changed') release();
+    // A recovery dialog already explains a failed write; only a quiet failure
+    // needs the warning.
+    if (result.code !== 'busy' && !State.isRecoveryRequired?.()) toast(tr('plan.rollOverFailed'), { tone: 'warning' });
     return { ran: false, reason: result.code };
   }
-  markDone();
   planBumpMoves(changes.map(change => change.id));
   renderBoard();
   toast(tr(changes.length === 1 ? 'plan.rolledOverOne' : 'plan.rolledOver', { count: changes.length }), {
@@ -629,6 +640,12 @@ function buildPlanAutoPill() {
 function renderPlanSurface(ws) {
   if (!ws || !activeCalendar || !isPlanView(activeCalendar.view)) return false;
   hideBreadcrumb();
+  // Sort answers to 1, 2, 3, A, and → as soon as it opens, and keeps the keys
+  // across re-renders while focus was on the card or nowhere in particular.
+  const active = document.activeElement;
+  const sortWasShown = !!document.getElementById('plan-sort');
+  const sortWantsFocus = activeCalendar.view === 'sort'
+    && (!sortWasShown || !active || active === document.body || !!active.closest?.('#plan-sort'));
   const $b = document.getElementById('board');
   $b.classList.remove('list-mode', 'canvas-mode', 'explorer-mode', 'timeline-mode', 'group-page-mode');
   $b.classList.add('calendar-mode', 'plan-mode');
@@ -646,6 +663,7 @@ function renderPlanSurface(ws) {
     if (landed) landed.classList.add('is-landed');
     planJustLanded = null;
   }
+  if (sortWantsFocus) planFocusSort();
   return true;
 }
 
@@ -812,12 +830,10 @@ function planOpenMoveMenu(entry, opener) {
 async function planMoveEntry(entry, option) {
   let ok;
   if (option.at == null) {
-    if (entry.at == null) {
-      if (entry.type !== 'todo') planSetSomeday(entry.id, true);
-      return true;
-    }
-    ok = await clearReminder(entry.id);
-    if (ok && entry.type !== 'todo') planSetSomeday(entry.id, true);
+    // Someday: an undated item only needs the per-device mark; a dated one
+    // loses its reminder first, through the normal transaction.
+    ok = entry.at == null ? true : await clearReminder(entry.id);
+    if (ok) planSetSomeday(entry.id, true);
   } else {
     ok = await setReminder(entry.id, option.at, { recur: entry.recur?.every ? entry.recur : undefined });
     if (ok) planSetSomeday(entry.id, false);
@@ -832,7 +848,7 @@ async function planMoveEntry(entry, option) {
 
 // ── Sort inbox ─────────────────────────────────────────────────
 function planSortState() {
-  if (!planSortSession) planSortSession = { tally: { today: 0, week: 0, someday: 0, archive: 0 }, skipped: new Set(), busy: false, leaving: null };
+  if (!planSortSession) planSortSession = { tally: { today: 0, week: 0, someday: 0, archive: 0 }, skipped: new Set(), busy: false, entering: false };
   return planSortSession;
 }
 function buildPlanSort(ws) {
@@ -862,7 +878,7 @@ function buildPlanSort(ws) {
     <div class="plan-sort-stack">
       <span class="plan-sort-ghost g2" aria-hidden="true"></span>
       <span class="plan-sort-ghost g1" aria-hidden="true"></span>
-      <article class="plan-sort-card${session.leaving ? ` is-leaving-${session.leaving}` : ''}" aria-live="polite" data-plan-id="${esc(String(current.id))}">
+      <article class="plan-sort-card${session.entering ? ' is-entering' : ''}" aria-live="polite" data-plan-id="${esc(String(current.id))}">
         <div class="plan-sort-src">
           <span class="plan-sort-icon" aria-hidden="true" style="--icon:${esc(reminderDotColor(current.color || inbox?.color))}">${esc(meta.initial)}</span>
           <span class="plan-sort-src-text">${meta.domain ? `<span class="plan-sort-domain">${esc(meta.domain)}</span>` : ''}<span class="plan-sort-age">${esc(meta.age)}</span></span>
@@ -955,6 +971,11 @@ async function planSortChoose(item, choice, opener = null) {
   if (session.busy) return;
   const id = String(item.id);
   session.busy = true;
+  // The card that was decided on leaves first; the next card enters after it.
+  const reduce = planReducedMotion();
+  const leavingCard = reduce ? null : document.querySelector(`.plan-sort-card[data-plan-id="${CSS.escape(id)}"]`);
+  if (leavingCard) leavingCard.classList.add(`is-leaving-${choice}`);
+  const leaveDone = new Promise(resolve => setTimeout(resolve, leavingCard ? 260 : 0));
   let ok = false;
   try {
     if (choice === 'skip') {
@@ -971,25 +992,32 @@ async function planSortChoose(item, choice, opener = null) {
       const at = choice === 'today' ? planSortTodayAt() : planSortWeekAt(planCollect(ws));
       ok = await setReminder(id, at);
     }
-  } finally {
-    session.busy = false;
+  } catch (error) {
+    console.error('Sort inbox choice failed', error);
+    ok = false;
   }
-  if (!ok) { renderBoard(); planFocusSort(); return; }
-  if (choice !== 'skip') session.tally[choice] += 1;
-  if (planReducedMotion()) { renderBoard(); planFocusSort(); return; }
-  session.leaving = choice;
-  renderBoard();
-  setTimeout(() => {
-    session.leaving = null;
+  if (!ok) {
+    session.busy = false;
+    if (leavingCard) leavingCard.classList.remove(`is-leaving-${choice}`);
     renderBoard();
     planFocusSort();
-  }, 280);
+    return;
+  }
+  if (choice !== 'skip') session.tally[choice] += 1;
+  await leaveDone;
+  // Keys stay locked until the next card is on screen, so one press decides
+  // one card.
+  session.busy = false;
+  session.entering = !reduce;
+  renderBoard();
+  session.entering = false;
+  planFocusSort();
 }
 
 // Rail count: open things planned for today.
 function planTodayCount(ws) {
   if (!ws) return 0;
-  const lanes = planLaneModel(planCollect(ws), Date.now());
+  const lanes = planLaneModel(planCollect(ws), Date.now(), planSomedayIds());
   return lanes.find(lane => lane.id === 'today')?.items.length || 0;
 }
 
@@ -1081,6 +1109,9 @@ function showPlanDueCard(entry) {
   const actions = card.querySelector('.plan-due-actions');
   const chips = card.querySelector('.plan-due-chips');
   const snooze = card.querySelector('.plan-due-snooze');
+  // A repeating reminder already re-arms its next occurrence; snoozing it
+  // would move the whole series, so the card offers Done only.
+  if (entry.recur) snooze.remove();
   const setChips = open => {
     actions.hidden = open;
     chips.hidden = !open;
@@ -1097,6 +1128,10 @@ function showPlanDueCard(entry) {
   chips.querySelectorAll('[data-snooze]').forEach(button => {
     button.onclick = () => planDueSnooze(entry, card, button.dataset.snooze);
   });
+  card.addEventListener('focusin', event => {
+    const from = event.relatedTarget;
+    if (from && !card.contains(from)) planDueReturnFocus = from;
+  });
   card.addEventListener('keydown', event => {
     if (event.key !== 'Escape') return;
     event.preventDefault();
@@ -1108,22 +1143,41 @@ function showPlanDueCard(entry) {
   document.body.appendChild(card);
 }
 
+let planDueReturnFocus = null;
 function hidePlanDueCard({ immediate = false } = {}) {
   const card = document.getElementById('plan-due');
   planDueShown = null;
   if (!card) return;
+  if (card.contains(document.activeElement)) {
+    const target = planDueReturnFocus && planDueReturnFocus.isConnected ? planDueReturnFocus : document.getElementById('board');
+    try { target?.focus?.({ preventScroll: true }); } catch {}
+  }
+  planDueReturnFocus = null;
   if (immediate || planReducedMotion()) { card.remove(); return; }
   card.classList.add('is-leaving');
   setTimeout(() => card.remove(), 360);
 }
 
+function planDueItemIsOpen(id) {
+  const ws = activeWs();
+  return !!ws && planCollect(ws).dated.concat(planCollect(ws).undated).some(row => row.id === id && row.type === 'todo');
+}
+
 async function planDueDone(entry, card, button) {
   if (planDueBusy) return;
+  // The to-do may have been finished on Today, in another tab, or from the
+  // system notification while the card waited. Done must not reopen it.
+  if (!planDueItemIsOpen(entry.id)) {
+    planDueAnswered.add(planDueKey(entry.id, entry.at));
+    hidePlanDueCard();
+    return;
+  }
   planDueBusy = true;
   card.classList.add('is-done');
   button.classList.add('is-on');
   const reduce = planReducedMotion();
   const ok = await commitTodayTodoToggle(entry.id, button);
+  const actionId = ok ? State.latestActionId() : null;
   planDueBusy = false;
   if (!ok) {
     card.classList.remove('is-done');
@@ -1135,7 +1189,7 @@ async function planDueDone(entry, card, button) {
   setTimeout(() => {
     hidePlanDueCard();
     renderBoard();
-    toast(tr('dueCard.doneToast'), { sub: entry.title, undo: true });
+    toast(tr('dueCard.doneToast'), { sub: entry.title, undo: actionId });
   }, reduce ? 0 : 520);
 }
 
@@ -1144,6 +1198,7 @@ async function planDueSnooze(entry, card, choice) {
   planDueBusy = true;
   const at = planDueSnoozeAt(choice);
   const ok = await setReminder(entry.id, at);
+  const actionId = ok ? State.latestActionId() : null;
   planDueBusy = false;
   if (!ok) {
     toast(tr('dueCard.failed'), { tone: 'warning' });
@@ -1156,7 +1211,7 @@ async function planDueSnooze(entry, card, choice) {
     tone: 'warning',
     glyph: 'clock',
     sub: entry.title,
-    undo: true,
-    replaceUndo: true,
+    undo: actionId,
+    replaceUndo: actionId,
   });
 }

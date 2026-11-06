@@ -3601,9 +3601,6 @@ const State = (() => {
       popupHibernateScope:'window', popupHibernateKeepPinned:true,
       popupHibernateKeepAudio:true, popupHibernateSaveBefore:false,
       popupHibernateSelectedTabIds:[], popupSaveMode:'group',
-      // Auto-plan (plan.js). New profiles start with both rules on; a profile
-      // without the keys keeps today's behaviour (no roll-over).
-      planRollOver:true, planWarnOverload:true,
       onboarding: { welcomeSeen:false, hintsSeen:{}, disabled:false }
     }
   });
@@ -6006,6 +6003,9 @@ function ensureDefault() {
     const allocateId = createOrganizationIdAllocator();
     s.settings.railCollapsed = true;
     s.settings.showLanding = false;
+    // Auto-plan roll-over starts on only for a brand-new profile. It is not a
+    // hydration default: a profile without the key keeps today's behaviour.
+    s.settings.planRollOver = true;
     const cat = { id: allocateId(), name:'Pinned', groups:[{
       id: allocateId(), name:'Inbox', symbol:'📥', color:'#6366f1', collapsed:false, items:[]
     }] };
@@ -17597,10 +17597,10 @@ function applyLandingTone(tone = landingTone()) {
   const button = document.getElementById('landing-tone');
   if (layer) layer.dataset.tone = tone;
   if (button) {
-    const toLight = tone !== 'light';
-    button.setAttribute('aria-pressed', String(!toLight));
-    button.setAttribute('aria-label', tr(toLight ? 'landing.light' : 'landing.dark'));
-    button.title = tr(toLight ? 'landing.light' : 'landing.dark');
+    // One fixed label; the pressed state says whether the light tone is on.
+    button.setAttribute('aria-pressed', String(tone === 'light'));
+    button.setAttribute('aria-label', tr('landing.light'));
+    button.title = tr('landing.light');
   }
 }
 
@@ -21325,6 +21325,9 @@ function updateNavChrome() {
     if (planCount) planCount.textContent = todayCount > 0 ? tr('plan.navToday', { count: todayCount }) : '';
     planNav.setAttribute('aria-label', todayCount > 0 ? `${tr('nav.plan')}, ${tr('plan.navToday', { count: todayCount })}` : tr('nav.plan'));
   }
+  // A reminder card whose to-do was finished or moved elsewhere closes on the
+  // next render rather than waiting for the next poll.
+  if (typeof checkPlanDue === 'function' && typeof planDueShown !== 'undefined' && planDueShown) checkPlanDue();
   const moreNav = document.getElementById('nav-more');
   if (moreNav) moreNav.classList.toggle('active', !!activeSearch || (!!activeCalendar && !planNav) || ['favorites', 'read-later', 'archive', 'trash'].includes(activeLibraryMode));
   let pending = 0;
@@ -33951,9 +33954,17 @@ function bindStatic() {
       // sitting beneath a modal/menu/tool overlay.
       const _escBlockers = ['state-recovery-overlay','paste-overlay','rich-text-link-overlay','reminder-overlay','calendar-task-overlay','planner-overlay','landing-layer','cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','trash-delete-overlay','organization-name-overlay','organization-delete-overlay','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub'];
       const _overlayWasOpen = _escBlockers.some(id => { const el = document.getElementById(id); return el && !el.classList.contains('hidden'); });
-      // The newest notification is the topmost transient layer once no dialog,
-      // sheet, or menu is open.
-      if (!_overlayWasOpen && !higherLayerOpen && dismissToastForEscape()) { e.preventDefault(); return; }
+      // The newest notification takes Escape only when nothing else would: no
+      // dialog, sheet, or menu, no focused field, no item detail pane, no open
+      // search bar, and no Opened Tabs rail or drawer holding focus.
+      const _escSearchBar = document.getElementById('search-bar');
+      const _escTabRail = document.getElementById('tabrail');
+      const _escToastFirst = !_overlayWasOpen && !higherLayerOpen && !inField
+        && !currentDetailItemId()
+        && !(_escSearchBar && !_escSearchBar.classList.contains('hidden'))
+        && !(typeof isTodayTabsDrawerOpen === 'function' && isTodayTabsDrawerOpen())
+        && !(_escTabRail && _escTabRail.contains(document.activeElement));
+      if (_escToastFirst && dismissToastForEscape()) { e.preventDefault(); return; }
       if (!_overlayWasOpen && handleOpenTabsEscape(e)) return;
       closeCommandPalette();
       toggleSearchBar(false);

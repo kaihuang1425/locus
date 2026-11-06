@@ -80,6 +80,7 @@ function testLanes() {
       tab('next-tue', { reminder: rem(at(2026, 11, 17, 9)) }),
       todo('in-three-weeks', { reminder: rem(at(2026, 12, 2, 9)) }),
       todo('anytime', { createdAt: at(2026, 11, 11, 8) }),
+      todo('today-but-someday', { createdAt: at(2026, 11, 11, 9) }),
       todo('old-undated'),
       todo('done', { done: true, reminder: rem(at(2026, 11, 11, 15)) }),
       todo('dup'),
@@ -89,7 +90,7 @@ function testLanes() {
   });
   const collected = context.planCollect(ws);
   const marked = [{ id: 'marked', type: 'tab', at: null, createdAt: 0, title: 'marked' }];
-  const lanes = context.planLaneModel(collected, NOW, new Set(['marked']), collected.dated.concat(collected.undated, marked));
+  const lanes = context.planLaneModel(collected, NOW, new Set(['marked', 'today-but-someday']), collected.dated.concat(collected.undated, marked));
   const ids = Object.fromEntries(lanes.map(lane => [lane.id, lane.items.map(item => item.id)]));
   eq(lanes.map(lane => lane.id), ['today', 'tomorrow', 'week', 'next', 'later', 'someday'], 'lanes appear in order, with Later only when it has items');
   eq(ids.today, ['overdue', 'today-16', 'anytime'], 'Today holds overdue to-dos, today’s times, and undated to-dos written today');
@@ -99,6 +100,7 @@ function testLanes() {
   eq(ids.next, ['next-tue'], 'Next week holds Monday to Sunday of next week');
   eq(ids.later, ['in-three-weeks'], 'Later holds dates past next week');
   ok(ids.someday.includes('old-undated') && ids.someday.includes('marked'), 'Someday holds undated to-dos and pages sent to Someday');
+  ok(ids.someday.includes('today-but-someday') && !ids.today.includes('today-but-someday'), 'a to-do written today and sent to Someday leaves Today');
   ok(!ids.someday.includes('unmarked'), 'an unmarked Inbox page is not planned');
   const all = Object.values(ids).flat();
   ok(!all.includes('fired-page'), 'a page whose reminder already fired is not shown');
@@ -176,7 +178,11 @@ function testRules() {
   eq(context.planRuleOn({ planRollOver: true }, 'planRollOver'), true, 'roll-over runs only when turned on');
   eq(context.planRuleOn({}, 'planWarnOverload'), true, 'the overload warning changes no data and is on unless turned off');
   eq(context.planRuleOn({ planWarnOverload: false }, 'planWarnOverload'), false, 'the warning can be turned off');
-  ok(/planRollOver:true, planWarnOverload:true/.test(newtab), 'new profiles start with both rules on');
+  const initial = newtab.slice(newtab.indexOf('const createInitialState = () => ({'), newtab.indexOf('let state = createInitialState();'));
+  ok(initial.length > 200 && !/planRollOver|planWarnOverload/.test(initial), 'the rules are not hydration defaults, so an existing profile keeps today’s behaviour');
+  ok(/const hydrateStoredState = stored => \{\n\s*const base = createInitialState\(\);/.test(newtab), 'hydration fills settings from createInitialState (the reason the default must not live there)');
+  ok(/if \(!s\.workspaces\.length\) \{[\s\S]{0,400}s\.settings\.planRollOver = true;/.test(newtab), 'a brand-new profile starts with roll-over on');
+  ok(/ok = entry\.at == null \? true : await clearReminder\(entry\.id\);\n\s*if \(ok\) planSetSomeday\(entry\.id, true\);/.test(planSource), 'Someday from the move menu marks every item type');
 }
 
 async function testBatchCommit() {
@@ -242,6 +248,19 @@ async function testRollOverRunsOncePerDay() {
   eq(toasts.at(-1)[1].undo, 3, 'the result toast carries the normal Undo');
   const again = await harness.context.runPlanRollOver(at(2026, 11, 11, 15));
   eq([again.ran, again.reason, writes], [false, 'done-today', 2], 'it runs at most once per day');
+  // Two tabs opened together: the second sees the claim taken by the first.
+  harness.store.delete('locus.plan.rolloverDay');
+  items.y.reminder.at = at(2026, 11, 10, 9);
+  const firstTab = harness.context.runPlanRollOver(NOW);
+  const secondTab = await harness.context.runPlanRollOver(NOW);
+  await firstTab;
+  eq([secondTab.ran, secondTab.reason, writes], [false, 'running', 3], 'a second run at the same moment writes nothing');
+  harness.store.delete('locus.plan.rolloverDay');
+  items.y.reminder.at = at(2026, 11, 10, 9);
+  vm.runInContext('planRollOverRunning = false;', harness.context);
+  const claimed = harness.context.runPlanRollOver(NOW);
+  eq(harness.store.get('locus.plan.rolloverDay'), '2026-11-11', 'the day is claimed before the write starts');
+  await claimed;
   settings.planRollOver = false;
   const off = await harness.context.runPlanRollOver(at(2026, 11, 12, 8));
   eq([off.ran, off.reason], [false, 'off'], 'turned off, it does nothing');

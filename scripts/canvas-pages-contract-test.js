@@ -54,6 +54,7 @@ function testCalmNewTab() {
   ok(/\.filter\(row => isOpenableSavedTabUrl\(row\.item\.url\)\)[\s\S]*\.slice\(0, 3\)/.test(newtab), 'three recent pages, only ones Reopen accepts');
   ok(/localStorage\.getItem\('locus\.landing\.tone'\) === 'light' \? 'light' : 'dark'/.test(newtab), 'dark by default; the light option is per device');
   ok(/if \(landingToday\) landingToday\.onclick = \(\) => closeLandingLayer\(\);/.test(newtab), 'Show Today instead reveals Today');
+  ok(/button\.setAttribute\('aria-pressed', String\(tone === 'light'\)\);\n\s*button\.setAttribute\('aria-label', tr\('landing\.light'\)\);/.test(newtab), 'the tone toggle keeps one label and reports its state with aria-pressed');
   for (const id of ['landing-search-input', 'landing-search-results', 'landing-unsorted', 'landing-unsorted-count', 'landing-reminders', 'landing-enter', 'landing-time', 'landing-date']) {
     eq((html.match(new RegExp(`id="${id}"`, 'g')) || []).length, 1, `#${id} is kept`);
   }
@@ -74,6 +75,7 @@ function testRestingPage() {
   ok(/var navigable = \/\^\(\?:https\?\|ftp\|file\):\/i\.test\(url\);/.test(suspendedJs), 'only web and file addresses ever load');
   ok(/if \(isForeground\(\)\) \{\n\s*load\(\);/.test(suspendedJs), 'the placeholder still loads when its tab comes to the front');
   ok(/if \(e\.key === 'Enter' \|\| e\.key === ' '\) \{ e\.preventDefault\(\); load\(\); \}/.test(suspendedJs), 'Enter loads the page');
+  ok(/if \(e\.target && e\.target\.closest && e\.target\.closest\('a, button'\)\) return;\n\s*if \(e\.key === 'Enter'/.test(suspendedJs), 'Enter on the Change link opens it instead of loading the page');
   ok(/<span class="kb" aria-hidden="true">Enter<\/span>/.test(suspendedHtml), 'the button shows the Enter hint');
   ok(/document\.body\.classList\.add\('is-loaded'\);/.test(suspendedJs), 'Loaded is shown as the page loads');
   ok(/<link rel="stylesheet" href="media\/fonts\/fonts\.css">/.test(suspendedHtml), 'bundled fonts only');

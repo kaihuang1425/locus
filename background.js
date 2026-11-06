@@ -2576,8 +2576,21 @@ function reminderNoticeOptions(state, found, at) {
     title,
     message: copy.due(time, place),
     priority: 2,
-    buttons: it.type === 'todo' ? [{ title: copy.done }, { title: copy.snooze }] : [{ title: copy.snooze }],
+    ...(reminderNoticeActions(it).length
+      ? { buttons: reminderNoticeActions(it).map(action => ({ title: copy[action] })) }
+      : {}),
   };
+}
+
+// The answers a notice offers. Snooze moves a one-off reminder; a repeating
+// reminder has already re-armed its next occurrence when it fires, and moving
+// it would shift the whole series, so it offers Done (to-dos) only.
+function reminderNoticeActions(it) {
+  const repeating = !!(it?.reminder && it.reminder.recur);
+  const actions = [];
+  if (it?.type === 'todo') actions.push('done');
+  if (!repeating) actions.push('snooze');
+  return actions;
 }
 
 // Answer a reminder from its system notification. The change goes through the
@@ -2593,7 +2606,18 @@ async function answerReminderNotice(notifId, buttonIndex, now = Date.now()) {
     return { ok: false, reason: 'missing' };
   }
   const it = found.item;
-  const action = it.type === 'todo' && buttonIndex === 0 ? 'done' : 'snooze';
+  const action = reminderNoticeActions(it)[buttonIndex];
+  if (!action) {
+    await clearNativeNotification(notifId).catch(() => {});
+    return { ok: false, reason: 'no-action' };
+  }
+  // A notice stays in the notification centre after its reminder is moved.
+  // Snooze applies only to the occurrence that fired (still marked notified);
+  // a reminder changed since then is left alone.
+  if (action === 'snooze' && !(it.reminder && it.reminder.notified === true && !it.reminder.recur)) {
+    await clearNativeNotification(notifId).catch(() => {});
+    return { ok: false, reason: 'stale', action };
+  }
   if (action === 'done') {
     if (it.done === true) {
       await clearNativeNotification(notifId).catch(() => {});

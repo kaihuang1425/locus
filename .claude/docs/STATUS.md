@@ -297,6 +297,13 @@ Slices, in order:
 
 ## Done (newest first)
 
+- **2026-11-06 - Review fixes for the canvas steps**
+  - **What:** thirteen findings from a fresh-context review fixed (roll-over
+    hydration default, due card Done/Undo/focus, repeating and stale Snooze,
+    Someday for today's to-dos, Sort focus and animation, roll-over claim, Escape
+    precedence, resting-page link, tone toggle label). See DESIGN.md 2026-11-06.
+  - **Evidence:** plan-page 243, notifications 85, canvas-pages 62 checks; Edge 156.
+
 - **2026-11-06 - Remaining pages on the canvas (canvas step 6)**
   - **What:** one CSS layer for boards, Library modes, Archive/Trash, Search, Item
     details, command palette, Settings, Calendar, and popup; sub-lines trimmed;
