@@ -13,6 +13,11 @@
   --font: 'DM Sans', system-ui, sans-serif;
   --font-display: var(--font);
   --font-mono: 'Geist Mono', ui-monospace, monospace;
+  /* Brand faces from the 2026-11 canvas. They are fixed (not the user's font
+     choice): Bricolage for the large display moments, JetBrains Mono for
+     times. Surfaces opt in as they move to the canvas design. */
+  --font-brand-display: 'Bricolage Grotesque', 'DM Sans', system-ui, sans-serif;
+  --font-brand-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 [data-font="dm"]         { --font: 'DM Sans', system-ui, sans-serif; }
 [data-font="inter"]      { --font: 'Inter', system-ui, sans-serif; }
@@ -47,6 +52,18 @@
   --shadow-1: 0 1px 2px rgba(24,32,28,0.09);
   --shadow-2: 0 10px 26px rgba(24,32,28,0.13);
   --shadow-3: 0 26px 68px rgba(24,32,28,0.2), 0 4px 12px rgba(24,32,28,0.08);
+  /* Canvas palette (2026-11). The registry and locator above remain the rail's
+     own colours; these add raised registry steps, the warm page ground, the
+     orange that means "when", and the red attention badge. Text tokens are the
+     AA-safe tints for small copy; the bare signal colours are for marks. */
+  --registry-raised: #1e2824; --registry-raised-2: #222d28; --registry-raised-3: #26322d;
+  --locator-hover: #294bbd;
+  --ground: #f3f2ee;
+  --card: #ffffff; --card-rule: #e6e4de; --card-rule-strong: #c9c5bb;
+  --when: #ff5b2e; --when-text: #c2370d; --when-on-registry: #ff9670;
+  --when-soft: #ffe3d8; --when-soft-text: #b8320c;
+  --where-soft: #e3eafc; --where-soft-text: #294bbd;
+  --badge: #e0281b; --badge-text: #ffffff;
 }
 
 /* Locus Dark — deep green-ink variant of the same Locus Index system. Blue
@@ -66,6 +83,16 @@
   --shadow-sm: 0 2px 10px rgba(0,0,0,0.36);
   --card-shadow: 0 1px 2px rgba(0,0,0,0.5), 0 0 0 1px rgba(232,240,235,0.025);
   --card-shadow-h: 0 10px 26px rgba(0,0,0,0.5), 0 0 0 1px rgba(232,240,235,0.07);
+  /* Canvas palette, dark: the raised registry greens lift off the darker
+     ground, and text tints stay readable on both. */
+  --registry-raised: #1e2824; --registry-raised-2: #222d28; --registry-raised-3: #26322d;
+  --locator-hover: #a8b9ff;
+  --ground: #111613;
+  --card: #171d19; --card-rule: rgba(232,240,235,0.11); --card-rule-strong: rgba(232,240,235,0.28);
+  --when: #ff6a3d; --when-text: #ff9670; --when-on-registry: #ff9670;
+  --when-soft: rgba(255,91,46,0.18); --when-soft-text: #ffb399;
+  --where-soft: rgba(143,168,255,0.18); --where-soft-text: #b9c8ff;
+  --badge: #e0281b; --badge-text: #ffffff;
 }
 
 /* Rice Paper: legacy warm "bento box" base with a gold/persimmon accent. */
