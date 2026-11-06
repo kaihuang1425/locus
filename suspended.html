@@ -4,70 +4,128 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>&#65279;</title>
+  <link rel="stylesheet" href="media/fonts/fonts.css">
   <style>
-    :root { color-scheme: light dark; }
+    /* Resting page (2026-11 canvas): a saved page opened as a placeholder.
+       Locus has no idle auto-suspend; this page exists only because a saved
+       page was opened this way, and it loads the real page when the tab comes
+       to the front, on click, or with Enter. */
+    :root { color-scheme: dark; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
-      height: 100%;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-      background: #0c0e1a;
-      color: #eef0fb;
+      min-height: 100%;
+      background: #141c19;
+      color: #f6f3eb;
+      font: 15px/1.5 'DM Sans', system-ui, sans-serif;
       -webkit-font-smoothing: antialiased;
     }
-    @media (prefers-color-scheme: light) {
-      html, body { background: #eef1fb; color: #141828; }
-      .url, .hint { color: #565d75 !important; }
-      .btn { background: rgba(85,102,242,0.10) !important; color: #4453e6 !important; }
-      .btn:hover { background: rgba(85,102,242,0.18) !important; }
-      .tag { background: rgba(40,52,95,0.05) !important; border-color: rgba(40,52,95,0.09) !important; color: #565d75 !important; }
-      .fav-wrap { background: linear-gradient(135deg, rgba(62,130,247,0.12), rgba(144,97,243,0.10)) !important; }
-      .dot { background: #5566f2 !important; box-shadow: 0 0 10px #5566f2 !important; }
-    }
     body { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 40px 20px; cursor: pointer; }
-    .box { text-align: center; max-width: 460px; display: flex; flex-direction: column; align-items: center; gap: 18px; }
-    .fav-wrap {
-      width: 80px; height: 80px; border-radius: 18px;
-      background: linear-gradient(135deg, rgba(62,130,247,0.16), rgba(144,97,243,0.10));
-      display: flex; align-items: center; justify-content: center;
-      position: relative; overflow: hidden;
+    .card {
+      position: relative;
+      width: 100%;
+      max-width: 780px;
+      padding: 42px 46px 40px;
+      overflow: hidden;
+      border: 1px solid #2b3732;
+      border-radius: 30px;
+      background: #1e2824;
+      box-shadow: 0 40px 80px rgba(0, 0, 0, .35);
+      cursor: default;
+      animation: rise .6s cubic-bezier(.22, 1, .36, 1) both;
     }
-    .fav-wrap::after { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at center, rgba(106,90,240,0.18), transparent 70%); }
-    .fav { width: 42px; height: 42px; border-radius: 9px; object-fit: contain; position: relative; z-index: 1; }
-    h1 { font-weight: 600; font-size: 22px; line-height: 1.35; letter-spacing: -0.01em; max-height: 3em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-    .url { font-size: 13px; color: #a3a9c8; word-break: break-all; opacity: 0.8; }
-    .tag {
-      display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px;
-      background: rgba(160,175,255,0.06); border: 1px solid rgba(160,175,255,0.12); border-radius: 20px;
-      font-size: 10.5px; color: #a3a9c8; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500;
+    @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+    .prog { position: absolute; left: 0; top: 0; height: 3px; width: 0; background: #ff5b2e; }
+    body.is-loading .prog { animation: prog 1.2s cubic-bezier(.22, 1, .36, 1) forwards; }
+    @keyframes prog { to { width: 92%; } }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      height: 38px;
+      padding: 0 14px 0 6px;
+      border-radius: 999px;
+      background: rgba(246, 243, 235, .06);
+      color: #c9d1cc;
+      font-size: 14px;
+      font-weight: 600;
     }
-    .dot { width: 6px; height: 6px; border-radius: 50%; background: #8b9bff; box-shadow: 0 0 10px #8b9bff; animation: pulse 2s ease-in-out infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-    @media (prefers-reduced-motion: reduce) {
-      .dot { animation: none; }
+    .status-mark { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: #19231f; }
+    .status-mark svg { display: block; }
+    .status-mark .mark-done { display: none; }
+    body.is-loaded .status { background: rgba(25, 118, 84, .22); color: #8fe0bd; }
+    body.is-loaded .status-mark { background: #197654; animation: pop .45s cubic-bezier(.34, 1.9, .64, 1); }
+    body.is-loaded .status-mark .mark-rest { display: none; }
+    body.is-loaded .status-mark .mark-done { display: block; }
+    @keyframes pop { from { transform: scale(.3); } to { transform: scale(1); } }
+    .source { display: flex; align-items: center; gap: 12px; margin-top: 30px; }
+    .fav { width: 36px; height: 36px; padding: 6px; border-radius: 10px; background: #19231f; object-fit: contain; }
+    .url { color: #aeb9b3; font: 500 13.5px 'JetBrains Mono', ui-monospace, monospace; word-break: break-all; }
+    h1 {
+      margin-top: 14px;
+      font-family: 'Bricolage Grotesque', 'DM Sans', system-ui, sans-serif;
+      font-size: clamp(30px, 6vw, 50px);
+      font-weight: 800;
+      line-height: 1.02;
+      letter-spacing: -.035em;
+      overflow-wrap: anywhere;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
+    .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 30px; }
     .btn {
-      margin-top: 8px; padding: 10px 22px;
-      background: rgba(139,155,255,0.15); color: #b0bbff;
-      border: none; border-radius: 10px; font: 500 13px inherit; cursor: pointer;
-      display: inline-flex; align-items: center; gap: 7px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      height: 52px;
+      padding: 0 20px;
+      border: 0;
+      border-radius: 16px;
+      background: #f6f3eb;
+      color: #19231f;
+      font: 700 16px 'DM Sans', system-ui, sans-serif;
+      cursor: pointer;
+      transition: transform .14s cubic-bezier(.34, 1.56, .64, 1), background .15s ease;
     }
-    .btn:hover { background: rgba(139,155,255,0.26); }
+    .btn:hover { background: #ffffff; }
+    .btn:active { transform: scale(.96); }
+    .kb { padding: 1px 7px; border: 1px solid #c9c5bb; border-bottom-width: 2px; border-radius: 6px; color: #4a5062; font: 600 11.5px 'JetBrains Mono', ui-monospace, monospace; }
+    body.is-loaded .btn { background: #197654; color: #ffffff; }
+    body.is-loaded .kb { display: none; }
+    .foot { margin-top: 26px; color: #aeb9b3; font-size: 13.5px; }
+    .foot a { color: #b9c8ff; font-weight: 600; text-decoration: none; }
+    .foot a:hover { text-decoration: underline; text-underline-offset: 3px; }
+    :focus-visible { outline: 2px solid #b9c8ff; outline-offset: 3px; }
+    @media (max-width: 520px) { .card { padding: 30px 24px 28px; border-radius: 24px; } }
+    @media (prefers-reduced-motion: reduce) {
+      .card, body.is-loading .prog, body.is-loaded .status-mark { animation: none; }
+      .btn { transition: none; }
+    }
+    @media (forced-colors: active) { .card { border: 2px solid CanvasText; } }
   </style>
 </head>
 <body>
-  <div class="box">
-    <div class="tag">
-      <span class="dot"></span>
-      <span id="status-text">Hibernated · loads when you switch to this tab</span>
-    </div>
-    <div class="fav-wrap"><img id="fav" class="fav" alt=""></div>
+  <main class="card">
+    <span class="prog" aria-hidden="true"></span>
+    <p class="status" role="status" aria-live="polite">
+      <span class="status-mark" aria-hidden="true">
+        <svg class="mark-rest" width="15" height="15" viewBox="0 0 16 16"><path d="M13.2 10.3A5.8 5.8 0 0 1 5.7 2.8a5.8 5.8 0 1 0 7.5 7.5z" fill="#b9c8ff"/></svg>
+        <svg class="mark-done" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 8.5l3 3 6-7"/></svg>
+      </span>
+      <span id="status-text">Not loaded yet</span>
+    </p>
+    <div class="source"><img id="fav" class="fav" alt=""><span class="url" id="url"></span></div>
     <h1 id="title">Loading…</h1>
-    <div class="url" id="url"></div>
-    <button class="btn" id="load-btn">
-      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v8m0 0l3-3m-3 3l-3-3M2 10.5v1a1 1 0 001 1h7a1 1 0 001-1v-1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Load now
-    </button>
-  </div>
+    <div class="actions">
+      <button class="btn" id="load-btn" type="button">
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.8v1.6M8 12.6v1.6M1.8 8h1.6M12.6 8h1.6M3.6 3.6l1.1 1.1M11.3 11.3l1.1 1.1M3.6 12.4l1.1-1.1M11.3 4.7l1.1-1.1"/><circle cx="8" cy="8" r="2.8"/></svg>
+        <span id="load-label">Load page</span>
+        <span class="kb" aria-hidden="true">Enter</span>
+      </button>
+    </div>
+    <p class="foot"><span id="placeholder-note">Opened as a placeholder</span> · <a id="change-link" href="newtab.html" target="_blank">Change</a></p>
+  </main>
   <script src="suspended.js"></script>
 </body>
 </html>

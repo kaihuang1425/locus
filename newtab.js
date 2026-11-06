@@ -27,6 +27,17 @@ function appLocale() {
 
 const I18N = {
   en: {
+    'landing.recent': 'Recent pages',
+    'landing.showToday': 'Show Today instead',
+    'landing.light': 'Light',
+    'landing.dark': 'Dark',
+    'landing.timeLabel': 'Time {time}',
+    'welcome.sloganLead': 'Never',
+    'welcome.sloganRest': ' lose a tab again.',
+    'welcome.stampSlot': 'STAMP',
+    'welcome.stampLabel': '1 TAB',
+    'welcome.savedTitle': 'It’s in your Inbox.',
+    'welcome.private': 'Private to this browser. No account.',
     'dueCard.label': 'Reminder',
     'dueCard.due': 'Due {time}',
     'dueCard.dueIn': 'Due {time} · {place}',
@@ -132,7 +143,7 @@ const I18N = {
     'welcome.saving': 'Saving before closing…',
     'welcome.retry': 'Try again',
     'welcome.explore': 'Explore on my own',
-    'welcome.save': 'Save and close tab',
+    'welcome.save': 'Stamp, save & close tab',
     'action.more': 'More',
     'action.moreReminderCount': 'More actions. Reminders: {count}',
     'action.settings': 'Settings',
@@ -1723,6 +1734,17 @@ const I18N = {
     'detail.history.updateFields': 'Update custom fields'
   },
   'zh-TW': {
+    'landing.recent': '最近儲存的頁面',
+    'landing.showToday': '改為顯示今天',
+    'landing.light': '淺色',
+    'landing.dark': '深色',
+    'landing.timeLabel': '時間 {time}',
+    'welcome.sloganLead': '再也不會',
+    'welcome.sloganRest': '弄丟分頁。',
+    'welcome.stampSlot': '郵票',
+    'welcome.stampLabel': '1 個分頁',
+    'welcome.savedTitle': '已放進收件匣。',
+    'welcome.private': '只存在這個瀏覽器，不需要帳號。',
     'dueCard.label': '提醒',
     'dueCard.due': '{time} 到期',
     'dueCard.dueIn': '{time} 到期 · {place}',
@@ -1828,7 +1850,7 @@ const I18N = {
     'welcome.saving': '正在儲存，完成後才會關閉分頁…',
     'welcome.retry': '再試一次',
     'welcome.explore': '自行探索',
-    'welcome.save': '儲存並關閉分頁',
+    'welcome.save': '蓋章儲存並關閉分頁',
     'action.more': '更多',
     'action.moreReminderCount': '更多操作。提醒：{count}',
     'action.settings': '設定',
@@ -17499,6 +17521,87 @@ function updateLandingClock() {
   date.textContent = appLocale() === 'zh-TW'
     ? new Intl.DateTimeFormat(locale, { weekday: 'short', month: 'short', day: 'numeric' }).format(now)
     : now.toLocaleDateString('en-GB', { weekday: 'short' }) + ', ' + now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
+  paintLandingFlip(now);
+}
+
+// Calm new tab (2026-11 canvas): a split-flap clock. Each digit card keeps the
+// previous digit on its lower half and folds the new one down over it.
+function paintLandingFlip(now = new Date()) {
+  const flip = document.getElementById('landing-flip');
+  const dateLine = document.getElementById('landing-flip-date');
+  if (!flip) return;
+  const pad = value => String(value).padStart(2, '0');
+  const digits = `${pad(now.getHours())}${pad(now.getMinutes())}`;
+  if (!flip.children.length) {
+    flip.innerHTML = [0, 1, 'sep', 2, 3].map(slot => (slot === 'sep'
+      ? '<span class="fl-sep" aria-hidden="true"><i></i><i></i></span>'
+      : `<span class="fl-card" aria-hidden="true" data-slot="${slot}"><span class="fl-half fl-top"><b></b></span><span class="fl-half fl-bot"><b></b></span><span class="fl-flap fl-ftop"><b></b></span><span class="fl-flap fl-fbot"><b></b></span><i class="fl-hinge"></i></span>`)).join('');
+  }
+  flip.querySelectorAll('.fl-card').forEach(card => {
+    const next = digits[Number(card.dataset.slot)];
+    const previous = card.dataset.digit;
+    if (previous === next) return;
+    const [top, bottom, flapTop, flapBottom] = card.querySelectorAll('b');
+    top.textContent = next;
+    bottom.textContent = previous ?? next;
+    flapTop.textContent = previous ?? next;
+    flapBottom.textContent = next;
+    card.dataset.digit = next;
+    card.classList.remove('is-flipping');
+    if (previous != null) {
+      void card.offsetWidth;
+      card.classList.add('is-flipping');
+      setTimeout(() => { bottom.textContent = next; card.classList.remove('is-flipping'); }, 800);
+    }
+  });
+  flip.setAttribute('aria-label', tr('landing.timeLabel', { time: `${digits.slice(0, 2)}:${digits.slice(2)}` }));
+  if (dateLine) {
+    dateLine.textContent = appLocale() === 'zh-TW'
+      ? new Intl.DateTimeFormat('zh-TW', { month: 'long', day: 'numeric', weekday: 'long' }).format(now)
+      : now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+  }
+}
+
+// Three most recently saved pages, opened through the shared Reopen path.
+function renderLandingRecent(ws) {
+  const host = document.getElementById('landing-recent');
+  if (!host) return;
+  const rows = ws ? collectWorkspaceTabs(ws)
+    .filter(row => isOpenableSavedTabUrl(row.item.url))
+    .sort((a, b) => (Number(b.item.createdAt) || 0) - (Number(a.item.createdAt) || 0))
+    .slice(0, 3) : [];
+  host.innerHTML = rows.map((row, index) => {
+    let domain = '';
+    try { domain = new URL(row.item.url).hostname.replace(/^www\./, ''); } catch {}
+    const title = String(row.item.title || domain || row.item.url || '').trim();
+    const initial = (domain || title || '•').charAt(0).toUpperCase();
+    return `<button type="button" class="landing-recent-page" data-index="${index}"><span class="landing-recent-icon" aria-hidden="true">${esc(initial)}</span><span class="landing-recent-title">${esc(title)}</span></button>`;
+  }).join('');
+  host.hidden = rows.length === 0;
+  host.querySelectorAll('.landing-recent-page').forEach(button => {
+    button.onclick = () => {
+      const row = rows[Number(button.dataset.index)];
+      if (!row) return;
+      closeLandingLayer({ immediate: true });
+      openSavedTabItem(row.item, { opener: button });
+    };
+  });
+}
+
+// Dark by default, with a light option remembered on this device.
+function landingTone() {
+  try { return localStorage.getItem('locus.landing.tone') === 'light' ? 'light' : 'dark'; } catch { return 'dark'; }
+}
+function applyLandingTone(tone = landingTone()) {
+  const layer = document.getElementById('landing-layer');
+  const button = document.getElementById('landing-tone');
+  if (layer) layer.dataset.tone = tone;
+  if (button) {
+    const toLight = tone !== 'light';
+    button.setAttribute('aria-pressed', String(!toLight));
+    button.setAttribute('aria-label', tr(toLight ? 'landing.light' : 'landing.dark'));
+    button.title = tr(toLight ? 'landing.light' : 'landing.dark');
+  }
 }
 
 function renderLandingLayer() {
@@ -17535,6 +17638,8 @@ function renderLandingLayer() {
   // A "0 Reminders" pill is noise on a calm surface — the segment only earns
   // its place when something is actually pending.
   document.getElementById('landing-reminders').classList.toggle('hidden', reminders === 0);
+  renderLandingRecent(ws);
+  applyLandingTone();
   updateLandingClock();
 }
 
@@ -17604,6 +17709,14 @@ function bindLandingLayer() {
   const inboxButton = document.getElementById('landing-unsorted');
   inboxButton.onclick = () => activateLandingInbox(_landingInboxContext, inboxButton);
   document.getElementById('landing-reminders').onclick = () => { closeLandingLayer({ immediate: true }); openCalendar(); };
+  const landingToday = document.getElementById('landing-today');
+  if (landingToday) landingToday.onclick = () => closeLandingLayer();
+  const landingToneButton = document.getElementById('landing-tone');
+  if (landingToneButton) landingToneButton.onclick = () => {
+    const next = landingTone() === 'light' ? 'dark' : 'light';
+    try { localStorage.setItem('locus.landing.tone', next); } catch {}
+    applyLandingTone(next);
+  };
   document.getElementById('landing-tools').onclick = () => {
     closeLandingLayer({ immediate: true });
     openToolsHub();
@@ -33291,6 +33404,36 @@ async function openWelcome() {
   await loadWelcomeCandidate();
 }
 
+function welcomeReducedMotion() {
+  if (typeof matchMedia !== 'function') return true;
+  return document.body?.dataset?.anim === 'off' || matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+// The first save, made visible: the tab is stamped and postmarked with today's
+// date and time, then drops into the Inbox tray with its red "1".
+async function playWelcomeStamp() {
+  const ov = document.getElementById('welcome');
+  if (!ov?.classList) return;
+  const now = new Date();
+  const date = ov.querySelector?.('.wc-pm-date');
+  const time = ov.querySelector?.('.wc-pm-time');
+  if (date) date.textContent = now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }).toUpperCase();
+  if (time) time.textContent = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  const status = document.getElementById('wc-status');
+  if (status) status.textContent = tr('welcome.savedTitle');
+  ov.classList.add('is-stamped');
+  if (welcomeReducedMotion()) {
+    ov.classList.add('is-sent', 'is-saved');
+    return;
+  }
+  const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+  await wait(700);
+  ov.classList.add('is-sent');
+  await wait(650);
+  ov.classList.add('is-saved');
+  await wait(1300);
+}
+
 function closeWelcome(force = false) {
   const ov = document.getElementById('welcome');
   if (!ov || (welcomeSavePending && !force)) return false;
@@ -33299,6 +33442,7 @@ function closeWelcome(force = false) {
   welcomeDestination = null;
   setWelcomePending(false);
   ov.classList.add('hidden');
+  ov.classList.remove('is-stamped', 'is-sent', 'is-saved');
   unlockBodyScroll();
   restoreOpener(ov);
   // Mark first-run onboarding as seen no matter how it's dismissed, so it never
@@ -33337,6 +33481,9 @@ function bindWelcome() {
       });
       if (outcome?.accepted !== true || !outcome.item) return false;
       completed = true;
+      // Stamp, postmark, and drop the envelope into the Inbox tray before the
+      // usual hand-off to the saved item (skipped under reduced motion).
+      await playWelcomeStamp();
       setWelcomePending(false);
       closeWelcome(true);
       if (!outcome.destinationConfirmed) return true;

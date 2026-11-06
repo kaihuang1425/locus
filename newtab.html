@@ -30,6 +30,9 @@
         <span>Locus</span>
       </div>
       <div class="landing-actions">
+        <button id="landing-tone" class="landing-icon-btn landing-tone" type="button" aria-pressed="false" aria-label="Light" data-i18n-aria-label="landing.light">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="9" r="3.4"/><path d="M9 1.8v1.8M9 14.4v1.8M1.8 9h1.8M14.4 9h1.8M3.9 3.9l1.3 1.3M12.8 12.8l1.3 1.3M14.1 3.9l-1.3 1.3M5.2 12.8l-1.3 1.3"/></svg>
+        </button>
         <button id="landing-tools" class="landing-icon-btn" type="button" hidden data-i18n-title="action.plugins" aria-label="Plugins" data-i18n-aria-label="action.plugins">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><circle cx="4" cy="4" r="1.6"/><circle cx="10" cy="4" r="1.6"/><circle cx="16" cy="4" r="1.6"/><circle cx="4" cy="10" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="16" cy="10" r="1.6"/><circle cx="4" cy="16" r="1.6"/><circle cx="10" cy="16" r="1.6"/><circle cx="16" cy="16" r="1.6"/></svg>
         </button>
@@ -41,6 +44,8 @@
     </header>
 
     <div class="landing-center">
+      <div id="landing-flip" class="landing-flip" role="img" aria-label=""></div>
+      <p id="landing-flip-date" class="landing-flip-date"></p>
       <h1 id="landing-greeting"></h1>
       <p data-i18n="landing.subtitle">Find what you saved and pick up where you left off.</p>
       <form id="landing-search-form" class="landing-search" role="search">
@@ -51,6 +56,8 @@
         </button>
         <div id="landing-search-results" class="landing-search-results hidden" role="listbox" aria-live="polite"></div>
       </form>
+      <div id="landing-recent" class="landing-recent" role="group" aria-label="Recent pages" data-i18n-aria-label="landing.recent"></div>
+      <button id="landing-today" class="landing-today" type="button" data-i18n="landing.showToday">Show Today instead</button>
     </div>
 
     <div class="landing-footer">
@@ -1687,11 +1694,15 @@
             <span class="wc-logo"><img class="brand-img" src="icons/icon128.png" alt="" decoding="async"></span>
             <span data-i18n="welcome.eyebrow">First save</span>
           </div>
-          <h2 id="wc-task-title" class="wc-h" data-i18n="welcome.taskTitle">Save one tab. Find it again.</h2>
-          <p id="wc-task-description" class="wc-sub" data-i18n="welcome.taskDescription">Locus stores it at the location below before closing the source tab.</p>
+          <h2 id="wc-task-title" class="wc-h"><span class="wc-never" data-i18n="welcome.sloganLead">Never</span><span data-i18n="welcome.sloganRest"> lose a tab again.</span></h2>
+          <p id="wc-task-description" class="wc-sub sr-only" data-i18n="welcome.taskDescription">Locus stores it at the location below before closing the source tab.</p>
         </div>
         <div class="wc-operation">
           <div class="wc-route" role="group" aria-labelledby="wc-task-title" aria-describedby="wc-task-description">
+          <svg class="wc-airmail" aria-hidden="true" focusable="false"><defs><pattern id="wc-airmail-stripes" width="44" height="44" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="44" height="44" fill="#fffdf8"/><rect width="14" height="44" fill="#3158db"/><rect x="22" width="14" height="44" fill="#ff5b2e"/></pattern></defs><rect width="100%" height="100%" rx="18" fill="url(#wc-airmail-stripes)"/></svg>
+          <span class="wc-stamp-slot" aria-hidden="true" data-i18n="welcome.stampSlot">STAMP</span>
+          <span class="wc-stamp" aria-hidden="true"><img src="icons/icon128.png" alt=""><span data-i18n="welcome.stampLabel">1 TAB</span></span>
+          <svg class="wc-postmark" viewBox="0 0 150 110" aria-hidden="true" focusable="false"><circle cx="77" cy="55" r="40" fill="none" stroke="#c2370d" stroke-width="2.2"/><circle cx="77" cy="55" r="27" fill="none" stroke="#c2370d" stroke-width="1.2"/><text x="77" y="26" text-anchor="middle" class="wc-pm-word">LOCUS</text><text x="77" y="54" text-anchor="middle" class="wc-pm-date"></text><text x="77" y="66" text-anchor="middle" class="wc-pm-time"></text><text x="77" y="91" text-anchor="middle" class="wc-pm-word">INBOX</text><path d="M0 40c6-5 12-5 18 0s12 5 18 0M0 55c6-5 12-5 18 0s12 5 18 0M0 70c6-5 12-5 18 0s12 5 18 0" fill="none" stroke="#c2370d" stroke-width="2" stroke-linecap="round"/></svg>
           <div class="wc-route-source">
             <span class="wc-route-label" data-i18n="welcome.currentTab">Current tab</span>
             <div id="wc-candidate" class="wc-candidate" aria-live="polite" aria-busy="true">
@@ -1713,14 +1724,17 @@
             <p id="wc-destination-message" class="wc-empty hidden" role="alert"></p>
           </div>
           </div>
+          <div class="wc-tray" aria-hidden="true"><span class="wc-tray-badge">1</span><img src="icons/icon128.png" alt=""><span class="wc-tray-label" data-i18n="nav.inbox">Inbox</span></div>
+          <p class="wc-saved" aria-hidden="true" data-i18n="welcome.savedTitle">It’s in your Inbox.</p>
           <p id="wc-status" class="wc-status" role="status" aria-live="polite" aria-atomic="true"></p>
           <div class="wc-nav wc-nav-single">
-            <button type="button" id="wc-save-first" class="wc-next" data-i18n="welcome.save" aria-describedby="wc-task-description wc-destination-label wc-destination wc-destination-message wc-status" disabled>Save and close tab</button>
+            <button type="button" id="wc-save-first" class="wc-next" data-i18n="welcome.save" aria-describedby="wc-task-description wc-destination-label wc-destination wc-destination-message wc-status" disabled>Stamp, save &amp; close tab</button>
             <button type="button" id="wc-retry" class="wc-skip hidden" data-i18n="welcome.retry">Try again</button>
             <button type="button" id="wc-explore" class="wc-skip" data-i18n="welcome.explore">Explore on my own</button>
           </div>
         </div>
       </section>
+      <p class="wc-private" data-i18n="welcome.private">Private to this browser. No account.</p>
     </div>
   </div>
 

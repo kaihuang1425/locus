@@ -297,6 +297,15 @@ Slices, in order:
 
 ## Done (newest first)
 
+- **2026-11-06 - Welcome, calm new tab, resting page (canvas step 5)**
+  - **What:** Welcome envelope with stamp, postmark, and Inbox tray around the
+    unchanged first-save transaction; calm new tab flip clock, three recent pages,
+    Show Today instead, dark default with a per-device light option; resting page
+    card with Load page, Enter hint, Loaded, and placeholder note (no idle copy).
+  - **Evidence:** `canvas-pages-contract-test.js` (51 checks); Edge 156 pass.
+  - **Not done:** "Change" on the resting page opens Locus in a new tab rather
+    than a specific setting (no settings deep link exists yet).
+
 - **2026-11-06 - One notification style (canvas step 4)**
   - **What:** shared dark receipt card with icon circle, sub-label, drain bar, two-deep
     stack, in-place Undo/Retry morphs, Escape; popup receipt restyled; in-Locus due

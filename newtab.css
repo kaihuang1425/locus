@@ -14166,3 +14166,439 @@ body[data-theme] #toast[data-glyph="clock"] #toast-mark::before { display: grid;
   .plan-due, .plan-due *, .plan-due *::before { animation: none !important; transition: none !important; }
 }
 @media (forced-colors: active) { .plan-due { border: 1px solid CanvasText; } }
+
+/* --------------------------------------------------------------------------
+   WELCOME (2026-11 canvas): "Never lose a tab again." The real candidate tab is
+   an airmail envelope addressed to the exact Space Inbox. Saving stamps and
+   postmarks it, drops it into the Inbox tray with a red "1", and then hands off
+   to the saved item as before. Structure and IDs are unchanged.
+   -------------------------------------------------------------------------- */
+body[data-theme] #welcome {
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background: var(--today-ground);
+  backdrop-filter: none;
+}
+body[data-theme] #welcome .wc-card {
+  position: relative;
+  width: min(1180px, 100%);
+  max-width: none;
+  max-height: 100vh;
+  overflow: auto;
+  padding: 92px clamp(20px, 4vw, 48px) 40px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--text);
+}
+body[data-theme] #welcome .wc-task {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 520px);
+  grid-template-areas: "intro route" "nav route" "status route";
+  align-items: center;
+  gap: 18px 64px;
+  padding: 0;
+  text-align: left;
+}
+body[data-theme] #welcome .wc-intro { grid-area: intro; align-self: end; min-width: 0; padding: 0; border: 0; background: transparent; color: var(--text); }
+body[data-theme] #welcome .wc-operation { display: contents; }
+body[data-theme] #welcome .wc-kicker {
+  position: absolute;
+  top: 26px;
+  left: clamp(20px, 4vw, 48px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: var(--text2);
+  font-size: 13px;
+  font-weight: 600;
+}
+body[data-theme] #welcome .wc-logo { width: 34px; height: 34px; }
+body[data-theme] #welcome .wc-h {
+  max-width: 11ch;
+  margin: 0;
+  font-family: var(--today-display);
+  font-size: clamp(52px, 7.4vw, 92px);
+  font-weight: 800;
+  line-height: .94;
+  letter-spacing: -.035em;
+  color: var(--text);
+  animation: plan-rise .5s var(--today-ease) both;
+}
+body[data-theme] #welcome .wc-never { color: var(--index-locator, #3158db); }
+body[data-theme] #welcome .wc-nav {
+  grid-area: nav;
+  align-self: start;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 18px;
+  margin: 26px 0 0;
+}
+body[data-theme] #welcome .wc-next {
+  min-height: 56px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--index-locator, #3158db);
+  color: #ffffff;
+  font: 700 16px var(--font);
+  transition: transform .14s var(--today-spring), background .15s ease, box-shadow .2s ease;
+}
+body[data-theme] #welcome .wc-next:hover:not(:disabled) { background: var(--locator-hover, #294bbd); box-shadow: 0 12px 26px rgba(49, 88, 219, .28); }
+body[data-theme] #welcome .wc-next:active:not(:disabled) { transform: scale(.96); }
+body[data-theme] #welcome .wc-next:disabled { opacity: .55; }
+body[data-theme] #welcome .wc-skip { color: var(--text2); font-size: 15px; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
+body[data-theme] #welcome .wc-status { grid-area: status; align-self: start; margin: 0; min-height: 1.4em; color: var(--text2); text-align: left; }
+
+/* The envelope */
+body[data-theme] #welcome .wc-route {
+  grid-area: route;
+  position: relative;
+  display: block;
+  min-height: 320px;
+  margin: 0;
+  padding: 36px 34px 30px;
+  border: 0;
+  border-radius: 18px;
+  background: transparent;
+  box-shadow: 0 30px 60px rgba(25, 35, 31, .16);
+  color: #19231f;
+  transform: rotate(-2deg);
+  transform-origin: 50% 80%;
+  animation: welcome-bob 4.5s ease-in-out infinite;
+  transition: transform .6s cubic-bezier(.55, 0, .8, .2), opacity .5s ease;
+}
+@keyframes welcome-bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -6px; } }
+body[data-theme] #welcome .wc-route::before {
+  content: '';
+  position: absolute;
+  inset: 9px;
+  z-index: 1;
+  border-radius: 11px;
+  background: #fffdf8;
+}
+.wc-airmail { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; border-radius: 18px; }
+body[data-theme] #welcome .wc-route > :not(.wc-airmail) { position: relative; z-index: 2; }
+body[data-theme] #welcome .wc-route-label,
+body[data-theme] #welcome .wc-route-line { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+body[data-theme] #welcome .wc-route-source { padding-right: 120px; border: 0; background: transparent; }
+body[data-theme] #welcome .wc-candidate { display: block; padding: 0; border: 0; background: transparent; }
+body[data-theme] #welcome #wc-candidate-fav { width: 44px; height: 44px; padding: 8px; border-radius: 12px; background: #19231f; object-fit: contain; }
+body[data-theme] #welcome .wc-candidate-copy { display: flex; flex-direction: column-reverse; gap: 16px; margin-top: 12px; }
+body[data-theme] #welcome #wc-candidate-title {
+  color: #19231f;
+  font-family: var(--today-display);
+  font-size: clamp(22px, 2.6vw, 30px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -.03em;
+  overflow-wrap: anywhere;
+}
+body[data-theme] #welcome #wc-candidate-url { color: #4a5062; font: 500 13px var(--today-mono); }
+body[data-theme] #welcome .wc-route-destination { margin: 26px 0 0 46%; padding: 0; border: 0; background: transparent; }
+body[data-theme] #welcome .wc-destination { padding: 0; border: 0; background: transparent; color: #4a5062; font: 500 13px/1.9 var(--today-mono); }
+body[data-theme] #welcome .wc-destination > * { border-bottom: 1px solid #d8d4ca; }
+body[data-theme] #welcome .wc-destination > :last-child { color: #294bbd; font-weight: 600; }
+body[data-theme] #welcome .wc-empty { color: #4a5062; }
+.wc-stamp-slot {
+  z-index: 2;
+  position: absolute !important;
+  top: 26px;
+  right: 26px;
+  display: grid;
+  place-items: center;
+  width: 92px;
+  height: 110px;
+  border: 2px dashed #c9c5bb;
+  border-radius: 4px;
+  color: #8a8f9c;
+  font: 700 10px/1 var(--today-mono);
+  letter-spacing: .14em;
+}
+.wc-stamp {
+  position: absolute !important;
+  top: 26px;
+  right: 26px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 92px;
+  height: 110px;
+  padding: 6px;
+  border: 2px dotted #d8d4ca;
+  background: #19231f;
+  box-shadow: 0 0 0 4px #ffffff;
+  color: #f6f3eb;
+  font: 600 9.5px var(--today-mono);
+  letter-spacing: .12em;
+  opacity: 0;
+  transform: scale(1.6) rotate(-14deg);
+}
+.wc-stamp img { width: 46px; height: 46px; }
+.wc-postmark {
+  position: absolute !important;
+  top: 70px;
+  right: 60px;
+  width: 150px;
+  height: 110px;
+  opacity: 0;
+  transform: rotate(-10deg) scale(.6);
+  font: 700 8px var(--today-mono);
+  fill: #c2370d;
+}
+.wc-postmark .wc-pm-date { font-size: 11px; }
+#welcome.is-stamped .wc-stamp-slot { opacity: 0; }
+#welcome.is-stamped .wc-stamp { animation: welcome-stamp .45s cubic-bezier(.34, 1.56, .64, 1) forwards; }
+#welcome.is-stamped .wc-postmark { animation: welcome-postmark .4s ease .3s forwards; }
+@keyframes welcome-stamp { to { opacity: 1; transform: rotate(4deg); } }
+@keyframes welcome-postmark { to { opacity: .92; transform: rotate(-10deg) scale(1); } }
+#welcome.is-sent .wc-route { animation: none; transform: translateY(70%) scale(.35) rotate(4deg); opacity: 0; }
+
+/* The Inbox tray and the saved line */
+.wc-tray {
+  grid-area: route;
+  align-self: end;
+  position: relative;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 150px;
+  margin: 0 30px;
+  border-radius: 26px;
+  background: var(--today-now, #19231f);
+  color: #f6f3eb;
+  box-shadow: 0 24px 50px rgba(25, 35, 31, .22);
+}
+.wc-tray img { width: 36px; height: 36px; }
+.wc-tray-label { font-family: var(--today-display); font-size: 22px; font-weight: 800; }
+.wc-tray-badge {
+  position: absolute;
+  top: -10px;
+  left: -12px;
+  display: grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 14px;
+  background: var(--today-badge, #e0281b);
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 0 0 3px var(--today-ground);
+  transform: scale(0);
+}
+#welcome.is-sent .wc-tray { display: flex; animation: plan-rise .45s var(--today-ease) both; }
+#welcome.is-sent .wc-tray-badge { animation: welcome-badge .4s var(--today-spring) .35s forwards; }
+@keyframes welcome-badge { to { transform: scale(1); } }
+.wc-saved {
+  grid-area: intro;
+  display: none;
+  margin: 0;
+  align-self: end;
+  font-family: var(--today-display);
+  font-size: clamp(46px, 6.6vw, 80px);
+  font-weight: 800;
+  line-height: .95;
+  letter-spacing: -.035em;
+}
+#welcome.is-saved .wc-h { display: none; }
+#welcome.is-saved .wc-saved { display: block; animation: plan-rise .45s var(--today-ease) both; }
+#welcome.is-saved .wc-tray-badge { transform: scale(1); }
+.wc-private { margin: 34px 0 0; color: var(--text2); font-size: 13.5px; text-align: center; }
+
+@media (max-width: 800px) {
+  body[data-theme] #welcome .wc-card { padding-top: 78px; }
+  body[data-theme] #welcome .wc-task { grid-template-columns: minmax(0, 1fr); grid-template-areas: "intro" "route" "nav" "status"; gap: 26px; }
+  body[data-theme] #welcome .wc-route { min-height: 250px; padding: 28px 24px 24px; }
+  body[data-theme] #welcome .wc-route-source { padding-right: 92px; }
+  .wc-stamp-slot, .wc-stamp { width: 70px; height: 84px; top: 22px; right: 20px; }
+  .wc-stamp img { width: 34px; height: 34px; }
+  .wc-postmark { right: 30px; top: 52px; width: 120px; }
+  body[data-theme] #welcome .wc-route-destination { margin-left: 30%; }
+  .wc-tray { height: 120px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body[data-theme] #welcome .wc-route,
+  body[data-theme] #welcome .wc-h,
+  #welcome .wc-stamp, #welcome .wc-postmark, #welcome .wc-tray, #welcome .wc-tray-badge, #welcome .wc-saved { animation: none !important; transition: none !important; }
+  #welcome.is-stamped .wc-stamp { opacity: 1; transform: rotate(4deg); }
+  #welcome.is-stamped .wc-postmark { opacity: .92; transform: rotate(-10deg); }
+  #welcome.is-sent .wc-tray-badge { transform: scale(1); }
+}
+@media (forced-colors: active) {
+  body[data-theme] #welcome .wc-route { border: 2px solid CanvasText; }
+  .wc-airmail { display: none; }
+}
+
+/* --------------------------------------------------------------------------
+   CALM NEW TAB (2026-11 canvas): a split-flap clock, one search field over
+   saved pages, three recent pages, and "Show Today instead". Dark by default;
+   the light option is remembered on this device. The search, results, and
+   chips keep their existing IDs and behaviour.
+   -------------------------------------------------------------------------- */
+body[data-theme] #landing-layer {
+  --calm-bg: #141c19;
+  --calm-fg: #f6f3eb;
+  --calm-muted: #aeb9b3;
+  --calm-card-top: #26322d;
+  --calm-card-bot: #222d28;
+  --calm-field: #1e2824;
+  --calm-rule: #35423c;
+  --calm-chip: #1e2824;
+  background: var(--calm-bg);
+  color: var(--calm-fg);
+}
+body[data-theme] #landing-layer[data-tone="light"] {
+  --calm-bg: #f3f2ee;
+  --calm-fg: #12131c;
+  --calm-muted: #4a5062;
+  --calm-card-top: #19231f;
+  --calm-card-bot: #1e2824;
+  --calm-field: #ffffff;
+  --calm-rule: #dedbd3;
+  --calm-chip: #ffffff;
+}
+body[data-theme] #landing-layer .landing-scene,
+body[data-theme] #landing-layer .landing-wash,
+body[data-theme] #landing-layer #landing-greeting,
+body[data-theme] #landing-layer .landing-center > p:not(.landing-flip-date),
+body[data-theme] #landing-layer #landing-quote,
+body[data-theme] #landing-layer .landing-time-block,
+body[data-theme] #landing-layer #landing-enter { display: none; }
+body[data-theme] #landing-layer .landing-topbar { color: var(--calm-fg); }
+body[data-theme] #landing-layer .landing-brand { color: var(--calm-fg); font-weight: 700; }
+body[data-theme] #landing-layer .landing-icon-btn,
+body[data-theme] #landing-layer .landing-avatar { border-color: var(--calm-rule); background: var(--calm-chip); color: var(--calm-fg); }
+body[data-theme] #landing-layer .landing-tone[aria-pressed="true"] { color: #ff9670; }
+body[data-theme] #landing-layer .landing-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  right: auto;
+  width: min(980px, calc(100vw - 32px));
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+/* Split-flap clock */
+.landing-flip { display: flex; align-items: center; justify-content: center; gap: clamp(8px, 1.2vw, 14px); }
+.fl-card {
+  position: relative;
+  width: clamp(68px, 9.4vw, 136px);
+  height: clamp(100px, 13.9vw, 200px);
+  border-radius: clamp(12px, 1.4vw, 20px);
+  perspective: 700px;
+  color: #f6f3eb;
+  font-family: var(--font-brand-display, var(--font-display));
+  font-size: clamp(86px, 11.9vw, 172px);
+  font-weight: 700;
+  letter-spacing: -.04em;
+  box-shadow: 0 22px 40px rgba(0, 0, 0, .32);
+}
+.fl-half, .fl-flap { position: absolute; left: 0; right: 0; height: 50%; overflow: hidden; backface-visibility: hidden; }
+.fl-half b, .fl-flap b { position: absolute; left: 0; right: 0; height: 200%; display: flex; align-items: center; justify-content: center; font-weight: inherit; line-height: 1; }
+.fl-top, .fl-ftop { top: 0; border-radius: inherit; border-bottom-left-radius: 0; border-bottom-right-radius: 0; background: var(--calm-card-top); }
+.fl-bot, .fl-fbot { bottom: 0; border-radius: inherit; border-top-left-radius: 0; border-top-right-radius: 0; background: var(--calm-card-bot); }
+.fl-top b, .fl-ftop b { top: 0; }
+.fl-bot b, .fl-fbot b { bottom: 0; }
+.fl-ftop, .fl-fbot { z-index: 2; visibility: hidden; }
+.fl-ftop { transform-origin: 50% 100%; }
+.fl-fbot { transform-origin: 50% 0; transform: rotateX(90deg); }
+.fl-card.is-flipping .fl-ftop { visibility: visible; animation: fl-down .34s cubic-bezier(.55, 0, .8, .4) forwards; }
+.fl-card.is-flipping .fl-fbot { visibility: visible; animation: fl-up .42s cubic-bezier(.34, 1.5, .64, 1) .34s forwards; }
+@keyframes fl-down { from { transform: rotateX(0); } to { transform: rotateX(-90deg); } }
+@keyframes fl-up { from { transform: rotateX(90deg); } to { transform: rotateX(0); } }
+.fl-hinge { position: absolute; left: 0; right: 0; top: 50%; z-index: 3; height: 2px; margin-top: -1px; background: var(--calm-bg); }
+.fl-sep { display: flex; flex-direction: column; gap: clamp(20px, 2.6vw, 38px); padding: 0 clamp(4px, 1vw, 14px); }
+.fl-sep i { width: clamp(10px, 1.1vw, 16px); height: clamp(10px, 1.1vw, 16px); border-radius: 50%; background: #ff5b2e; }
+.landing-flip-date {
+  margin: 34px 0 0;
+  color: var(--calm-muted);
+  font-family: var(--font-brand-display, var(--font-display));
+  font-size: clamp(20px, 2vw, 26px);
+  font-weight: 600;
+  letter-spacing: -.02em;
+}
+
+/* Search over saved pages */
+body[data-theme] #landing-layer .landing-search {
+  width: min(640px, 100%);
+  height: 60px;
+  margin-top: 48px;
+  padding: 0 14px 0 20px;
+  border: 1px solid var(--calm-rule);
+  border-radius: 18px;
+  background: var(--calm-field);
+  color: var(--calm-fg);
+  box-shadow: none;
+  transition: border-color .15s ease, box-shadow .2s ease;
+}
+body[data-theme] #landing-layer .landing-search:focus-within { border-color: #8fa8ff; box-shadow: 0 0 0 4px rgba(143, 168, 255, .18); }
+body[data-theme] #landing-layer #landing-search-input { color: var(--calm-fg); font-size: 17px; }
+body[data-theme] #landing-layer #landing-search-input::placeholder { color: var(--calm-muted); }
+body[data-theme] #landing-layer .landing-search-results { border-color: var(--calm-rule); border-radius: 18px; background: var(--calm-field); color: var(--calm-fg); box-shadow: 0 24px 50px rgba(0, 0, 0, .28); }
+
+/* Three recent pages and the way back to Today */
+.landing-recent { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; max-width: 980px; margin-top: 22px; }
+.landing-recent[hidden] { display: none; }
+.landing-recent-page {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 300px;
+  height: 48px;
+  padding: 0 16px 0 8px;
+  border: 1px solid var(--calm-rule);
+  border-radius: 14px;
+  background: var(--calm-chip);
+  color: var(--calm-fg);
+  font: 500 14px var(--font);
+  cursor: pointer;
+  transition: transform .18s cubic-bezier(.34, 1.56, .64, 1), border-color .15s ease;
+}
+.landing-recent-page:hover { transform: translateY(-2px); border-color: #8fa8ff; }
+.landing-recent-icon { display: grid; place-items: center; width: 32px; height: 32px; flex-shrink: 0; border-radius: 9px; background: #3158db; color: #ffffff; font-weight: 700; font-size: 13px; }
+.landing-recent-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.landing-today {
+  margin-top: 30px;
+  padding: 8px 10px;
+  border: 0;
+  background: transparent;
+  color: #8fa8ff;
+  font: 600 14px var(--font);
+  cursor: pointer;
+}
+#landing-layer[data-tone="light"] .landing-today { color: #294bbd; }
+.landing-today:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+/* The Inbox chip moves to the top right with its red count. */
+body[data-theme] #landing-layer .landing-footer { position: relative; z-index: 3; inset: auto; height: 0; }
+body[data-theme] #landing-layer .landing-chips { position: absolute; z-index: 5; top: 13px; right: clamp(150px, 14vw, 190px); display: flex; gap: 8px; }
+body[data-theme] #landing-layer .landing-chip { height: 44px; padding: 0 16px; border: 1px solid var(--calm-rule); border-radius: 14px; background: var(--calm-chip); color: var(--calm-fg); font-weight: 600; }
+body[data-theme] #landing-layer #landing-unsorted-count { display: grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px; background: #e0281b; color: #ffffff; font-size: 11.5px; }
+body[data-theme] #landing-layer #landing-unsorted-count[hidden] { display: none; }
+body[data-theme] #landing-layer :focus-visible { outline: 2px solid #8fa8ff; outline-offset: 3px; }
+
+@media (max-width: 640px) {
+  body[data-theme] #landing-layer .landing-chips { position: static; justify-content: center; margin-top: 18px; }
+  .landing-recent-page { max-width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fl-card.is-flipping .fl-ftop,
+  .fl-card.is-flipping .fl-fbot { animation: none !important; visibility: hidden; }
+  .landing-recent-page { transition: none; }
+}

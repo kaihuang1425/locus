@@ -5010,3 +5010,36 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   were not seen on screen; their options and answers are covered by the suite.
 
   **Implemented: yes. Verified: partial. User-validated: no. Released: no.**
+
+- **2026-11-06 - Welcome, the calm new tab, and the resting page (canvas step 5).**
+  **Welcome** says "Never lose a tab again." with "Never" in blue. The real candidate
+  tab becomes an airmail envelope (decorative SVG border, no CSS gradient) addressed
+  to the exact Workspace › Space › Inbox. "Stamp, save & close tab" saves through
+  the same acknowledged capture path as before; once the write is accepted the tab
+  is stamped and postmarked with today's date and time, drops into an Inbox tray
+  with a red "1", "It's in your Inbox." shows, and Welcome hands off to the saved
+  item as it always did. The button still names that the tab closes (a tested
+  rule); reduced motion skips the waits.
+
+  The **calm new tab** (opt-in landing) is a split-flap clock (each digit folds down
+  over the last), the date, one search field over saved pages (unchanged search and
+  results), the three most recently saved pages (opened through the shared Reopen
+  coordinator), and "Show Today instead". It is dark by default with a light option
+  remembered on this device; the Inbox chip with its red count sits top right.
+
+  The **resting page** (a saved page opened as a placeholder) is one dark card: "Not
+  loaded yet", the title, "Load page" with an Enter hint, "Loaded" as it hands off,
+  and "Opened as a placeholder · Change". The old "Hibernated · loads when you
+  switch to this tab" copy is gone, since Locus has no idle auto-suspend. It still
+  loads when its tab comes to the front, on click, or with Enter, and only ever
+  navigates to web or file addresses. Copy follows the browser language (en or
+  zh-TW) because the page cannot read Locus settings.
+
+  Evidence: new `canvas-pages-contract-test.js` (51 checks), updated Welcome copy
+  assertions in `onboarding-contract-test.js`, every suite; throwaway Edge 156 over
+  CDP for Welcome (candidate, destination, stamped, in Inbox, Dark, 390 px zh-TW),
+  the calm new tab (dark, a flip mid-turn, light toggle stored, search, 390 px
+  zh-TW, reduced motion, Show Today instead), and the resting page (desktop, phone,
+  and an unsafe address that refuses to load).
+
+  **Implemented: yes. Verified: partial. User-validated: no. Released: no.**

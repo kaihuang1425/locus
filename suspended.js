@@ -9,6 +9,24 @@
       fav:   params.get('fav')   || ''
     };
   }
+  // This page has no access to Locus settings, so it follows the browser
+  // language for its few words, like the rest of Locus does by default.
+  var zh = /^zh(?:[-_]|$)/i.test(String((navigator.languages && navigator.languages[0]) || navigator.language || ''));
+  var copy = zh ? {
+    rest: '尚未載入', load: '載入頁面', loading: '載入中…', loaded: '已載入',
+    note: '以預留頁開啟', change: '變更', untitled: '已儲存的頁面',
+    cannot: '這個頁面無法還原。', failed: '無法載入，請再試一次。'
+  } : {
+    rest: 'Not loaded yet', load: 'Load page', loading: 'Loading…', loaded: 'Loaded',
+    note: 'Opened as a placeholder', change: 'Change', untitled: 'Saved page',
+    cannot: 'This page can’t be restored.', failed: 'Couldn’t load. Try again.'
+  };
+  if (zh) document.documentElement.lang = 'zh-TW';
+  var setText = function (id, text) { var el = document.getElementById(id); if (el) el.textContent = text; };
+  setText('status-text', copy.rest);
+  setText('load-label', copy.load);
+  setText('placeholder-note', copy.note);
+  setText('change-link', copy.change);
   var data = parseFragment();
   var url = data.url, title = data.title, fav = data.fav;
 
@@ -44,7 +62,7 @@
   }
 
   var titleEl = document.getElementById('title');
-  if (titleEl) titleEl.textContent = title || 'Saved tab';
+  if (titleEl) titleEl.textContent = title || copy.untitled;
   var urlEl = document.getElementById('url');
   if (urlEl) {
     try {
@@ -66,16 +84,22 @@
     if (loading || !url) return;
     var st = document.getElementById('status-text');
     if (!navigable) {
-      if (st) st.textContent = 'This page can’t be restored.';
+      if (st) st.textContent = copy.cannot;
       return;
     }
     loading = true;
-    if (st) st.textContent = 'Loading page…';
+    document.body.classList.add('is-loading');
+    if (st) st.textContent = copy.loading;
     try {
+      // Mark the moment it loads, then hand the tab to the real page.
+      document.body.classList.add('is-loaded');
+      if (st) st.textContent = copy.loaded;
+      setText('load-label', copy.loaded);
       location.replace(url);
     } catch (e) {
       loading = false;
-      if (st) st.textContent = 'Failed to load. Click to retry.';
+      document.body.classList.remove('is-loading', 'is-loaded');
+      if (st) st.textContent = copy.failed;
     }
   }
 
@@ -93,7 +117,7 @@
     window.addEventListener('pageshow', function () { if (isForeground()) load(); });
   }
 
-  document.body.addEventListener('click', load);
+  document.body.addEventListener('click', function (e) { if (!e.target.closest || !e.target.closest('a')) load(); });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); load(); }
   });

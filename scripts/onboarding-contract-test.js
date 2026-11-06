@@ -250,10 +250,10 @@ assert.match(css, /@media \(forced-colors: active\)[\s\S]*\.wc-route-line/,
   'the Welcome locator must remain visible in forced colors');
 assert.ok(source.includes("'welcome.eyebrow': 'First save'"), 'English Welcome must name the single first-save task');
 assert.ok(source.includes("'welcome.taskTitle': 'Save one tab. Find it again.'"), 'English Welcome must teach the core loop directly');
-assert.ok(source.includes("'welcome.save': 'Save and close tab'"), 'English Welcome must name the source consequence');
+assert.ok(source.includes("'welcome.save': 'Stamp, save & close tab'"), 'English Welcome must name the source consequence (2026-11 canvas: the stamp metaphor, same consequence)');
 assert.ok(source.includes("'welcome.eyebrow': '第一次儲存'"), 'zh-TW Welcome must name the single first-save task naturally');
 assert.ok(source.includes("'welcome.taskTitle': '儲存一個分頁，之後找得回來'"), 'zh-TW Welcome must teach the core loop in native Taiwan wording');
-assert.ok(source.includes("'welcome.save': '儲存並關閉分頁'"), 'zh-TW Welcome must name the source consequence');
+assert.ok(source.includes("'welcome.save': '蓋章儲存並關閉分頁'"), 'zh-TW Welcome must name the source consequence (2026-11 canvas)');
 assert.ok(source.includes("'welcome.error': 'Locus couldn’t check your open tabs. Try again, or explore without saving.'"), 'English query failure copy must be localized');
 assert.ok(source.includes("'welcome.error': 'Locus 無法讀取開啟中的分頁。請再試一次，或先開始使用。'"), 'zh-TW query failure copy must be localized');
 assert.match(welcomeSource, /function welcomeDestinationContext\([\s\S]*createInboxCaptureContext/,
