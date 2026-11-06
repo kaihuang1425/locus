@@ -199,8 +199,8 @@ assert.match(css,
   /@media \(forced-colors:\s*active\)[\s\S]*\.privacy-contract,[\s\S]*\.privacy-fact[\s\S]*border-color:\s*CanvasText[\s\S]*\.appearance-style-pack > summary:focus-visible[^}]*Highlight/,
   'forced colors must preserve the fact ledger, plugin, and focus boundaries');
 assert.match(css,
-  /body\.blur-privacy \.item-title,[\s\S]*body\.blur-privacy \.library-location,[\s\S]*filter:\s*blur\(6px\)/,
-  'the optional mask must cover saved titles and recovery locations');
+  /body\.blur-privacy \.item-title,[\s\S]*body\.blur-privacy \.library-title,\s*body\.blur-privacy \.library-url,\s*body\.blur-privacy \.library-destination,[\s\S]*filter:\s*blur\(6px\)/,
+  'the optional mask must cover saved titles and recovery locations (the Library row’s title, source and full destination)');
 assert.match(backgroundSource,
   /function captureReceiptPath\(result, copy\)[\s\S]*result\?\.blurPrivacy === true[\s\S]*return copy\.destinationHidden/,
   'the optional mask copy must remain grounded in hidden capture-notification destinations');

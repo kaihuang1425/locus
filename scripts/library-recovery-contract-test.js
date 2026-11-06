@@ -379,59 +379,75 @@ function testReadLaterRendersOneLedger() {
     'Read Later must use the same recovery ledger');
   assert.match(ledgerSource, /buildLibraryLedgerRow\(/,
     'the shared ledger must render its exact recovery row contract');
-  assert.match(ledgerSource, /library-head[\s\S]*library-location[\s\S]*library-query-row[\s\S]*library-search[\s\S]*library-sort[\s\S]*library-toolbar/,
-    'Library must read as heading and scope, then one find/sort row, then the ledger controls');
+  assert.match(ledgerSource, /lib-hd[\s\S]*lib-title[\s\S]*lib-tools[\s\S]*lib-modes[\s\S]*lib-status[\s\S]*lib-field[\s\S]*lib-sort[\s\S]*lib-card[\s\S]*library-list/,
+    'Library must read as one heading, then one row of view switch, reading status, filter and sort (no stacked bars), then the ledger card');
+  assert.doesNotMatch(ledgerSource, /library-location|library-toolbar|library-query-row/,
+    'the hidden scope chip and the stacked toolbar rows must not come back');
   assert.doesNotMatch(`${readLaterSource}\n${ledgerSource}\n${css}`, /read-later-cards|read-later-card(?:-|\s|\{|\.)|read-later-next/,
     'Read Later must not duplicate queue items in a separate Up next card section');
 }
 
 function testLedgerPresentationKeepsRecoveryContextReachable() {
   const rowSource = extractFunction('buildLibraryLedgerRow');
-  assert.match(rowSource, /<div class="library-copy">[\s\S]*library-title[\s\S]*library-destination[\s\S]*library-url[\s\S]*<\/div>/,
+  const cssLf = css.replace(/\r\n/g, '\n');
+  const libraryCss = cssLf.slice(cssLf.indexOf('LIBRARY PAGE (2026-11 canvas)'));
+  assert.ok(libraryCss.length > 2000, 'the Library page layer must be present');
+  assert.match(rowSource, /<div class="library-copy lib-copy">[\s\S]*library-title[\s\S]*library-destination[\s\S]*library-url[\s\S]*<\/div>/,
     'each ledger record must keep title, exact destination, and source in one recovery block');
   assert.match(rowSource, /library-primary[\s\S]*library-details[\s\S]*\$\{toggleAction\}[\s\S]*library-more/,
     'visible row actions must lead with Open and Details before contextual state and More');
-  const menuSource = rowSource.slice(rowSource.indexOf('const actions ='), rowSource.indexOf('showAnchoredContextMenu'));
-  assert.doesNotMatch(menuSource, /library\.(?:openPage|viewDetails)|cmIcons\.(?:open|detail)|favoriteAction|readStatusAction/,
+  const menuSource = rowSource.slice(rowSource.indexOf('const actions ='), rowSource.indexOf('return actions;'));
+  assert.ok(menuSource.length > 50, 'the row menu must be extractable');
+  assert.doesNotMatch(menuSource.replace('...folded,', ''), /library\.(?:openPage|viewDetails)|detailsLabel|cmIcons\.(?:open|detail)|favoriteAction|readStatusAction|toggleFavoriteFrom/,
     'More must not duplicate visible Open, Details, Favorite, or reading-status actions');
+  assert.match(rowSource, /const folded = shown\(row\.querySelector\('\.lib-acts'\)\) \? \[\] : \[[\s\S]*?detailsLabel[\s\S]*?toggleFavoriteFrom\(owner\)[\s\S]*?\];/,
+    'Details and Favorite join More only when the row is not showing them (phone width, touch)');
   assert.match(menuSource, /readLaterAction[\s\S]*archiveAction/,
     'More must retain the additional Read Later and Archive lifecycle actions');
-  assert.match(rowSource, /showAnchoredContextMenu\(more,\s*actions\)/,
-    'the More menu must anchor to its row control for pointer and keyboard activation');
+  assert.match(rowSource, /bindBoardItemContextMenu\(row, opener => \{[\s\S]*\}, \{ menuButton: more \}\);/,
+    'the More menu must anchor to its row control for pointer and keyboard activation, and right-click opens it too');
   assert.doesNotMatch(rowSource, /event\.page[XY]/,
     'keyboard-opened row menus must not fall back to the viewport origin');
-  assert.doesNotMatch(css, /@media \(max-width: 1500px\)[\s\S]*?\.library-row\s*\{/s,
+  assert.doesNotMatch(css, /@media \(max-width: 1500px\)[\s\S]*?\.lib-row\s*\{/s,
     'the ledger must not fragment every 1280px record into three disconnected bands');
-  assert.match(css, /@media \(max-width: 1100px\)[\s\S]*?\.library-row\s*\{[\s\S]*?actions/s,
-    'recovery actions must receive one deliberate second line only when the ledger needs it');
-  assert.match(css, /@media \(max-width: 760px\)[\s\S]*?\.library-row\s*\{[\s\S]*?age[\s\S]*?actions/s,
-    'age and actions must reflow without hiding the exact destination at narrow width');
-  assert.doesNotMatch(css, /\.library-destination\s*\{[^}]*display:\s*none/,
+  assert.match(libraryCss, /@container \(max-width: 640px\) \{[\s\S]*?\.lib-row \{\n\s*display: grid;[\s\S]*?grid-template-areas: "fav copy more" "fav when more";[\s\S]*?\.lib-row \.lib-when \{ grid-area: when;[\s\S]*?\.lib-row \.lib-acts \{ display: none; \}[\s\S]*?\.lib-row \.lib-more \{ grid-area: more; display: grid; \}/,
+    'at phone width the row folds its actions into More and keeps the date under the destination, which stays whole');
+  assert.match(libraryCss, /@media \(hover: none\) \{\n\s*\.lib-row \.lib-acts \{ display: none; \}\n\s*\.lib-row \.lib-more \{ display: grid; \}/,
+    'touch screens reach the row actions through More');
+  assert.doesNotMatch(css, /\.library-destination\s*\{[^}]*(?:display:\s*none|text-overflow)/,
     'the full saved destination must remain visible at every supported width');
-  assert.match(css, /\.library-destination\s*\{[^}]*overflow-wrap:\s*anywhere[^}]*var\(--font-mono/s,
-    'the exact saved destination must wrap in the shared locator type system');
-  assert.match(css, /\.library-search\s*\{[^}]*min-height:\s*52px[^}]*box-shadow:\s*inset 4px 0 0 var\(--accent\)/s,
-    'the Library find control must use the dominant Field Desk locator edge');
-  assert.match(css, /\.library-search:focus-within\s*\{[^}]*0 0 0 3px/s,
+  assert.match(libraryCss, /\.lib-meta \{[^}]*font-family: var\(--today-mono\);/,
+    'the destination is set in the locator mono type');
+  assert.match(libraryCss, /\.lib-meta \.library-destination \{ overflow-wrap: anywhere; \}/,
+    'the exact saved destination must wrap rather than be cut');
+  assert.match(libraryCss, /\.lib-field,\n\.lib-sort \{\n\s*height: 52px;/,
+    'the Library filter and sort are full-height fields');
+  assert.match(libraryCss, /\.lib-field:focus-within,\n\.lib-sort:focus-within \{[^}]*0 0 0 4px/,
     'the complete Library find control must expose one visible keyboard focus boundary');
-  assert.doesNotMatch(css, /\.library-search input:focus-visible/,
+  assert.doesNotMatch(css, /\.lib-field input:focus-visible/,
     'the nested query input must not draw a second competing focus ring');
-  assert.doesNotMatch(css, /\.library-result-count\s*\{[^}]*(?:border|border-radius|background):/s,
-    'the record count must be a quiet ledger caption rather than another dashboard pill');
-  assert.match(css, /\.library-list\s*\{[^}]*border-left:\s*4px solid var\(--accent\)/s,
-    'the saved-record ledger must use one cobalt filing spine');
-  assert.match(css, /\.library-status button\s*\{[^}]*min-height:\s*40px[\s\S]*?\.library-sort select\s*\{[^}]*min-height:\s*40px[\s\S]*?\.library-primary, \.library-details, \.read-later-status\s*\{[^}]*min-height:\s*40px[\s\S]*?\.library-star, \.library-more\s*\{[^}]*height:\s*40px/s,
-    'every Library filter, sort, recovery, state, and More control must retain a complete target');
-  assert.match(css, /body\.blur-privacy \.library-title,[\s\S]*body\.blur-privacy \.library-destination/,
-    'privacy blur must cover the new Library title, URL, and destination trail');
-  assert.match(css, /body\.blur-privacy \.library-location/,
-    'privacy blur must also cover the active Workspace scope moved into the heading');
-  assert.match(css, /\.library-primary\s*\{[^}]*color:\s*var\(--accent-text\)/s,
-    'the primary recovery action must use the theme contrast token');
-  assert.match(css, /\.library-star:hover, \.library-star\.active\s*\{[^}]*var\(--yellow\)/s,
+  assert.match(extractFunction('renderLibraryLedgerSurface'), /<p class="sr-only library-result-count" aria-live="polite"><\/p>/,
+    'the record count is announced, not shown as another pill (the view switch shows the counts)');
+  assert.match(libraryCss, /\.lib-card \{[^}]*border: 1px solid var\(--today-rule\);[^}]*border-radius: 22px;/,
+    'the saved records sit in one quiet card');
+  for (const selector of ['.lib-seg-btn', '.lib-ai', '.lib-text', '.lib-check', '.lib-clear']) {
+    const rule = libraryCss.match(new RegExp(`\\n${selector.replace('.', '\\.')} \\{[^}]*\\}`));
+    assert.ok(rule && /(?:^|\s|;)height: (?:4[4-9]|5\d)px/.test(rule[0]), `${selector} must keep a 44 px target`);
+  }
+  assert.match(libraryCss, /\.lib-open \{[^}]*margin: -11px 0;\n\s*padding: 11px 0;[^}]*line-height: 22px;/,
+    'the title button is a 44 px target, and its stretched area opens from anywhere on the row');
+  assert.match(cssLf, /body\.blur-privacy \.library-title,\nbody\.blur-privacy \.library-url,\nbody\.blur-privacy \.library-destination,/,
+    'privacy blur must cover the Library title, source, and destination trail');
+  assert.doesNotMatch(css, /library-location/,
+    'the removed scope chip leaves no styles behind');
+  assert.match(libraryCss, /\.lib-cap \{[^}]*color: var\(--accent-text, #fff\);/,
+    'the Open hint uses the theme contrast token');
+  assert.match(libraryCss, /\.lib-ebtn\.is-primary \{[^}]*color: var\(--accent-text, #fff\);/,
+    'the primary empty-state action uses the theme contrast token');
+  assert.match(libraryCss, /\.lib-star\.is-on \{ color: var\(--text\); \}\n\.lib-star\.is-on svg \{ fill: currentColor; \}/,
     'favorite emphasis must follow the active theme token');
-  assert.match(css, /@media \(forced-colors: active\)[\s\S]*\.library-list[\s\S]*border-left-color:\s*Highlight/s,
-    'the filing spine must remain distinct in forced colors');
+  assert.match(libraryCss, /@media \(forced-colors: active\) \{[\s\S]*?\.lib-card,[\s\S]*?border: 1px solid CanvasText;[\s\S]*?\.lib-thumb,\n\s*\.lib-gi \{ outline: 2px solid Highlight;/,
+    'the card, the pressed view and the highlighted row remain distinct in forced colors');
 }
 
 function testLedgerCopyIsLocalizedInEnglishAndTaiwanChinese() {
@@ -444,6 +460,8 @@ function testLedgerCopyIsLocalizedInEnglishAndTaiwanChinese() {
     'library.readingStatus', 'library.unread', 'library.read', 'library.all', 'library.markRead',
     'library.markUnread', 'library.markedRead', 'library.markedUnread', 'library.savedWhen',
     'library.queuedWhen', 'library.localStorage', 'library.itemUnavailable',
+    'library.view', 'library.modeCount', 'library.archiveNamed', 'library.allCaughtUp',
+    'library.nothingRead', 'library.showUnread',
   ];
   for (const key of keys) {
     assert.ok(i18n.en[key]?.trim(), `missing English ${key}`);
@@ -458,8 +476,8 @@ function testLedgerCopyIsLocalizedInEnglishAndTaiwanChinese() {
     'Read Later history must use localized action copy');
   assert.match(statusCommitSource, /State\.snapshot\(tr\(plan\.historyKey\)\)/,
     'return-marker history must resolve the localized action key at commit time');
-  assert.match(statusCommitSource, /toast\(tr\(plan\.successKey\)\)/,
-    'Read Later success feedback must use localized copy');
+  assert.match(statusCommitSource, /toast\(tr\(plan\.successKey\), receipt \|\| \{\}\)/,
+    'Read Later success feedback must use localized copy (the Library page adds Undo through its receipt options)');
   assert.doesNotMatch(`${statusPlanSource}\n${statusCommitSource}`, /['"]Mark(?:ed)? (?:as )?(?:un)?read['"]/,
     'Read Later status changes must not leak hardcoded English');
   const rowSource = extractFunction('buildLibraryLedgerRow');
@@ -670,7 +688,7 @@ async function testSavedTabReturnMarkersWaitForAcceptedStorage() {
     'Board actions must await acceptance before their focus continuation');
   assert.match(runnerSource, /async function runLibraryLedgerMutation[\s\S]*?await mutation\(\)[\s\S]*?requestAnimationFrame/,
     'Library focus continuation must wait for the accepted marker result');
-  assert.match(rowSource, /toggleFavorite\(item, favorite\)[\s\S]*?toggleReadStatus\(item, readStatus\)[\s\S]*?toggleReadLater\(item, more\)/,
+  assert.match(rowSource, /toggleFavorite\(item, opener, receipt\)[\s\S]*?toggleReadLater\(item, opener, receipt\)[\s\S]*?toggleFavoriteFrom\(favorite\)[\s\S]*?toggleReadStatus\(item, readStatus, receipt\)[\s\S]*?toggleReadLaterFrom\(laterButton\)[\s\S]*?toggleReadLaterFrom\(owner\)/,
     'visible Library markers and More actions must identify their exact originating control');
   assert.match(
     css,
@@ -681,6 +699,7 @@ async function testSavedTabReturnMarkersWaitForAcceptedStorage() {
   let settleMutation;
   const focusCalls = [];
   const runner = loadFunctions(['runLibraryLedgerMutation'], {
+    libraryPageSession: null,
     activeLibraryState: { mode: 'favorites' },
     activeLibraryMode: 'favorites',
     requestAnimationFrame(callback) { focusCalls.push('frame'); callback(); },
@@ -883,8 +902,8 @@ async function testSavedPageArchiveWaitsForAcceptedStorage() {
     'pending saved-page Archive must block duplicate action, routes, navigation, and global shortcuts');
   assert.match(returnCommitSource, /isSavedPageArchivePending\(\)/,
     'return-marker writes must not race Archive on the shared More control');
-  assert.match(rowSource, /archiveSavedPage\(item, more\)/,
-    'Library Archive must identify its exact More control');
+  assert.match(rowSource, /archiveSavedPage\(item, archiveButton\)[\s\S]*archiveSavedPage\(item, owner\)/,
+    'Library Archive must identify its exact control: the row button, or the control that opened the menu');
   assert.match(tabSource,
     /async \(archiveOpener[\s\S]*?await archiveSavedPage\(it, archiveOpener[\s\S]*?requestAnimationFrame/,
     'Board Archive focus continuation must wait for the accepted saved-page result');

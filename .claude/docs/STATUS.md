@@ -297,6 +297,24 @@ Slices, in order:
 
 ## Done (newest first)
 
+- **2026-11-06 - Library page built from its canvas board (pages build, page 2 of 9)**
+  - **What:** All links, Favorites and Read later are one page with a big
+    heading and one row of controls: a view switch whose pill slides and whose
+    counts roll, the Unread/Read/All switch in Read later, the filter (matches
+    marked in titles) and the sort. Saved pages are quiet rows in one card; a
+    highlight glides to the row under the pointer or focus, the whole row opens
+    the page, and Details, Favorite, Read later and Archive show on hover (at
+    phone width and on touch they fold into More). Favourite pops with a burst,
+    a page sent to Read later flies its bookmark and ticks that count, the
+    round read tick fills, leaving rows fold away, and the receipts offer Undo.
+    The scope chip, toolbar rows and empty-state paragraphs are gone; every
+    action is kept. Escape that clears the filter no longer also leaves the page.
+  - **Evidence:** `library-page-contract-test.js` (141 checks, 12 mutations
+    caught); `library-recovery`, `canvas-pages`, `inbox-page` and
+    `privacy-settings` suites ported; all 43 `scripts/*.js` checks pass; Edge 156 proof with 82
+    behaviour checks and screenshots in the shared notes
+    `locus-redesign-evidence/pages/library/`.
+
 - **2026-11-06 - Inbox page built from its canvas board (pages build, page 1 of 9)**
   - **What:** the Inbox group opens on its own page instead of the generic
     group page: a big heading with the red waiting count that rolls, one dark

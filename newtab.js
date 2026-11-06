@@ -1555,15 +1555,12 @@ const I18N = {
     'empty.searchTitle': 'No results for “{query}”',
     'empty.searchBody': 'Try broader keywords or remove the active filters.',
     'empty.readLaterTitle': 'Your reading queue is clear',
-    'empty.readLaterBody': 'Save any library link for later, then come back when it matters.',
     'empty.favoritesTitle': 'Start with the links you use most',
-    'empty.favoritesBody': 'Star any saved link to keep it one click away.',
     'empty.trashTitle': 'No deleted items',
     'empty.trashBody': 'Items moved from Archive wait here for 30 days before permanent deletion.',
     'empty.archiveTitle': 'Nothing archived',
     'empty.archiveBody': 'Items and groups you archive will wait here until you need them again.',
     'empty.libraryTitle': 'Nothing saved yet',
-    'empty.libraryBody': 'Add a link, import bookmarks, or start a note to build your local library.',
     'empty.noMatchTitle': 'Nothing matches these filters',
     'empty.noMatchBody': 'Clear the search or filters to see everything again.',
     'empty.localNote': 'Stored in this browser profile; export before uninstalling or deleting it.',
@@ -1598,6 +1595,12 @@ const I18N = {
     'library.queuedWhen': 'Added {time}',
     'library.localStorage': 'Stored in this browser profile. Export before uninstalling or deleting the profile.',
     'library.itemUnavailable': 'This saved item changed or moved. Nothing was opened. Refresh the ledger and try again.',
+    'library.view': 'Library view',
+    'library.modeCount': '{label}, {count}',
+    'library.archiveNamed': 'Archive {title}',
+    'library.allCaughtUp': 'All caught up',
+    'library.nothingRead': 'Nothing read yet',
+    'library.showUnread': 'Show unread',
     'readLater.subtitle': 'A calm queue for links you want to return to.',
     'search.placeholder': 'Search your links…',
     'search.title': 'Find again',
@@ -3299,15 +3302,12 @@ const I18N = {
     'empty.searchTitle': '找不到「{query}」的結果',
     'empty.searchBody': '請嘗試更廣泛的關鍵字，或移除目前的篩選條件。',
     'empty.readLaterTitle': '稍後閱讀清單是空的',
-    'empty.readLaterBody': '將資料庫中的連結留待稍後閱讀，需要時再回來。',
     'empty.favoritesTitle': '先收藏你最常使用的連結',
-    'empty.favoritesBody': '將任何已儲存連結加上星號，即可快速開啟。',
     'empty.trashTitle': '沒有已刪除的項目',
     'empty.trashBody': '從封存移除的項目會在這裡保留 30 天，之後永久刪除。',
     'empty.archiveTitle': '尚無封存內容',
     'empty.archiveBody': '你封存的項目和群組會留在這裡，直到再次需要。',
     'empty.libraryTitle': '尚未儲存任何內容',
-    'empty.libraryBody': '新增連結、匯入書籤或建立筆記，開始打造你的本機資料庫。',
     'empty.noMatchTitle': '沒有符合這些篩選條件的內容',
     'empty.noMatchBody': '清除搜尋或篩選條件，即可重新查看所有內容。',
     'empty.localNote': '資料存在此瀏覽器設定檔；解除安裝或刪除前請先匯出。',
@@ -3342,6 +3342,12 @@ const I18N = {
     'library.queuedWhen': '{time}加入',
     'library.localStorage': '資料儲存在這個瀏覽器設定檔中。解除安裝或刪除設定檔前，請先匯出備份。',
     'library.itemUnavailable': '這個已儲存項目已變更或移動，因此沒有執行任何操作。請重新整理清單後再試一次。',
+    'library.view': '連結檢視方式',
+    'library.modeCount': '{label}，{count}',
+    'library.archiveNamed': '封存「{title}」',
+    'library.allCaughtUp': '都讀完了',
+    'library.nothingRead': '還沒有已讀的連結',
+    'library.showUnread': '顯示未讀',
     'readLater.subtitle': '平靜收納你想稍後再看的連結。',
     'search.placeholder': '搜尋你的連結…',
     'search.title': '再次找到',
@@ -4466,6 +4472,8 @@ let activeGroupPage = null;
 // The Inbox page's triage session and its open Space picker (see INBOX PAGE).
 let inboxPageSession = null;
 let inboxSpacePicker = null;
+// The Library page's memory of its last paint (see Library page).
+let libraryPageSession = null;
 
 // Home surface (Waypoint-style dashboard): true → the workspace overview (greeting
 // hero + one card per category) is showing instead of a category board. It sits
@@ -17287,11 +17295,15 @@ function renderBoard() {
   // and group-page gates (which early-return below) never inherit it. renderHome()
   // re-adds it when Home is the active surface.
   document.getElementById('board').classList.remove('home-mode', 'library-mode', 'archive-mode', 'trash-mode', 'read-later-mode', 'search-mode', 'plan-mode');
-  // The Inbox page keeps its marks through its own repaint, so the board's
-  // padding never drops out mid-render and clamps the scroll position.
+  // The Inbox and Library pages keep their marks through their own repaint, so
+  // the board's padding never drops out mid-render and clamps the scroll position.
   if (activeSearch || activeCalendar || !isInboxPageActive()) {
     document.getElementById('board').classList.remove('inbox-mode');
-    delete document.body.dataset.page;
+    if (document.body.dataset.page === 'inbox') delete document.body.dataset.page;
+  }
+  if (!isLibraryPageActive()) {
+    document.getElementById('board').classList.remove('lib-mode');
+    if (document.body.dataset.page === 'library') delete document.body.dataset.page;
   }
   // Reflect the active surface on <body> (diagnostic / styling hook), computed
   // from the flags so it stays correct through every early-returning gate.
@@ -17308,6 +17320,7 @@ function renderBoard() {
     inboxPageSession = null;
     closeInboxSpacePicker();
   }
+  if (libraryPageSession && !isLibraryPageActive()) libraryPageSession = null;
   // The calendar (§5) and group pages (§4.1) are surfaces that sit above the
   // layout registry: when one is open every re-render keeps showing it. Each
   // renderer returns false if the user has navigated away, so we fall through to
@@ -18135,7 +18148,7 @@ function focusSavedTabReturnMutationOpener(opener) {
   return true;
 }
 
-async function commitSavedTabReturnMutation(review, action, opener = null, now = Date.now()) {
+async function commitSavedTabReturnMutation(review, action, opener = null, now = Date.now(), receipt = null) {
   if (!review
       || isSavedTabReturnMutationPending()
       || (typeof isSavedPageArchivePending === 'function' && isSavedPageArchivePending())
@@ -18205,7 +18218,7 @@ async function commitSavedTabReturnMutation(review, action, opener = null, now =
   savedTabReturnMutationPending = null;
   setSavedTabReturnMutationBusy(review, opener, false);
   renderBoard();
-  toast(tr(plan.successKey));
+  toast(tr(plan.successKey), receipt || {});
   return true;
 }
 
@@ -18215,25 +18228,27 @@ function reportSavedTabReturnMutationUnavailable(opener) {
   return false;
 }
 
-async function toggleFavorite(it, opener = null) {
+// `receipt` adds toast options to the success receipt; the Library page passes
+// { undo: true, sub } so its receipts offer Undo.
+async function toggleFavorite(it, opener = null, receipt = null) {
   const context = createSavedTabReturnMutationContext(it);
   if (!context) return reportSavedTabReturnMutationUnavailable(opener);
-  return commitSavedTabReturnMutation(context, 'favorite', opener, Date.now());
+  return commitSavedTabReturnMutation(context, 'favorite', opener, Date.now(), receipt);
 }
 
 // Read Later is additive metadata on the existing tab item. Keeping the item in
 // its original group preserves every legacy import and lets this surface act as
 // a cross-space queue rather than another storage silo.
-async function toggleReadLater(it, opener = null) {
+async function toggleReadLater(it, opener = null, receipt = null) {
   const context = createSavedTabReturnMutationContext(it);
   if (!context) return reportSavedTabReturnMutationUnavailable(opener);
-  return commitSavedTabReturnMutation(context, 'read-later', opener, Date.now());
+  return commitSavedTabReturnMutation(context, 'read-later', opener, Date.now(), receipt);
 }
 
-async function toggleReadStatus(it, opener = null) {
+async function toggleReadStatus(it, opener = null, receipt = null) {
   const context = createSavedTabReturnMutationContext(it);
   if (!context) return reportSavedTabReturnMutationUnavailable(opener);
-  return commitSavedTabReturnMutation(context, 'read-status', opener, Date.now());
+  return commitSavedTabReturnMutation(context, 'read-status', opener, Date.now(), receipt);
 }
 
 // Shared empty-state system. The reference image defines these as calm starting
@@ -18330,6 +18345,173 @@ function openLibrarySurface(mode) {
   Router.navigate({ type: 'library', wsId: ws.id, mode: normalized, query: {} }, { persist: false });
 }
 
+// ── Library page (2026-11 canvas) ─────────────────────────────────
+// All links, Favorites and Read later are one page: a view switch whose pill
+// slides and whose counts roll, the reading-status switch in Read later, one
+// filter field and the sort, then the saved pages as quiet rows in one card. A
+// highlight glides to the row under the pointer or keyboard focus, and the
+// row's actions (Details, Favorite, Read later, Archive) show on hover; at
+// phone width and on touch screens they fold into the row's More menu. Every
+// write is the same receipt-gated transaction as before; on this page its
+// receipt offers Undo.
+
+const LIBRARY_PATHS = {
+  star: 'M7.5 1.8l1.7 3.45 3.8.55-2.75 2.68.65 3.78-3.4-1.79-3.4 1.79.65-3.78L2 5.8l3.8-.55L7.5 1.8z',
+  later: 'M4 2.2h7a1 1 0 0 1 1 1V13l-4.5-2.55L3 13V3.2a1 1 0 0 1 1-1z',
+  laterLines: 'M5.3 5.4h4.4M5.3 7.6h3.1',
+  archive: 'M2.8 2.5h9.4a.8.8 0 0 1 .8.8v1.4a.8.8 0 0 1-.8.8H2.8a.8.8 0 0 1-.8-.8V3.3a.8.8 0 0 1 .8-.8zM3 5.5V12a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V5.5M6 8h3',
+  go: 'M5 10 10 5M5.8 5H10v4.2',
+  check: 'M3.5 8l2.8 2.8L11.6 5',
+  close: 'M4 4l7 7M11 4l-7 7',
+  chevron: 'M4 6l3.5 3.5L11 6',
+  search: 'M6.6 11.2a4.6 4.6 0 1 0 0-9.2 4.6 4.6 0 0 0 0 9.2zM9.9 9.9l2.8 2.8',
+  link: 'M6.2 8.8a2.4 2.4 0 0 0 3.4 0l2.5-2.5a2.4 2.4 0 1 0-3.4-3.4l-1 1M8.8 6.2a2.4 2.4 0 0 0-3.4 0L2.9 8.7a2.4 2.4 0 1 0 3.4 3.4l1-1',
+};
+const LIBRARY_MODE_LABELS = { all: 'library.all', favorites: 'nav.favorites', 'read-later': 'nav.readLater' };
+
+function librarySvg(name, size = 16, stroke = 1.4, cls = '') {
+  return `<svg${cls ? ` class="${cls}"` : ''} width="${size}" height="${size}" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="${stroke}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${LIBRARY_PATHS[name] || ''}"/></svg>`;
+}
+
+// The bookmark keeps its two text lines as their own path, so the filled
+// (queued) mark can draw them in white.
+function libraryLaterSvg(size = 17, cls = '') {
+  return `<svg${cls ? ` class="${cls}"` : ''} width="${size}" height="${size}" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="lib-bm" d="${LIBRARY_PATHS.later}"/><path class="lib-bm-lines" d="${LIBRARY_PATHS.laterLines}" stroke-width="1.25"/></svg>`;
+}
+
+function isLibraryPageActive() {
+  return !activeSearch && !activeCalendar && !activeGroupPage
+    && LIBRARY_LEDGER_MODES.includes(activeLibraryMode) && !!activeWs();
+}
+
+// What the last paint showed, so counts roll and rows animate only when
+// something changed; `fx` names the row control whose write is landing, and
+// `holdRender` keeps a leaving row on screen until it has folded away.
+function libraryPageState(wsId) {
+  if (!libraryPageSession || libraryPageSession.wsId !== wsId) {
+    libraryPageSession = { wsId, mode: null, counts: null, viewKey: null, query: null, seen: null, fx: null, holdRender: false };
+  }
+  return libraryPageSession;
+}
+
+// The view switch counts: every saved page, the favourites, and the unread
+// Read later queue.
+function libraryModeCounts(ws) {
+  const counts = { all: 0, favorites: 0, 'read-later': 0 };
+  collectWorkspaceTabs(ws).forEach(({ item }) => {
+    counts.all += 1;
+    if (item.favorite) counts.favorites += 1;
+    if (item.readLaterAt && !item.readAt) counts['read-later'] += 1;
+  });
+  return counts;
+}
+
+// A count that changed rolls to its new value, using the Inbox count's roll.
+// The resting position always shows the new number.
+function libraryRollMarkup(count, previous) {
+  if (previous == null || previous === count) {
+    return `<span class="ibx-roll"><span class="ibx-roll-stack"><span>${count}</span></span></span>`;
+  }
+  const up = count > previous;
+  const digits = up ? `<span>${previous}</span><span>${count}</span>` : `<span>${count}</span><span>${previous}</span>`;
+  return `<span class="ibx-roll"><span class="ibx-roll-stack is-${up ? 'up' : 'down'}">${digits}</span></span>`;
+}
+
+// The filter's match inside a title, marked for the highlight.
+function libraryTitleMarkup(title, query) {
+  const text = String(title || '');
+  const needle = String(query || '').trim().toLocaleLowerCase();
+  const lower = text.toLocaleLowerCase();
+  const at = needle && lower.length === text.length ? lower.indexOf(needle) : -1;
+  if (at < 0) return esc(text);
+  return `${esc(text.slice(0, at))}<mark class="lib-hit">${esc(text.slice(at, at + needle.length))}</mark>${esc(text.slice(at + needle.length))}`;
+}
+
+function libraryPageRoot() {
+  return document.querySelector('#board > .lib');
+}
+
+function restartLibraryMotion(el, cls) {
+  if (!el) return;
+  el.classList.remove(cls);
+  void el.offsetWidth;
+  el.classList.add(cls);
+}
+
+// The highlight behind the rows moves to the row under the pointer or focus.
+// It appears in place, then glides between rows.
+function placeLibraryGlide(page, row) {
+  const glide = page?.querySelector('.lib-glide');
+  if (!glide) return;
+  if (!row || !row.isConnected || row.classList.contains('is-gone')) {
+    glide.classList.remove('is-on');
+    if (libraryPageSession) libraryPageSession.glideId = null;
+    return;
+  }
+  const appearing = !glide.classList.contains('is-on');
+  if (appearing) glide.classList.add('is-jump');
+  glide.style.setProperty('--lib-y', `${row.offsetTop}px`);
+  glide.style.setProperty('--lib-h', `${row.offsetHeight}px`);
+  if (appearing) {
+    void glide.offsetWidth;
+    glide.classList.remove('is-jump');
+  }
+  glide.classList.add('is-on');
+  if (libraryPageSession) libraryPageSession.glideId = row.dataset.id || null;
+}
+
+function pressLibraryGlide() {
+  restartLibraryMotion(libraryPageRoot()?.querySelector('.lib-glide.is-on .lib-gi'), 'is-press');
+}
+
+// A row that leaves this view after an accepted write: its control shows the
+// new state, a read tick fills first, then the row folds away.
+function foldLibraryRow(itemId, opener = null) {
+  const page = libraryPageRoot();
+  const row = page && itemId ? page.querySelector(`.lib-row[data-id="${CSS.escape(String(itemId))}"]`) : null;
+  if (!row || planReducedMotion()) return Promise.resolve(false);
+  const control = opener?.isConnected && row.contains(opener) && opener.hasAttribute('aria-pressed') ? opener : null;
+  if (control) {
+    const pressed = control.getAttribute('aria-pressed') !== 'true';
+    control.classList.toggle('is-on', pressed);
+    control.setAttribute('aria-pressed', String(pressed));
+    if (pressed && control.classList.contains('lib-check')) restartLibraryMotion(control, 'is-tick');
+  }
+  const tick = control?.classList.contains('lib-check') && control.classList.contains('is-on');
+  return new Promise(resolve => {
+    setTimeout(() => {
+      if (!row.isConnected) { resolve(false); return; }
+      row.style.height = `${row.offsetHeight}px`;
+      void row.offsetWidth;
+      row.classList.add('is-gone');
+      if (libraryPageSession?.glideId === row.dataset.id) placeLibraryGlide(page, null);
+      setTimeout(() => resolve(true), 300);
+    }, tick ? 220 : 0);
+  });
+}
+
+function buildLibraryEmpty({ icon, done = false, title, actions = [] }) {
+  const box = document.createElement('div');
+  box.className = 'lib-empty';
+  box.setAttribute('role', 'status');
+  box.innerHTML = `
+    <span class="lib-eico${done ? ' is-done' : ''}" aria-hidden="true">${icon}</span>
+    <h2 class="lib-etitle">${esc(title)}</h2>
+    <div class="lib-eacts"></div>`;
+  const host = box.querySelector('.lib-eacts');
+  actions.forEach((action, index) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = `lib-ebtn${index === 0 ? ' is-primary' : ''}`;
+    button.dataset.libFocus = `empty:${index}`;
+    button.textContent = action.label;
+    button.addEventListener('click', () => action.run(button));
+    host.appendChild(button);
+  });
+  if (!actions.length) host.remove();
+  return box;
+}
+
 function focusLibraryLedgerTarget(itemId, action = 'open') {
   const escaped = itemId && typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
     ? CSS.escape(String(itemId))
@@ -18340,13 +18522,18 @@ function focusLibraryLedgerTarget(itemId, action = 'open') {
       ? '.read-later-status'
       : action === 'details'
         ? '.library-details'
-        : '.library-primary';
+        : action === 'later'
+          ? '.lib-later'
+          : action === 'more'
+            ? '.library-more'
+            : '.library-primary';
   const target = escaped
     ? document.querySelector(`.library-row[data-id="${escaped}"] ${actionClass}`)
     : null;
   const fallback = target
     || document.querySelector('.library-row .library-primary')
-    || document.querySelector('.library-search input')
+    || document.querySelector('.lib-empty .lib-ebtn')
+    || document.querySelector('.lib-field input')
     || document.getElementById('library-title');
   if (!fallback || typeof fallback.focus !== 'function') return false;
   try { fallback.focus({ preventScroll: true }); } catch { try { fallback.focus(); } catch { return false; } }
@@ -18354,12 +18541,27 @@ function focusLibraryLedgerTarget(itemId, action = 'open') {
   return true;
 }
 
-async function runLibraryLedgerMutation(rows, index, mutation, { itemRemains = false, action = 'open' } = {}) {
+async function runLibraryLedgerMutation(rows, index, mutation, { itemRemains = false, action = 'open', fx = '', opener = null } = {}) {
   const stateRef = activeLibraryState;
   const mode = activeLibraryMode;
   const itemId = rows[index]?.item?.id || '';
   const fallbackId = rows[index + 1]?.item?.id || rows[index - 1]?.item?.id || '';
-  const changed = await mutation();
+  const session = libraryPageSession;
+  if (session) {
+    session.fx = fx ? { id: String(itemId), kind: fx } : null;
+    session.holdRender = !itemRemains;
+  }
+  let changed = false;
+  try {
+    changed = await mutation();
+  } finally {
+    if (session && !itemRemains) {
+      if (changed !== false) await foldLibraryRow(itemId, opener);
+      session.holdRender = false;
+      renderBoard();
+    }
+    if (session) session.fx = null;
+  }
   if (changed === false) return false;
   requestAnimationFrame(() => {
     if (activeLibraryState !== stateRef || activeLibraryMode !== mode) return;
@@ -18368,71 +18570,117 @@ async function runLibraryLedgerMutation(rows, index, mutation, { itemRemains = f
   return true;
 }
 
-function buildLibraryLedgerRow(rowData, state, rows, index) {
+// One saved page as a quiet row. The title is the Open action and covers the
+// row; Details, the markers and Archive show on hover or focus. `paint` carries
+// the filter text, the row's entry motion and the control whose write landed.
+function buildLibraryLedgerRow(rowData, state, rows, index, paint = {}) {
   const item = rowData.item;
   const model = libraryLedgerRowModel(rowData, state.mode);
   const recovery = createLibraryRecoveryContext(rowData, state);
-  const row = document.createElement('article');
-  row.className = 'library-row' + (state.mode === 'read-later' ? ' read-later-row' : '') + (item.readAt ? ' is-read' : '');
+  const later = state.mode === 'read-later';
+  const key = esc(model.id);
+  const fx = paint.fx && paint.fx.id === model.id ? paint.fx.kind : '';
+  const row = document.createElement('div');
+  row.className = 'library-row lib-row' + (later && item.readAt ? ' is-read' : '') + (paint.motion ? ` ${paint.motion}` : '');
   row.setAttribute('role', 'listitem');
   row.dataset.id = model.id;
   row.dataset.libraryFocusKey = recovery?.focusKey || libraryRowFocusKey(rowData, state);
-  const timestamp = Number(state.mode === 'read-later' ? item.readLaterAt : item.createdAt);
+  if (paint.delay) row.style.setProperty('--lib-d', `${paint.delay}ms`);
+  const timestamp = Number(later ? item.readLaterAt : item.createdAt);
   const timeCopy = model.age
-    ? tr(state.mode === 'read-later' ? 'library.queuedWhen' : 'library.savedWhen', { time: model.age })
+    ? tr(later ? 'library.queuedWhen' : 'library.savedWhen', { time: model.age })
     : '';
-  const toggleAction = state.mode === 'read-later'
-    ? `<button class="read-later-status" data-return-marker="read-status" type="button" aria-pressed="${!!item.readAt}" title="${esc(model.statusLabel)}">${esc(model.statusLabel)}</button>`
-    : `<button class="library-star${item.favorite ? ' active' : ''}" data-return-marker="favorite" type="button" aria-pressed="${!!item.favorite}" title="${esc(tr(item.favorite ? 'itemAction.removeFavorite' : 'itemAction.addFavorite'))}" aria-label="${esc(tr(item.favorite ? 'itemAction.removeFavorite' : 'itemAction.addFavorite'))}">${item.favorite ? '★' : '☆'}</button>`;
+  const shortTime = Number.isFinite(timestamp) && timestamp > 0 ? inboxSavedLabel(timestamp) : '';
+  const favoriteLabel = tr(item.favorite ? 'itemAction.removeFavorite' : 'itemAction.addFavorite');
+  const laterLabel = tr(item.readLaterAt ? 'itemAction.removeReadLater' : 'itemAction.saveReadLater');
+  const readStatusAction = later
+    ? `<button class="read-later-status lib-check${item.readAt ? ' is-on' : ''}${fx === 'read' ? ' is-tick' : ''}" data-return-marker="read-status" data-lib-focus="check:${key}" type="button" aria-pressed="${!!item.readAt}" title="${esc(model.statusLabel)}" aria-label="${esc(model.statusLabel)}"><span class="lib-ring">${librarySvg('check', 13, 2.4)}</span></button>`
+    : '';
+  const burst = fx === 'favorite-on'
+    ? `<span class="lib-burst" aria-hidden="true">${INBOX_BURST_RAYS.map(angle => `<span class="ibx-ray" style="--a:${angle}deg"><span class="lib-pt"></span></span>`).join('')}</span>`
+    : '';
+  const toggleAction = later
+    ? ''
+    : `<button class="library-star lib-ai lib-star${item.favorite ? ' is-on' : ''}${fx === 'favorite-on' ? ' is-pop' : ''}" data-return-marker="favorite" data-lib-focus="star:${key}" type="button" aria-pressed="${!!item.favorite}" title="${esc(favoriteLabel)}" aria-label="${esc(favoriteLabel)}">${librarySvg('star', 18, 1.35)}${burst}</button>`;
+  const marks = later ? '' : `${item.favorite ? `<span class="lib-mark is-star">${librarySvg('star', 13, 1.2)}</span>` : ''}${item.readLaterAt ? `<span class="lib-mark is-later">${libraryLaterSvg(13)}</span>` : ''}`;
+  const dot = reminderDotColor(rowData.group?.color || null);
   row.innerHTML = `
-    <img class="library-fav" src="${esc(favUrl(item.url) || BLANK_FAV)}" alt="" loading="lazy" decoding="async">
-    <div class="library-copy">
-      <span class="library-title">${esc(model.title)}</span>
-      <span class="library-destination" title="${esc(model.destination)}">${esc(model.destination)}</span>
-      <span class="library-url">${esc(model.url)}</span>
+    ${readStatusAction}
+    ${inboxFavMarkup(item)}
+    <div class="library-copy lib-copy">
+      <button class="library-primary lib-open" data-lib-focus="open:${key}" type="button" aria-label="${esc(tr('library.openPageFor', { title: model.title }))}"><span class="library-title lib-tt">${libraryTitleMarkup(model.title, paint.query)}</span>${librarySvg('go', 13, 1.9, 'lib-go')}</button>
+      <span class="lib-meta"><span class="lib-dot" style="--dot:${esc(dot)}" aria-hidden="true"></span><span class="library-destination">${esc(model.destination)}</span><span class="library-url">${esc(planSortMeta(item).domain || model.url)}</span></span>
     </div>
-    ${timeCopy ? `<time class="library-age"${Number.isFinite(timestamp) && timestamp > 0 ? ` datetime="${new Date(timestamp).toISOString()}"` : ''}>${esc(timeCopy)}</time>` : '<span class="library-age"></span>'}
-    <div class="library-actions">
-      <button class="library-primary" type="button" aria-label="${esc(tr('library.openPageFor', { title: model.title }))}">${esc(model.openLabel)}</button>
-      <button class="library-details" type="button" aria-label="${esc(tr('library.viewDetailsFor', { title: model.title }))}">${esc(model.detailsLabel)}</button>
+    <span class="lib-when">${marks}${shortTime ? `<time${Number.isFinite(timestamp) && timestamp > 0 ? ` datetime="${new Date(timestamp).toISOString()}"` : ''}><span class="sr-only">${esc(timeCopy)}</span><span aria-hidden="true">${esc(shortTime)}</span></time>` : ''}</span>
+    <div class="lib-acts">
+      <button class="library-details lib-text" data-lib-focus="details:${key}" type="button" aria-label="${esc(tr('library.viewDetailsFor', { title: model.title }))}">${esc(model.detailsLabel)}</button>
       ${toggleAction}
+      <button class="lib-ai lib-later${item.readLaterAt ? ' is-on' : ''}${fx === 'later-on' ? ' is-sent' : ''}" data-return-marker="read-later" data-lib-focus="later:${key}" type="button" aria-pressed="${!!item.readLaterAt}" title="${esc(laterLabel)}" aria-label="${esc(laterLabel)}">${libraryLaterSvg(18)}${fx === 'later-on' ? libraryLaterSvg(13, 'lib-fly') : ''}</button>
+      <button class="lib-ai lib-archive" data-item-archive="row" data-lib-focus="archive:${key}" type="button" title="${esc(tr('itemAction.archive'))}" aria-label="${esc(tr('library.archiveNamed', { title: model.title }))}">${librarySvg('archive', 17, 1.4)}</button>
+      <span class="lib-cap" aria-hidden="true">${esc(model.openLabel)}<span class="lib-kbd">↵</span></span>
     </div>
-    <button class="library-more" data-return-marker="more" data-item-archive="menu" type="button" title="${esc(tr('library.moreActions', { title: model.title }))}" aria-label="${esc(tr('library.moreActions', { title: model.title }))}">•••</button>`;
+    <button class="library-more lib-ai lib-more" data-return-marker="more" data-item-archive="menu" data-lib-focus="more:${key}" type="button" aria-haspopup="menu" title="${esc(tr('library.moreActions', { title: model.title }))}" aria-label="${esc(tr('library.moreActions', { title: model.title }))}">${inboxDotsIcon(17)}</button>`;
+  bindInboxFavicons(row);
 
   const primary = row.querySelector('.library-primary');
   const details = row.querySelector('.library-details');
-  primary.onclick = () => activateLibraryRecovery(recovery, 'open', primary);
+  primary.onclick = () => {
+    pressLibraryGlide();
+    activateLibraryRecovery(recovery, 'open', primary);
+  };
   details.onclick = () => activateLibraryRecovery(recovery, 'details', details);
 
+  const receipt = { undo: true, sub: planSortMeta(item).domain || model.url };
+  const shown = element => !!element && element.isConnected && element.getClientRects().length > 0;
+  const toggleFavoriteFrom = opener => runLibraryLedgerMutation(rows, index, () => toggleFavorite(item, opener, receipt), {
+    itemRemains: state.mode !== 'favorites' || !item.favorite,
+    action: opener === favorite ? 'favorite' : (opener === more && shown(more) ? 'more' : 'open'),
+    fx: item.favorite ? '' : 'favorite-on',
+    opener,
+  });
+  const toggleReadLaterFrom = opener => runLibraryLedgerMutation(rows, index, () => toggleReadLater(item, opener, receipt), {
+    itemRemains: state.mode !== 'read-later',
+    action: opener === laterButton ? 'later' : (opener === more && shown(more) ? 'more' : 'open'),
+    fx: item.readLaterAt ? '' : 'later-on',
+    opener,
+  });
   const favorite = row.querySelector('.library-star');
-  if (favorite) favorite.onclick = () => {
-    const remains = state.mode !== 'favorites' || !item.favorite;
-    runLibraryLedgerMutation(rows, index, () => toggleFavorite(item, favorite), { itemRemains: remains, action: 'favorite' });
-  };
+  if (favorite) favorite.onclick = () => toggleFavoriteFrom(favorite);
   const readStatus = row.querySelector('.read-later-status');
   if (readStatus) readStatus.onclick = () => {
-    runLibraryLedgerMutation(rows, index, () => toggleReadStatus(item, readStatus), {
-      itemRemains: state.status === 'all', action: 'status',
+    runLibraryLedgerMutation(rows, index, () => toggleReadStatus(item, readStatus, receipt), {
+      itemRemains: state.status === 'all', action: 'status', fx: item.readAt ? '' : 'read', opener: readStatus,
     });
   };
+  const laterButton = row.querySelector('.lib-later');
+  laterButton.onclick = () => toggleReadLaterFrom(laterButton);
+  const archiveButton = row.querySelector('.lib-archive');
+  archiveButton.onclick = () => runLibraryLedgerMutation(rows, index, () => archiveSavedPage(item, archiveButton));
 
+  // More, right-click and Shift+F10 open the row menu: Read later and Archive,
+  // plus whatever the row is not showing (Details and Favorite at phone width
+  // and on touch screens, where the hover actions fold away).
   const more = row.querySelector('.library-more');
-  more.onclick = () => {
-    const readLaterAction = () => runLibraryLedgerMutation(rows, index, () => toggleReadLater(item, more), {
-      itemRemains: state.mode !== 'read-later', action: 'open',
-    });
-    const archiveAction = () => runLibraryLedgerMutation(rows, index, () => archiveSavedPage(item, more));
+  bindBoardItemContextMenu(row, opener => {
+    const owner = shown(opener) ? opener : (shown(more) ? more : primary);
+    const readLaterAction = () => toggleReadLaterFrom(owner);
+    const archiveAction = () => runLibraryLedgerMutation(rows, index, () => archiveSavedPage(item, owner));
+    const folded = shown(row.querySelector('.lib-acts')) ? [] : [
+      { text: model.detailsLabel, icon: cmIcons.detail, action: () => activateLibraryRecovery(recovery, 'details', owner) },
+      ...(favorite ? [{ text: favoriteLabel, icon: cmIcons.favorite, action: () => toggleFavoriteFrom(owner) }] : []),
+    ];
     const actions = [
+      ...folded,
       {
-        text: tr(item.readLaterAt ? 'itemAction.removeReadLater' : 'itemAction.saveReadLater'),
+        text: laterLabel,
         icon: item.readLaterAt ? cmIcons.delete : cmIcons.readLater,
         action: readLaterAction,
       },
       { sep: true },
       { text: tr('itemAction.archive'), icon: cmIcons.archive, action: archiveAction },
     ];
-    showAnchoredContextMenu(more, actions);
-  };
+    return actions;
+  }, { menuButton: more });
   return row;
 }
 
@@ -18480,6 +18728,9 @@ function bindLibraryQueryControl(input, applyQuery) {
   return true;
 }
 
+// Renders the Library page into #board. The page root stays across repaints of
+// the same workspace, so the view switch's pill slides, the filter keeps its
+// caret and a repaint keeps the scroll position; the rows are rebuilt.
 function renderLibraryLedgerSurface() {
   const ws = activeWs();
   const mode = activeLibraryMode;
@@ -18488,149 +18739,323 @@ function renderLibraryLedgerSurface() {
     activeLibraryState = libraryStateFromRoute(mode, {});
   }
   const state = activeLibraryState;
+  const session = libraryPageState(ws.id);
   hideBreadcrumb();
   const board = document.getElementById('board');
+  document.body.dataset.page = 'library';
   board.classList.remove('group-page-mode', 'list-mode', 'canvas-mode', 'explorer-mode', 'timeline-mode', 'gallery-mode', 'graph-mode', 'calendar-mode', 'home-mode', 'archive-mode', 'trash-mode');
-  board.classList.add('library-mode');
-  board.classList.toggle('read-later-mode', mode === 'read-later');
-  board.innerHTML = '';
+  board.classList.add('lib-mode');
+  let page = libraryPageRoot();
+  if (page && page.dataset.ws !== String(ws.id)) page = null;
+  // A row that is leaving holds the repaint until it has folded away.
+  if (session.holdRender && page) return true;
+  const firstShow = !page;
+  const keepScroll = firstShow ? 0 : board.scrollTop;
+  const active = document.activeElement;
+  const focusKey = page && active && page.contains(active)
+    ? active.closest('[data-lib-focus]')?.dataset.libFocus || null
+    : null;
 
-  const titleKey = mode === 'favorites' ? 'nav.favorites' : mode === 'read-later' ? 'nav.readLater' : 'nav.allLinks';
-  const subtitleKey = mode === 'favorites' ? 'library.subtitleFavorites' : mode === 'read-later' ? 'readLater.subtitle' : 'library.subtitleAll';
-  const statusControls = mode === 'read-later' ? `
-    <div class="library-status" role="group" aria-label="${esc(tr('library.readingStatus'))}">
-      <button type="button" data-status="unread">${esc(tr('library.unread'))}</button>
-      <button type="button" data-status="read">${esc(tr('library.read'))}</button>
-      <button type="button" data-status="all">${esc(tr('library.all'))}</button>
-    </div>` : '';
-  const shell = document.createElement('section');
-  shell.className = 'library-shell';
-  shell.innerHTML = `
-    <header class="library-head">
-      <div>
-        <h1 id="library-title" tabindex="-1">${esc(tr(titleKey))}</h1>
-        <p>${esc(tr(subtitleKey))}</p>
-      </div>
-      <span class="library-location">${esc(tr('library.workspace', { name: ws.name }))}</span>
-    </header>
-    <div class="library-query-row">
-      <label class="library-search">
-        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        <input type="search" value="${esc(state.query)}" placeholder="${esc(tr('library.filterLinks'))}" aria-label="${esc(tr('library.filterLinks'))}">
-      </label>
-      <label class="library-sort"><span>${esc(tr('library.sort'))}</span>
-        <select aria-label="${esc(tr('library.sort'))}">
-          <option value="newest">${esc(tr('library.sortNewest'))}</option>
-          <option value="oldest">${esc(tr('library.sortOldest'))}</option>
-          <option value="title">${esc(tr('library.sortTitle'))}</option>
-        </select>
-      </label>
-    </div>
-    <div class="library-toolbar">
-      <span class="library-result-count" aria-live="polite"></span>
-      ${statusControls}
-    </div>
-    ${mode === 'read-later' ? `<p class="library-local-note">${esc(tr('library.localStorage'))}</p>` : ''}
-    <div class="library-list" role="list" aria-labelledby="library-title"></div>`;
-  board.appendChild(shell);
-
-  const list = shell.querySelector('.library-list');
-  const search = shell.querySelector('.library-search input');
-  const sort = shell.querySelector('.library-sort select');
-  const resultCount = shell.querySelector('.library-result-count');
-  const statusButtons = [...shell.querySelectorAll('.library-status button')];
-
-  const syncControls = () => {
-    if (document.activeElement !== search) search.value = state.query;
-    sort.value = state.sort;
-    statusButtons.forEach(button => {
-      const selected = button.dataset.status === state.status;
-      button.classList.toggle('active', selected);
-      button.setAttribute('aria-pressed', String(selected));
-    });
-  };
+  // Query, status and sort ride the URL (replaceState), never storage.
   const updateState = patch => {
-    const next = libraryStateFromRoute(mode, {
-      q: Object.prototype.hasOwnProperty.call(patch, 'query') ? patch.query : state.query,
-      status: Object.prototype.hasOwnProperty.call(patch, 'status') ? patch.status : state.status,
-      sort: Object.prototype.hasOwnProperty.call(patch, 'sort') ? patch.sort : state.sort,
+    const current = activeLibraryState;
+    if (!current) return;
+    const next = libraryStateFromRoute(current.mode, {
+      q: Object.prototype.hasOwnProperty.call(patch, 'query') ? patch.query : current.query,
+      status: Object.prototype.hasOwnProperty.call(patch, 'status') ? patch.status : current.status,
+      sort: Object.prototype.hasOwnProperty.call(patch, 'sort') ? patch.sort : current.sort,
     });
-    Object.assign(state, next);
+    Object.assign(current, next);
     boardDetailItemId = null;
     Router.sync({ replace: true });
   };
-  const paint = () => {
-    syncControls();
-    const rows = libraryRowsForState(ws, state);
-    resultCount.textContent = tr(rows.length === 1 ? 'library.resultCountOne' : 'library.resultCount', { count: rows.length });
-    list.innerHTML = '';
-    if (rows.length) {
-      rows.forEach((row, index) => list.appendChild(buildLibraryLedgerRow(row, state, rows, index)));
-      return;
-    }
-    const unfiltered = libraryRowsForState(ws, {
-      ...state,
-      query: '',
-      status: mode === 'read-later' ? 'all' : state.status,
-    });
-    if (!unfiltered.length) {
-      if (mode === 'favorites') {
-        list.appendChild(buildSystemEmptyState({
-          kind: 'favorites', title: tr('empty.favoritesTitle'), body: tr('empty.favoritesBody'),
-          actions: [{ label: tr('empty.browseLibrary'), icon: '↗', run: () => openLibrarySurface('all') }],
-          note: tr('empty.localNote'),
-        }));
-      } else if (mode === 'read-later') {
-        list.appendChild(buildSystemEmptyState({
-          kind: 'read', title: tr('empty.readLaterTitle'), body: tr('empty.readLaterBody'),
-          actions: [
-            { label: tr('empty.browseLibrary'), icon: '↗', run: () => openLibrarySurface('all') },
-            { label: tr('empty.addSave'), icon: '+', run: () => openCommandPalette() },
-          ],
-          note: tr('empty.localNote'),
-        }));
-      } else {
-        list.appendChild(buildSystemEmptyState({
-          kind: 'library', title: tr('empty.libraryTitle'), body: tr('empty.libraryBody'),
-          actions: [
-            { label: tr('empty.addSave'), icon: '+', run: () => openCommandPalette() },
-            { label: tr('empty.importBookmarks'), icon: '⇩', run: () => importBookmarks() },
-          ],
-          note: tr('empty.localNote'),
-        }));
+
+  // The heading, the view switch with its counts, the reading status, the
+  // filter and the sort, from the current route state.
+  const sync = () => {
+    const root = libraryPageRoot();
+    const current = activeLibraryState;
+    const workspace = activeWs();
+    if (!root || !current || !workspace) return;
+    const s = libraryPageSession || session;
+    const currentMode = current.mode;
+    const counts = libraryModeCounts(workspace);
+    const previous = s.counts;
+    root.dataset.mode = currentMode;
+    const title = root.querySelector('.lib-title');
+    title.textContent = tr(currentMode === 'favorites' ? 'nav.favorites' : currentMode === 'read-later' ? 'nav.readLater' : 'nav.allLinks');
+    if (s.mode != null && s.mode !== currentMode) restartLibraryMotion(title, 'is-swap');
+    root.querySelector('#library-sub').textContent = tr(currentMode === 'favorites' ? 'library.subtitleFavorites' : currentMode === 'read-later' ? 'readLater.subtitle' : 'library.subtitleAll');
+    const modes = root.querySelector('.lib-modes');
+    modes.setAttribute('aria-label', tr('library.view'));
+    modes.style.setProperty('--lib-i', String(LIBRARY_LEDGER_MODES.indexOf(currentMode)));
+    modes.querySelectorAll('[data-lib-mode]').forEach(button => {
+      const id = button.dataset.libMode;
+      const label = tr(LIBRARY_MODE_LABELS[id]);
+      button.setAttribute('aria-pressed', String(id === currentMode));
+      button.setAttribute('aria-label', tr('library.modeCount', { label, count: counts[id] }));
+      button.querySelector('.lib-seg-label').textContent = label;
+      const count = button.querySelector('.lib-cnt');
+      if (!previous || previous[id] !== counts[id] || !count.firstChild) {
+        count.innerHTML = libraryRollMarkup(counts[id], previous ? previous[id] : null);
       }
-      return;
+      // Read later's count ticks up with a bump when a row is sent to it.
+      if (id === 'read-later' && s.fx?.kind === 'later-on' && previous && counts[id] > previous[id]) {
+        restartLibraryMotion(count, 'is-bump');
+      }
+    });
+    const later = currentMode === 'read-later';
+    const status = root.querySelector('.lib-status');
+    status.setAttribute('aria-label', tr('library.readingStatus'));
+    if (status.hidden === later) {
+      status.hidden = !later;
+      if (later && s.mode != null) restartLibraryMotion(status, 'is-rise');
     }
-    const hadQuery = !!state.query;
-    const reset = opener => {
-      updateState(hadQuery ? { query: '' } : { status: 'all' });
-      paint();
-      requestAnimationFrame(() => {
-        const target = hadQuery ? search : shell.querySelector('.library-status [data-status="all"]');
-        focusDialogOpener(target || opener);
+    status.style.setProperty('--lib-i', String(Math.max(0, LIBRARY_READ_STATUSES.indexOf(current.status))));
+    status.querySelectorAll('[data-status]').forEach(button => {
+      button.textContent = tr(`library.${button.dataset.status}`);
+      button.setAttribute('aria-pressed', String(button.dataset.status === current.status));
+    });
+    const note = root.querySelector('.library-local-note');
+    note.hidden = !later;
+    note.textContent = tr('library.localStorage');
+    const search = root.querySelector('.lib-field input');
+    search.placeholder = tr('library.filterLinks');
+    search.setAttribute('aria-label', tr('library.filterLinks'));
+    if (document.activeElement !== search && search.value !== current.query) {
+      // A query restored from the URL starts the field's controller afresh.
+      search.value = current.query;
+      bindLibraryQueryControl(search, query => {
+        updateState({ query });
+        paint();
       });
-    };
-    list.appendChild(buildSystemEmptyState({
-      kind: hadQuery ? 'search' : 'read', compact: true,
-      title: hadQuery ? tr('empty.searchTitle', { query: state.query }) : tr('empty.noMatchTitle'),
-      body: tr('empty.noMatchBody'),
-      actions: [{
-        label: tr(hadQuery ? 'empty.clearSearch' : 'empty.showAll'),
-        icon: hadQuery ? '×' : '↗',
-        run: reset,
-      }],
-    }));
+    }
+    const clear = root.querySelector('.lib-clear');
+    clear.setAttribute('aria-label', tr('empty.clearSearch'));
+    clear.title = tr('empty.clearSearch');
+    root.querySelector('.lib-sort .sr-only').textContent = tr('library.sort');
+    const sort = root.querySelector('.lib-sort select');
+    [...sort.options].forEach(option => {
+      option.textContent = tr(option.value === 'oldest' ? 'library.sortOldest' : option.value === 'title' ? 'library.sortTitle' : 'library.sortNewest');
+    });
+    sort.value = current.sort;
+    s.mode = currentMode;
+    s.counts = counts;
   };
 
-  bindLibraryQueryControl(search, query => {
-    updateState({ query });
+  const clearFilter = () => {
+    const input = libraryPageRoot()?.querySelector('.lib-field input');
+    if (!input) return;
+    input.value = '';
+    input.dispatchEvent(new Event('input'));
+    inboxFocus(input);
+  };
+  const setStatus = status => {
+    updateState({ status });
+    sync();
     paint();
-  });
-  sort.onchange = () => { updateState({ sort: sort.value }); paint(); };
-  statusButtons.forEach(button => {
-    button.onclick = () => { updateState({ status: button.dataset.status }); paint(); };
-  });
+    inboxFocus(libraryPageRoot()?.querySelector(`.lib-status [data-status="${status}"]`));
+  };
+
+  // The rows, the live count and the empty states. Typing in the filter
+  // repaints only this.
+  const paint = () => {
+    const root = libraryPageRoot();
+    const current = activeLibraryState;
+    const workspace = activeWs();
+    if (!root || !current || !workspace) return;
+    const s = libraryPageSession || session;
+    const list = root.querySelector('.lib-list');
+    const card = root.querySelector('.lib-card');
+    root.querySelector('.lib-clear').hidden = !root.querySelector('.lib-field input').value;
+    const rows = libraryRowsForState(workspace, current);
+    root.querySelector('.library-result-count').textContent = tr(rows.length === 1 ? 'library.resultCountOne' : 'library.resultCount', { count: rows.length });
+    const viewKey = `${current.mode}|${current.status}|${current.sort}`;
+    const changedView = s.viewKey != null && s.viewKey !== viewKey;
+    const sameList = s.viewKey === viewKey && s.query === current.query && !!s.seen;
+    list.innerHTML = '';
+    card.querySelector(':scope > .lib-empty')?.remove();
+    rows.forEach((row, index) => {
+      // A new view rises in; a row that comes back (Undo) flashes in place.
+      const motion = changedView ? 'is-rise' : (sameList && !s.seen.has(String(row.item.id)) ? 'is-back' : '');
+      list.appendChild(buildLibraryLedgerRow(row, current, rows, index, {
+        query: current.query,
+        fx: s.fx,
+        motion,
+        delay: changedView ? Math.min(index, 10) * 24 : 0,
+      }));
+    });
+    s.viewKey = viewKey;
+    s.query = current.query;
+    s.seen = new Set(rows.map(row => String(row.item.id)));
+    if (rows.length) return;
+    const unfiltered = libraryRowsForState(workspace, {
+      ...current,
+      query: '',
+      status: current.mode === 'read-later' ? 'all' : current.status,
+    });
+    const browse = { label: tr('empty.browseLibrary'), run: () => openLibrarySurface('all') };
+    const addSave = { label: tr('empty.addSave'), run: () => openCommandPalette() };
+    let empty;
+    if (!unfiltered.length) {
+      if (current.mode === 'favorites') {
+        empty = buildLibraryEmpty({ icon: librarySvg('star', 28, 1.2), title: tr('empty.favoritesTitle'), actions: [browse] });
+      } else if (current.mode === 'read-later') {
+        empty = buildLibraryEmpty({ icon: libraryLaterSvg(26), title: tr('empty.readLaterTitle'), actions: [browse, addSave] });
+      } else {
+        empty = buildLibraryEmpty({
+          icon: librarySvg('link', 26, 1.3),
+          title: tr('empty.libraryTitle'),
+          actions: [addSave, { label: tr('empty.importBookmarks'), run: () => importBookmarks() }],
+        });
+      }
+    } else if (current.query) {
+      empty = buildLibraryEmpty({
+        icon: librarySvg('search', 26, 1.5),
+        title: tr('empty.searchTitle', { query: current.query }),
+        actions: [{ label: tr('empty.clearSearch'), run: clearFilter }],
+      });
+    } else if (current.status === 'unread') {
+      empty = buildLibraryEmpty({
+        icon: librarySvg('check', 28, 2.2),
+        done: true,
+        title: tr('library.allCaughtUp'),
+        actions: [{ label: tr('empty.showAll'), run: () => setStatus('all') }],
+      });
+    } else {
+      empty = buildLibraryEmpty({
+        icon: libraryLaterSvg(26),
+        title: tr('library.nothingRead'),
+        actions: [{ label: tr('library.showUnread'), run: () => setStatus('unread') }],
+      });
+    }
+    card.appendChild(empty);
+  };
+
+  if (!page) {
+    board.innerHTML = '';
+    page = document.createElement('div');
+    page.className = 'lib';
+    page.dataset.ws = String(ws.id);
+    page.innerHTML = `
+      <p class="sr-only library-result-count" aria-live="polite"></p>
+      <header class="lib-hd">
+        <h1 class="lib-title" id="library-title" tabindex="-1"></h1>
+        <p class="sr-only" id="library-sub"></p>
+      </header>
+      <div class="lib-tools">
+        <div class="lib-seg lib-modes" role="group">
+          <span class="lib-thumb" aria-hidden="true"></span>
+          ${LIBRARY_LEDGER_MODES.map(id => `<button type="button" class="lib-seg-btn" data-lib-mode="${id}" data-lib-focus="mode:${id}"><span class="lib-seg-label"></span><span class="lib-cnt" aria-hidden="true"></span></button>`).join('')}
+        </div>
+        <div class="lib-seg lib-status" role="group" hidden>
+          <span class="lib-thumb" aria-hidden="true"></span>
+          ${LIBRARY_READ_STATUSES.map(id => `<button type="button" class="lib-seg-btn" data-status="${id}" data-lib-focus="status:${id}"></button>`).join('')}
+        </div>
+        <span class="lib-gap" aria-hidden="true"></span>
+        <div class="lib-field">
+          ${librarySvg('search', 16, 1.5)}
+          <input type="search" autocomplete="off" spellcheck="false" data-lib-focus="filter">
+          <button type="button" class="lib-clear" data-lib-focus="clear" hidden>${librarySvg('close', 14, 1.8)}</button>
+        </div>
+        <label class="lib-sort"><span class="sr-only"></span><select data-lib-focus="sort">${LIBRARY_SORTS.map(id => `<option value="${id}"></option>`).join('')}</select>${librarySvg('chevron', 14, 1.6)}</label>
+      </div>
+      <p class="library-local-note" hidden>${esc(tr('library.localStorage'))}</p>
+      <div class="lib-card">
+        <span class="lib-glide" aria-hidden="true"><span class="lib-gi"></span></span>
+        <div class="library-list lib-list" role="list" aria-labelledby="library-title" aria-describedby="library-sub"></div>
+      </div>`;
+    board.appendChild(page);
+
+    const search = page.querySelector('.lib-field input');
+    bindLibraryQueryControl(search, query => {
+      updateState({ query });
+      paint();
+    });
+    // Down (or Enter) from the filter goes to the first row. An Escape that
+    // just cleared the filter stops here, so it does not also leave the page.
+    search.addEventListener('keydown', event => {
+      if (event.isComposing || event.keyCode === 229) return;
+      if (event.key === 'Escape' && event.defaultPrevented) {
+        event.stopPropagation();
+        return;
+      }
+      if (event.key !== 'ArrowDown' && event.key !== 'Enter') return;
+      const first = libraryPageRoot()?.querySelector('.lib-row .library-primary');
+      if (!first) return;
+      event.preventDefault();
+      inboxFocus(first);
+    });
+    page.querySelector('.lib-clear').addEventListener('click', clearFilter);
+    const sort = page.querySelector('.lib-sort select');
+    sort.onchange = () => { updateState({ sort: sort.value }); paint(); };
+    page.querySelectorAll('[data-lib-mode]').forEach(button => {
+      button.addEventListener('click', () => {
+        if (activeLibraryMode !== button.dataset.libMode) openLibrarySurface(button.dataset.libMode);
+      });
+    });
+    page.querySelectorAll('.lib-status [data-status]').forEach(button => {
+      button.addEventListener('click', () => {
+        if (activeLibraryState?.status !== button.dataset.status) setStatus(button.dataset.status);
+      });
+    });
+
+    // The highlight follows the pointer and the keyboard.
+    const card = page.querySelector('.lib-card');
+    card.addEventListener('pointerover', event => {
+      const row = event.target.closest?.('.lib-row');
+      if (row) placeLibraryGlide(page, row);
+    });
+    card.addEventListener('pointerleave', () => {
+      if (!card.contains(document.activeElement)) placeLibraryGlide(page, null);
+    });
+    card.addEventListener('focusin', event => placeLibraryGlide(page, event.target.closest?.('.lib-row') || null));
+    card.addEventListener('focusout', event => {
+      if (!card.contains(event.relatedTarget) && !card.matches(':hover')) placeLibraryGlide(page, null);
+    });
+    // Rows change height after a font loads, the language changes or the
+    // window narrows; the highlight stays on its row.
+    if (typeof ResizeObserver === 'function') {
+      new ResizeObserver(() => {
+        const id = libraryPageSession?.glideId;
+        if (id) placeLibraryGlide(page, page.querySelector(`.lib-row[data-id="${CSS.escape(id)}"]`));
+      }).observe(page.querySelector('.lib-list'));
+    }
+    // Up and Down move between rows, to the same control in the next row.
+    page.querySelector('.lib-list').addEventListener('keydown', event => {
+      if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
+      if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+      const row = event.target.closest?.('.lib-row');
+      if (!row || event.target.tagName === 'SELECT') return;
+      event.preventDefault();
+      const rows = [...page.querySelectorAll('.lib-list > .lib-row:not(.is-gone)')];
+      const index = rows.indexOf(row) + (event.key === 'ArrowDown' ? 1 : -1);
+      if (index < 0) { inboxFocus(search); return; }
+      const next = rows[index];
+      if (!next) return;
+      const kind = String(event.target.dataset?.libFocus || '').split(':')[0];
+      const target = (kind && next.querySelector(`[data-lib-focus^="${kind}:"]`)) || next.querySelector('.library-primary');
+      if (inboxFocus(target)) next.scrollIntoView({ block: 'nearest' });
+    });
+  }
+
+  const viewChanged = !firstShow && session.viewKey != null
+    && session.viewKey !== `${state.mode}|${state.status}|${state.sort}`;
+  sync();
   paint();
+  session.fx = null;
+  if (viewChanged) {
+    placeLibraryGlide(page, null);
+    board.scrollTo({ top: 0, behavior: 'instant' });
+  } else {
+    // A repaint keeps the reader where they were in a long list.
+    if (!firstShow && board.scrollTop !== keepScroll) board.scrollTo({ top: keepScroll, behavior: 'instant' });
+    const glideId = session.glideId;
+    if (glideId) placeLibraryGlide(page, page.querySelector(`.lib-row[data-id="${CSS.escape(glideId)}"]`));
+  }
+  if (focusKey && !page.contains(document.activeElement)) {
+    inboxFocus(page.querySelector(`[data-lib-focus="${CSS.escape(focusKey)}"]`));
+  }
   updateNavChrome();
   return true;
 }

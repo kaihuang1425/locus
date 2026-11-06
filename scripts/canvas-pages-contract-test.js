@@ -89,11 +89,14 @@ function testRemainingSurfaces() {
   const canvasLayers = css.slice(css.indexOf('PLAN (2026-11 canvas)'));
   ok(!/#sidebar\b/.test(canvasLayers), 'the canvas layers leave the original rail alone');
   ok(/body\[data-theme\] \.library-head > div > p,\nbody\[data-theme\] \.search-page-head p,/.test(layer), 'page sub-lines are trimmed in CSS only');
-  ok(/<p>\$\{esc\(tr\(subtitleKey\)\)\}<\/p>/.test(newtab), 'the trimmed copy is still in the markup');
+  ok(/<p class="sr-only" id="library-sub"><\/p>/.test(newtab) && /aria-describedby="library-sub"/.test(newtab)
+    && /root\.querySelector\('#library-sub'\)\.textContent = tr\(currentMode === 'favorites' \? 'library\.subtitleFavorites' : currentMode === 'read-later' \? 'readLater\.subtitle' : 'library\.subtitleAll'\);/.test(newtab),
+  'the Library sub-line copy is still in the page, hidden, as the list’s description');
   ok(/#settings-drawer \.toggle-row small\[id\$="-hint"\] \{\n\s*position: absolute;\n\s*width: 1px;/.test(layer), 'Settings hints are hidden visually, not removed');
   ok(/aria-describedby="[^"]*general-hibernate-hint/.test(html) || /general-hibernate-hint/.test(newtab), 'Settings hints stay referenced for assistive technology');
   ok(/body\[data-theme\] \.gcol \.item \{\n\s*\/\*[^*]*\*\/\n\s*flex-shrink: 0;/.test(layer), 'a full board column scrolls instead of shrinking its cards');
-  ok(/@media \(prefers-reduced-motion: reduce\) \{\n\s*body\[data-theme\] :is\(\.library-row, \.archive-row, \.search-result-row, \.gcol \.item\) \{ transition: none; \}/.test(layer), 'card hover motion stops under reduced motion');
+  ok(/@media \(prefers-reduced-motion: reduce\) \{\n\s*body\[data-theme\] :is\(\.archive-row, \.search-result-row, \.gcol \.item\) \{ transition: none; \}/.test(layer), 'card hover motion stops under reduced motion');
+  ok(/@media \(prefers-reduced-motion: reduce\) \{\n\s*\.lib, \.lib \*, \.lib \*::before, \.lib \*::after \{ animation: none !important; transition: none !important; \}/.test(layer), 'the Library page (its own rows, not cards) stops all motion under reduced motion');
 }
 
 function extract(name) {

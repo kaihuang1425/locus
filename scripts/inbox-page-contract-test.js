@@ -305,7 +305,7 @@ function testWiring() {
   ok(/document\.body\.dataset\.page = 'inbox';/.test(page) && /\$b\.classList\.add\('group-page-mode', 'inbox-mode'\);/.test(page), 'the page marks itself for its own styles');
   ok(/firstShow && !currentDetailItemId\(\)\) \{[\s\S]*focusInboxCard\(page\);/.test(page), 'the keys answer as soon as the page opens, unless details own focus');
   const board = extract('renderBoard');
-  ok(/if \(activeSearch \|\| activeCalendar \|\| !isInboxPageActive\(\)\) \{\n\s*document\.getElementById\('board'\)\.classList\.remove\('inbox-mode'\);\n\s*delete document\.body\.dataset\.page;/.test(board), 'leaving the page clears its marks; its own repaint keeps them');
+  ok(/if \(activeSearch \|\| activeCalendar \|\| !isInboxPageActive\(\)\) \{\n\s*document\.getElementById\('board'\)\.classList\.remove\('inbox-mode'\);\n\s*if \(document\.body\.dataset\.page === 'inbox'\) delete document\.body\.dataset\.page;/.test(board), 'leaving the page clears its marks (and only its own page mark); its own repaint keeps them');
   ok(/const keepScroll = firstShow \? 0 : \$b\.scrollTop;[\s\S]*\$b\.scrollTo\(\{ top: keepScroll, behavior: 'instant' \}\)/.test(page), 'a repaint keeps the scroll position in a long Inbox');
   ok(/if \(inboxPageSession && !isInboxPageActive\(\)\) \{\n\s*inboxPageSession = null;\n\s*closeInboxSpacePicker\(\);/.test(board), 'leaving the page ends its session and closes the picker');
   ok(/let inboxPageSession = null;\nlet inboxSpacePicker = null;/.test(newtab) && newtab.indexOf('let inboxPageSession = null;') < newtab.indexOf('function renderBoard('), 'the session is declared before any render can read it');

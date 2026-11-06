@@ -5120,3 +5120,33 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   zh-TW, reduced motion, 1440 and 390 px).
 
   **Implemented: yes. Verified: partial. User-validated: no. Released: no.**
+
+- **2026-11-06 - All links, Favorites and Read later become one Library page
+  (pages build, page 2).** The ledger follows the canvas Library board. This
+  replaces the look from "Keep each Library page in one filing record"
+  (2026-08-12): no scope line, cobalt find edge, count caption, status rail or
+  filing spine, and no 88 px three-band records.
+  - One heading, then one row: the view switch (its pill slides, its counts
+    roll), Unread / Read / All in Read later, the filter and the sort. The
+    query, status and sort still ride the URL only.
+  - Rows sit in one card. The whole row opens the page through the same
+    recovery boundary; a highlight glides to the row under the pointer or
+    keyboard focus. Details, Favorite, Read later and Archive show on hover;
+    at phone width and on touch screens they fold into More.
+  - Kept from 2026-08-12: each row still shows its title, the complete
+    Workspace › Space › Group › Stack destination (wrapping, never cut) and its
+    source (now the domain), and More still never repeats an action the row is
+    showing.
+  - The round read tick is the existing Mark as read (`readAt`). Favorite, Read
+    later and Mark as read receipts on this page offer Undo (the same snapshot
+    the shell's Undo uses); Board cards keep their plain receipts.
+  - Escape in a filter that has text now only clears it; before, the same key
+    also left the page for Home.
+  - Archive and Trash keep their own pages and look.
+
+  Evidence: `library-page-contract-test.js` (141 checks, 12 mutations caught),
+  the ported `library-recovery`, `canvas-pages`, `inbox-page` and
+  `privacy-settings` suites, and every suite; a throwaway Edge 156 profile (82
+  behaviour checks, Light, Dark, zh-TW, reduced motion, 1440 and 390 px).
+
+  **Implemented: yes. Verified: partial. User-validated: no. Released: no.**
