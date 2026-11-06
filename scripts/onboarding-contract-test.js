@@ -6633,29 +6633,14 @@ assert.match(buildHomeInboxZoneSource, /context\.inboxRef[\s\S]*openInboxView\(c
   'the Home Inbox zone must use the reviewed exact Inbox context and shared fail-closed navigator');
 assert.doesNotMatch(buildHomeInboxZoneSource, /\.find\([^)]*Inbox/,
   'the Home Inbox zone must never choose the first same-name Group');
-assert.match(renderHomeSource, /createLandingInboxContext\(ws\)[\s\S]*homeProgressiveZonePlan\(ws, inboxContext\)/,
-  'Home must derive progressive zones from the existing exact Inbox context');
-assert.match(renderHomeSource, /zonePlan\.showInbox[\s\S]*buildHomeInboxZone\([\s\S]*context:\s*inboxContext/,
-  'Home must render the Inbox zone only for the reviewed exact Inbox');
-assert.match(renderHomeSource, /if \(!zonePlan\.showSpaces\) return true/,
-  'a no-Space Home must stop before the duplicate Spaces setup surface');
+// 2026-11 canvas: Home is the Today board. The Trail headline, the Inbox card,
+// and the Space register are no longer rendered on Home; their builders keep
+// their own contracts above until a cleanup slice removes them. Today's own
+// model, transactions, and presentation are covered by today-contract-test.js.
+assert.match(renderHomeSource, /buildTodayBoard\(ws\)/, 'Home must render the Today board');
+assert.doesNotMatch(renderHomeSource, /buildHomeTrail|buildHomeInboxZone|homeProgressiveZonePlan|home\.recentSpaces|home-space-register/,
+  'Today replaces the Trail headline, the Inbox card, and the Space register on Home');
 assert.equal(renderHomeSource.includes('home-hero'), false, 'Home must remove the scenic hero rather than leave decorative dead rendering');
-const trailIndex = renderHomeSource.indexOf('buildHomeTrail');
-const inboxIndex = renderHomeSource.indexOf('buildHomeInboxZone');
-const spacesIndex = renderHomeSource.indexOf("tr('home.recentSpaces')");
-assert.ok(trailIndex >= 0 && inboxIndex > trailIndex && spacesIndex > inboxIndex, 'Home hierarchy must be Trail, Inbox, then Spaces');
-assert.match(renderHomeSource, /grid\.className\s*=\s*'home-grid home-space-register'/,
-  'Spaces must render as one quiet filing register rather than a competing card grid');
-assert.match(renderHomeSource, /card\.className\s*=\s*'home-card home-space-row'/,
-  'each Space must use the compact register-row presentation');
-assert.match(renderHomeSource, /home-card-sym[^`]*aria-hidden="true"[^`]*cat\.symbol/,
-  'a Space row must preserve the user-authored symbol instead of inferring decorative art from its name');
-assert.match(renderHomeSource, /newestHomeItems\(items,\s*1\)/,
-  'a Space row must expose only its newest real item so recovery hierarchy stays legible');
-assert.match(renderHomeSource, /home-card-viewall home-space-open[\s\S]*tr\('home\.trail\.openSpace'\)/,
-  'the register must expose one localized, explicit Open space action');
-assert.match(renderHomeSource, /text:\s*tr\('home\.trail\.openSpace'\)/,
-  'the Space More menu must not retain hard-coded English Open copy');
 assert.doesNotMatch(source, /HOME_ICON_MAP|homeCardIconName|homeCardIconHtml|homeAccentColor|buildProjectsRow/,
   'obsolete inferred Space art, synthetic accents, and the unused collections prototype must be removed');
 assert.doesNotMatch(css, /\.hcs-(?:img|emoji)|\.home-card-wide|\.home-proj-/,

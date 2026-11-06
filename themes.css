@@ -57,6 +57,7 @@
      orange that means "when", and the red attention badge. Text tokens are the
      AA-safe tints for small copy; the bare signal colours are for marks. */
   --registry-raised: #1e2824; --registry-raised-2: #222d28; --registry-raised-3: #26322d;
+  --registry-card: #19231f;
   --locator-hover: #294bbd;
   --ground: #f3f2ee;
   --card: #ffffff; --card-rule: #e6e4de; --card-rule-strong: #c9c5bb;
@@ -86,6 +87,7 @@
   /* Canvas palette, dark: the raised registry greens lift off the darker
      ground, and text tints stay readable on both. */
   --registry-raised: #1e2824; --registry-raised-2: #222d28; --registry-raised-3: #26322d;
+  --registry-card: #1e2824;
   --locator-hover: #a8b9ff;
   --ground: #111613;
   --card: #171d19; --card-rule: rgba(232,240,235,0.11); --card-rule-strong: rgba(232,240,235,0.28);

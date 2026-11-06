@@ -1346,6 +1346,23 @@ const I18N = {
     'home.trail.itemUnavailable': 'This saved item changed, moved, or no longer exists. Refresh Home to show the latest saved item.',
     'home.trail.openUnavailable': 'This saved page can’t be opened because its saved address is unavailable.',
     'home.inboxNoOtherItems': 'No other Inbox items.',
+    'today.now': 'Now',
+    'today.progress': '{done} of {total} done today',
+    'today.nothingLeft': 'Nothing left today.',
+    'today.rest': 'Rest of today',
+    'today.thisWeek': 'This week',
+    'today.anytime': 'Anytime',
+    'today.done': 'Done',
+    'today.capture.label': 'Add a task',
+    'today.capture.placeholder': 'Add a task… “call the bank tomorrow 9am”',
+    'today.capture.enter': 'Enter',
+    'today.capture.added': 'Added to today',
+    'today.capture.planned': 'Planned for {when}',
+    'today.capture.tomorrow': 'tomorrow',
+    'today.capture.inSpace': '{message} · {space}',
+    'today.capture.needTitle': 'Add what to do as well as when.',
+    'today.capture.unavailable': 'Locus couldn’t confirm where to save this task, so nothing was added.',
+    'today.history.add': 'Add task',
     'capture.pending': 'Another save is still being confirmed — your tabs were left open',
     'capture.startFailed': 'Save could not start safely — your tabs were left open',
     'capture.unconfirmedLater': 'Save was not confirmed — your tabs stayed open and later edits remain visible. Reload Locus before continuing.',
@@ -2949,6 +2966,23 @@ const I18N = {
     'home.trail.itemUnavailable': '這個已儲存項目已變更、移動或不存在。請重新整理首頁，查看最新項目。',
     'home.trail.openUnavailable': '這個已儲存頁面的網址無法使用，因此無法開啟。',
     'home.inboxNoOtherItems': '收件匣沒有其他項目。',
+    'today.now': '現在',
+    'today.progress': '今天已完成 {done}/{total} 項',
+    'today.nothingLeft': '今天沒有待辦了。',
+    'today.rest': '今天其他待辦',
+    'today.thisWeek': '本週',
+    'today.anytime': '隨時',
+    'today.done': '已完成',
+    'today.capture.label': '新增待辦',
+    'today.capture.placeholder': '新增待辦…例如「明天早上 9 點打給銀行」',
+    'today.capture.enter': 'Enter',
+    'today.capture.added': '已加入今天',
+    'today.capture.planned': '已排定：{when}',
+    'today.capture.tomorrow': '明天',
+    'today.capture.inSpace': '{message} · {space}',
+    'today.capture.needTitle': '除了時間，也請輸入要做的事。',
+    'today.capture.unavailable': 'Locus 無法確認這個待辦的儲存位置，因此沒有新增任何內容。',
+    'today.history.add': '新增待辦',
     'capture.pending': '另一個儲存動作仍在確認中，原分頁都保持開啟。',
     'capture.startFailed': '無法安全地開始儲存，原分頁都保持開啟。',
     'capture.unconfirmedLater': '無法確認是否已儲存。原分頁保持開啟，後續編輯仍顯示在畫面上。請重新載入 Locus 後再繼續。',
@@ -19486,6 +19520,812 @@ function buildHomeInboxZone({ context, excludeItemId = null } = {}) {
   return section;
 }
 
+// ════════════════════════════════════════════════════════════════
+// TODAY BOARD (2026-11 canvas)
+// ════════════════════════════════════════════════════════════════
+// Home renders the Today board: a rolling clock, one Now card, the rest of
+// today, and a capture bar. Every task is an ordinary to-do in the active
+// Workspace. "Today" is derived from fields that already exist: a reminder time
+// today, an open reminder from an earlier day, or (with no reminder) a to-do
+// created today. No stored field is added.
+let todayCaptureDraft = '';
+let todayCapturePending = null;
+let todayCaptureComposing = false;
+let todayRenderDeferred = false;
+let todayClockTimer = null;
+let todayJustAddedId = null;
+
+function todayPad2(value) {
+  return String(value).padStart(2, '0');
+}
+
+function todayDayKey(now = Date.now()) {
+  const date = new Date(now);
+  return `${date.getFullYear()}-${todayPad2(date.getMonth() + 1)}-${todayPad2(date.getDate())}`;
+}
+
+function todayDayBounds(now = Date.now()) {
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 1);
+  return { start: start.getTime(), end: end.getTime(), key: todayDayKey(now) };
+}
+
+function todayClockText(at) {
+  const date = new Date(at);
+  return `${todayPad2(date.getHours())}:${todayPad2(date.getMinutes())}`;
+}
+
+// Today's to-dos for one Workspace, in board order: open reminders from an
+// earlier day, reminders due now, anytime to-dos (created today, no reminder),
+// reminders later today; then IDs deferred with Later, in deferral order; done
+// to-dos last. A duplicated stable ID is left out because no exact-identity
+// action could reach it.
+function todayTaskModel(workspace, now = Date.now(), laterIds = []) {
+  const { start, end } = todayDayBounds(now);
+  const todos = [];
+  const walk = items => (Array.isArray(items) ? items : []).forEach(item => {
+    if (!item || typeof item !== 'object') return;
+    if (item.type === 'stack') { walk(item.items); return; }
+    if (item.type === 'todo') todos.push(item);
+  });
+  (Array.isArray(workspace?.categories) ? workspace.categories : []).forEach(space => {
+    (Array.isArray(space?.groups) ? space.groups : []).forEach(group => walk(group?.items));
+  });
+  const idCounts = new Map();
+  todos.forEach(item => {
+    const id = String(item.id || '');
+    idCounts.set(id, (idCounts.get(id) || 0) + 1);
+  });
+  const entries = [];
+  todos.forEach(item => {
+    const id = String(item.id || '');
+    if (!id || idCounts.get(id) !== 1) return;
+    const done = item.done === true;
+    const storedAt = item.reminder && item.reminder.at != null ? Number(item.reminder.at) : NaN;
+    const at = Number.isFinite(storedAt) ? storedAt : null;
+    const createdAt = Number(item.createdAt);
+    let kind = null;
+    if (at != null) {
+      if (at >= start && at < end) kind = at <= now ? 'due' : 'upcoming';
+      else if (at < start && !done) kind = 'overdue';
+    } else if (Number.isFinite(createdAt) && createdAt >= start && createdAt < end) {
+      kind = 'anytime';
+    }
+    if (!kind) return;
+    entries.push({
+      item,
+      id,
+      at,
+      done,
+      kind,
+      createdAt: Number.isFinite(createdAt) ? createdAt : 0,
+      title: String(item.text || '').trim(),
+    });
+  });
+  const rank = { overdue: 0, due: 1, anytime: 2, upcoming: 3 };
+  const order = (a, b) => (rank[a.kind] - rank[b.kind])
+    || ((a.at ?? a.createdAt) - (b.at ?? b.createdAt))
+    || (a.id < b.id ? -1 : (a.id > b.id ? 1 : 0));
+  const openEntries = entries.filter(entry => !entry.done).sort(order);
+  const deferred = [];
+  (Array.isArray(laterIds) ? laterIds : []).forEach(raw => {
+    const match = openEntries.find(entry => entry.id === String(raw));
+    if (match && !deferred.includes(match)) deferred.push(match);
+  });
+  const open = openEntries.filter(entry => !deferred.includes(entry)).concat(deferred);
+  const finished = entries.filter(entry => entry.done).sort(order);
+  return {
+    open,
+    finished,
+    now: open[0] || null,
+    rest: open.slice(1).concat(finished),
+    total: entries.length,
+    doneCount: finished.length,
+  };
+}
+
+function todayShortDay(at) {
+  const zh = appLocale() === 'zh-TW';
+  return new Intl.DateTimeFormat(zh ? 'zh-TW' : 'en-GB', zh
+    ? { month: 'numeric', day: 'numeric', weekday: 'short' }
+    : { weekday: 'short', day: 'numeric', month: 'short' }).format(new Date(at));
+}
+
+function todayDateLine(now = Date.now()) {
+  const zh = appLocale() === 'zh-TW';
+  return new Intl.DateTimeFormat(zh ? 'zh-TW' : 'en-GB', zh
+    ? { month: 'long', day: 'numeric', weekday: 'long' }
+    : { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date(now));
+}
+
+function todayWhenLabel(entry) {
+  if (entry.done) return { text: tr('today.done'), tone: 'done' };
+  if (entry.at == null) return { text: tr('today.anytime'), tone: 'anytime' };
+  if (entry.kind === 'overdue') return { text: `${todayShortDay(entry.at)} ${todayClockText(entry.at)}`, tone: 'when' };
+  return { text: todayClockText(entry.at), tone: 'when' };
+}
+
+function todayTaskTitle(entry) {
+  return entry?.title || tr('detail.emptyTodo');
+}
+
+function todayReducedMotion() {
+  if (document.body?.dataset.anim === 'off') return true;
+  try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; }
+}
+
+// Reads one capture line into a to-do title, an optional reminder time, and an
+// optional #space. The words it understands are the ones highlighted while
+// typing. Zone, day arithmetic, and DST gaps come from plan-contract.js.
+function parseTodayCapture(text, { now = Date.now(), timeZone = '', spaces = [] } = {}) {
+  const source = String(text || '');
+  const Plan = typeof LocusPlan !== 'undefined' ? LocusPlan : null;
+  const result = {
+    title: '',
+    tokens: [],
+    at: null,
+    dayOffset: null,
+    minutes: null,
+    rolled: false,
+    spaceId: null,
+    spaceName: '',
+  };
+  const found = [];
+  const enWhen = /\b(?:(?:at|on|by|this)\s+)?(today|tonight|tomorrow|next\s+week|weekend|monday|mon|tuesday|tues|tue|wednesday|thursday|thurs|thur|thu|friday|fri|saturday|sunday|morning|afternoon|evening|noon|(\d{1,2})(?::([0-5]\d))?\s?(am|pm)|([01]?\d|2[0-3]):([0-5]\d))\b/gi;
+  const zhWhen = /(下(?:週|星期|禮拜)[一二三四五六日天]|(?:週|星期|禮拜)[一二三四五六日天]|下週|下星期|下禮拜|今天|今晚|明天|後天|週末|早上|上午|中午|下午|晚上)|(\d{1,2})點(?:(半)|(\d{1,2})分?)?/g;
+  const tagPattern = /#([\p{L}\p{N}_-]+)/gu;
+  let match;
+  while ((match = enWhen.exec(source))) {
+    found.push({
+      start: match.index,
+      end: match.index + match[0].length,
+      kind: 'when',
+      word: match[1].toLowerCase().replace(/\s+/g, ' '),
+      clock: match[2] != null
+        ? { hour: Number(match[2]), minute: Number(match[3] || 0), meridiem: match[4].toLowerCase() }
+        : (match[5] != null ? { hour: Number(match[5]), minute: Number(match[6]), meridiem: null } : null),
+    });
+  }
+  while ((match = zhWhen.exec(source))) {
+    found.push({
+      start: match.index,
+      end: match.index + match[0].length,
+      kind: 'when',
+      word: match[1] || '',
+      clock: match[2] != null
+        ? { hour: Number(match[2]), minute: match[3] ? 30 : Number(match[4] || 0), meridiem: null }
+        : null,
+    });
+  }
+  const normalize = value => String(value || '').normalize('NFKC').toLowerCase().replace(/[\s_-]+/g, '');
+  const candidates = (Array.isArray(spaces) ? spaces : [])
+    .map(space => ({ id: String(space?.id || ''), name: String(space?.name || ''), key: normalize(space?.name) }))
+    .filter(space => space.id && space.key);
+  const resolveSpace = tag => {
+    const key = normalize(tag);
+    if (!key) return null;
+    const exact = candidates.filter(space => space.key === key);
+    if (exact.length) return exact.length === 1 ? exact[0] : null;
+    const prefix = candidates.filter(space => space.key.startsWith(key));
+    return prefix.length === 1 ? prefix[0] : null;
+  };
+  while ((match = tagPattern.exec(source))) {
+    const space = resolveSpace(match[1]);
+    if (space) found.push({ start: match.index, end: match.index + match[0].length, kind: 'where', space });
+  }
+  found.sort((a, b) => a.start - b.start || b.end - a.end);
+  const kept = [];
+  found.forEach(token => {
+    const last = kept[kept.length - 1];
+    if (!last || token.start >= last.end) kept.push(token);
+  });
+
+  const weekdays = { monday: 0, mon: 0, tuesday: 1, tues: 1, tue: 1, wednesday: 2, thursday: 3, thurs: 3, thur: 3, thu: 3, friday: 4, fri: 4, saturday: 5, sunday: 6 };
+  const zhWeekdays = { '一': 0, '二': 1, '三': 2, '四': 3, '五': 4, '六': 5, '日': 6, '天': 6 };
+  const partMinutes = { morning: 540, noon: 720, afternoon: 840, evening: 1140, '早上': 540, '上午': 540, '中午': 720, '下午': 840, '晚上': 1140 };
+  const afternoonParts = ['afternoon', 'evening', '下午', '晚上'];
+  let day = null;
+  let part = null;
+  let clock = null;
+  let spaceToken = null;
+  kept.forEach(token => {
+    if (token.kind === 'where') {
+      if (!spaceToken) spaceToken = token;
+      return;
+    }
+    if (token.clock) {
+      if (!clock) clock = token.clock;
+      return;
+    }
+    const word = token.word;
+    const last = word.slice(-1);
+    if (word === 'today' || word === '今天') day = day || { offset: 0 };
+    else if (word === 'tonight' || word === '今晚') {
+      day = day || { offset: 0 };
+      part = part || 'evening';
+    } else if (word === 'tomorrow' || word === '明天') day = day || { offset: 1 };
+    else if (word === '後天') day = day || { offset: 2 };
+    else if (word === 'next week' || word === '下週' || word === '下星期' || word === '下禮拜') day = day || { nextWeek: true, weekday: 0 };
+    else if (word === 'weekend' || word === '週末') day = day || { weekday: 5, defaultMinutes: 600 };
+    else if (weekdays[word] != null) day = day || { weekday: weekdays[word] };
+    else if (word.startsWith('下') && zhWeekdays[last] != null) day = day || { nextWeek: true, weekday: zhWeekdays[last] };
+    else if (zhWeekdays[last] != null) day = day || { weekday: zhWeekdays[last] };
+    else if (partMinutes[word] != null) part = part || word;
+  });
+
+  let minutes = null;
+  if (clock && clock.minute <= 59) {
+    let hour = clock.hour;
+    if (clock.meridiem === 'pm' && hour >= 1 && hour < 12) hour += 12;
+    else if (clock.meridiem === 'am' && hour === 12) hour = 0;
+    else if (!clock.meridiem && part && afternoonParts.includes(part) && hour >= 1 && hour < 12) hour += 12;
+    const meridiemValid = !clock.meridiem || (clock.hour >= 1 && clock.hour <= 12);
+    if (hour <= 23 && meridiemValid) minutes = hour * 60 + clock.minute;
+  }
+  if (minutes == null && part) minutes = partMinutes[part];
+  if (minutes == null && day) minutes = day.defaultMinutes ?? 540;
+
+  if (minutes != null && Plan) {
+    let zone = timeZone ? Plan.canonicalTimeZone(timeZone) : null;
+    if (!zone) {
+      try { zone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; } catch { zone = 'UTC'; }
+    }
+    const todayIso = Plan.todayInZone(zone, now);
+    const todayIndex = Plan.weekdayIndex(todayIso);
+    let offset = 0;
+    if (day?.offset != null) offset = day.offset;
+    else if (day?.nextWeek) offset = (7 - todayIndex) + day.weekday;
+    else if (day?.weekday != null) offset = (day.weekday - todayIndex + 7) % 7;
+    const resolve = dayOffset => {
+      const iso = Plan.addDays(todayIso, dayOffset);
+      let wall = Plan.zonedWallToEpoch(iso, minutes, zone);
+      if (wall.status === 'gap') wall = Plan.zonedWallToEpoch(iso, Plan.parseHm(wall.suggestion), zone);
+      return wall.status === 'ok' || wall.status === 'ambiguous' ? wall.at : null;
+    };
+    let at = resolve(offset);
+    if (at != null && !day && at <= now) {
+      offset += 1;
+      at = resolve(offset);
+      result.rolled = true;
+    }
+    if (at != null) {
+      result.at = at;
+      result.dayOffset = offset;
+      result.minutes = minutes;
+    }
+  }
+
+  let title = '';
+  let cursor = 0;
+  kept.forEach(token => {
+    title += `${source.slice(cursor, token.start)} `;
+    cursor = token.end;
+  });
+  title += source.slice(cursor);
+  result.title = title
+    .replace(/\s+/g, ' ')
+    .replace(/^[\s,;:·，、。-]+|[\s,;:·，、。-]+$/g, '')
+    .trim();
+  result.tokens = kept.map(token => ({ start: token.start, end: token.end, kind: token.kind }));
+  if (spaceToken) {
+    result.spaceId = spaceToken.space.id;
+    result.spaceName = spaceToken.space.name;
+  }
+  return result;
+}
+
+// ── Clock ──
+function buildTodayClock(now = Date.now()) {
+  const block = document.createElement('div');
+  block.className = 'today-clock-block';
+  const clock = document.createElement('div');
+  clock.className = 'today-clock';
+  clock.setAttribute('role', 'img');
+  const stack = Array.from({ length: 12 }, (_, index) => `<span>${index % 10}</span>`).join('');
+  const digit = `<span class="today-digit" aria-hidden="true"><span class="today-digit-stack">${stack}</span></span>`;
+  clock.innerHTML = `${digit}${digit}<span class="today-colon" aria-hidden="true">:</span>${digit}${digit}`;
+  const minute = document.createElement('div');
+  minute.className = 'today-minute';
+  minute.setAttribute('aria-hidden', 'true');
+  minute.innerHTML = '<span class="today-minute-fill"></span>';
+  const date = document.createElement('p');
+  date.className = 'today-date';
+  block.append(clock, minute, date);
+  paintTodayClock(block, { now, animate: false });
+  return block;
+}
+
+// Digits roll upward. A digit that wraps (9→0, 5→0, 2→0) rolls on to the
+// repeated 0 at the bottom of its stack, then snaps back without a transition.
+function paintTodayClock(block, { now = Date.now(), animate = true } = {}) {
+  const clock = block?.querySelector?.('.today-clock');
+  if (!clock) return false;
+  const date = new Date(now);
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const seconds = date.getSeconds();
+  const digits = [Math.floor(hours / 10), hours % 10, Math.floor(minutes / 10), minutes % 10];
+  const motion = animate && !todayReducedMotion();
+  clock.querySelectorAll('.today-digit-stack').forEach((stack, index) => {
+    const digit = digits[index];
+    const known = stack.dataset.digit !== undefined;
+    const last = Number(stack.dataset.digit);
+    if (known && last === digit) return;
+    clearTimeout(Number(stack.dataset.snapTimer) || 0);
+    let position = digit;
+    let snapBack = false;
+    if (motion && known) {
+      if (digit < last && digit + 10 <= 11) {
+        position = digit + 10;
+        snapBack = true;
+      }
+      stack.classList.toggle('is-snap', !(digit > last || snapBack));
+    } else {
+      stack.classList.add('is-snap');
+    }
+    stack.style.transform = `translateY(${-position}em)`;
+    stack.dataset.digit = String(digit);
+    if (snapBack) {
+      stack.dataset.snapTimer = String(setTimeout(() => {
+        stack.classList.add('is-snap');
+        stack.style.transform = `translateY(${-digit}em)`;
+      }, 900));
+    }
+  });
+  clock.setAttribute('aria-label', `${todayPad2(hours)}:${todayPad2(minutes)}`);
+  const fill = block.querySelector('.today-minute-fill');
+  if (fill) {
+    fill.classList.toggle('is-snap', !motion || seconds === 0);
+    fill.style.transform = `scaleX(${(seconds / 60).toFixed(4)})`;
+  }
+  const line = block.querySelector('.today-date');
+  if (line) {
+    const text = todayDateLine(now);
+    if (line.textContent !== text) line.textContent = text;
+  }
+  return true;
+}
+
+function stopTodayClock() {
+  if (todayClockTimer) clearTimeout(todayClockTimer);
+  todayClockTimer = null;
+}
+
+// One self-aligning tick per second while Today is mounted; it stops itself
+// once the board is gone and repaints Home when the calendar day changes.
+function startTodayClock() {
+  stopTodayClock();
+  const schedule = () => {
+    todayClockTimer = setTimeout(tick, 1000 - (Date.now() % 1000) + 20);
+  };
+  const tick = () => {
+    todayClockTimer = null;
+    const board = document.querySelector('#board .today');
+    if (!board || !board.isConnected) return;
+    if (!document.hidden) {
+      const now = Date.now();
+      if (board.dataset.todayDay !== todayDayKey(now)
+          && activeHome
+          && !todayCapturePending
+          && !isBoardTodoCompletionPending()) {
+        renderBoard();
+        return;
+      }
+      paintTodayClock(board.querySelector('.today-clock-block'), { now, animate: true });
+    }
+    schedule();
+  };
+  schedule();
+}
+
+// ── Now card + rest of today ──
+const TODAY_ARROW_ICON = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>';
+
+function buildTodayNow(workspace, model) {
+  const section = document.createElement('section');
+  section.className = 'today-now';
+  section.setAttribute('aria-labelledby', 'today-now-title');
+  const entry = model.now;
+  if (entry) section.dataset.todayId = entry.id;
+
+  const head = document.createElement('div');
+  head.className = 'today-now-head';
+  head.innerHTML = `<span class="today-now-beat" aria-hidden="true"></span><h2 id="today-now-title">${esc(tr('today.now'))}</h2>`;
+  if (model.total) {
+    const progress = document.createElement('div');
+    progress.className = 'today-progress';
+    progress.setAttribute('role', 'img');
+    progress.setAttribute('aria-label', tr('today.progress', { done: model.doneCount, total: model.total }));
+    const pills = Math.min(model.total, 12);
+    const filled = model.total <= 12 ? model.doneCount : Math.round((model.doneCount / model.total) * 12);
+    for (let index = 0; index < pills; index += 1) {
+      const pill = document.createElement('span');
+      pill.className = `today-progress-pill${index < filled ? ' is-done' : ''}`;
+      progress.appendChild(pill);
+    }
+    head.appendChild(progress);
+  }
+  section.appendChild(head);
+
+  const body = document.createElement('div');
+  body.className = 'today-now-body';
+  if (entry) {
+    const title = todayTaskTitle(entry);
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'today-now-title';
+    button.dataset.itemId = entry.id;
+    button.tabIndex = 0;
+    button.setAttribute('aria-label', tr('home.trail.reviewItem', { title }));
+    const text = document.createElement('span');
+    text.className = 'today-now-title-text';
+    text.textContent = title;
+    button.appendChild(text);
+    button.addEventListener('click', event => openTodayTaskDetail(workspace.id, entry.id, event.currentTarget));
+    body.appendChild(button);
+    if (entry.at != null) {
+      const when = document.createElement('p');
+      when.className = 'today-now-when';
+      when.textContent = todayWhenLabel(entry).text;
+      body.appendChild(when);
+    }
+  } else {
+    const empty = document.createElement('p');
+    empty.className = 'today-now-empty';
+    empty.textContent = tr('today.nothingLeft');
+    body.appendChild(empty);
+  }
+  section.appendChild(body);
+
+  return section;
+}
+
+function buildTodayCard(workspace, entry) {
+  const card = document.createElement('li');
+  card.className = `today-card${entry.done ? ' is-done' : ''}${todayJustAddedId === entry.id ? ' is-new' : ''}`;
+  card.dataset.todayId = entry.id;
+  const title = todayTaskTitle(entry);
+  const when = todayWhenLabel(entry);
+  const check = document.createElement('span');
+  check.className = 'today-card-check';
+  check.setAttribute('aria-hidden', 'true');
+  check.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const text = document.createElement('div');
+  text.className = 'today-card-text';
+  const whenLabel = document.createElement('span');
+  whenLabel.className = `today-card-when is-${when.tone}`;
+  whenLabel.textContent = when.text;
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'today-card-title';
+  button.dataset.itemId = entry.id;
+  button.tabIndex = 0;
+  button.setAttribute('aria-label', tr('home.trail.reviewItem', { title }));
+  const titleText = document.createElement('span');
+  titleText.className = 'today-card-title-text';
+  titleText.textContent = title;
+  button.appendChild(titleText);
+  button.addEventListener('click', event => openTodayTaskDetail(workspace.id, entry.id, event.currentTarget));
+  text.append(whenLabel, button);
+  card.append(check, text);
+  return card;
+}
+
+function buildTodayRest(workspace, model) {
+  const section = document.createElement('section');
+  section.className = 'today-rest';
+  section.setAttribute('aria-labelledby', 'today-rest-title');
+  const head = document.createElement('div');
+  head.className = 'today-rest-head';
+  head.innerHTML = `<h2 id="today-rest-title">${esc(tr('today.rest'))}</h2>`;
+  const week = document.createElement('button');
+  week.type = 'button';
+  week.className = 'today-week';
+  week.innerHTML = `<span>${esc(tr('today.thisWeek'))}</span>${TODAY_ARROW_ICON}`;
+  week.addEventListener('click', () => openTodayWeek());
+  head.appendChild(week);
+  section.appendChild(head);
+  const list = document.createElement('ul');
+  list.className = 'today-rest-list';
+  model.rest.forEach(entry => list.appendChild(buildTodayCard(workspace, entry)));
+  section.appendChild(list);
+  return section;
+}
+
+function openTodayTaskDetail(workspaceId, itemId, opener) {
+  return openHomePreviewItem(workspaceId, itemId, `today:${itemId}`, opener);
+}
+
+function openTodayWeek() {
+  const workspace = activeWs();
+  if (!workspace) return false;
+  Router.navigate({ type: 'calendar', wsId: workspace.id, query: { cal: 'week' } });
+  return true;
+}
+
+// ── Capture bar ──
+function todayCaptureSpaces() {
+  return (activeWs()?.categories || []).map(space => ({ id: space.id, name: space.name }));
+}
+
+function buildTodayCapture() {
+  const wrap = document.createElement('div');
+  wrap.className = 'today-capture';
+  wrap.innerHTML = `
+    <label class="sr-only" for="today-capture-input">${esc(tr('today.capture.label'))}</label>
+    <div class="today-capture-box">
+      <span class="today-capture-plus" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>
+      <div class="today-capture-field">
+        <input id="today-capture-input" class="today-capture-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" writingsuggestions="false" enterkeyhint="done" aria-describedby="today-capture-status">
+      </div>
+      <kbd class="today-capture-enter" aria-hidden="true">${esc(tr('today.capture.enter'))}</kbd>
+    </div>
+    <p id="today-capture-status" class="today-capture-status" role="status" aria-live="polite"></p>`;
+  const input = wrap.querySelector('.today-capture-input');
+  input.placeholder = tr('today.capture.placeholder');
+  input.value = todayCaptureDraft;
+  bindTodayCapture(wrap);
+  return wrap;
+}
+
+function setTodayCaptureStatus(wrap, message) {
+  const status = wrap?.querySelector('.today-capture-status');
+  if (!status) return;
+  status.textContent = message || '';
+  wrap.classList.toggle('has-status', !!message);
+}
+
+function setTodayCaptureBusy(wrap, busy) {
+  const input = wrap?.querySelector('.today-capture-input');
+  const box = wrap?.querySelector('.today-capture-box');
+  if (input) input.readOnly = !!busy;
+  if (box) {
+    if (busy) box.setAttribute('aria-busy', 'true');
+    else box.removeAttribute('aria-busy');
+  }
+  wrap?.classList.toggle('is-busy', !!busy);
+}
+
+function bindTodayCapture(wrap) {
+  const input = wrap.querySelector('.today-capture-input');
+  if (!input) return;
+  const box = wrap.querySelector('.today-capture-box');
+  const syncText = () => box?.classList.toggle('has-text', !!input.value.trim());
+  input.addEventListener('input', () => {
+    todayCaptureDraft = input.value;
+    setTodayCaptureStatus(wrap, '');
+    syncText();
+  });
+  input.addEventListener('compositionstart', () => { todayCaptureComposing = true; });
+  input.addEventListener('compositionend', () => {
+    todayCaptureComposing = false;
+    if (todayRenderDeferred) {
+      todayRenderDeferred = false;
+      requestAnimationFrame(() => { if (activeHome) renderBoard(); });
+    }
+  });
+  input.addEventListener('keydown', event => {
+    if (event.isComposing || event.keyCode === 229) return;
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      void submitTodayCapture(input);
+      return;
+    }
+    if (event.key === 'Escape' && input.value) {
+      event.preventDefault();
+      event.stopPropagation();
+      input.value = '';
+      todayCaptureDraft = '';
+      setTodayCaptureStatus(wrap, '');
+      syncText();
+    }
+  });
+  syncText();
+}
+
+async function submitTodayCapture(input) {
+  const wrap = input?.closest('.today-capture');
+  if (!wrap || todayCapturePending) return false;
+  const workspace = activeWs();
+  if (!workspace) return false;
+  if (!Array.isArray(workspace.categories) || !workspace.categories.length) {
+    setTodayCaptureStatus(wrap, tr('cal.needSpace'));
+    return false;
+  }
+  const parsed = parseTodayCapture(input.value, { spaces: todayCaptureSpaces() });
+  if (!parsed.title) {
+    if (input.value.trim()) {
+      setTodayCaptureStatus(wrap, tr('today.capture.needTitle'));
+      wrap.classList.remove('is-shake');
+      void wrap.offsetWidth;
+      wrap.classList.add('is-shake');
+    }
+    return false;
+  }
+  return commitTodayCapture(parsed, wrap);
+}
+
+// The capture destination is the exact Space (the #space named in the line,
+// else the active Space) and its single Inbox, which is created only when
+// absent. Two Inboxes, a vanished Space, or a changed graph add nothing.
+function createTodayCaptureContext(spaceId) {
+  const state = State.get();
+  const workspaceId = String(state.activeWsId || '');
+  const workspace = organizationWorkspaceTarget(workspaceId);
+  if (!workspace) return null;
+  const location = identitySpaceTarget(workspaceId, String(spaceId || ''));
+  if (!location || location.workspace !== workspace || !Array.isArray(location.space.groups)) return null;
+  const inboxes = location.space.groups.filter(group => group?.name === 'Inbox');
+  if (inboxes.length > 1) return null;
+  const inbox = inboxes[0] || null;
+  if (inbox && (!inbox.id || !Array.isArray(inbox.items))) return null;
+  if (inbox) {
+    const exactInbox = organizationGroupTarget(String(inbox.id));
+    if (!exactInbox
+        || exactInbox.workspace !== workspace
+        || exactInbox.space !== location.space
+        || exactInbox.group !== inbox) return null;
+  }
+  return {
+    workspaceId,
+    workspaceRef: workspace,
+    spaceId: String(location.space.id || ''),
+    spaceRef: location.space,
+    spaceName: String(location.space.name || ''),
+    inboxId: inbox ? String(inbox.id) : null,
+    inboxRef: inbox,
+  };
+}
+
+function resolveTodayCaptureTarget(context) {
+  if (!context || !context.workspaceId || !context.spaceId) return null;
+  const state = State.get();
+  if (String(state.activeWsId || '') !== context.workspaceId) return null;
+  const workspace = organizationWorkspaceTarget(context.workspaceId);
+  if (!workspace || workspace !== context.workspaceRef) return null;
+  const location = identitySpaceTarget(context.workspaceId, context.spaceId);
+  if (!location
+      || location.workspace !== workspace
+      || location.space !== context.spaceRef
+      || !Array.isArray(location.space.groups)) return null;
+  const inboxes = location.space.groups.filter(group => group?.name === 'Inbox');
+  if (context.inboxRef) {
+    if (inboxes.length !== 1
+        || inboxes[0] !== context.inboxRef
+        || String(inboxes[0].id || '') !== context.inboxId
+        || !Array.isArray(inboxes[0].items)) return null;
+    const exactInbox = organizationGroupTarget(context.inboxId);
+    if (!exactInbox
+        || exactInbox.workspace !== workspace
+        || exactInbox.space !== location.space
+        || exactInbox.group !== context.inboxRef) return null;
+    return { workspace, space: location.space, inbox: context.inboxRef };
+  }
+  if (context.inboxId != null || inboxes.length) return null;
+  return { workspace, space: location.space, inbox: null };
+}
+
+function todayCaptureReceiptText(parsed, context, now = Date.now()) {
+  const { end } = todayDayBounds(now);
+  let message;
+  if (parsed.at == null || parsed.at < end) {
+    message = tr('today.capture.added');
+  } else {
+    const day = parsed.at < todayDayBounds(end).end ? tr('today.capture.tomorrow') : todayShortDay(parsed.at);
+    message = tr('today.capture.planned', { when: `${day} ${todayClockText(parsed.at)}` });
+  }
+  return parsed.spaceId && context?.spaceName
+    ? tr('today.capture.inSpace', { message, space: context.spaceName })
+    : message;
+}
+
+async function commitTodayCapture(parsed, wrap = null) {
+  if (todayCapturePending
+      || isBoardTodoCompletionPending()
+      || (typeof isCalendarTaskMutationPending === 'function' && isCalendarTaskMutationPending())) return false;
+  if (State.isRecoveryRequired?.()) {
+    const error = new Error(tr('stateRecovery.detail'));
+    error.code = 'LOCUS_STATE_RECOVERY_REQUIRED';
+    if (typeof showStateRecoveryRequired === 'function') showStateRecoveryRequired(error);
+    return false;
+  }
+  const workspace = activeWs();
+  const context = createTodayCaptureContext(parsed.spaceId || String(workspace?.activeCatId || ''));
+  const target = context ? resolveTodayCaptureTarget(context) : null;
+  if (!target) {
+    setTodayCaptureStatus(wrap, tr('today.capture.unavailable'));
+    return false;
+  }
+
+  let inbox = target.inbox;
+  let todo;
+  try {
+    const allocateId = createOrganizationIdAllocator();
+    if (!inbox) {
+      inbox = {
+        id: allocateId(),
+        name: 'Inbox',
+        symbol: '📥',
+        color: '#6366f1',
+        collapsed: false,
+        items: [],
+      };
+    }
+    todo = stampNew({ id: allocateId(), type: 'todo', text: parsed.title, done: false });
+    if (parsed.at != null) todo.reminder = { at: parsed.at, notified: false };
+  } catch {
+    setTodayCaptureStatus(wrap, tr('today.capture.unavailable'));
+    return false;
+  }
+
+  const transaction = { context, itemId: todo.id, inboxWasCreated: !target.inbox };
+  todayCapturePending = transaction;
+  setTodayCaptureBusy(wrap, true);
+  let actionId;
+  try {
+    actionId = State.snapshot(tr('today.history.add'));
+    if (transaction.inboxWasCreated) target.space.groups.unshift(inbox);
+    inbox.items.push(todo);
+  } catch (error) {
+    if (todayCapturePending === transaction) todayCapturePending = null;
+    setTodayCaptureBusy(wrap, false);
+    State.requireRecovery?.();
+    if (typeof showStateRecoveryRequired === 'function') showStateRecoveryRequired(error);
+    return false;
+  }
+
+  let receipt;
+  try {
+    receipt = await State.persistNow(parsed.at != null ? { reconcileReminders: true } : {});
+  } catch (error) {
+    if (todayCapturePending === transaction) todayCapturePending = null;
+    setTodayCaptureBusy(wrap, false);
+    State.requireRecovery?.();
+    if (State.isRecoveryRequired?.() && typeof showStateRecoveryRequired === 'function') {
+      showStateRecoveryRequired(error);
+    }
+    return false;
+  }
+
+  if (todayCapturePending !== transaction) return false;
+  todayCapturePending = null;
+  todayCaptureDraft = '';
+  todayJustAddedId = todo.id;
+  setTodayCaptureBusy(wrap, false);
+  renderBoard();
+  renderSpaceNav();
+  if (parsed.at == null || receipt?.reminderReconciliation?.ok === true) {
+    toast(todayCaptureReceiptText(parsed, context), { undo: actionId });
+  } else {
+    toast(tr('cal.addScheduleWarning'), { tone: 'warning', duration: 8000, undo: actionId });
+  }
+  return true;
+}
+
+function bindTodayBoard() {
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) return;
+    const board = document.querySelector('#board .today');
+    if (board) paintTodayClock(board.querySelector('.today-clock-block'), { animate: false });
+  });
+}
+
+function buildTodayBoard(workspace, now = Date.now()) {
+  const model = todayTaskModel(workspace, now, []);
+  const root = document.createElement('div');
+  root.className = 'today';
+  root.dataset.todayDay = todayDayKey(now);
+  const top = document.createElement('div');
+  top.className = 'today-top';
+  top.append(buildTodayClock(now), buildTodayNow(workspace, model));
+  root.appendChild(top);
+  if (model.rest.length) root.appendChild(buildTodayRest(workspace, model));
+  root.appendChild(buildTodayCapture());
+  return root;
+}
+
 // Home surface renderer. Returns false (and drops the flag) if the workspace
 // vanished, so renderBoard() falls through to the category board.
 function renderHome() {
@@ -19495,117 +20335,31 @@ function renderHome() {
   const $b = document.getElementById('board');
   $b.classList.remove('group-page-mode', 'list-mode', 'canvas-mode', 'explorer-mode', 'timeline-mode', 'gallery-mode', 'graph-mode', 'calendar-mode');
   $b.classList.add('home-mode');
+  // An IME composition in the capture bar must not be torn down by a repaint
+  // (tab events and storage sync both repaint Home). Finish it first.
+  if (todayCaptureComposing && $b.querySelector('.today')) {
+    todayRenderDeferred = true;
+    return true;
+  }
+  const capture = document.getElementById('today-capture-input');
+  const captureFocused = !!capture && document.activeElement === capture;
+  const selection = captureFocused ? [capture.selectionStart, capture.selectionEnd] : null;
   $b.innerHTML = '';
 
-  // Home opens with one real recovery trail. The component derives both its
-  // latest saved row and its next-save destination from the active Workspace;
-  // no decorative stand-in or parallel preference is stored.
-  const trail = buildHomeTrail(ws);
-  $b.appendChild(trail);
-
-  // Inbox is the next review zone. Omit the item featured immediately above so
-  // the hierarchy advances rather than repeating the same result. A missing or
-  // ambiguous Inbox remains owned by the Trail instead of becoming a guessed
-  // review target here.
-  const inboxContext = createLandingInboxContext(ws);
-  const zonePlan = homeProgressiveZonePlan(ws, inboxContext);
-  if (zonePlan.showInbox) {
-    $b.appendChild(buildHomeInboxZone({
-      context: inboxContext,
-      excludeItemId: trail.dataset.featuredItemId || null,
-    }));
-  }
-
-  // With no Space, the Trail's Create space action is the entire next step.
-  // Avoid repeating the same setup request in an empty Spaces surface.
-  if (!zonePlan.showSpaces) return true;
-
-  const spacesHeading = document.createElement('h2');
-  spacesHeading.className = 'home-zone-heading';
-  spacesHeading.textContent = tr('home.recentSpaces');
-  $b.appendChild(spacesHeading);
-
-  // Show at most three Spaces. Until recency is measured, the active Space is
-  // first and repository order is the deterministic fallback.
-  const grid = document.createElement('div');
-  grid.className = 'home-grid home-space-register';
-
-  const activeCategory = activeCat();
-  const visibleCategories = [activeCategory, ...ws.categories.filter(cat => cat !== activeCategory)]
-    .filter(Boolean)
-    .slice(0, 3);
-  visibleCategories.forEach(cat => {
-    const items = cat.groups.reduce((acc, g) => acc.concat(g.items), []);
-    const card = document.createElement('article');
-    card.className = 'home-card home-space-row';
-    card.dataset.catId = cat.id;
-
-    const hd = document.createElement('div');
-    hd.className = 'home-card-hd home-space-identity';
-    hd.innerHTML = `
-      <span class="home-card-sym" aria-hidden="true">${esc(cat.symbol || '\u{1F5C2}')}</span>
-      <div class="home-card-titles">
-        <div class="home-card-name">${esc(cat.name)}</div>
-        <div class="home-card-count">${esc(tr('home.items', { n: items.length }))}</div>
-      </div>
-      <button class="home-card-more" type="button">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="8" r="1.3" fill="currentColor"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="12" cy="8" r="1.3" fill="currentColor"/></svg>
-      </button>`;
-    const homeMore = hd.querySelector('.home-card-more');
-    homeMore.dataset.catId = cat.id;
-    homeMore.title = tr('organization.space.actions', { name: cat.name });
-    homeMore.setAttribute('aria-label', tr('organization.space.actions', { name: cat.name }));
-    homeMore.addEventListener('click', e => {
-      e.stopPropagation();
-      showAnchoredContextMenu(homeMore, [
-        { text: tr('home.trail.openSpace'), icon: cmIcons.open, action: () => openCategory(cat.id) },
-        { text: tr('organization.renameMenu'), icon: cmIcons.edit, action: () => openOrganizationName('space', cat.id, homeMore) },
-        categoryReminderMenuItem(cat, homeMore),
-        ws.categories.length > 1 ? { text: tr('organization.space.delete'), icon: cmIcons.delete, danger: true, action: () => openOrganizationDelete('space', cat.id, homeMore) } : null,
-      ].filter(Boolean));
-    });
-    card.appendChild(hd);
-
-    const main = document.createElement('div');
-    main.className = 'home-card-main home-space-latest';
-    const body = document.createElement('div');
-    body.className = 'home-card-body';
-    if (!items.length) {
-      const em = document.createElement('div');
-      em.className = 'home-card-empty';
-      em.textContent = tr('home.empty');
-      body.appendChild(em);
-    } else {
-      newestHomeItems(items, 1).forEach(it => body.appendChild(buildHomePreviewRow(it, {
-        workspaceId: ws.id,
-        origin: `space:${cat.id}`,
-      })));
+  // Home is the Today board (2026-11 canvas): clock, one Now card, the rest of
+  // today, and the capture bar. Saved-page recovery lives in Search and All
+  // links, Inbox review in the rail, and open tabs behind the edge tab, so the
+  // former Trail, Inbox zone, and Space register are no longer rendered here.
+  $b.appendChild(buildTodayBoard(ws));
+  todayJustAddedId = null;
+  if (captureFocused) {
+    const rebuilt = document.getElementById('today-capture-input');
+    if (rebuilt) {
+      try { rebuilt.focus({ preventScroll: true }); } catch { try { rebuilt.focus(); } catch {} }
+      try { if (selection) rebuilt.setSelectionRange(selection[0], selection[1]); } catch {}
     }
-    main.appendChild(body);
-    card.appendChild(main);
-
-    const ft = document.createElement('button');
-    ft.className = 'home-card-viewall home-space-open';
-    ft.type = 'button';
-    ft.innerHTML = `<span>${esc(tr('home.trail.openSpace'))}</span><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h7M6 3l3 3-3 3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-    card.appendChild(ft);
-
-    const go = () => openCategory(cat.id);
-    ft.addEventListener('click', go);
-
-    // Drop a dragged tab onto a card to save it into that category's Inbox.
-    card.addEventListener('dragover', e => {
-      if (drag?.kind === 'tab' || drag?.kind === 'tabs-multi') { e.preventDefault(); card.classList.add('drop-target'); }
-    });
-    card.addEventListener('dragleave', () => card.classList.remove('drop-target'));
-    card.addEventListener('drop', async e => {
-      if (drag?.kind === 'tab' || drag?.kind === 'tabs-multi') { e.preventDefault(); card.classList.remove('drop-target'); await dropTabsIntoCategory(cat); }
-    });
-
-    grid.appendChild(card);
-  });
-
-  $b.appendChild(grid);
+  }
+  startTodayClock();
   return true;
 }
 
@@ -31894,6 +32648,7 @@ function bindStatic() {
     const rail = document.getElementById('tabrail');
     setOpenTabsRailCollapsed(!rail.classList.contains('collapsed'), { persist: true });
   };
+  bindTodayBoard();
   const railSaveAll = document.getElementById('rail-saveall');
   if (railSaveAll) railSaveAll.onclick = saveAllTabs;
 

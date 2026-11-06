@@ -301,8 +301,11 @@ if (!newtab.includes('restoredTabId') || !/chrome\.tabs\.get\(tab\.restoredTabId
 if (!/visibleFocusableElements[\s\S]{0,700}getClientRects\(\)\.length/.test(newtab) || !/trapTabKey[\s\S]{0,300}visibleFocusableElements/.test(newtab)) {
   fail('Modal focus traps must ignore non-rendered controls');
 }
-if (!/newestHomeItems\(items[^)]*\)[\s\S]{0,1200}buildHomePreviewRow/.test(newtab)) {
-  fail('Home must show newly saved items instead of the oldest Inbox entries');
+// Home is the Today board (2026-11): it lists real to-dos from the existing
+// item model instead of previewing saved pages.
+if (!/function renderHome\(\)[\s\S]{0,2400}buildTodayBoard\(ws\)/.test(newtab)
+  || !/function todayTaskModel\([\s\S]{0,3600}item\.type === 'todo'/.test(newtab)) {
+  fail('Home must render the Today board from existing to-dos');
 }
 if (!newtab.includes('failedCloseCount') || !newtab.includes('source tab stayed open')) {
   fail('Capture copy must report partial tab-close failures truthfully');

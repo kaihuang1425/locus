@@ -349,7 +349,8 @@ function testStaticOrganizationBoundary() {
   const entryContracts = [
     ['buildWsChip', /openOrganizationDelete\('workspace', ws\.id, chip\)/],
     ['renderCategoryTabs', /openOrganizationDelete\('space', cat\.id, b\)/],
-    ['renderHome', /openOrganizationDelete\('space', cat\.id, (?:homeMore|hd\.querySelector\('\.home-card-more'\))\)/],
+    // 2026-11: Home is the Today board and no longer renders the Space
+    // register, so its card menu is no longer a Space entry point.
     ['renderSpaceNav', /openOrganizationDelete\('space', cat\.id, el\)/],
     ['openWsGrid', /openOrganizationDelete\('workspace', ws\.id, e\.target\.closest\('\.del'\)\)/],
   ];
@@ -364,13 +365,12 @@ function testStaticOrganizationBoundary() {
   assert.match(reminderMenu, /openEntityReminderPickerOrReport\([\s\S]*'category',[\s\S]*cat\.id,[\s\S]*hasReminder \? cat\.reminders\[0\]\.id : undefined,[\s\S]*\{ opener \}/, 'The Space menu must reopen the first stable reminder identity, report stale capture failure, and preserve its real opener');
   for (const [name, opener] of [
     ['renderCategoryTabs', 'b'],
-    ['renderHome', 'homeMore'],
     ['renderSpaceNav', 'el'],
   ]) {
     assert.match(extractFunction(name), new RegExp(`categoryReminderMenuItem\\(cat, ${opener}\\)`), `${name} must expose the same stable reminder recovery action with its visible opener`);
   }
-  assert.match(css, /\.cat-tabs-wrap\s*\{\s*display:\s*none !important;/, 'The legacy category strip remains hidden, so visible Home/sidebar reminder wiring is required');
-  assert.equal((source.match(/openOrganizationDelete\(/g) || []).length, 6, 'Five entry points plus the controller must share one organization path');
+  assert.match(css, /\.cat-tabs-wrap\s*\{\s*display:\s*none !important;/, 'The legacy category strip remains hidden, so visible sidebar reminder wiring is required');
+  assert.equal((source.match(/openOrganizationDelete\(/g) || []).length, 5, 'Four entry points plus the controller must share one organization path');
   assert.equal((source.match(/state\.workspaces = state\.workspaces\.filter/g) || []).length, 1, 'Workspace mutation must exist only in the shared controller');
   assert.equal((source.match(/info\.ws\.categories = info\.ws\.categories\.filter/g) || []).length, 1, 'Space mutation must exist only in the shared controller');
   assert.match(inheritedInterlocksSource, /setElementInertOwner\(element, 'organization'/, 'Late-mounted body surfaces must inherit an active organization interlock');

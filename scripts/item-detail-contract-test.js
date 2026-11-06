@@ -1174,9 +1174,11 @@ function testHomePreviewRowAndReturnFocus() {
   const inboxSource = extractFunction('buildHomeInboxZone');
   assert.ok(inboxSource.includes('origin: `inbox:${cat?.id || \'\'}`'),
     'the Inbox preview must use a stable origin distinct from its Space card');
-  const homeSource = extractFunction('renderHome');
-  assert.ok(homeSource.includes('origin: `space:${cat.id}`'),
-    'each Space-register preview must use its own stable origin');
+  // 2026-11: Home is the Today board. Its task titles reuse the exact Home
+  // preview route with their own stable return key.
+  const todayDetailSource = extractFunction('openTodayTaskDetail');
+  assert.ok(todayDetailSource.includes('openHomePreviewItem(workspaceId, itemId, `today:${itemId}`, opener)'),
+    'Today task details must reuse the exact Home preview route with their own stable return key');
 }
 
 function detailImplementationSource() {
