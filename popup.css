@@ -970,6 +970,10 @@ body {
 }
 #pop-toast[data-tone="error"] { --pop-toast-icon: #e0281b; }
 #pop-toast[data-tone="error"]::before { content: '!'; }
+#pop-toast[data-tone="warning"] { --pop-toast-icon: #ff5b2e; }
+#pop-toast[data-tone="warning"]::before { content: '!'; }
+#pop-toast[data-tone="info"] { --pop-toast-icon: #35423c; }
+#pop-toast[data-tone="info"]::before { content: 'i'; }
 #pop-toast.interactive { border-radius: 14px; }
 #pop-toast .pop-toast-action { border: 0; border-radius: 9px; background: transparent; color: #b9c8ff; font-weight: 700; }
 #pop-toast .pop-toast-action:hover { background: rgba(246, 243, 235, .08); }

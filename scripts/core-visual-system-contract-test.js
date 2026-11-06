@@ -766,12 +766,18 @@ assert.equal(toastHost.classList.contains('hidden'), true);
 // At most two receipts: a third drops the oldest. An Undo result replaces the
 // receipt that offered it, in place.
 toastControllerContext.__toast('First', { tone: 'info' });
-toastControllerContext.__toast('Second', { undo: 41 });
+toastControllerContext.__toast('Second', { undo: 91 });
 toastControllerContext.__toast('Third', { tone: 'info' });
 toastControllerContext.__dismissToast();
 assert.equal(toastMessage.textContent, 'Second', 'the second-newest receipt waits behind the newest');
 toastControllerContext.__dismissToast();
 assert.equal(toastHost.classList.contains('hidden'), true, 'the oldest of three was dropped');
+// A receipt whose Undo is no longer the latest action (41 while history is at
+// 91) is not brought forward with a dead Undo.
+toastControllerContext.__toast('Archived X', { undo: 41 });
+toastControllerContext.__toast('Copied', { tone: 'info' });
+toastControllerContext.__dismissToast();
+assert.equal(toastHost.classList.contains('hidden'), true, 'a stale Undo receipt is not promoted');
 toastControllerContext.__toast('Moved 2 to today', { undo: 42 });
 toastUndo.onclick();
 assert.deepEqual(undoCalls, [42], 'Undo on the receipt undoes exactly its own action');

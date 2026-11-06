@@ -7741,6 +7741,7 @@ body.item-sel-mode .lv-stack-hd {
   flex-wrap: wrap;
   gap: 8px;
 }
+#toast-keep,
 #toast-action,
 #toast-undo,
 #toast-close {
@@ -7751,7 +7752,8 @@ body.item-sel-mode .lv-stack-hd {
   cursor: pointer;
 }
 #toast-action,
-#toast-undo { padding: 0 14px; }
+#toast-undo,
+#toast-keep { padding: 0 14px; }
 #toast-action {
   background: var(--accent-bg);
   color: var(--accent-text);
@@ -7759,6 +7761,12 @@ body.item-sel-mode .lv-stack-hd {
   transition: background var(--trans), border-color var(--trans);
 }
 #toast-undo {
+  background: transparent;
+  color: var(--text2);
+  border: 1px solid var(--border2);
+  transition: background var(--trans), border-color var(--trans), color var(--trans);
+}
+#toast-keep {
   background: transparent;
   color: var(--text2);
   border: 1px solid var(--border2);
@@ -7775,13 +7783,14 @@ body.item-sel-mode .lv-stack-hd {
 }
 #toast-close svg { width: 14px; height: 14px; }
 #toast-action:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
-#toast-undo:hover { background: var(--bg3); border-color: var(--text3); color: var(--text); }
+#toast-undo:hover, #toast-keep:hover { background: var(--bg3); border-color: var(--text3); color: var(--text); }
 #toast-close:hover { border-color: var(--border2); background: var(--index-paper); color: var(--text); }
 #toast-action:focus-visible,
 #toast-undo:focus-visible,
+#toast-keep:focus-visible,
 #toast-close:focus-visible { outline: 3px solid var(--index-focus); outline-offset: 1px; }
 #toast-msg:focus-visible { outline: 3px solid var(--index-focus); outline-offset: 2px; }
-#toast-action.hidden, #toast-undo.hidden { display: none; }
+#toast-action.hidden, #toast-undo.hidden, #toast-keep.hidden { display: none; }
 body[data-anim="off"] #toast { transition: none; }
 
 @media (max-width: 520px) {
@@ -7801,6 +7810,7 @@ body[data-anim="off"] #toast { transition: none; }
     grid-row: 2;
     width: 100%;
   }
+  #toast-keep,
   #toast-action,
   #toast-undo { flex: 1 1 140px; }
 }
@@ -7909,7 +7919,7 @@ body.blur-privacy .ws-name {
   #toast[data-tone="warning"] #toast-mark,
   #toast[data-tone="error"] #toast-mark { color: Highlight; }
   #toast-action { background: Highlight; color: HighlightText; border-color: Highlight; }
-  #toast-undo { color: CanvasText; border-color: CanvasText; }
+  #toast-undo, #toast-keep { color: CanvasText; border-color: CanvasText; }
   #toast-close { color: CanvasText; border-color: ButtonText; }
   button:focus-visible,
   [role="button"]:focus-visible,
@@ -13984,7 +13994,8 @@ body[data-theme] #toast .toast-sub {
 body[data-theme] #toast .toast-sub[hidden] { display: none; }
 body[data-theme] #toast .toast-actions { flex: 0 0 auto; gap: 2px; flex-wrap: nowrap; }
 body[data-theme] #toast-action,
-body[data-theme] #toast-undo {
+body[data-theme] #toast-undo,
+body[data-theme] #toast-keep {
   min-height: 40px;
   padding: 0 12px;
   border: 0;
@@ -13995,11 +14006,16 @@ body[data-theme] #toast-undo {
   transition: background .12s ease, transform .1s ease;
 }
 body[data-theme] #toast-action:hover,
-body[data-theme] #toast-undo:hover { background: rgba(246, 243, 235, .08); border: 0; color: #d6defe; }
+body[data-theme] #toast-undo:hover,
+body[data-theme] #toast-keep:hover { background: rgba(246, 243, 235, .08); border: 0; color: #d6defe; }
 body[data-theme] #toast-action:active,
-body[data-theme] #toast-undo:active { transform: scale(.94); }
+body[data-theme] #toast-undo:active,
+body[data-theme] #toast-keep:active { transform: scale(.94); }
 body[data-theme] #toast-action:disabled,
-body[data-theme] #toast-undo:disabled { opacity: .5; cursor: default; }
+body[data-theme] #toast-undo:disabled,
+body[data-theme] #toast-keep:disabled { opacity: .5; cursor: default; }
+/* Keep is the safe answer on a Keep/Delete receipt: plain, beside the accent action. */
+body[data-theme] #toast-keep { color: #f6f3eb; }
 body[data-theme] #toast-close {
   width: 32px;
   min-height: 32px;
@@ -14027,8 +14043,14 @@ body[data-theme] #toast :is(#toast-action, #toast-undo, #toast-close, #toast-msg
   transform-origin: 0 50%;
   pointer-events: none;
 }
+/* Longhands, not the shorthand: the shorthand would reset animation-play-state
+   to running and out-rank the pause rules below (N5). */
 #toast[data-draining="true"] .toast-drain.is-running {
-  animation: locus-toast-drain var(--toast-ms, 5200ms) linear var(--toast-elapsed, 0ms) forwards;
+  animation-name: locus-toast-drain;
+  animation-duration: var(--toast-ms, 5200ms);
+  animation-timing-function: linear;
+  animation-delay: var(--toast-elapsed, 0ms);
+  animation-fill-mode: forwards;
 }
 #toast .toast-drain.is-paused,
 #toast.is-held .toast-drain { animation-play-state: paused; }
@@ -14048,6 +14070,10 @@ body[data-theme] #toast-behind {
 }
 body[data-theme] #toast-behind.hidden { display: none; }
 body[data-surface="home"] #toast-behind { bottom: 108px; }
+/* Follows the narrow Home rule for #toast (bottom: 84px), after the base rule above. */
+@media (max-width: 760px) {
+  body[data-surface="home"] #toast-behind { bottom: 84px; }
+}
 .toast-behind-mark { width: 28px; height: 28px; flex-shrink: 0; border-radius: 50%; background: var(--toast-icon); }
 .toast-behind-msg { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 

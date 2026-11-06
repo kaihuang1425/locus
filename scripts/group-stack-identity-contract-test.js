@@ -173,6 +173,7 @@ const controllerFunctions = [
   'applyGroupDuplicateLayout',
   'reconcileDuplicatedGroupReminders',
   'reconcileRemindersAfterHistoryChange',
+  'reminderReconcileRetry',
   'performUndo',
   'performRedo',
   'identityEditorPrefix',
@@ -1703,7 +1704,10 @@ async function testDuplicateFocusedGroupRouteAndDelayedWarning() {
   assert.equal(warning.message, i18n.en['history.reminderReconcileWarning'],
     'A delayed reconciliation failure after a newer action must use generic recovery guidance');
   assert.equal(warning.options.tone, 'warning');
-  assert.equal(warning.options.duration, 8000);
+  // The generic warning offers Retry (it asks the service worker again), so it
+  // waits for an answer instead of closing on a timer.
+  assert.equal(warning.options.actionLabel, i18n.en['toast.retry']);
+  assert.equal(typeof warning.options.action, 'function');
   assert.equal(warning.options.undo, undefined,
     'A delayed reconciliation failure must not expose stale exact Undo');
 

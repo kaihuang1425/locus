@@ -2499,13 +2499,8 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
       const notificationIdentity = parsed.reminderId
         ? `${encodeURIComponent(parsed.entId)}|${encodeURIComponent(parsed.reminderId)}`
         : `${parsed.entId}-${parsed.legacyIndex}`;
-      await createNativeNotification((isGroup ? 'te-gnotif-' : 'te-cnotif-') + notificationIdentity, {
-        type: 'basic',
-        iconUrl: chrome.runtime.getURL('icons/icon128.png'),
-        title: '⏰ ' + (r.label || ent.name || (isGroup ? 'Group reminder' : 'Category reminder')),
-        message: (isGroup ? 'Group: ' : 'Category: ') + (ent.name || ''),
-        priority: 2
-      });
+      await createNativeNotification((isGroup ? 'te-gnotif-' : 'te-cnotif-') + notificationIdentity,
+        entityReminderNoticeOptions(s, ent, r, r.at));
       const next = nextRecurTime(r.at, r.recur);
       if (next != null) { r.at = next; r.notified = false; } else { r.notified = true; }
       try {
@@ -2582,6 +2577,24 @@ function reminderNoticeOptions(state, found, at) {
   };
 }
 
+// Group and Space reminders read like item reminders: the label (or the
+// group/Space name) as the title and "Due HH:MM · <name>" in the user's
+// language. They carry no answer buttons: Done and Snooze belong to items.
+function entityReminderNoticeOptions(state, ent, r, at) {
+  const copy = reminderNoticeCopy(state);
+  const name = String(ent?.name || '').replace(/\s+/g, ' ').trim();
+  const title = String(r?.label || '').replace(/\s+/g, ' ').trim().slice(0, 120) || name.slice(0, 120) || copy.untitled;
+  const locale = appLocale(state) === 'zh-TW' ? 'zh-TW' : 'en-GB';
+  const time = new Date(at).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+  return {
+    type: 'basic',
+    iconUrl: chrome.runtime.getURL('icons/icon128.png'),
+    title,
+    message: copy.due(time, name),
+    priority: 2,
+  };
+}
+
 // The answers a notice offers. Snooze moves a one-off reminder; a repeating
 // reminder has already re-armed its next occurrence when it fires, and moving
 // it would shift the whole series, so it offers Done (to-dos) only.
@@ -2613,8 +2626,9 @@ async function answerReminderNotice(notifId, buttonIndex, now = Date.now()) {
   }
   // A notice stays in the notification centre after its reminder is moved.
   // Snooze applies only to the occurrence that fired (still marked notified);
-  // a reminder changed since then is left alone.
-  if (action === 'snooze' && !(it.reminder && it.reminder.notified === true && !it.reminder.recur)) {
+  // a reminder changed since then is left alone, and so is a to-do already
+  // finished (on the in-Locus card, Today, or another device).
+  if (action === 'snooze' && (it.done === true || !(it.reminder && it.reminder.notified === true && !it.reminder.recur))) {
     await clearNativeNotification(notifId).catch(() => {});
     return { ok: false, reason: 'stale', action };
   }

@@ -358,7 +358,7 @@ function beginPopupCapture() {
     return false;
   }
   if (popupCapturePending) {
-    toast(tr('captureBusy'));
+    toast(tr('captureBusy'), { tone: 'warning' });
     return false;
   }
   popupCapturePending = true;
@@ -1134,7 +1134,7 @@ function resetToMain(focusTarget = $('ps')) {
 
 async function quickCapture(tab) {
   const target = findCaptureTarget();
-  if (!target) return toast(tr('openFirst'));
+  if (!target) return toast(tr('openFirst'), { tone: 'warning' });
   await doSave(target.ws, target.cat, target.group, tab, { quick: true });
 }
 
@@ -1202,7 +1202,7 @@ function openSavePicker(tab, mode = 'tab') {
         row.onclick = () => {
           const selected = resolveGroupById(group.id);
           if (!selected || selected.ws !== ws || selected.cat !== cat || selected.group !== group) {
-            toast(tr('openFirst'));
+            toast(tr('openFirst'), { tone: 'warning' });
             return;
           }
           if (pickerMode === 'tab') {
@@ -1843,7 +1843,7 @@ function isValidPopupLocateEffectResult(result, intent) {
 
 async function doSave(ws, cat, group, tab, { locate = false, quick = false } = {}) {
   if (!isPopupCapturableUrl(tab?.url)) {
-    toast(tr('cannotSave'));
+    toast(tr('cannotSave'), { tone: 'warning' });
     return false;
   }
   if (!beginPopupCapture()) return false;
@@ -1876,7 +1876,7 @@ async function doSave(ws, cat, group, tab, { locate = false, quick = false } = {
       }
       if (!filterPopupCaptureTabs([tab], group.items).length) {
         state = snapshot;
-        toast(tr('alreadySaved'));
+        toast(tr('alreadySaved'), { tone: 'info' });
         return false;
       }
       const meta = captureFields(tab);
@@ -2092,7 +2092,7 @@ async function hibernateSingle(tab) {
     await load();
     return true;
   } catch {
-    toast(tr('couldNotHibernate'));
+    toast(tr('couldNotHibernate'), { tone: 'error' });
     return false;
   } finally {
     finishPopupCapture();
@@ -2238,9 +2238,9 @@ function currentSaveMode() {
 }
 
 function openSaveWindow(opener) {
-  if (!state?.workspaces?.length) return toast(tr('openFirst'));
+  if (!state?.workspaces?.length) return toast(tr('openFirst'), { tone: 'warning' });
   const target = resolvePopupSelectedTarget(windowSaveTargetGroupId);
-  if (!target?.cat) return toast(tr('openFirst'));
+  if (!target?.cat) return toast(tr('openFirst'), { tone: 'warning' });
   $('sw-count').textContent = all.length;
   $('sw-go-count').textContent = all.length;
   $('sw-destination-name').textContent = `${target.cat.name} / ${target.group.name}`;
@@ -2255,9 +2255,9 @@ function openSaveWindow(opener) {
 }
 
 async function saveWindow({ mode, closeTabs, note, tags } = {}) {
-  if (!state?.workspaces?.length) return toast(tr('openFirst'));
+  if (!state?.workspaces?.length) return toast(tr('openFirst'), { tone: 'warning' });
   let target = resolvePopupSelectedTarget(windowSaveTargetGroupId);
-  if (!target?.cat) return toast(tr('openFirst'));
+  if (!target?.cat) return toast(tr('openFirst'), { tone: 'warning' });
   if (!beginPopupCapture()) return false;
   try {
     mode = ['links', 'group', 'queue'].includes(mode) ? mode
@@ -2319,7 +2319,7 @@ async function saveWindow({ mode, closeTabs, note, tags } = {}) {
       items = filterPopupCaptureTabs(capturableTabs, receiving.items, dedupe).map(stampTab);
       if (!items.length && !note) {
         state = snapshot;
-        toast(tr('alreadySaved'));
+        toast(tr('alreadySaved'), { tone: 'info' });
         return false;
       }
       if (note) {
@@ -2438,9 +2438,9 @@ function buildPopupBookmarkImport(tree, allocateId) {
 
 async function importBookmarksFromPopup() {
   const button = $('more-import-bookmarks');
-  if (!chrome.bookmarks?.getTree) return toast(tr('bookmarksUnavailable'));
+  if (!chrome.bookmarks?.getTree) return toast(tr('bookmarksUnavailable'), { tone: 'warning' });
   const preview = findCaptureTarget();
-  if (!preview?.cat) return toast(tr('openFirst'));
+  if (!preview?.cat) return toast(tr('openFirst'), { tone: 'warning' });
   if (!beginPopupCapture()) return false;
   button.disabled = true;
   button.setAttribute('aria-busy', 'true');
@@ -2453,7 +2453,7 @@ async function importBookmarksFromPopup() {
     const target = resolvePopupCaptureSpaceTarget(state, descriptor);
     const { groups, imported } = buildPopupBookmarkImport(tree, allocateId);
     if (!imported) {
-      toast(tr('noBookmarks'));
+      toast(tr('noBookmarks'), { tone: 'info' });
       return false;
     }
     if (target.cat.groups == null) target.cat.groups = [];
@@ -2498,14 +2498,16 @@ function trapTabKey(event, root, extraRoot = null) {
   }
 }
 
-function toast(message, { persistent = false } = {}) {
+function toast(message, { persistent = false, tone = '' } = {}) {
   const el = $('pop-toast');
   el.classList.remove('interactive');
   el.textContent = message;
-  // Same notification style as the new tab: a persistent popup receipt reports
-  // a problem, a passing one confirms.
-  el.dataset.tone = persistent ? 'error' : 'success';
-  el.setAttribute('role', persistent ? 'alert' : 'status');
+  // Same notification style as the new tab. Each caller names its tone; a
+  // persistent receipt without one reports a problem, a passing one confirms.
+  const tones = ['success', 'info', 'warning', 'error'];
+  const resolved = tones.includes(tone) ? tone : (persistent ? 'error' : 'success');
+  el.dataset.tone = resolved;
+  el.setAttribute('role', resolved === 'error' ? 'alert' : 'status');
   requestAnimationFrame(() => el.classList.add('show'));
   clearTimeout(toastTimer);
   toastTimer = persistent ? null : setTimeout(() => el.classList.remove('show'), 1600);
@@ -2526,7 +2528,7 @@ function bind() {
   $('more-back').onclick = returnToPreviousSection;
   $('more-save-current').onclick = () => {
     const tab = all.find(candidate => candidate.id === activeTabId);
-    if (!tab) return toast(tr('cannotSave'));
+    if (!tab) return toast(tr('cannotSave'), { tone: 'warning' });
     startCapture(tab);
   };
   $('more-import-bookmarks').onclick = importBookmarksFromPopup;

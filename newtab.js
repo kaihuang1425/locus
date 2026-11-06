@@ -50,6 +50,8 @@ const I18N = {
     'dueCard.dismiss': 'Dismiss reminder',
     'dueCard.doneToast': 'Done',
     'dueCard.snoozed': 'Back at {time}',
+    'dueCard.snoozedDay': 'Back {day} at {time}',
+    'dueCard.dayTomorrow': 'tomorrow',
     'dueCard.failed': 'Couldn’t save that. The reminder is unchanged.',
     'nav.plan': 'Plan',
     'plan.title': 'Plan',
@@ -795,6 +797,19 @@ const I18N = {
     'palette.noActiveTab': 'No savable browser page was found',
     'palette.noSpace': 'Create a space first',
     'toast.language': 'Language: {language}',
+    'toast.retry': 'Retry',
+    'toast.keep': 'Keep',
+    'toast.actionFailed': 'That didn’t work. Try again.',
+    'history.reminderReconcileFixed': 'Reminders are up to date',
+    'history.reminderReconcileStill': 'Reminders still couldn’t be updated. Restart your browser, then review Calendar.',
+    'tools.history.delete': 'Delete “{name}”',
+    'tools.history.deleteTransaction': 'Delete transaction',
+    'tools.deleted': 'Deleted “{name}”',
+    'tools.deletedTransaction': 'Transaction deleted',
+    'tools.waterResetAsk': 'Reset today’s glasses to 0?',
+    'tools.waterReset': 'Reset',
+    'tools.waterResetDone': 'Today’s glasses are back to 0',
+    'schema.newerData': 'This data was saved by a newer version of Locus (schema {schema}). Update the extension before opening it.',
     'feedback.dismiss': 'Dismiss notification',
     'feedback.updatedElsewhere': 'Updated from another Locus window',
     'feedback.storageNearFull': 'Local storage is {percent}% full. Export a backup, then review Archive.',
@@ -1760,6 +1775,8 @@ const I18N = {
     'dueCard.dismiss': '關閉提醒',
     'dueCard.doneToast': '已完成',
     'dueCard.snoozed': '{time} 再提醒',
+    'dueCard.snoozedDay': '{day} {time} 再提醒',
+    'dueCard.dayTomorrow': '明天',
     'dueCard.failed': '無法儲存，提醒沒有變更。',
     'nav.plan': '規劃',
     'plan.title': '規劃',
@@ -2505,6 +2522,19 @@ const I18N = {
     'palette.noActiveTab': '目前沒有可儲存的網頁分頁',
     'palette.noSpace': '請先建立空間',
     'toast.language': '語言：{language}',
+    'toast.retry': '重試',
+    'toast.keep': '保留',
+    'toast.actionFailed': '沒有成功，請再試一次。',
+    'history.reminderReconcileFixed': '提醒已更新',
+    'history.reminderReconcileStill': '提醒還是無法更新。請重新啟動瀏覽器，再到「行事曆」確認。',
+    'tools.history.delete': '刪除「{name}」',
+    'tools.history.deleteTransaction': '刪除交易',
+    'tools.deleted': '已刪除「{name}」',
+    'tools.deletedTransaction': '已刪除交易',
+    'tools.waterResetAsk': '要把今天的杯數歸零嗎？',
+    'tools.waterReset': '歸零',
+    'tools.waterResetDone': '今天的杯數已歸零',
+    'schema.newerData': '這份資料由較新版的 Locus 儲存（schema {schema}），請先更新擴充功能再開啟。',
     'feedback.dismiss': '關閉通知',
     'feedback.updatedElsewhere': '已套用另一個 Locus 視窗的更新',
     'feedback.storageNearFull': '本機儲存空間已使用 {percent}%。請先匯出備份，再整理封存內容。',
@@ -3700,6 +3730,8 @@ const State = (() => {
     future = [];
     mutationEpoch++;
     recoveryRequired = false;
+    // Undo receipts on screen point into the history that was just cleared.
+    if (typeof dropToastUndoAfterHistoryReset === 'function') dropToastUndoAfterHistoryReset();
   };
   function requireRecovery() {
     if (!recoveryRequired) {
@@ -4064,6 +4096,7 @@ const State = (() => {
     clearUndoHistory() {
       history.length = 0;
       future.length = 0;
+      if (typeof dropToastUndoAfterHistoryReset === 'function') dropToastUndoAfterHistoryReset();
     },
     async undo(expectedActionId = null) {
       if (!history.length) return null;
@@ -4997,11 +5030,11 @@ function persistReminderIdentityMigration(fromSchema, normalized) {
   return State.persistNow({ recordMutation: false })
     .then(() => chrome.runtime.sendMessage({ type: 'reconcile-reminders' }))
     .then(result => {
-      if (result?.ok === false) toast(tr('history.reminderReconcileWarning'), { tone: 'warning', duration: 8000 });
+      if (result?.ok === false) toast(tr('history.reminderReconcileWarning'), { tone: 'warning', ...reminderReconcileRetry() });
       return result;
     })
     .catch(() => {
-      if (!State.isRecoveryRequired()) toast(tr('history.reminderReconcileWarning'), { tone: 'warning', duration: 8000 });
+      if (!State.isRecoveryRequired()) toast(tr('history.reminderReconcileWarning'), { tone: 'warning', ...reminderReconcileRetry() });
       return null;
     });
 }
@@ -5862,7 +5895,7 @@ function bindQuotaOverlay() {
 function showSchemaMismatch(found) {
   const overlay = document.getElementById('schema-overlay');
   if (!overlay) {
-    alert(`This data was created by a newer version (schema ${found}). Update the extension before opening.`);
+    toast(tr('schema.newerData', { schema: found }), { tone: 'error', persistent: true });
     return;
   }
   const det = document.getElementById('schema-detail');
@@ -7747,9 +7780,11 @@ function enableKeyboardClick(el) {
 let toastTimer = null;
 let toastFocusReturn = null;
 
+// The return target stays while any receipt is still showing, so closing the
+// second of two receipts also returns focus (N14).
 function restoreToastFocus() {
   const target = toastFocusReturn;
-  toastFocusReturn = null;
+  if (!toastEntries.length) toastFocusReturn = null;
   if (!target || target.isConnected === false || typeof target.focus !== 'function') return false;
   try { target.focus({ preventScroll: true }); }
   catch { try { target.focus(); } catch { return false; } }
@@ -7806,9 +7841,45 @@ let toastEntries = [];
 let toastSeq = 0;
 let toastTimerStartedAt = 0;
 let toastHeld = false;
+// Hover is tracked apart from focus, so a new receipt arriving under the
+// pointer stays held (N9).
+let toastHovered = false;
 
 function toastFront() {
   return toastEntries[toastEntries.length - 1] || null;
+}
+
+// Undo only works on the latest action. A receipt whose Undo is no longer the
+// latest one (a newer change, or history cleared by an outside write) has
+// nothing left to offer.
+function toastUndoIsLive(entry) {
+  if (!entry || entry.undoActionId == null) return false;
+  try { return State.latestActionId() === entry.undoActionId; } catch { return false; }
+}
+function toastEntryIsStale(entry) {
+  return !!entry && entry.undoActionId != null && !entry.action && !toastUndoIsLive(entry);
+}
+
+// Called when an outside write replaces the graph and Undo history is gone.
+// The front receipt keeps its message without Undo; one waiting behind it goes.
+function dropToastUndoAfterHistoryReset() {
+  if (!toastEntries.length) return false;
+  const front = toastFront();
+  toastEntries = toastEntries.filter(entry => entry === front || !toastEntryIsStale(entry));
+  if (front && front.undoActionId != null && !toastUndoIsLive(front)) {
+    front.undoActionId = null;
+    front.busy = false;
+    front.actionable = !!front.action || front.persistent;
+    if (front.total > 0) front.remaining = Math.min(front.remaining, 1500);
+    const t = document.getElementById('toast');
+    if (t && !t.classList.contains('hidden')) {
+      paintToast(front);
+      startToastTimer(front);
+    }
+  } else {
+    paintToastBehind(toastEntries[toastEntries.length - 2] || null);
+  }
+  return true;
 }
 
 function pauseToastFront() {
@@ -7922,6 +7993,19 @@ function paintToast(entry, { animation = '' } = {}) {
       a.onclick = null;
     }
   }
+  const keep = document.getElementById('toast-keep');
+  if (keep) {
+    if (entry.action && entry.keepLabel) {
+      keep.textContent = entry.keepLabel;
+      keep.classList.remove('hidden');
+      keep.disabled = entry.busy;
+      keep.onclick = () => removeToastEntry(entry, { restoreFocus: true });
+    } else {
+      keep.textContent = '';
+      keep.classList.add('hidden');
+      keep.onclick = null;
+    }
+  }
   if (u && entry.undoActionId != null) {
     u.classList.remove('hidden');
     u.disabled = entry.busy;
@@ -7948,6 +8032,10 @@ function removeToastEntry(entry, options = {}) {
   return true;
 }
 
+// An action that returns a promise shows a spinner, then turns into its
+// result in place. It may resolve to { message, tone } (shown briefly) or to
+// { message, tone, retry: true } (the action stays offered). A rejection keeps
+// the action offered under a generic failure line.
 function runToastAction(entry) {
   if (!entry?.action || entry.busy) return;
   let result;
@@ -7955,14 +8043,90 @@ function runToastAction(entry) {
     result = entry.action();
   } catch (error) {
     console.error('Notification action failed', error);
+    result = Promise.reject(error);
   }
   if (result && typeof result.then === 'function') {
     entry.busy = true;
     if (toastFront() === entry) paintToast(entry, { animation: 'is-morphing' });
-    Promise.resolve(result).catch(() => {}).then(() => { removeToastEntry(entry); });
+    Promise.resolve(result).then(
+      outcome => settleToastAction(entry, outcome && typeof outcome === 'object' && outcome.message ? outcome : null),
+      error => {
+        console.error('Notification action failed', error);
+        settleToastAction(entry, { message: tr('toast.actionFailed'), tone: 'error', retry: true });
+      },
+    );
+    return;
+  }
+  if (result && typeof result === 'object' && result.message) {
+    settleToastAction(entry, result);
     return;
   }
   removeToastEntry(entry);
+}
+
+function settleToastAction(entry, outcome) {
+  if (!toastEntries.includes(entry)) return false;
+  if (!outcome) return removeToastEntry(entry);
+  entry.msg = String(outcome.message);
+  entry.sub = '';
+  entry.tone = ['success', 'info', 'warning', 'error'].includes(outcome.tone) ? outcome.tone : 'success';
+  entry.busy = false;
+  if (outcome.retry) {
+    entry.total = 0;
+    entry.remaining = 0;
+  } else {
+    entry.action = null;
+    entry.actionLabel = '';
+    entry.keepLabel = '';
+    entry.persistent = false;
+    entry.actionable = entry.undoActionId != null;
+    entry.total = 2400;
+    entry.remaining = 2400;
+  }
+  if (toastFront() === entry) {
+    paintToast(entry, { animation: 'is-morphing' });
+    startToastTimer(entry);
+  } else paintToastBehind(entry);
+  return true;
+}
+
+// Clears the system notice for an item reminder that was answered in Locus,
+// so its leftover Snooze button can't act on it.
+function clearItemReminderNotice(itemId) {
+  try {
+    const cleared = chrome.notifications?.clear?.(`te-notif-${itemId}`);
+    if (cleared && typeof cleared.catch === 'function') cleared.catch(() => {});
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// A saved change whose reminder alarms could not be updated offers Retry, which
+// asks the service worker again and shows what happened. Spread into the
+// warning receipt: toast(..., { tone: 'warning', ...reminderReconcileRetry() }).
+function reminderReconcileRetry() {
+  return {
+    actionLabel: tr('toast.retry'),
+    action: () => Promise.resolve()
+      .then(() => chrome.runtime.sendMessage({ type: 'reconcile-reminders' }))
+      .then(result => (result?.ok === true
+        ? { message: tr('history.reminderReconcileFixed'), tone: 'success' }
+        : { message: tr('history.reminderReconcileStill'), tone: 'warning', retry: true }))
+      .catch(() => ({ message: tr('history.reminderReconcileStill'), tone: 'warning', retry: true })),
+  };
+}
+
+// Deletes that take an Undo snapshot happen at once and offer Undo. A change
+// that can't be undone asks first on the same receipt: Keep closes it, the
+// action runs it.
+function toastAskFirst(message, { actionLabel, onConfirm }) {
+  return toast(message, {
+    tone: 'warning',
+    actionLabel,
+    keepLabel: tr('toast.keep'),
+    action: onConfirm,
+  });
 }
 
 function undoFromToast(entry) {
@@ -7982,6 +8146,9 @@ function dismissToast({ restoreFocus = false } = {}) {
   if (!t) return false;
   const focusWasInside = t.contains(document.activeElement);
   toastEntries.pop();
+  // A receipt waiting behind whose Undo is dead would come forward offering
+  // an Undo that fails (N4); it leaves with the front one instead.
+  while (toastEntryIsStale(toastFront())) toastEntries.pop();
   const next = toastFront();
   if (next && !t.classList.contains('hidden')) {
     // The receipt that waited behind comes forward with its own time left.
@@ -8025,14 +8192,18 @@ function bindToastReceipt(t) {
   });
   // Hover or focus holds the receipt (and its drain bar); leaving resumes it.
   t.addEventListener('focusin', holdToast);
-  t.addEventListener('pointerenter', holdToast);
+  t.addEventListener('pointerenter', () => {
+    toastHovered = true;
+    holdToast();
+  });
   t.addEventListener('pointerleave', () => {
+    toastHovered = false;
     if (!t.contains(document.activeElement)) releaseToast();
   });
   t.addEventListener('focusout', event => {
     const next = event?.relatedTarget || null;
     if (next && t.contains(next)) return;
-    const hovered = typeof t.matches === 'function' && t.matches(':hover');
+    const hovered = toastHovered || (typeof t.matches === 'function' && t.matches(':hover'));
     if (!hovered) releaseToast();
   });
   if (typeof window !== 'undefined') {
@@ -8053,6 +8224,7 @@ function toast(msg, opts = {}) {
   const tone = allowedTones.has(requestedTone) ? requestedTone : (opts.danger ? 'error' : 'success');
   const actionLabel = String(opts.actionLabel || '').trim();
   const hasAction = !!(actionLabel && typeof opts.action === 'function');
+  const keepLabel = hasAction ? String(opts.keepLabel || '').trim() : '';
   const undoActionId = opts.undo === true ? State.latestActionId() : opts.undo;
   const actionable = hasAction || undoActionId != null || opts.persistent === true;
   // Continuation and persistent receipts wait for an answer; an Undo receipt
@@ -8068,9 +8240,11 @@ function toast(msg, opts = {}) {
     tone,
     glyph: String(opts.glyph || ''),
     actionLabel,
+    keepLabel,
     action: hasAction ? opts.action : null,
     undoActionId: undoActionId ?? null,
     actionable,
+    persistent: opts.persistent === true,
     total,
     remaining: total,
     busy: false,
@@ -8091,7 +8265,7 @@ function toast(msg, opts = {}) {
     toastEntries.push(entry);
     while (toastEntries.length > 2) toastEntries.shift();
   }
-  toastHeld = t.contains(document.activeElement);
+  toastHeld = toastHovered || t.contains(document.activeElement);
   if (t.classList) t.classList.toggle('is-held', toastHeld);
   paintToast(entry, { animation: replace ? 'is-morphing' : 'is-entering' });
   startToastTimer(entry);
@@ -8143,7 +8317,7 @@ function reconcileRemindersAfterHistoryChange() {
       if (result?.ok !== true) throw new Error('Reminder reconciliation failed');
     })
     .catch(() => {
-      toast(tr('history.reminderReconcileWarning'), { tone: 'warning', duration: 8000 });
+      toast(tr('history.reminderReconcileWarning'), { tone: 'warning', ...reminderReconcileRetry() });
     });
 }
 
@@ -14574,7 +14748,7 @@ function reconcileDuplicatedGroupReminders(group, name, actionId) {
           undo: actionId,
         });
       } else {
-        toast(tr('history.reminderReconcileWarning'), { tone: 'warning', duration: 8000 });
+        toast(tr('history.reminderReconcileWarning'), { tone: 'warning', ...reminderReconcileRetry() });
       }
   });
 }
@@ -20755,12 +20929,15 @@ function setTodayBoardBusy(busy) {
 // Completion reuses the Board to-do transaction: the same exact-identity
 // context, one localized snapshot (so Undo works), one acknowledged write, and
 // the shared pending token that other writers already respect.
-async function commitTodayTodoToggle(itemId, opener = null) {
+async function commitTodayTodoToggle(itemId, opener = null, { workspaceId = null } = {}) {
   if (isBoardTodoCompletionPending()
       || todayCapturePending
       || (typeof isBoardLocalRecordCreatePending === 'function' && isBoardLocalRecordCreatePending())) return false;
   if (State.isRecoveryRequired?.()) return false;
-  const workspace = activeWs();
+  // The due card answers a to-do in whichever workspace holds it.
+  const workspace = workspaceId != null
+    ? (State.get()?.workspaces || []).find(candidate => String(candidate?.id) === String(workspaceId)) || null
+    : activeWs();
   const row = workspace
     ? collectWorkspaceItems(workspace).find(candidate => candidate.item?.type === 'todo' && String(candidate.item.id || '') === String(itemId))
     : null;
@@ -26940,7 +27117,14 @@ function renderSubs() {
       const act = e.target.closest('.sub-action-btn')?.dataset.act;
       if (act === 'pause') { State.snapshot('Pause sub'); sub.paused = !sub.paused; State.persist(); renderSubs(); return; }
       if (act === 'open') { chrome.tabs.create({ url: sub.url }); return; }
-      if (act === 'del') { if (confirm(`Delete "${sub.name}"?`)) { State.snapshot('Delete sub'); const subs = getSubs(); const i = subs.findIndex(x => x.id === sub.id); if (i > -1) subs.splice(i, 1); State.persist(); renderSubs(); } return; }
+      if (act === 'del') {
+        // Deleting takes an Undo snapshot, so it happens at once and offers Undo.
+        State.snapshot(tr('tools.history.delete', { name: sub.name }));
+        const subs = getSubs(); const i = subs.findIndex(x => x.id === sub.id); if (i > -1) subs.splice(i, 1);
+        State.persist(); renderSubs();
+        toast(tr('tools.deleted', { name: sub.name }), { undo: true });
+        return;
+      }
       // default → edit
       openSubForm(sub);
     });
@@ -27021,10 +27205,10 @@ async function saveSubForm() {
 
 function deleteSubForm() {
   if (!subEditingId) return;
-  if (!confirm('Delete this subscription?')) return;
-  State.snapshot('Delete sub');
   const subs = getSubs();
   const i = subs.findIndex(x => x.id === subEditingId);
+  const name = i > -1 ? subs[i].name : '';
+  State.snapshot(tr('tools.history.delete', { name }));
   if (i > -1) subs.splice(i, 1);
   try { chrome.alarms.clear('te-sub-' + subEditingId); } catch {}
   State.persist();
@@ -32486,11 +32670,11 @@ function bindFin() {
     const row = delBtn.closest('.fin-tx-row');
     const id = row?.dataset.txId;
     if (!id) return;
-    if (!confirm('Delete this transaction?')) return;
-    State.snapshot('Delete tx');
+    State.snapshot(tr('tools.history.deleteTransaction'));
     const all = getFin().txns; const i = all.findIndex(x => x.id === id);
     if (i > -1) all.splice(i, 1);
     State.persist(); renderFin();
+    toast(tr('tools.deletedTransaction'), { undo: true });
   });
   // Sidebar settings
   const $cur = document.getElementById('fin-default-cur');
@@ -32714,11 +32898,11 @@ function bindHabits() {
       if (idx > -1) h.dates.splice(idx, 1); else h.dates.push(today);
       State.persist(); renderHabits();
     } else if (e.target.closest('.hab-del')) {
-      if (!confirm(`Delete habit "${h.name}"?`)) return;
-      State.snapshot('Delete habit');
+      State.snapshot(tr('tools.history.delete', { name: h.name }));
       const idx = habits.findIndex(x => x.id === id);
       if (idx > -1) habits.splice(idx, 1);
       State.persist(); renderHabits();
+      toast(tr('tools.deleted', { name: h.name }), { undo: true });
     }
   });
   // Sidebar: heatmap habit selector
@@ -32863,13 +33047,19 @@ function bindWater() {
     State.persist(); renderWater();
   };
   document.getElementById('water-reset').onclick = () => {
-    if (!confirm('Reset today\'s count?')) return;
-    const w = getWater();
-    const t = today();
-    const cnt = w.days[t] || 0;
-    w.total = Math.max(0, (w.total || 0) - cnt);
-    w.days[t] = 0;
-    State.persist(); renderWater();
+    // The count has no Undo snapshot, so it asks first on the shared receipt.
+    toastAskFirst(tr('tools.waterResetAsk'), {
+      actionLabel: tr('tools.waterReset'),
+      onConfirm: () => {
+        const w = getWater();
+        const t = today();
+        const cnt = w.days[t] || 0;
+        w.total = Math.max(0, (w.total || 0) - cnt);
+        w.days[t] = 0;
+        State.persist(); renderWater();
+        return { message: tr('tools.waterResetDone'), tone: 'success' };
+      },
+    });
   };
   document.getElementById('water-goal').addEventListener('change', e => {
     const v = parseInt(e.target.value);
@@ -32943,10 +33133,10 @@ function renderBooks() {
         btn.onclick = () => {
           const act = btn.dataset.act;
           if (act === 'del') {
-            if (!confirm('Delete this book?')) return;
-            State.snapshot('Delete book');
+            State.snapshot(tr('tools.history.delete', { name: b.title }));
             const all = getBooks(); const i = all.findIndex(x => x.id === b.id);
             if (i > -1) all.splice(i, 1);
+            toast(tr('tools.deleted', { name: b.title }), { undo: true });
           } else {
             State.snapshot('Status');
             b.status = act;
@@ -33107,14 +33297,14 @@ function renderGoals() {
       row.querySelectorAll('.goal-actions button').forEach(btn => {
         btn.onclick = () => {
           const act = btn.dataset.act;
-          State.snapshot('Goal');
+          State.snapshot(act === 'del' ? tr('tools.history.delete', { name: g.name }) : 'Goal');
           if (act === '+') g.progress = Math.min(100, (g.progress || 0) + 10);
           else if (act === '-') g.progress = Math.max(0, (g.progress || 0) - 10);
           else if (act === '100') g.progress = 100;
           else if (act === 'del') {
-            if (!confirm('Delete this goal?')) return;
             const arr = getGoals(); const i = arr.findIndex(x => x.id === g.id);
             if (i > -1) arr.splice(i, 1);
+            toast(tr('tools.deleted', { name: g.name }), { undo: true });
           }
           State.persist(); renderGoals();
         };
@@ -33226,11 +33416,11 @@ function renderWorkout() {
         </div>
         <button class="wo-del"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3h8M4.5 3V1.5h3V3M3 3v7a1 1 0 001 1h4a1 1 0 001-1V3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
       row.querySelector('.wo-del').onclick = () => {
-        if (!confirm('Delete this workout?')) return;
-        State.snapshot('Delete workout');
+        State.snapshot(tr('tools.history.delete', { name: w.name }));
         const all = getWorkouts(); const i = all.findIndex(x => x.id === w.id);
         if (i > -1) all.splice(i, 1);
         State.persist(); renderWorkout();
+        toast(tr('tools.deleted', { name: w.name }), { undo: true });
       };
       $list.appendChild(row);
     });
@@ -34079,7 +34269,10 @@ function bindStatic() {
         && !currentDetailItemId()
         && !(_escSearchBar && !_escSearchBar.classList.contains('hidden'))
         && !(typeof isTodayTabsDrawerOpen === 'function' && isTodayTabsDrawerOpen())
-        && !(_escTabRail && _escTabRail.contains(document.activeElement));
+        && !(_escTabRail && _escTabRail.contains(document.activeElement))
+        // Select and reorder modes are left with Escape first (N8).
+        && !itemSelMode && !selectedItemIds.size && !selectedTabIds.size
+        && !document.body.classList.contains('reorder-mode');
       if (_escToastFirst && dismissToastForEscape()) { e.preventDefault(); return; }
       if (!_overlayWasOpen && handleOpenTabsEscape(e)) return;
       closeCommandPalette();

@@ -586,7 +586,7 @@ function planInboxGroup(workspace) {
   try { return resolveLandingInboxTarget(createLandingInboxContext(workspace))?.group || null; } catch { return null; }
 }
 function planTimeLabel(at) {
-  return new Date(at).toLocaleTimeString(appLocale(), { hour: '2-digit', minute: '2-digit' });
+  return new Date(at).toLocaleTimeString(appLocale(), { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 }
 function planWeekdayLabel(at) {
   return new Date(at).toLocaleDateString(appLocale(), { weekday: 'short' });
@@ -1165,16 +1165,43 @@ let planDueBusy = false;
 function planDueKey(id, at) {
   return `${id}@${at}`;
 }
-// Pure: the latest open to-do in the workspace whose reminder came due after
-// `since` and not later than `now`, and was not answered here yet.
-function planDueCandidate(workspace, now, since, answered = new Set()) {
+// The occurrence a due card is about: the stored time once it has passed, or,
+// for a repeating reminder the background already re-armed past now, the
+// occurrence before it, which is the one that just fired (N3).
+function planDueOccurrence(entry, now) {
+  if (entry.at <= now) return entry.at;
+  if (!entry.recur || typeof previousReminderOccurrence !== 'function') return null;
+  const prev = previousReminderOccurrence(entry.at, entry.recur);
+  return prev != null && prev <= now ? prev : null;
+}
+// Pure: the latest open to-do, page, or note in any workspace whose reminder
+// came due after `since` and not later than `now`, not answered here yet.
+function planDueCandidate(workspaces, now, since, answered = new Set()) {
   let best = null;
-  planCollect(workspace).dated.forEach(entry => {
-    if (entry.type !== 'todo' || entry.at > now || entry.at <= since) return;
-    if (answered.has(planDueKey(entry.id, entry.at))) return;
-    if (!best || entry.at > best.at) best = entry;
+  (Array.isArray(workspaces) ? workspaces : [workspaces]).forEach(workspace => {
+    if (!workspace) return;
+    planCollect(workspace).dated.forEach(entry => {
+      if (!['todo', 'tab', 'note'].includes(entry.type)) return;
+      const at = planDueOccurrence(entry, now);
+      if (at == null || at <= since) return;
+      if (answered.has(planDueKey(entry.id, at))) return;
+      if (!best || at > best.at) best = Object.assign({}, entry, { at, storedAt: entry.at });
+    });
   });
   return best;
+}
+function planDueFind(workspaces, shown) {
+  const workspace = (Array.isArray(workspaces) ? workspaces : []).find(ws => String(ws?.id) === shown.wsId);
+  return workspace ? planCollect(workspace).dated.find(entry => entry.id === shown.id && entry.type === shown.type) || null : null;
+}
+// 24-hour clock, as the system notice and Today use, with the day when it is
+// not today (N12).
+function planClockLabel(at, now = Date.now()) {
+  const time = planTimeLabel(at);
+  const day = planDayStart(at);
+  const today = planDayStart(now);
+  if (day === today) return { time, day: '' };
+  return { time, day: day === planAddDays(today, 1) ? tr('dueCard.dayTomorrow') : planWeekdayLabel(at) };
 }
 function planDueSnoozeAt(choice, now = Date.now()) {
   if (choice === '10m') return now + 10 * 60000;
@@ -1191,28 +1218,31 @@ function startPlanDueWatch() {
 
 function checkPlanDue(now = Date.now()) {
   if (planDueBusy) return null;
-  const ws = activeWs();
+  const workspaces = State.get()?.workspaces || [];
   if (planDueShown) {
-    const still = ws && planCollect(ws).dated.find(entry => entry.id === planDueShown.id && entry.at === planDueShown.at && entry.type === 'todo');
-    if (!still) hidePlanDueCard();
+    // The card stays while its occurrence is still the one due, in whichever
+    // workspace holds it (switching workspace no longer closes it).
+    const entry = planDueFind(workspaces, planDueShown);
+    if (!entry || planDueOccurrence(entry, now) !== planDueShown.at) hidePlanDueCard();
     return planDueShown;
   }
-  if (!ws || State.isRecoveryRequired?.()) return null;
-  const candidate = planDueCandidate(ws, now, planDueOpenedAt - 60000, planDueAnswered);
+  if (!workspaces.length || State.isRecoveryRequired?.()) return null;
+  const candidate = planDueCandidate(workspaces, now, planDueOpenedAt - 60000, planDueAnswered);
   if (candidate) showPlanDueCard(candidate);
   return candidate;
 }
 
 function planDueWhen(entry) {
-  const space = activeWs()?.categories?.find(cat => cat.id === entry.spaceId);
-  const time = new Date(entry.at).toLocaleTimeString(appLocale(), { hour: '2-digit', minute: '2-digit' });
+  const workspace = (State.get()?.workspaces || []).find(ws => String(ws.id) === entry.wsId);
+  const space = workspace?.categories?.find(cat => cat.id === entry.spaceId);
+  const time = planTimeLabel(entry.at);
   const place = String(space?.name || '').trim();
   return place ? tr('dueCard.dueIn', { time, place }) : tr('dueCard.due', { time });
 }
 
 function showPlanDueCard(entry) {
   hidePlanDueCard({ immediate: true });
-  planDueShown = { id: entry.id, at: entry.at, title: entry.title };
+  planDueShown = { id: entry.id, at: entry.at, title: entry.title, wsId: entry.wsId, type: entry.type };
   const card = document.createElement('section');
   card.id = 'plan-due';
   card.className = 'plan-due';
@@ -1239,8 +1269,10 @@ function showPlanDueCard(entry) {
   const chips = card.querySelector('.plan-due-chips');
   const snooze = card.querySelector('.plan-due-snooze');
   // A repeating reminder already re-arms its next occurrence; snoozing it
-  // would move the whole series, so the card offers Done only.
+  // would move the whole series, so the card offers Done only. Pages and
+  // notes have nothing to finish, so they offer Snooze only (N11).
   if (entry.recur) snooze.remove();
+  if (entry.type !== 'todo') card.querySelector('.plan-due-done').remove();
   const setChips = open => {
     actions.hidden = open;
     chips.hidden = !open;
@@ -1251,7 +1283,8 @@ function showPlanDueCard(entry) {
     planDueAnswered.add(planDueKey(entry.id, entry.at));
     hidePlanDueCard();
   };
-  card.querySelector('.plan-due-done').onclick = event => planDueDone(entry, card, event.currentTarget);
+  const done = card.querySelector('.plan-due-done');
+  if (done) done.onclick = event => planDueDone(entry, card, event.currentTarget);
   snooze.onclick = () => setChips(true);
   card.querySelector('.plan-due-back').onclick = () => setChips(false);
   chips.querySelectorAll('[data-snooze]').forEach(button => {
@@ -1273,12 +1306,24 @@ function showPlanDueCard(entry) {
 }
 
 let planDueReturnFocus = null;
+// With nowhere to return to, focus goes to the page's own heading, which
+// takes programmatic focus (N14); #board alone has no tabindex.
+function planDueFallbackFocus() {
+  const heading = document.querySelector('#plan-title, #today-now-title');
+  if (heading) {
+    if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1');
+    return heading;
+  }
+  const board = document.getElementById('board');
+  if (board && !board.hasAttribute('tabindex')) board.setAttribute('tabindex', '-1');
+  return board;
+}
 function hidePlanDueCard({ immediate = false } = {}) {
   const card = document.getElementById('plan-due');
   planDueShown = null;
   if (!card) return;
   if (card.contains(document.activeElement)) {
-    const target = planDueReturnFocus && planDueReturnFocus.isConnected ? planDueReturnFocus : document.getElementById('board');
+    const target = planDueReturnFocus && planDueReturnFocus.isConnected ? planDueReturnFocus : planDueFallbackFocus();
     try { target?.focus?.({ preventScroll: true }); } catch {}
   }
   planDueReturnFocus = null;
@@ -1287,16 +1332,25 @@ function hidePlanDueCard({ immediate = false } = {}) {
   setTimeout(() => card.remove(), 360);
 }
 
-function planDueItemIsOpen(id) {
-  const ws = activeWs();
-  return !!ws && planCollect(ws).dated.concat(planCollect(ws).undated).some(row => row.id === id && row.type === 'todo');
+function planDueItemIsOpen(id, wsId = null) {
+  const workspaces = State.get()?.workspaces || [];
+  const list = wsId ? workspaces.filter(ws => String(ws.id) === String(wsId)) : workspaces;
+  return list.some(ws => {
+    const collected = planCollect(ws);
+    return collected.dated.concat(collected.undated).some(row => row.id === id && row.type === 'todo');
+  });
+}
+// A card answer also clears the system notice for the same reminder, so its
+// leftover Snooze can't act on an answered to-do (N15).
+function planDueClearNotice(id) {
+  if (typeof clearItemReminderNotice === 'function') clearItemReminderNotice(id);
 }
 
 async function planDueDone(entry, card, button) {
   if (planDueBusy) return;
   // The to-do may have been finished on Today, in another tab, or from the
   // system notification while the card waited. Done must not reopen it.
-  if (!planDueItemIsOpen(entry.id)) {
+  if (!planDueItemIsOpen(entry.id, entry.wsId)) {
     planDueAnswered.add(planDueKey(entry.id, entry.at));
     hidePlanDueCard();
     return;
@@ -1305,7 +1359,8 @@ async function planDueDone(entry, card, button) {
   card.classList.add('is-done');
   button.classList.add('is-on');
   const reduce = planReducedMotion();
-  const ok = await commitTodayTodoToggle(entry.id, button);
+  // Done resolves through the to-do's own workspace, not the active one.
+  const ok = await commitTodayTodoToggle(entry.id, button, { workspaceId: entry.wsId });
   const actionId = ok ? State.latestActionId() : null;
   planDueBusy = false;
   if (!ok) {
@@ -1315,6 +1370,7 @@ async function planDueDone(entry, card, button) {
     return;
   }
   planDueAnswered.add(planDueKey(entry.id, entry.at));
+  planDueClearNotice(entry.id);
   setTimeout(() => {
     hidePlanDueCard();
     renderBoard();
@@ -1334,9 +1390,15 @@ async function planDueSnooze(entry, card, choice) {
     return;
   }
   planDueAnswered.add(planDueKey(entry.id, entry.at));
+  planDueClearNotice(entry.id);
   hidePlanDueCard();
+  // When the alarms could not be updated, the front receipt for this action is
+  // that warning; it stays, rather than being replaced by "Back at" (N10).
+  const front = typeof toastFront === 'function' ? toastFront() : null;
+  if (front && front.undoActionId === actionId && front.tone === 'warning') return;
   // Morph the reminder receipt into the answer, with the same Undo.
-  toast(tr('dueCard.snoozed', { time: new Date(at).toLocaleTimeString(appLocale(), { hour: '2-digit', minute: '2-digit' }) }), {
+  const when = planClockLabel(at);
+  toast(when.day ? tr('dueCard.snoozedDay', when) : tr('dueCard.snoozed', when), {
     tone: 'warning',
     glyph: 'clock',
     sub: entry.title,
