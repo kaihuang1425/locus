@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Locus restore manifest fixture</title>
+  <link rel="stylesheet" href="../../media/fonts/fonts.css">
+  <link rel="stylesheet" href="../../themes.css">
+  <link rel="stylesheet" href="../../newtab.css">
+</head>
+<body data-theme="folio" data-theme-mode="light" data-size="normal" data-font="dm" data-width="normal" data-surface="archive" data-fixture="archive-restore-manifest">
+  <div id="app">
+    <aside id="sidebar">
+      <div class="brand-lockup" title="Locus">
+        <img class="brand-wordmark-icon" src="../../icons/icon128.png" alt="" aria-hidden="true">
+        <span class="brand-name">Locus</span>
+      </div>
+      <div class="ws-bar">
+        <div id="ws-chips-stack">
+          <button class="ws-chip active live" type="button">
+            <span class="ws-chip-sym" aria-hidden="true">L</span>
+            <span class="ws-chip-name" data-en="Life admin" data-zh="生活管理">Life admin</span>
+            <span class="ws-chip-live-dot" aria-hidden="true"></span>
+          </button>
+        </div>
+      </div>
+      <nav id="nav-views" aria-label="Views">
+        <button class="nav-item" type="button">
+          <span aria-hidden="true">⌂</span>
+          <span class="nav-lbl" data-en="Home" data-zh="首頁">Home</span>
+        </button>
+        <button class="nav-item active" type="button" data-surface-nav="archive">
+          <span aria-hidden="true">□</span>
+          <span class="nav-lbl" data-en="Archive" data-zh="封存">Archive</span>
+          <span class="nav-count">18</span>
+        </button>
+        <button class="nav-item" type="button" data-surface-nav="trash">
+          <span aria-hidden="true">×</span>
+          <span class="nav-lbl" data-en="Trash" data-zh="垃圾桶">Trash</span>
+          <span class="nav-count">7</span>
+        </button>
+      </nav>
+    </aside>
+
+    <main id="main">
+      <header id="topbar">
+        <div class="tb-left">
+          <h1 id="ws-title"><span id="ws-title-sym" aria-hidden="true">L</span><span id="ws-title-name" data-en="Life admin" data-zh="生活管理">Life admin</span></h1>
+        </div>
+        <div class="tb-right">
+          <button class="avatar-btn" type="button" aria-label="Menu"><span class="avatar-face">L</span></button>
+        </div>
+      </header>
+
+      <div id="board" class="library-mode">
+        <section class="library-shell archive-shell">
+          <header class="library-head archive-head">
+            <div>
+              <h1 data-surface-copy data-archive-en="Archive" data-archive-zh="封存" data-trash-en="Trash" data-trash-zh="垃圾桶">Archive</h1>
+              <p data-surface-copy data-archive-en="Review where saved work will return before restoring it." data-archive-zh="復原前，先確認儲存內容會回到哪裡。" data-trash-en="Items remain recoverable for 30 days." data-trash-zh="項目可在 30 天內復原。">Review where saved work will return before restoring it.</p>
+            </div>
+            <label class="library-search">
+              <span aria-hidden="true">⌕</span>
+              <input type="search" data-placeholder-en="Search archived items" data-placeholder-zh="搜尋封存項目" placeholder="Search archived items">
+            </label>
+          </header>
+
+          <div class="archive-summary" aria-label="Archive summary">
+            <div><strong>18</strong><span data-surface-copy data-archive-en="Archived 18" data-archive-zh="已封存 18 筆" data-trash-en="Deleted 7" data-trash-zh="已刪除 7 筆">Archived 18</span></div>
+            <div><strong>14</strong><span data-surface-copy data-archive-en="Saved 14" data-archive-zh="已儲存 14 個項目" data-trash-en="Recoverable 7" data-trash-zh="可復原 7 個項目">Saved 14</span></div>
+            <div><strong>4</strong><span data-surface-copy data-archive-en="4 groups" data-archive-zh="4 個群組" data-trash-en="Recoverable space" data-trash-zh="可回收空間">4 groups</span></div>
+            <div class="archive-local"><strong data-surface-copy data-archive-en="Local" data-archive-zh="本機" data-trash-en="30" data-trash-zh="30">Local</strong><span data-surface-copy data-archive-en="Browser-profile storage; export before uninstalling" data-archive-zh="瀏覽器設定檔儲存；解除安裝前請先匯出" data-trash-en="Auto-delete window" data-trash-zh="自動刪除期限">Browser-profile storage; export before uninstalling</span></div>
+          </div>
+
+          <div class="archive-toolbar">
+            <div class="archive-filters" role="group" aria-label="Item type">
+              <button type="button" class="active" data-en="All" data-zh="全部">All</button>
+              <button type="button" data-en="Links" data-zh="連結">Links</button>
+              <button type="button" data-en="Notes" data-zh="筆記">Notes</button>
+              <button type="button" data-en="To-dos" data-zh="待辦事項">To-dos</button>
+              <button type="button" data-en="Groups" data-zh="群組">Groups</button>
+            </div>
+            <div class="archive-selection" aria-live="polite">
+              <span class="archive-selection-count" data-en="3 selected" data-zh="已選取 3 筆">3 selected</span>
+              <details class="archive-selection-destinations" open>
+                <summary data-en="3 restore destinations" data-zh="3 個復原位置">3 restore destinations</summary>
+                <ul>
+                  <li><span data-en="Life administration and household records › Moving from Kaohsiung to Taipei this autumn › Group: Apartment contracts, utility transfers, and residency documents" data-zh="生活管理與家庭重要文件 › 今年秋天從高雄搬到台北 › 群組：租屋合約、生活帳單移轉與戶籍文件">Life administration and household records › Moving from Kaohsiung to Taipei this autumn › Group: Apartment contracts, utility transfers, and residency documents</span><strong>1</strong></li>
+                  <li><span data-en="Personal research › Browser workflow › Group: Store listing review notes" data-zh="個人研究 › 瀏覽器工作流程 › 群組：商店頁面審查筆記">Personal research › Browser workflow › Group: Store listing review notes</span><strong>1</strong></li>
+                  <li><span data-en="Learning › Interaction design › Group: Recovery patterns worth keeping" data-zh="學習 › 互動設計 › 群組：值得保留的復原模式">Learning › Interaction design › Group: Recovery patterns worth keeping</span><strong>1</strong></li>
+                </ul>
+              </details>
+              <button type="button" class="btn-primary" data-focus-target="restore" data-en="Restore selected" data-zh="復原所選項目">Restore selected</button>
+              <button type="button" class="btn-secondary" data-surface-copy data-archive-en="Move to Trash" data-archive-zh="移至垃圾桶" data-trash-en="Delete forever" data-trash-zh="永久刪除">Move to Trash</button>
+            </div>
+          </div>
+
+          <div class="archive-results">
+            <section class="archive-group">
+              <h2><span>3</span><b data-surface-copy data-archive-en="Recently archived" data-archive-zh="最近封存" data-trash-en="Recoverable items" data-trash-zh="可復原項目">Recently archived</b></h2>
+              <div class="archive-list">
+                <div class="archive-row selected">
+                  <label class="archive-check"><input type="checkbox" checked aria-label="Select Q3 interview questions"><span aria-hidden="true"></span></label>
+                  <span class="archive-icon" aria-hidden="true">N</span>
+                  <span class="archive-copy"><strong data-en="Q3 interview questions" data-zh="第三季訪談問題">Q3 interview questions</strong><span class="archive-restore-destination" data-en="Life administration and household records › Moving from Kaohsiung to Taipei this autumn › Group: Apartment contracts, utility transfers, and residency documents" data-zh="生活管理與家庭重要文件 › 今年秋天從高雄搬到台北 › 群組：租屋合約、生活帳單移轉與戶籍文件">Life administration and household records › Moving from Kaohsiung to Taipei this autumn › Group: Apartment contracts, utility transfers, and residency documents</span></span>
+                  <time datetime="2026-08-09T08:00:00+08:00" data-surface-copy data-archive-en="2 hours ago" data-archive-zh="2 小時前" data-trash-en="12 days left" data-trash-zh="剩下 12 天">2 hours ago</time>
+                  <button type="button" class="archive-restore" data-en="Restore" data-zh="復原">Restore</button>
+                  <button type="button" class="archive-delete" aria-label="Move to Trash">×</button>
+                </div>
+                <div class="archive-row selected">
+                  <label class="archive-check"><input type="checkbox" checked aria-label="Select Compare Store screenshots"><span aria-hidden="true"></span></label>
+                  <span class="archive-icon" aria-hidden="true">✓</span>
+                  <span class="archive-copy"><strong data-en="Compare Store screenshots" data-zh="比較商店頁面截圖">Compare Store screenshots</strong><span class="archive-restore-destination" data-en="Personal research › Browser workflow › Group: Store listing review notes" data-zh="個人研究 › 瀏覽器工作流程 › 群組：商店頁面審查筆記">Personal research › Browser workflow › Group: Store listing review notes</span></span>
+                  <time datetime="2026-08-08T14:00:00+08:00" data-surface-copy data-archive-en="Yesterday" data-archive-zh="昨天" data-trash-en="21 days left" data-trash-zh="剩下 21 天">Yesterday</time>
+                  <button type="button" class="archive-restore" data-en="Restore" data-zh="復原">Restore</button>
+                  <button type="button" class="archive-delete" aria-label="Move to Trash">×</button>
+                </div>
+                <div class="archive-row selected">
+                  <label class="archive-check"><input type="checkbox" checked aria-label="Select Filing references"><span aria-hidden="true"></span></label>
+                  <span class="archive-icon" aria-hidden="true">S</span>
+                  <span class="archive-copy"><strong data-en="Filing references" data-zh="歸檔參考資料">Filing references</strong><span class="archive-restore-destination" data-en="Learning › Interaction design › Group: Recovery patterns worth keeping" data-zh="學習 › 互動設計 › 群組：值得保留的復原模式">Learning › Interaction design › Group: Recovery patterns worth keeping</span></span>
+                  <time datetime="2026-08-07T10:00:00+08:00" data-surface-copy data-archive-en="2 days ago" data-archive-zh="2 天前" data-trash-en="28 days left" data-trash-zh="剩下 28 天">2 days ago</time>
+                  <button type="button" class="archive-restore" data-en="Restore" data-zh="復原">Restore</button>
+                  <button type="button" class="archive-delete" aria-label="Move to Trash">×</button>
+                </div>
+              </div>
+            </section>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    (() => {
+      const params = new URLSearchParams(location.search);
+      const locale = params.get('lang') === 'zh-TW' ? 'zh' : 'en';
+      const surface = params.get('surface') === 'trash' ? 'trash' : 'archive';
+      const dark = params.get('theme') === 'dark';
+      document.documentElement.lang = locale === 'zh' ? 'zh-TW' : 'en';
+      document.body.dataset.theme = dark ? 'folio-dark' : 'folio';
+      document.body.dataset.themeMode = dark ? 'dark' : 'light';
+      document.body.dataset.surface = surface;
+      document.querySelectorAll('[data-en][data-zh]').forEach((node) => {
+        node.textContent = node.dataset[locale];
+      });
+      document.querySelectorAll('[data-surface-copy]').forEach((node) => {
+        node.textContent = node.dataset[`${surface}${locale === 'zh' ? 'Zh' : 'En'}`];
+      });
+      document.querySelectorAll('[data-placeholder-en]').forEach((input) => {
+        input.placeholder = input.dataset[`placeholder${locale === 'zh' ? 'Zh' : 'En'}`];
+      });
+      document.querySelectorAll('[data-surface-nav]').forEach((button) => {
+        button.classList.toggle('active', button.dataset.surfaceNav === surface);
+      });
+      const shell = document.querySelector('.library-shell');
+      shell.classList.toggle('archive-shell', surface === 'archive');
+      shell.classList.toggle('trash-shell', surface === 'trash');
+      document.querySelector('.archive-summary').classList.toggle('trash-summary', surface === 'trash');
+      document.querySelectorAll('.archive-row').forEach((row) => {
+        row.classList.toggle('trash-row', surface === 'trash');
+      });
+      const details = document.querySelector('.archive-selection-destinations');
+      details.open = params.get('open') !== '0';
+      if (params.get('focus') === 'summary') details.querySelector('summary').focus();
+      if (params.get('focus') === 'restore') document.querySelector('[data-focus-target="restore"]').focus();
+    })();
+  </script>
+</body>
+</html>

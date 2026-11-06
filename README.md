@@ -16,7 +16,7 @@
 
 Candidate landing page: [docs/index.html](./docs/index.html). It remains `noindex` and must not be promoted until owner decision O-08 and public-truth gate P0-13 are closed in the [Product Success System](./docs/PRODUCT_SUCCESS_SYSTEM.md). The older [landing-page strategy](./docs/landing-page-strategy.md) is retained as a historical implementation record.
 
-Locus replaces the Chromium new tab page. It helps you deliberately save tabs, group them with notes and todos, find them later, and reopen saved destinations when you choose. Workspace data is stored in `chrome.storage.local` in this browser profile; export backups are user-managed, and uninstalling the extension or deleting the profile removes that local data. The extension has no Locus account, no Locus backend, and no host permissions. User-initiated navigation and searches still contact the destination site or the browser's selected search provider.
+Locus replaces the Chromium new tab page. It helps you deliberately save tabs, group them with notes and todos, find them later, and reopen saved destinations when you choose. Workspace data is stored in `chrome.storage.local` in this browser profile; export backups are user-managed, and uninstalling the extension or deleting the profile removes that local data. The extension has no Locus account, no Locus backend, and no host permissions. Saved-content search stays inside Locus; opening a saved destination contacts the destination site through the browser.
 
 <p align="center">
   <samp>
@@ -72,7 +72,7 @@ type:tab in:work domain:github.com "pull request" -is:done
 - Languages: Vanilla JavaScript, HTML, CSS
 - Storage: `chrome.storage.local`
 - Background runtime: MV3 service worker
-- Browser APIs: tabs, storage, context menus, bookmarks, alarms, notifications, search, favicon
+- Browser APIs: tabs, storage, context menus, bookmarks, alarms, notifications, favicon
 - Build tooling: none required
 - CI: GitHub Actions syntax and manifest validation
 
@@ -86,6 +86,17 @@ type:tab in:work domain:github.com "pull request" -is:done
 6. Open a new tab to launch Locus.
 
 After editing extension files, reload Locus from the browser extensions page.
+
+### If a new tab opens something other than Locus
+
+Only one extension can replace the new tab page. When two installed extensions both replace it, the browser uses the one installed most recently, and it also falls back to the other one whenever Locus is turned off or fails to load. For example, the Custom New Tab extension redirects new tabs to whatever site it is set to, such as Google.
+
+1. Open `brave://extensions/`, `chrome://extensions/`, or `edge://extensions/`.
+2. Find the other extension that changes the new tab page.
+3. Turn it off with its toggle, or choose **Remove**.
+4. Open a new tab. Locus loads.
+
+Do not remove and re-add Locus to win the new tab back. Removing Locus deletes its saved data in that browser profile.
 
 ## Usage
 
@@ -171,8 +182,8 @@ Locus stores workspace data locally:
 - The extension does not request host permissions.
 - The extension has no Locus account or Locus backend. Its extension-page content security policy blocks extension-directed network connections.
 - The extension does not inspect page content on its own. Context-menu actions can save the page, link, selected text, or image URL you explicitly choose.
-- Opening a saved destination and submitting a search are user-initiated browser actions; those actions contact the destination site or your browser's selected search provider.
-- Browser permissions are limited to the eight capabilities explained below. There are no host permissions.
+- Opening a saved destination is a user-initiated browser action that contacts the destination site. Saved-content search does not submit the query to a web search provider.
+- Browser permissions are limited to the seven capabilities explained below. There are no host permissions.
 
 | Permission | Why it is used |
 | --- | --- |
@@ -182,7 +193,6 @@ Locus stores workspace data locally:
 | `bookmarks` | Import bookmarks into workspaces. |
 | `alarms` | Schedule reminders and subscription alerts. |
 | `notifications` | Show reminder and storage notifications. |
-| `search` | Send a search you explicitly submit to the browser's selected search provider. |
 | `favicon` | Display site icons through Chromium's packaged favicon API without contacting a third-party favicon service. |
 
 ## Roadmap

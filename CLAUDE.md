@@ -6,8 +6,8 @@ unpacked from the repo root. All user data lives in `chrome.storage.local` under
 `te`. **No host permissions, ever.** The current worktree is designed to make no
 extension-directed external requests: packaged assets, Chromium's local `_favicon`
 endpoint, and `connect-src 'none'`. That boundary still needs an unpacked-extension
-runtime network audit. User-directed actions such as opening a saved URL or submitting
-a query through `chrome.search` can, of course, navigate the browser to the network.
+runtime network audit. A user-directed action that opens a saved URL can, of course,
+navigate the browser to the network; saved-content search stays inside the extension.
 
 ## Read this first — which file for which task
 
@@ -28,7 +28,7 @@ Run one full improvement cycle with the `/iterate` command (`.claude/commands/it
 
 - `manifest.json` — MV3: newtab override, popup, `background.js` SW, commands
   (Ctrl+Shift+E popup, Ctrl+Shift+S save tab). Permissions: tabs, storage,
-  contextMenus, bookmarks, alarms, notifications, search, favicon. No host
+  contextMenus, bookmarks, alarms, notifications, favicon. No host
   permissions.
 - `newtab.html` / `newtab.js` (~14k lines) / `newtab.css` — the whole newtab app.
 - `themes.css` — all theme palettes as `[data-theme]` CSS vars (default `folio` / `folio-dark`).
