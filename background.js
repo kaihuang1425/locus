@@ -2465,9 +2465,15 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
       await createNativeNotification('te-notif-' + itemId, reminderNoticeOptions(s, found, it.reminder.at));
       // Recurring reminders re-arm for their next occurrence; one-shots are
       // marked notified so they stop surfacing as pending.
+      // A repeating reminder also records the occurrence that just fired
+      // (firedAt, optional), so Today and the in-Locus card can show it without
+      // guessing; a series that has not started yet has no firedAt.
       const itNext = nextRecurTime(it.reminder.at, it.reminder.recur);
-      if (itNext != null) { it.reminder.at = itNext; it.reminder.notified = false; }
-      else it.reminder.notified = true;
+      if (itNext != null) {
+        it.reminder.firedAt = Number(alarm.scheduledTime) || it.reminder.at;
+        it.reminder.at = itNext;
+        it.reminder.notified = false;
+      } else it.reminder.notified = true;
       try {
         await setState(s);
       } catch (error) {

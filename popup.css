@@ -1001,3 +1001,8 @@ html[data-theme] .more-list {
 html[data-theme] .pa-btn { border-radius: 12px; }
 html[data-theme] .pa-btn.primary { background: var(--locator, var(--accent-bg)); box-shadow: none; }
 html[data-theme] .pa-btn.primary:hover { background: var(--locator-hover, var(--accent-bg)); box-shadow: 0 6px 16px color-mix(in srgb, var(--locator, var(--accent-bg)) 28%, transparent); }
+/* The layer must keep the states its card and button resets would erase:
+   the error card's red top rule, and a disabled primary button. */
+html[data-theme] .state-card.error { border-top: 3px solid var(--red); }
+html[data-theme] .pa-btn.primary:disabled,
+html[data-theme] .pa-btn.primary:disabled:hover { background: var(--locator, var(--accent-bg)); box-shadow: none; opacity: .48; cursor: not-allowed; }

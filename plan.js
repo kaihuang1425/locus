@@ -172,6 +172,9 @@ function planCollect(workspace) {
       entry.at = at;
       entry.recur = item.reminder.recur || null;
       entry.notified = item.reminder.notified === true;
+      // The occurrence the background last fired for a repeating reminder.
+      const firedAt = Number(item.reminder.firedAt);
+      entry.firedAt = Number.isFinite(firedAt) ? firedAt : null;
       dated.push(entry);
     } else if (item.type === 'todo') {
       undated.push(entry);
@@ -429,6 +432,7 @@ async function commitPlanReminderBatch(requested, historyKey, opts = {}) {
       const next = isItemDetailRecord(target.item.reminder) ? cloneItemDetailJson(target.item.reminder) : {};
       next.at = changes[index].to;
       next.notified = false;
+      delete next.firedAt;
       target.item.reminder = next;
     });
   } catch (error) {
@@ -1167,12 +1171,12 @@ function planDueKey(id, at) {
 }
 // The occurrence a due card is about: the stored time once it has passed, or,
 // for a repeating reminder the background already re-armed past now, the
-// occurrence before it, which is the one that just fired (N3).
+// occurrence it recorded as fired (firedAt) (N3). A series whose first alarm
+// is still ahead has no firedAt, so it gets no card.
 function planDueOccurrence(entry, now) {
   if (entry.at <= now) return entry.at;
-  if (!entry.recur || typeof previousReminderOccurrence !== 'function') return null;
-  const prev = previousReminderOccurrence(entry.at, entry.recur);
-  return prev != null && prev <= now ? prev : null;
+  if (!entry.recur || entry.firedAt == null) return null;
+  return entry.firedAt <= now ? entry.firedAt : null;
 }
 // Pure: the latest open to-do, page, or note in any workspace whose reminder
 // came due after `since` and not later than `now`, not answered here yet.

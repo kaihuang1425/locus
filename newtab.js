@@ -8283,6 +8283,7 @@ async function performUndo(expectedActionId = null) {
       // Plan's "↻ 2×" counts follow Undo: a move that was undone did not happen.
       if (typeof planUndoMoves === 'function' && undoneId !== true) planUndoMoves(undoneId);
       renderAll();
+      if (typeof renderOpenToolOverlay === 'function') renderOpenToolOverlay();
       // Morph the receipt that offered this Undo into its result, in place.
       toast(tr('history.undid', { action: label }), { tone: 'info', glyph: 'undo', duration: 1600, replaceUndo: undoneId });
       reconcileRemindersAfterHistoryChange();
@@ -8302,6 +8303,7 @@ async function performRedo() {
     const label = await State.redo();
     if (label) {
       renderAll();
+      if (typeof renderOpenToolOverlay === 'function') renderOpenToolOverlay();
       toast(tr('history.redid'));
       reconcileRemindersAfterHistoryChange();
     }
@@ -8312,6 +8314,27 @@ async function performRedo() {
       : 'history.redoFailed';
     toast(tr(key), { danger: true, duration: 7000 });
   }
+}
+
+// The tool overlays draw from State only when their own controls change it.
+// After Undo or Redo, the open one repaints so a restored row is visible.
+function renderOpenToolOverlay() {
+  const tools = [
+    ['subs-overlay', typeof renderSubs === 'function' ? renderSubs : null],
+    ['fin-overlay', typeof renderFin === 'function' ? renderFin : null],
+    ['habit-overlay', typeof renderHabits === 'function' ? renderHabits : null],
+    ['water-overlay', typeof renderWater === 'function' ? renderWater : null],
+    ['books-overlay', typeof renderBooks === 'function' ? renderBooks : null],
+    ['goals-overlay', typeof renderGoals === 'function' ? renderGoals : null],
+    ['workout-overlay', typeof renderWorkout === 'function' ? renderWorkout : null],
+  ];
+  let painted = 0;
+  for (const [id, render] of tools) {
+    const overlay = document.getElementById(id);
+    if (!render || !overlay || overlay.classList.contains('hidden')) continue;
+    try { render(); painted += 1; } catch (error) { console.warn('Could not repaint the tool after Undo', id, error); }
+  }
+  return painted;
 }
 
 function reconcileRemindersAfterHistoryChange() {
@@ -9388,6 +9411,9 @@ async function commitItemReminderMutation(context, reminder, opts = {}) {
       : {};
     nextReminder.at = at;
     nextReminder.notified = false;
+    // A time the user sets starts a new schedule; the occurrence the background
+    // last fired (firedAt) belonged to the old one.
+    delete nextReminder.firedAt;
     if (['day', 'week', 'month'].includes(reminder.recur?.every)) {
       nextReminder.recur = { every: reminder.recur.every, interval: 1 };
     } else delete nextReminder.recur;
@@ -9512,6 +9538,9 @@ async function commitItemDetailReminderMutation(context, reminder, opts = {}) {
       : {};
     nextReminder.at = at;
     nextReminder.notified = false;
+    // A time the user sets starts a new schedule; the occurrence the background
+    // last fired (firedAt) belonged to the old one.
+    delete nextReminder.firedAt;
     if (['day', 'week', 'month'].includes(reminder.recur?.every)) {
       nextReminder.recur = { every: reminder.recur.every, interval: 1 };
     } else delete nextReminder.recur;
@@ -20290,22 +20319,10 @@ function todayClockText(at) {
 // reminders later today; then IDs deferred with Later, in deferral order; done
 // to-dos last. A duplicated stable ID is left out because no exact-identity
 // action could reach it. A repeating reminder shows today's occurrence: the one
-// that already fired (stored `at` re-armed past today) or the next one from a
-// stale stored `at`, never a missed earlier day. Undated to-dos marked Someday
-// in Plan are not "anytime".
-function previousReminderOccurrence(at, recur) {
-  const stored = Number(at);
-  if (!Number.isFinite(stored) || !['day', 'week', 'month'].includes(recur?.every)) return null;
-  const rawInterval = Number(recur.interval);
-  const interval = Number.isFinite(rawInterval) ? Math.max(1, Math.trunc(rawInterval)) : 1;
-  const prev = new Date(stored);
-  if (recur.every === 'month') prev.setMonth(prev.getMonth() - interval);
-  else prev.setDate(prev.getDate() - interval * (recur.every === 'week' ? 7 : 1));
-  const candidate = prev.getTime();
-  // Only a real step of the same series: forward from it must land on `at`.
-  return nextReminderOccurrenceForDisplay(candidate, recur, candidate) === stored ? candidate : null;
-}
-
+// the background fired today (reminder.firedAt, recorded when it re-arms the
+// series) or the next one from a stale stored `at`, never a missed earlier day
+// and never a series that has not started. A repeating to-do marked done stays
+// off the board. Undated to-dos marked Someday in Plan are not "anytime".
 function todayTaskModel(workspace, now = Date.now(), laterIds = [], somedayIds = null) {
   const someday = somedayIds instanceof Set ? somedayIds : new Set(Array.isArray(somedayIds) ? somedayIds.map(String) : []);
   const { start, end } = todayDayBounds(now);
@@ -20333,15 +20350,19 @@ function todayTaskModel(workspace, now = Date.now(), laterIds = [], somedayIds =
     const createdAt = Number(item.createdAt);
     const recur = ['day', 'week', 'month'].includes(item.reminder?.recur?.every) ? item.reminder.recur : null;
     let repeating = false;
+    if (at != null && recur && done) {
+      // Done on a repeating to-do is permanent while its alarms keep re-arming;
+      // it is not today's work any more.
+      return;
+    }
     if (at != null && recur) {
+      const firedAt = Number(item.reminder.firedAt);
       if (at < start) {
         const next = nextReminderOccurrenceForDisplay(at, recur, start - 1);
         if (Number.isFinite(next)) { at = next; repeating = true; }
       } else if (at >= end) {
         // The alarm fired earlier today and re-armed the series past today.
-        const prev = previousReminderOccurrence(at, recur);
-        const writtenBefore = !Number.isFinite(createdAt) || createdAt <= prev;
-        if (prev != null && prev >= start && prev < end && prev <= now && writtenBefore) at = prev;
+        if (Number.isFinite(firedAt) && firedAt >= start && firedAt < end && firedAt <= now) at = firedAt;
         repeating = true;
       } else repeating = true;
     }
@@ -20475,7 +20496,7 @@ function parseTodayCapture(text, { now = Date.now(), timeZone = '', spaces = [] 
   // A bare H:MM without am/pm counts only after at/by, with a two-digit hour,
   // or beside a day or part-of-day word, so "read John 3:16" stays a title.
   const enWhen = /\b(?:(at|on|by|this)\s+)?(today|tonight|tomorrow|next\s+week|weekend|monday|mon|tuesday|tues|tue|wednesday|thursday|thurs|thur|thu|friday|fri|saturday|sunday|morning|afternoon|evening|noon|(\d{1,2})(?::([0-5]\d))?\s?(am|pm)|([01]?\d|2[0-3]):([0-5]\d))(?![\x27’\w])/gi;
-  const zhWhen = /(下(?:[週周]|星期|禮拜)[一二三四五六日天]|(?:[週周]|星期|禮拜)[一二三四五六日天]|下[週周]|下星期|下禮拜|今天|今晚|明天|後天|[週周]末|早上|上午|中午|下午|晚上)|(\d{1,2})\s*點(?:\s*(半)|(\d{1,2})分?|\s+(\d{1,2})\s*分)?/g;
+  const zhWhen = /(下(?:[週周]|星期|禮拜)[一二三四五六日天]|(?:[週周]|星期|禮拜)[一二三四五六日天]|下[週周]|下星期|下禮拜|今天|今晚|明天|後天|[週周]末|早上|上午|中午|下午|晚上)|(\d{1,2})\s*點(?![心數子餐名擊閱菜火播評選])(?:\s*(半)|(\d{1,2})分?|\s+(\d{1,2})\s*分)?/g;
   const tagPattern = /#([\p{L}\p{N}_-]+)/gu;
   let match;
   while ((match = quotePattern.exec(scan))) quoted.push([match.index, match.index + match[0].length]);
@@ -27229,6 +27250,8 @@ function deleteSubForm() {
   State.persist();
   closeSubForm();
   renderSubs();
+  // Like the list's delete: it happens at once and offers Undo.
+  toast(tr('tools.deleted', { name }), { undo: true });
 }
 
 function bindSubs() {

@@ -690,9 +690,12 @@ async function testReminderDeliveryPersistence() {
     const expected = deepClone(before);
     expected._revision += 1;
     const expectedReminder = delivery.getReminder(expected);
+    // An item reminder also records the occurrence that fired (firedAt), so
+    // Today and the in-Locus card can show it; Group and Space reminders don't.
+    if (delivery.name.startsWith('te-reminder-')) expectedReminder.firedAt = scheduledTime;
     expectedReminder.at = nextTime;
     expectedReminder.notified = false;
-    assert.deepEqual(persistedState, expected, `${delivery.name} must persist only its next occurrence`);
+    assert.deepEqual(persistedState, expected, `${delivery.name} must persist only its next occurrence (and, for items, the one that fired)`);
     assert.equal(captureCalls.storageSets, 1, `${delivery.name} must use one central state write`);
     assert.deepEqual(captureCalls.notifications.map(call => call.id), [delivery.notificationId]);
     assert.equal(alarmMap.get(delivery.name)?.scheduledTime, nextTime, `${delivery.name} must keep its stable name at the exact next occurrence`);
@@ -854,6 +857,7 @@ async function testReminderDeliveryPersistence() {
   const failedRearmExpected = deepClone(failedRearmBefore);
   failedRearmExpected._revision += 1;
   const failedRearmReminder = failedRearm.getReminder(failedRearmExpected);
+  if (failedRearm.name.startsWith('te-reminder-')) failedRearmReminder.firedAt = failedRearmTime;
   failedRearmReminder.at = failedRearmNext;
   failedRearmReminder.notified = false;
   assert.deepEqual(persistedState, failedRearmExpected, 'a re-arm failure must not roll back an accepted delivery write');

@@ -87,7 +87,7 @@ const NOW = london(2026, 11, 4, 14, 32); // Wednesday 4 November 2026, 14:32 GMT
 const context = vm.createContext({ LocusPlan, Intl, Date, Math, JSON, Map, Set, Number, String, Array, Object });
 vm.runInContext([
   'todayPad2', 'todayDayKey', 'todayDayBounds', 'todayClockText', 'nextReminderOccurrenceForDisplay',
-  'previousReminderOccurrence', 'todayTaskModel', 'parseTodayCapture',
+  'todayTaskModel', 'parseTodayCapture',
 ].map(extractFunction).join('\n') + '\nglobalThis.__today = { todayDayKey, todayDayBounds, todayTaskModel, parseTodayCapture };', context, { filename: 'today-model.js' });
 const today = context.__today;
 const plain = value => JSON.parse(JSON.stringify(value));
@@ -185,6 +185,10 @@ equal([parsed.title, parsed.at], ['開會', london(2026, 11, 5, 15, 30)], 'zh-TW
 equal(tokenText(text, parsed), ['when:明天', 'when:下午', 'when:３點半'], 'offsets still point into the text as typed');
 parsed = parse('周五晚上 看電影');
 equal([parsed.title, parsed.at], ['看電影', london(2026, 11, 6, 19)], 'zh-TW: 周五 reads like 週五');
+parsed = parse('買 2 點心');
+equal([parsed.title, parsed.at], ['買 2 點心', null], 'zh-TW: 2 點心 is two snacks, not a time (review finding 4)');
+parsed = parse('買2點心 明天');
+equal([parsed.title, parsed.at], ['買2點心', london(2026, 11, 5, 9)], 'zh-TW: an unspaced 點心 is not a time either');
 parsed = parse('明天 9 點 15 分 晨會');
 equal([parsed.title, parsed.at], ['晨會', london(2026, 11, 5, 9, 15)], 'zh-TW: spaced 點 and 分 both parse');
 
@@ -248,8 +252,16 @@ equal([model.now, model.rest, model.total], [null, [], 0], 'an empty Workspace h
 // T2: a repeating reminder shows today's occurrence.
 const daily = { every: 'day', interval: 1 };
 const repeating = { categories: [{ id: 'c1', groups: [{ id: 'g1', items: [
-  // Fired at 09:00 today, so the background re-armed it to tomorrow 09:00.
-  { id: 'fired', type: 'todo', text: 'Stretch', done: false, createdAt: london(2026, 11, 1, 8), reminder: { at: london(2026, 11, 5, 9), recur: daily, notified: false } },
+  // Fired at 09:00 today, so the background re-armed it to tomorrow 09:00 and
+  // recorded the occurrence it fired.
+  { id: 'fired', type: 'todo', text: 'Stretch', done: false, createdAt: london(2026, 11, 1, 8), reminder: { at: london(2026, 11, 5, 9), firedAt: london(2026, 11, 4, 9), recur: daily, notified: false } },
+  // Written yesterday evening as "daily 09:00 from tomorrow" (Thursday): its
+  // first alarm is still ahead, so nothing fired today (review finding 1).
+  { id: 'notYet', type: 'todo', text: 'Meditate', done: false, createdAt: london(2026, 11, 3, 20), reminder: { at: london(2026, 11, 5, 9), recur: daily, notified: false } },
+  // An old to-do that got a weekly reminder today, first alarm next Wednesday.
+  { id: 'newWeekly', type: 'todo', text: 'Plan the week', done: false, createdAt: london(2026, 10, 1, 8), reminder: { at: london(2026, 11, 11, 9), recur: { every: 'week', interval: 1 }, notified: false } },
+  // Marked done once; its alarms keep re-arming every day.
+  { id: 'doneDaily', type: 'todo', text: 'Old habit', done: true, createdAt: london(2026, 10, 1, 8), reminder: { at: london(2026, 11, 5, 9), firedAt: london(2026, 11, 4, 9), recur: daily, notified: false } },
   // The browser was closed at yesterday's fire time, so `at` is still yesterday.
   { id: 'stale', type: 'todo', text: 'Water plants', done: false, createdAt: london(2026, 11, 1, 8), reminder: { at: london(2026, 11, 3, 18), recur: daily, notified: false } },
   // Weekly on Mondays: no occurrence today, and a missed Monday is not overdue.
@@ -262,6 +274,8 @@ equal(model.open.map(entry => [entry.id, entry.kind, entry.at]), [
   ['fired', 'due', london(2026, 11, 4, 9)],
   ['stale', 'upcoming', london(2026, 11, 4, 18)],
 ], 'a fired series counts as due today, a stale one shows today\'s next occurrence, and neither is overdue');
+equal([model.finished.length, model.total], [0, 2], 'a series that has not started, and a done repeating to-do, stay off Today');
+match(extractFunction('todayTaskModel'), /const firedAt = Number\(item\.reminder\.firedAt\);/, 'Today reads the occurrence the background recorded, not a guess');
 
 // Someday marks from Plan keep an undated to-do off Today's anytime list.
 model = plain(today.todayTaskModel(workspace, NOW, [], new Set(['any1', 'due'])));

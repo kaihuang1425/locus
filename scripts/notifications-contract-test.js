@@ -62,6 +62,23 @@ function testToastWiring() {
     ok(new RegExp(`toast\\(tr\\('${key.replace('.', '\\.')}'[^)]*\\)[^;]*undo: true`).test(newtab), `${key} receipts offer Undo`);
   }
   ok(/toastAskFirst\(tr\('tools\.waterResetAsk'\)/.test(newtab), 'the water reset (no Undo) asks with Keep / Reset');
+  ok(/function deleteSubForm\(\) \{[\s\S]*?toast\(tr\('tools\.deleted', \{ name \}\), \{ undo: true \}\);\n\}/.test(newtab), 'deleting from the subscription form also offers Undo (review finding 6)');
+  // Review finding 5: Undo and Redo repaint the open tool, so a restored row shows.
+  const painted = [];
+  const overlays = { 'habit-overlay': false, 'books-overlay': true };
+  const toolContext = vm.createContext({
+    console,
+    document: { getElementById: id => (id in overlays ? { classList: { contains: name => name === 'hidden' && !overlays[id] } } : null) },
+    renderHabits: () => painted.push('habits'),
+    renderBooks: () => painted.push('books'),
+  });
+  vm.runInContext(`${newtabFunction('renderOpenToolOverlay')}\nglobalThis.__paint = renderOpenToolOverlay;`, toolContext);
+  eq([toolContext.__paint(), painted], [1, ['books']], 'only the open tool repaints');
+  ok(/renderAll\(\);\n\s*if \(typeof renderOpenToolOverlay === 'function'\) renderOpenToolOverlay\(\);\n\s*\/\/ Morph the receipt/.test(newtab)
+    && /const label = await State\.redo\(\);\n\s*if \(label\) \{\n\s*renderAll\(\);\n\s*if \(typeof renderOpenToolOverlay === 'function'\) renderOpenToolOverlay\(\);/.test(newtab),
+  'Undo and Redo repaint the open tool');
+  // Review finding 7: the popup layer keeps the error card's red rule.
+  ok(/html\[data-theme\] \.state-card\.error \{ border-top: 3px solid var\(--red\); \}/.test(popupCss) && /html\[data-theme\] \.pa-btn\.primary:disabled,/.test(popupCss), 'the popup layer keeps the error card and disabled button states');
   ok(newtab.indexOf('_escToastFirst && dismissToastForEscape()') > newtab.indexOf('const _overlayWasOpen = _escBlockers.some'), 'the receipt step comes after the overlay check');
   ok(/e\.key\.toLowerCase\(\) === 'z' && !inField\) \{ e\.preventDefault\(\); performUndo\(\); \}/.test(newtab), 'Ctrl+Z still undoes from history');
   ok(/const undoneId = expectedActionId \?\? /.test(newtab) && /toast\(tr\('history\.undid', \{ action: label \}\), \{ tone: 'info', glyph: 'undo', duration: 1600, replaceUndo: undoneId \}\);/.test(newtab),
@@ -390,15 +407,22 @@ function testDueCard() {
   const fromOther = context.planDueCandidate([ws, other], now, since, new Set(['b@' + at(10, 9)]));
   eq([fromOther.id, fromOther.wsId, fromOther.type], ['n1', 'w2', 'note'], 'a note in another workspace gets a card, keeping its workspace');
   // N3: a repeating to-do the background re-armed past now is shown for the
-  // occurrence that fired, and keeps that key across renders.
-  vm.runInContext(`globalThis.nextReminderOccurrenceForDisplay = ${newtabFunction('nextReminderOccurrenceForDisplay').replace(/^function nextReminderOccurrenceForDisplay/, 'function')};
-globalThis.previousReminderOccurrence = ${newtabFunction('previousReminderOccurrence').replace(/^function previousReminderOccurrence/, 'function')};`, context);
+  // occurrence it recorded as fired, and keeps that key across renders.
   const daily = { id: 'w3', categories: [{ id: 's3', groups: [{ id: 'g3', items: [
-    { id: 'r1', type: 'todo', text: 'Stretch', reminder: { at: at(10, 5) + 86400000, notified: false, recur: { every: 'day', interval: 1 } } },
+    { id: 'r1', type: 'todo', text: 'Stretch', reminder: { at: at(10, 5) + 86400000, firedAt: at(10, 5), notified: false, recur: { every: 'day', interval: 1 } } },
   ] }] }] };
   const fired = context.planDueCandidate([daily], now, since);
   eq([fired.id, fired.at, fired.storedAt], ['r1', at(10, 5), at(10, 5) + 86400000], 'a re-armed repeating to-do gets a card for the occurrence that fired');
   eq(context.planDueOccurrence(context.planDueFind([daily], { id: 'r1', wsId: 'w3', type: 'todo' }), now + 60000), at(10, 5), 'the same occurrence on the next render, so the card stays');
+  // Review finding 1: a series saved at 10:00 as "daily 09:00 from tomorrow"
+  // has not fired, so no card pops when it is saved.
+  const notStarted = { id: 'w4', categories: [{ id: 's4', groups: [{ id: 'g4', items: [
+    { id: 'r2', type: 'todo', text: 'Journal', createdAt: at(10), reminder: { at: at(9) + 86400000, notified: false, recur: { every: 'day', interval: 1 } } },
+  ] }] }] };
+  eq(context.planDueCandidate([notStarted], now, since), null, 'a repeating series whose first alarm is still ahead gets no card');
+  ok(/it\.reminder\.firedAt = Number\(alarm\.scheduledTime\) \|\| it\.reminder\.at;\n\s*it\.reminder\.at = itNext;/.test(background), 'the background records the occurrence it fired when it re-arms a series');
+  ok((newtab.match(/nextReminder\.notified = false;\n[^\n]*\n[^\n]*\n\s*delete nextReminder\.firedAt;/g) || []).length === 2 && /next\.notified = false;\n\s*delete next\.firedAt;/.test(planSource),
+    'a time the user sets clears the recorded occurrence');
   // N12: 24-hour times, with the day when the snooze lands later.
   eq([context.planTimeLabel(at(14, 30)), plain(context.planClockLabel(at(14, 30), now)), plain(context.planClockLabel(new Date(2026, 10, 12, 9).getTime(), now))],
     ['14:30', { time: '14:30', day: '' }, { time: '09:00', day: 'dueCard.dayTomorrow' }], 'times use a 24-hour clock and name the day when it is not today');
