@@ -17,6 +17,7 @@ const root = path.resolve(__dirname, '..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8').replace(/\r\n/g, '\n');
 const newtab = read('newtab.js');
 const css = read('newtab.css');
+const html = read('newtab.html');
 const ci = read('.github/workflows/ci.yml');
 let checks = 0;
 const ok = (value, message) => { assert.ok(value, message); checks += 1; };
@@ -432,7 +433,8 @@ function testStyles() {
   ok(!/(?:linear|radial|conic)-gradient\s*\(/.test(spaceCss), 'no CSS gradients (the canvas dots are an SVG image)');
   ok(/background-image: url\("data:image\/svg\+xml,/.test(spaceCss), 'the Canvas dot sheet is a local SVG pattern');
   ok(!/#sidebar\b/.test(spaceCss), 'the rail is left alone');
-  ok(/body\[data-page="space"\] #surface-toolbar \{ display: none; \}/.test(spaceCss), 'the switcher replaces the Switch layout button on this page');
+  ok(!/view-mode-btn|surface-toolbar/.test(html) && !/surface-toolbar|surface-layout/.test(css) && !/openLayoutMenu|updateViewModeButton/.test(newtab),
+    'the view tabs replaced the Switch layout button and its menus (2026-11-06, page board)');
   ok(/body\[data-page="space"\] #topbar \.tb-left \{\n\s*position: absolute;/.test(spaceCss), 'the shell keeps only the search field, Save tab and More, as on the Inbox page');
   ok(/body:is\(\[data-page="inbox"\], \[data-page="space"\]\) #item-sel-toolbar \{/.test(css), 'the selection toolbar is the board’s dark bar here too');
   ok(/\.spc-uline \{[^}]*transform: translateX\(var\(--spc-ul-x, 0\)\);[^}]*transition: transform \.32s var\(--today-ease\), width \.32s var\(--today-ease\);/s.test(spaceCss), 'the underline slides in 320 ms');

@@ -5165,6 +5165,10 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
     all seven views as tabs, as the board does; its underline slides to the
     chosen view and the views crossfade. This replaces "Board and List remain
     the immediate choices; the others under Advanced views" (2026-08-12).
+  - Follow-up, same day: the hidden Switch layout button, its Board/List and
+    Advanced views menus, their glyphs and their strings are removed; the
+    seven view tabs replaced the Advanced views grouping (2026-11-06, page
+    board).
   - Board groups are columns in a grid: chevron, the group's colour (which
     edits the group), its name (which opens the group page), the count bubble
     and to-do progress, Open all and More; the reminder chip and intention

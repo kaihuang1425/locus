@@ -366,7 +366,7 @@ assert.match(newtabJs, /menu\.setAttribute\('aria-label',\s*opts\?\.ariaLabel\s*
   'every shared menu must expose a localized screen-reader name');
 for (const key of [
   'action.moreReminderCount', 'menu.actions', 'menu.findReview', 'menu.options', 'menu.organize',
-  'layout.view', 'layout.advancedViews', 'layout.advancedViewsOpen', 'layout.backCore',
+  'layout.view',
   'layout.board', 'layout.list', 'layout.canvas', 'layout.explorer',
   'layout.timeline', 'layout.gallery', 'layout.graph',
 ]) {
@@ -452,10 +452,16 @@ assert.equal(menuCalls.plugins[0], runtimeOpener,
   'Plugins must inherit the visible More button as its focus-return owner');
 assert.deepEqual(menuCalls.settings[0], { tab: 'general', opener: runtimeOpener },
   'Settings must inherit the visible More button as its focus-return owner');
-assert.match(newtabJs, /function openLayoutMenu\(btn\)[\s\S]*label:\s*tr\('layout\.view'\)[\s\S]*layoutLabel\(m\)[\s\S]*tr\('layout\.advancedViewsOpen'\)/,
-  'the core layout menu must localize names while keeping Advanced gated');
-assert.match(newtabJs, /function openAdvancedLayoutMenu\(btn\)[\s\S]*label:\s*tr\('layout\.advancedViews'\)[\s\S]*layoutLabel\(m\)[\s\S]*tr\('layout\.backCore'\)/,
-  'the Advanced layout menu must localize its heading, entries, and return action');
+// 2026-11-06 (page board): the Space page's seven view tabs replaced the Board/List
+// menu and its Advanced views submenu.
+assert.match(newtabJs, /const LAYOUT_ORDER = \['board', 'list', 'canvas', 'explorer', 'timeline', 'gallery', 'graph'\];/,
+  'the view tabs replaced the Advanced views grouping (2026-11-06, page board): all seven views are in one order');
+assert.match(newtabJs, /function buildSpacePage\(cat\)[\s\S]*?<div class="spc-tabs" role="tablist">[\s\S]*?LAYOUT_ORDER\.map\(view => `<button type="button" role="tab" class="spc-tab"/,
+  'the view tabs replaced the Advanced views grouping (2026-11-06, page board): every view is a tab in one tablist');
+assert.match(newtabJs, /function syncSpacePage\([^)]*\)[\s\S]*?tabs\.setAttribute\('aria-label', tr\('layout\.view'\)\);[\s\S]*?tab\.querySelector\('\.spc-tab-label'\)\.textContent = layoutLabel\(tab\.dataset\.view\);/,
+  'the view tabs must localize their list name and every view name at the presentation boundary');
+assert.doesNotMatch(newtabJs, /function openLayoutMenu\(|function openAdvancedLayoutMenu\(|'layout\.(?:advancedViews|advancedViewsOpen|backCore)'/,
+  'the view tabs replaced the Advanced views grouping (2026-11-06, page board): its menus and strings are gone');
 
 for (const contract of [
   /#cmd-palette\s*\{[^}]*backdrop-filter:\s*none[^}]*animation:\s*none/,

@@ -1336,24 +1336,6 @@ body[data-surface="search"] .topbar-search {
   position: relative; z-index: 5;
 }
 
-.surface-toolbar {
-  min-height: 42px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: flex-end;
-  padding: 5px 24px;
-  border-bottom: 1px solid var(--border);
-  background: color-mix(in srgb, var(--bg) 88%, var(--panel));
-}
-body:not([data-surface="board"]) #surface-toolbar { display: none; }
-.surface-layout-btn {
-  min-height: 32px; display: inline-flex; align-items: center; gap: 7px;
-  padding: 0 10px; border: 1px solid var(--border); border-radius: 8px;
-  background: var(--panel); color: var(--text2); cursor: pointer;
-  font: 600 11.5px var(--font); transition: all var(--trans);
-}
-.surface-layout-btn:hover { border-color: var(--border2); color: var(--text); background: var(--bg2); }
-#view-mode-icon { display: inline-flex; align-items: center; }
-.surface-layout-chevron { color: var(--text3); }
-
 .tb-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
 #ws-title {
   min-width: 0; margin: 0;
@@ -2195,12 +2177,10 @@ body[data-anim="off"] .search-spinner { animation: none; }
 @media (max-width: 1180px) {
   #board  { padding: 20px 16px; gap: 14px; }
   #topbar { padding: 0 14px; }
-  .surface-toolbar { padding-inline: 14px; }
 }
 @media (max-width: 940px) {
   #board  { padding: 16px 12px; gap: 12px; }
   #topbar { padding: 0 12px; gap: 8px; }
-  .surface-toolbar { padding-inline: 12px; }
   .ws-bar { padding: 8px; }
 }
 
@@ -9754,10 +9734,7 @@ textarea { font-family: var(--font); }
   transform: none;
   box-shadow: none;
 }
-.icon-btn,
-.surface-layout-btn { min-width: 36px; min-height: 36px; border-radius: 9px; }
-.surface-toolbar { min-height: 48px; padding-inline: 20px; background: var(--bg); }
-.surface-layout-btn { background: var(--panel); }
+.icon-btn { min-width: 36px; min-height: 36px; border-radius: 9px; }
 .cat-tab { min-height: 36px; border-radius: 8px; }
 .cat-tab.active,
 .cat-tab.active:hover {
@@ -10753,8 +10730,7 @@ body {
 }
 
 #main,
-#board,
-.surface-toolbar { background: var(--index-paper); }
+#board { background: var(--index-paper); }
 
 /* Optional focus launch: retain its real local search, remove lifestyle
    decoration, and make it read as the same index that follows. */
@@ -10916,12 +10892,7 @@ body {
   background: var(--index-locator);
 }
 .icon-btn,
-.surface-layout-btn,
 .cat-tab { border-radius: 4px; }
-.surface-toolbar {
-  min-height: 50px;
-  border-bottom: 1px solid var(--border);
-}
 .cat-tab.active,
 .cat-tab.active:hover {
   border-color: var(--index-locator);
@@ -16108,8 +16079,6 @@ body[data-page="space"] .topbar-search {
   background: var(--today-card);
 }
 body[data-page="space"] .topbar-search:hover { border-color: var(--today-rule-strong); background: var(--today-card); }
-/* The view switcher on the page replaces the Switch layout button. */
-body[data-page="space"] #surface-toolbar { display: none; }
 body[data-page="space"]:has(#item-sel-toolbar) :is(#toast, #toast-behind) { bottom: 102px; }
 
 #board.spc-mode {

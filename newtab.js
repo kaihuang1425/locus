@@ -146,7 +146,6 @@ const I18N = {
     'workspaceManager.yours': 'Your workspaces',
     'workspaceManager.items': '{count} items',
     'action.tools': 'Tools (Pomodoro, Finance, Subs...)',
-    'action.switchLayout': 'Switch layout',
     'action.calendar': 'Calendar (reminders)',
     'action.selectionMode': 'Selection mode',
     'action.reorderMode': 'Reorder mode',
@@ -186,9 +185,6 @@ const I18N = {
     'menu.options': 'Options',
     'menu.organize': 'Organize',
     'layout.view': 'Views',
-    'layout.advancedViews': 'Advanced views',
-    'layout.advancedViewsOpen': 'Advanced views…',
-    'layout.backCore': 'Back to Board and List',
     'layout.board': 'Board',
     'layout.list': 'List',
     'layout.canvas': 'Canvas',
@@ -1907,7 +1903,6 @@ const I18N = {
     'workspaceManager.yours': '你的工作區',
     'workspaceManager.items': '{count} 個項目',
     'action.tools': '工具 (番茄鐘、記帳、訂閱...)',
-    'action.switchLayout': '切換版面',
     'action.calendar': '行事曆（提醒）',
     'action.selectionMode': '選取模式',
     'action.reorderMode': '重新排序模式',
@@ -1947,9 +1942,6 @@ const I18N = {
     'menu.options': '選項',
     'menu.organize': '整理',
     'layout.view': '檢視',
-    'layout.advancedViews': '進階檢視',
-    'layout.advancedViewsOpen': '進階檢視…',
-    'layout.backCore': '返回看板與清單',
     'layout.board': '看板',
     'layout.list': '清單',
     'layout.canvas': '畫布',
@@ -17293,33 +17285,21 @@ function bindCatScroll() {
   updateCatScrollState();
 }
 
-// SVG glyphs for the layout switcher (§7) — one per registered layout, shown in
-// the top-bar button and the switcher menu so every mode has a recognizable mark.
-const LAYOUT_ICONS = {
-  board:    '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="5" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="3" width="5" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5"/></svg>',
-  list:     '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 5h10M3 8h10M3 11h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="3" cy="5" r="0.6" fill="currentColor"/><circle cx="3" cy="8" r="0.6" fill="currentColor"/><circle cx="3" cy="11" r="0.6" fill="currentColor"/></svg>',
-  canvas:   '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="6" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="3" width="5" height="4" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="3" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="9" width="5" height="3" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>',
-  explorer: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="3.6" height="10" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="6.2" y="3" width="3.6" height="10" rx="1" stroke="currentColor" stroke-width="1.4"/><rect x="10.4" y="3" width="3.6" height="10" rx="1" stroke="currentColor" stroke-width="1.4"/></svg>',
-  timeline: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="4.5" r="1.5" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="9.5" r="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M9.5 4.5H13M9.5 9.5H12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
-  gallery:  '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="6.5" rx="1.2" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="2" width="5" height="4" rx="1.2" stroke="currentColor" stroke-width="1.4"/><rect x="2" y="10" width="5" height="4" rx="1.2" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="7.5" width="5" height="6.5" rx="1.2" stroke="currentColor" stroke-width="1.4"/></svg>',
-  graph:    '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="4" r="2" stroke="currentColor" stroke-width="1.4"/><circle cx="3.5" cy="11.5" r="1.7" stroke="currentColor" stroke-width="1.4"/><circle cx="12.5" cy="11.5" r="1.7" stroke="currentColor" stroke-width="1.4"/><path d="M6.8 5.7 4.7 10M9.2 5.7 11.3 10M5.2 11.5h5.6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>',
-};
-
 // Layout registry (§2.2) — every registered layout is a pure renderer over the
 // active category, sharing the same data, search filter, drag/drop and
 // selection, so adding a layout is registering an entry here rather than
 // touching the data model. The active layout is stored per category
 // (`category.layout`, §7) and falls back to the legacy `settings.viewMode`.
 const LAYOUTS = {
-  board:    { label: 'Board',       icon: LAYOUT_ICONS.board,    render: renderBoardView },
-  list:     { label: 'List',        icon: LAYOUT_ICONS.list,     render: renderListView },
-  canvas:   { label: 'Canvas',      icon: LAYOUT_ICONS.canvas,   render: renderCanvasView },
-  explorer: { label: 'Explorer',    icon: LAYOUT_ICONS.explorer, render: renderExplorerView },
-  timeline: { label: 'Timeline',    icon: LAYOUT_ICONS.timeline, render: renderTimelineView },
-  gallery:  { label: 'Gallery',     icon: LAYOUT_ICONS.gallery,  render: renderGalleryView },
-  graph:    { label: 'Graph',       icon: LAYOUT_ICONS.graph,    render: renderGraphView },
+  board:    { label: 'Board',    render: renderBoardView },
+  list:     { label: 'List',     render: renderListView },
+  canvas:   { label: 'Canvas',   render: renderCanvasView },
+  explorer: { label: 'Explorer', render: renderExplorerView },
+  timeline: { label: 'Timeline', render: renderTimelineView },
+  gallery:  { label: 'Gallery',  render: renderGalleryView },
+  graph:    { label: 'Graph',    render: renderGraphView },
 };
-// Order the layout switcher walks through.
+// The order of the Space page's view tabs (all seven; see SPACE PAGE).
 const LAYOUT_ORDER = ['board', 'list', 'canvas', 'explorer', 'timeline', 'gallery', 'graph'];
 
 function layoutLabel(mode) {
@@ -17393,7 +17373,6 @@ function renderBoard() {
   $b.classList.remove('group-page-mode', 'list-mode', 'canvas-mode', 'explorer-mode', 'timeline-mode', 'gallery-mode', 'graph-mode', 'calendar-mode', 'home-mode');
   const mode = getViewMode();
   document.body.dataset.viewMode = mode;
-  updateViewModeButton(mode);
   // The Space page carries the view switcher and draws the layout inside it.
   if (renderSpacePage(mode)) return;
   const layout = LAYOUTS[mode] || LAYOUTS.board;
@@ -33555,73 +33534,9 @@ function setViewMode(mode) {
   // haven't picked a layout yet.
   settings.viewMode = mode;
   document.body.dataset.viewMode = mode;
-  updateViewModeButton(mode);
   if (changed) State.persist();
   renderBoard();
   Router.sync();
-}
-// Reflect the active layout onto the board-surface control (single dynamic icon).
-function updateViewModeButton(mode) {
-  const def = LAYOUTS[mode] || LAYOUTS.board;
-  const icon = document.getElementById('view-mode-icon');
-  if (icon) icon.innerHTML = def.icon;
-  const btn = document.getElementById('view-mode-btn');
-  if (btn) {
-    const label = tr('action.switchLayout');
-    btn.title = label;
-    btn.setAttribute('aria-label', label);
-    btn.dataset.mode = mode;
-  }
-}
-function cycleViewMode() {
-  const order = ['board', 'list'].filter(m => LAYOUTS[m]);
-  const i = order.indexOf(getViewMode());
-  setViewMode(order[(i + 1) % order.length] || 'board');
-}
-// The layout switcher (§7) — a dropdown listing every registered layout with its
-// icon, anchored under the board subtoolbar button, replacing the old 3-way cycle. Reuses
-// the shared context-menu chrome so it stays consistent across the 13 themes.
-function openLayoutMenu(btn) {
-  const cur = getViewMode();
-  const items = [{ label: tr('layout.view') }];
-  ['board', 'list'].filter(m => LAYOUTS[m]).forEach(m => {
-    const def = LAYOUTS[m];
-    items.push({
-      text: layoutLabel(m),
-      icon: def.icon,
-      sub: m === cur ? '✓' : '',
-      action: () => setViewMode(m),
-    });
-  });
-  const advanced = LAYOUT_ORDER.filter(m => !['board', 'list'].includes(m) && LAYOUTS[m]);
-  if (advanced.length) {
-    items.push({ sep: true });
-    items.push({
-      text: tr('layout.advancedViewsOpen'),
-      icon: LAYOUT_ICONS.canvas,
-      sub: advanced.includes(cur) ? layoutLabel(cur) : '',
-      action: () => openAdvancedLayoutMenu(btn),
-    });
-  }
-  const r = btn.getBoundingClientRect();
-  showContextMenu(r.left, r.bottom + 6, items, { focusFirst: true });
-}
-
-function openAdvancedLayoutMenu(btn) {
-  const cur = getViewMode();
-  const items = [{ label: tr('layout.advancedViews') }];
-  LAYOUT_ORDER.filter(m => !['board', 'list'].includes(m) && LAYOUTS[m]).forEach(m => {
-    const def = LAYOUTS[m];
-    items.push({
-      text: layoutLabel(m),
-      icon: def.icon,
-      sub: m === cur ? '✓' : '',
-      action: () => setViewMode(m),
-    });
-  });
-  items.push({ sep: true }, { text: tr('layout.backCore'), icon: LAYOUT_ICONS.board, action: () => openLayoutMenu(btn) });
-  const r = btn.getBoundingClientRect();
-  showContextMenu(r.left, r.bottom + 6, items, { focusFirst: true });
 }
 
 // ── Command palette (§7) ──────────────────────────────────────────
@@ -36714,7 +36629,6 @@ function bindStatic() {
   bindWorkout();
 
   // View modes + calendar + overflow (⋯) menu (selection / reorder / save all)
-  document.getElementById('view-mode-btn').onclick = (e) => openLayoutMenu(e.currentTarget);
   document.getElementById('calendar-btn').onclick = () => { if (activeCalendar && CAL_VIEWS.includes(activeCalendar.view)) closeCalendar(); else openCalendar(); };
   document.getElementById('more-btn').onclick = (e) => openMoreMenu(e.currentTarget);
   // Topbar app menu (replaces the fake avatar): Settings, Plugins, Theme,

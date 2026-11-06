@@ -294,6 +294,8 @@ Slices, in order:
    Gallery, Graph, Timeline, and the Space Details layout are functional but
    uneven. Keep them under Advanced views until the core loop passes and each
    promoted view earns fresh rendered and user-flow evidence.
+   2026-11-06 (page board): the Space page's seven view tabs replaced the
+   Advanced views grouping; the Switch layout button and both menus are gone.
 
 ## Done (newest first)
 

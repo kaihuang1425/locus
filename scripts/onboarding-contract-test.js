@@ -271,7 +271,9 @@ assert.match(source, /const drawer = document\.getElementById\('settings-drawer'
 
 const sidebarToggleSource = extractFunction('updateSidebarToggleLabel');
 const railToggleSource = extractFunction('updateRailToggleLabel');
-const viewModeButtonSource = extractFunction('updateViewModeButton');
+// 2026-11-06 (page board): the Space page's view tabs replaced the Switch layout button.
+const spacePageShellSource = extractFunction('buildSpacePage');
+const spacePageSyncSource = extractFunction('syncSpacePage');
 const secondaryNavigationSource = extractFunction('secondaryNavigationItems');
 const utf8StringByteLengthSource = extractFunction('utf8StringByteLength');
 const serializedUtf8SizeSource = extractFunction('serializedUtf8Size');
@@ -614,19 +616,14 @@ for (const id of ['undo-btn', 'calendar-btn', 'search-btn', 'settings-btn', 'plu
   assert.match(topbarMarkup, new RegExp(`id="${id}"[^>]*\\bhidden\\b[^>]*aria-hidden="true"`),
     `${id} must remain a non-rendered compatibility hook instead of a competing top-bar control`);
 }
-assert.equal(topbarMarkup.includes('id="view-mode-btn"'), false,
-  'the Space layout action must not remain in global chrome');
-const surfaceToolbarStart = html.indexOf('<div id="surface-toolbar"');
-const boardStart = html.indexOf('<div id="board"', surfaceToolbarStart);
-assert.ok(surfaceToolbarStart > topbarEnd && boardStart > surfaceToolbarStart,
-  'the board-only surface toolbar must sit between global chrome and board content');
-const surfaceToolbarMarkup = html.slice(surfaceToolbarStart, boardStart);
-assert.ok(surfaceToolbarMarkup.includes('id="view-mode-btn"'),
-  'the existing layout action must move into the board-only surface toolbar');
-assert.equal((html.match(/id="view-mode-btn"/g) || []).length, 1,
-  'the stable layout action ID must remain unique');
-assert.match(css, /body:not\(\[data-surface="board"\]\) #surface-toolbar\s*\{[^}]*display:\s*none/,
-  'the layout subtoolbar must be absent outside its board surface');
+assert.equal(/view-mode-btn|surface-toolbar/.test(html), false,
+  'the Space layout action must not remain in global chrome: the Space page view tabs replaced the Switch layout button (2026-11-06, page board)');
+assert.equal(/surface-toolbar|surface-layout|#view-mode-icon/.test(css), false,
+  'the removed layout subtoolbar must leave no styles behind');
+assert.match(spacePageShellSource, /<div class="spc-bar">[\s\S]*?<div class="spc-tabs" role="tablist">[\s\S]*?<div id="space-view" class="spc-views" role="tabpanel"><\/div>/,
+  'the layout control lives on the Space page itself, between its heading and its board content');
+assert.match(source, /function isSpacePageActive\(\) \{\n\s*return !activeSearch && !activeCalendar && !activeGroupPage && !activeLibraryMode && !activeHome && !!activeCat\(\);/,
+  'the view tabs exist only on the board surface (the Space page)');
 assert.equal(/#ws-title\s*\{[^}]*display:\s*none/.test(css), false,
   'the current context title must no longer be visually suppressed');
 assert.match(css, /#ws-title-name\s*\{[^}]*overflow:\s*hidden[^}]*text-overflow:\s*ellipsis/,
@@ -750,9 +747,9 @@ assert.match(
   'the opened-tabs toggle must declare its controlled content, initial expanded state, and localized accessible name',
 );
 assert.match(
-  html,
-  /id="view-mode-btn"[^>]*data-i18n-title="action\.switchLayout"[^>]*data-i18n-aria-label="action\.switchLayout"/,
-  'the Space layout button must expose the existing localized action as both tooltip and accessible name',
+  spacePageSyncSource,
+  /tabs\.setAttribute\('aria-label', tr\('layout\.view'\)\);[\s\S]*?tab\.querySelector\('\.spc-tab-label'\)\.textContent = layoutLabel\(tab\.dataset\.view\);/,
+  'the Space view tabs must expose a localized list name and localized view names',
 );
 
 const savedTabUrlPolicySource = extractFunction('isOpenableSavedTabUrl');
@@ -1820,7 +1817,7 @@ for (const key of [
   'action.expandSidebar',
   'action.collapseOpenedTabs',
   'action.expandOpenedTabs',
-  'action.switchLayout',
+  'layout.view',
   'groupAction.addTab',
   'groupAction.addTabHint',
   'groupAction.saveHere',
@@ -2310,31 +2307,46 @@ for (const [collapsed, expectedKey, expectedExpanded] of [
   assert.equal(attributes['aria-expanded'], expectedExpanded, 'opened-tabs expanded state must match the live class');
 }
 {
-  const attributes = {};
-  const icon = { innerHTML: '' };
-  const button = {
-    dataset: {},
-    title: '',
-    setAttribute(name, value) { attributes[name] = String(value); },
+  // 2026-11-06 (page board): the Space page's view tabs replaced the Switch layout
+  // button. They keep its contract: localized names, the current view marked, and
+  // one icon per view.
+  const part = () => ({
+    textContent: '', innerHTML: '', firstChild: null, hidden: false, title: '', dataset: {}, attributes: {},
+    setAttribute(name, value) { this.attributes[name] = String(value); },
+    appendChild() {},
+    querySelector() { return { textContent: '' }; },
+  });
+  const tabs = ['board', 'list', 'canvas'].map(view => {
+    const tab = part();
+    tab.dataset.view = view;
+    tab.label = { textContent: '' };
+    tab.querySelector = () => tab.label;
+    return tab;
+  });
+  const parts = {
+    '.spc-title': part(), '.spc-total': part(), '.spc-live': part(), '.spc-rem-slot': part(),
+    '[data-spc-act="space-more"]': part(), '.spc-sheet-slot': part(), '[data-spc-act="add-group"]': part(), '.spc-views': part(),
+    '.spc-tabs': Object.assign(part(), { querySelectorAll: () => tabs }),
   };
+  const page = { dataset: {}, querySelector: selector => parts[selector] };
   const context = vm.createContext({
-    LAYOUTS: { board: { icon: '<svg>board</svg>', label: 'Bento board' } },
-    document: {
-      getElementById(id) {
-        if (id === 'view-mode-icon') return icon;
-        if (id === 'view-mode-btn') return button;
-        return null;
-      },
-    },
     tr: key => `translated:${key}`,
+    layoutLabel: mode => `translated:layout.${mode}`,
+    spaceItemsMarkup: () => '', spaceItemsLabel: () => '',
+    buildSpaceReminderChip: () => null, spaceReminderTarget: () => null,
+    spaceRestart() {}, buildSpaceSheet() {},
   });
-  vm.runInContext(`${viewModeButtonSource}\nupdateViewModeButton('board');`, context, {
-    filename: 'layout-button-localization-contract.js',
+  vm.runInContext(`${spacePageSyncSource}\nglobalThis.runSync = syncSpacePage;`, context, {
+    filename: 'space-view-tabs-localization-contract.js',
   });
-  assert.equal(button.title, 'translated:action.switchLayout', 'layout tooltip must use localized action copy');
-  assert.equal(attributes['aria-label'], 'translated:action.switchLayout', 'layout accessible name must use localized action copy');
-  assert.equal(button.dataset.mode, 'board', 'layout button must retain its current-mode diagnostic state');
-  assert.equal(icon.innerHTML, '<svg>board</svg>', 'layout button must retain its current-mode icon');
+  context.runSync(page, {}, { id: 'space', name: 'Locus build', groups: [] }, 'list', { view: 'board', sheet: null });
+  assert.equal(parts['.spc-tabs'].attributes['aria-label'], 'translated:layout.view', 'the view tabs must carry a localized list name');
+  assert.deepEqual(tabs.map(tab => tab.label.textContent), ['translated:layout.board', 'translated:layout.list', 'translated:layout.canvas'],
+    'every view tab must use its localized view name');
+  assert.deepEqual(tabs.map(tab => tab.attributes['aria-selected']), ['false', 'true', 'false'], 'the current view must be the selected tab');
+  assert.deepEqual(tabs.map(tab => tab.tabIndex), [-1, 0, -1], 'only the current view tab is in the tab order');
+  assert.equal(page.dataset.view, 'list', 'the page must keep its current-view diagnostic state');
+  assert.match(spacePageShellSource, /\$\{spaceSvg\(view, 16, 1\.5\)\}<span class="spc-tab-label"><\/span>/, 'every view tab must carry its own icon');
 }
 function createBoardTodoCompletionReceiptHarness({ done = false, type = 'todo', mode = 'unique', recovery = false } = {}) {
   const item = { id: 'todo-1', type, done };

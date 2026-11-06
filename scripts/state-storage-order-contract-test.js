@@ -116,7 +116,6 @@ const context = vm.createContext({
   uid: () => `id${String(nextId++).padStart(4, '0')}`,
   LAYOUTS: { board: {}, list: {} },
   document: { body: { dataset: {} } },
-  updateViewModeButton() {},
   renderBoard() {},
   activeCat() {
     const state = context.__state.get();
