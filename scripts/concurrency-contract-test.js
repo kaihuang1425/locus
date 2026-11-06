@@ -13,6 +13,10 @@ assert.ok(writerStart >= 0 && writerEnd > writerStart, 'Background state writer 
 const writerSource = source.slice(writerStart, writerEnd);
 
 const popupSource = fs.readFileSync(path.join(root, 'popup.js'), 'utf8');
+const popupUrlPolicyStart = popupSource.indexOf('const POPUP_CAPTURABLE_PROTOCOLS');
+const popupUrlPolicyEnd = popupSource.indexOf('\nconst uid', popupUrlPolicyStart);
+const popupCaptureFilterStart = popupSource.indexOf('function filterPopupCaptureTabs(');
+const popupCaptureFilterEnd = popupSource.indexOf('\nfunction popupCaptureError(', popupCaptureFilterStart);
 const popupWriterStart = popupSource.indexOf('let popupStateWriteQueue');
 const popupWriterEnd = popupSource.indexOf('\nconst appLocale', popupWriterStart);
 const popupCloneStart = popupSource.indexOf('function clonePopupState()');
@@ -25,12 +29,19 @@ const popupHibernateStart = popupSource.indexOf('function popupHibernateSourceDe
 const popupHibernateEnd = popupSource.indexOf('\nasync function hibernateSelectedScope', popupHibernateStart);
 const popupHibernateSelectedStart = popupHibernateEnd + 1;
 const popupHibernateSelectedEnd = popupSource.indexOf('\nasync function saveTabsBeforeHibernate', popupHibernateSelectedStart);
+assert.ok(popupUrlPolicyStart >= 0 && popupUrlPolicyEnd > popupUrlPolicyStart, 'Popup capturable URL policy must be extractable');
+assert.ok(popupCaptureFilterStart >= 0 && popupCaptureFilterEnd > popupCaptureFilterStart, 'Popup capture duplicate filter must be extractable');
 assert.ok(popupWriterStart >= 0 && popupWriterEnd > popupWriterStart, 'Popup state writer must be extractable');
 assert.ok(popupCloneStart >= 0 && popupCloneEnd > popupCloneStart, 'Popup state clone helper must be extractable');
 assert.ok(popupCaptureHelperStart >= 0 && popupCaptureHelperEnd > popupCaptureHelperStart, 'Popup capture mutex must be extractable');
 assert.ok(popupDoSaveStart >= 0 && popupDoSaveEnd > popupDoSaveStart, 'Popup single-tab capture must be extractable');
 assert.ok(popupHibernateStart >= 0 && popupHibernateEnd > popupHibernateStart, 'Popup single-tab Hibernate must be extractable');
 assert.ok(popupHibernateSelectedStart > 0 && popupHibernateSelectedEnd > popupHibernateSelectedStart, 'Popup bulk Hibernate must be extractable');
+// doSave and the Hibernate source descriptor both guard on the shared URL policy,
+// and doSave filters duplicates before it writes, so the harnesses load the real
+// policy and filter instead of stubs.
+const popupUrlPolicySource = popupSource.slice(popupUrlPolicyStart, popupUrlPolicyEnd);
+const popupCaptureFilterSource = popupSource.slice(popupCaptureFilterStart, popupCaptureFilterEnd);
 const popupWriterSource = popupSource.slice(popupWriterStart, popupWriterEnd);
 const popupCloneSource = popupSource.slice(popupCloneStart, popupCloneEnd);
 const popupCaptureHelperSource = popupSource.slice(popupCaptureHelperStart, popupCaptureHelperEnd);
@@ -312,6 +323,7 @@ async function deterministicPopupCaptureFailureOverlap() {
     setTimeout() { return 0; },
     clearTimeout() {},
     structuredClone,
+    URL,
     window: { close() {} },
     document: { body: { classList: { add() {}, remove() {} } } },
   });
@@ -334,15 +346,15 @@ async function deterministicPopupCaptureFailureOverlap() {
       `  return { ws, cat, group };\n` +
       `};\n` +
       `const popupCaptureError = (code, message) => Object.assign(new Error(message), { code });\n` +
-      `const closeOrdinaryPopupSavedTab = async (tab, shouldClose) => {\n` +
-      `  if (!shouldClose) return { closed: false, reason: 'disabled' };\n` +
-      `  await chrome.tabs.remove(tab.id);\n` +
+      `const closeOrdinaryPopupSavedTab = async (intent, closeEnabled) => {\n` +
+      `  if (closeEnabled !== true) return { closed: false, reason: 'disabled' };\n` +
+      `  await chrome.tabs.remove(intent.sourceTabId);\n` +
       `  return { closed: true, reason: null };\n` +
       `};\n` +
       `let activeTabId = null;\n` +
       `${popupWriterSource}\n${popupCaptureHelperSource}\n${popupCloneSource}\n` +
       `async function recoverCaptureWriteFailure(_error, snapshot) { state = structuredClone(snapshot); }\n` +
-      `${popupDoSaveSource}\n` +
+      `${popupUrlPolicySource}\n${popupCaptureFilterSource}\n${popupDoSaveSource}\n` +
       `globalThis.__popupCapture = {\n` +
       `  save: (tabId, url) => {\n` +
       `    const ws = state.workspaces[0];\n` +
@@ -418,6 +430,7 @@ async function deterministicPopupHibernateCaptureInterlock() {
       activeElement: null,
       body: { classList: { add() {}, remove() {} } },
     },
+    URL,
   });
 
   vm.runInContext(
@@ -432,7 +445,7 @@ async function deterministicPopupHibernateCaptureInterlock() {
       `const buildSuspendedUrl = ({ url }) => 'suspended:' + url;\n` +
       `const localFaviconUrl = () => 'local-favicon';\n` +
       `async function load() { globalThis.__loads.push('load'); }\n` +
-      `${popupCaptureHelperSource}\n${popupHibernateSource}\n` +
+      `${popupUrlPolicySource}\n${popupCaptureHelperSource}\n${popupHibernateSource}\n` +
       `globalThis.__hibernateFlow = {\n` +
       `  hibernate: hibernateSingle,\n` +
       `  descriptor: popupHibernateSourceDescriptor,\n` +
