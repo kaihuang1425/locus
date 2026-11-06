@@ -3303,7 +3303,9 @@ function testRichTextLinkStaticContract() {
   assert.ok(toolbarSource.includes("event.target?.closest?.('.note-text')"),
     'Ctrl/Cmd+K must be delegated across the Details Note body, Group READMEs, and item-detail notes');
   assert.ok(toolbarSource.includes("event.key.toLowerCase() !== 'k'"));
-  assert.ok(toolbarSource.includes('event.preventDefault();\n    rtCreateLink();'));
+  // Windows checkouts with core.autocrlf=true read newtab.js with CRLF endings.
+  assert.match(toolbarSource, /event\.preventDefault\(\);\r?\n {4}rtCreateLink\(\);/,
+    'Ctrl/Cmd+K must cancel the browser default before opening the Link dialog');
   assert.ok(toolbarSource.includes("cmd === 'link') rtCreateLink()"),
     'the toolbar Link button must share the dialog entry point');
   assert.ok(extractFunction('inheritActiveBodyInterlocks').includes("'rich-text-link'"),
