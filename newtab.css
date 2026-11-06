@@ -13929,6 +13929,12 @@ body[data-theme] #toast.hidden {
   pointer-events: none;
   transition: opacity .2s ease, visibility 0s linear .2s;
 }
+/* Above phone width the receipt stays on one row: the message wraps inside its
+   own block. A wrapping row could push the (invisible) close button onto a second
+   line when a short message sits beside two answers, such as Keep / Reset. */
+@media (min-width: 521px) {
+  body[data-theme] #toast { flex-wrap: nowrap; }
+}
 body[data-theme] #toast.is-held { box-shadow: 0 22px 48px rgba(25, 35, 31, .32); }
 body[data-theme] #toast.is-entering { animation: locus-toast-in .5s cubic-bezier(.34, 1.56, .64, 1) both; }
 body[data-theme] #toast.is-promoted { animation: locus-toast-promote .42s cubic-bezier(.34, 1.56, .64, 1) both; }
