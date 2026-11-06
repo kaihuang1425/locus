@@ -1349,6 +1349,10 @@ const I18N = {
     'today.now': 'Now',
     'today.progress': '{done} of {total} done today',
     'today.nothingLeft': 'Nothing left today.',
+    'today.markDone': 'Mark done: {title}',
+    'today.markNotDone': 'Mark not done: {title}',
+    'today.later': 'Later',
+    'today.laterLabel': 'Do “{title}” later',
     'today.rest': 'Rest of today',
     'today.thisWeek': 'This week',
     'today.anytime': 'Anytime',
@@ -2969,6 +2973,10 @@ const I18N = {
     'today.now': '現在',
     'today.progress': '今天已完成 {done}/{total} 項',
     'today.nothingLeft': '今天沒有待辦了。',
+    'today.markDone': '標示為完成：{title}',
+    'today.markNotDone': '標示為未完成：{title}',
+    'today.later': '稍後',
+    'today.laterLabel': '稍後再做「{title}」',
     'today.rest': '今天其他待辦',
     'today.thisWeek': '本週',
     'today.anytime': '隨時',
@@ -19527,13 +19535,19 @@ function buildHomeInboxZone({ context, excludeItemId = null } = {}) {
 // today, and a capture bar. Every task is an ordinary to-do in the active
 // Workspace. "Today" is derived from fields that already exist: a reminder time
 // today, an open reminder from an earlier day, or (with no reminder) a to-do
-// created today. No stored field is added.
+// created today. No stored field is added. The Later order is per-device view
+// state in localStorage, scoped to the calendar day, like the theme mirror.
+const TODAY_LATER_STORAGE_KEY = 'locus.today.later';
+const TODAY_LATER_LIMIT = 200;
+let todayLaterMemory = { day: '', ids: [] };
 let todayCaptureDraft = '';
 let todayCapturePending = null;
 let todayCaptureComposing = false;
 let todayRenderDeferred = false;
+let todayMotionPending = false;
 let todayClockTimer = null;
 let todayJustAddedId = null;
+let todayNowEnters = false;
 
 function todayPad2(value) {
   return String(value).padStart(2, '0');
@@ -19626,6 +19640,33 @@ function todayTaskModel(workspace, now = Date.now(), laterIds = []) {
   };
 }
 
+function readTodayLaterIds(now = Date.now()) {
+  const day = todayDayKey(now);
+  const clean = ids => ids.filter(id => typeof id === 'string' && id).slice(-TODAY_LATER_LIMIT);
+  try {
+    const raw = localStorage.getItem(TODAY_LATER_STORAGE_KEY);
+    if (raw != null) {
+      const stored = JSON.parse(raw);
+      return stored && stored.day === day && Array.isArray(stored.ids) ? clean(stored.ids) : [];
+    }
+  } catch {}
+  return todayLaterMemory.day === day ? clean(todayLaterMemory.ids) : [];
+}
+
+// Later moves a task behind every other open task for the rest of the day. It
+// is view order only, so it never enters Undo history or the stored graph.
+function deferTodayTask(id, now = Date.now()) {
+  const key = String(id || '');
+  if (!key) return false;
+  const ids = readTodayLaterIds(now).filter(existing => existing !== key);
+  ids.push(key);
+  todayLaterMemory = { day: todayDayKey(now), ids: ids.slice(-TODAY_LATER_LIMIT) };
+  try {
+    localStorage.setItem(TODAY_LATER_STORAGE_KEY, JSON.stringify(todayLaterMemory));
+  } catch {}
+  return true;
+}
+
 function todayShortDay(at) {
   const zh = appLocale() === 'zh-TW';
   return new Intl.DateTimeFormat(zh ? 'zh-TW' : 'en-GB', zh
@@ -19654,6 +19695,10 @@ function todayTaskTitle(entry) {
 function todayReducedMotion() {
   if (document.body?.dataset.anim === 'off') return true;
   try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch { return false; }
+}
+
+function todayWait(ms) {
+  return ms > 0 ? new Promise(resolve => setTimeout(resolve, ms)) : Promise.resolve();
 }
 
 // Reads one capture line into a to-do title, an optional reminder time, and an
@@ -19908,6 +19953,7 @@ function startTodayClock() {
       const now = Date.now();
       if (board.dataset.todayDay !== todayDayKey(now)
           && activeHome
+          && !todayMotionPending
           && !todayCapturePending
           && !isBoardTodoCompletionPending()) {
         renderBoard();
@@ -19925,7 +19971,8 @@ const TODAY_ARROW_ICON = '<svg width="14" height="14" viewBox="0 0 16 16" fill="
 
 function buildTodayNow(workspace, model) {
   const section = document.createElement('section');
-  section.className = 'today-now';
+  section.className = `today-now${todayNowEnters ? ' is-entering' : ''}`;
+  todayNowEnters = false;
   section.setAttribute('aria-labelledby', 'today-now-title');
   const entry = model.now;
   if (entry) section.dataset.todayId = entry.id;
@@ -19979,6 +20026,31 @@ function buildTodayNow(workspace, model) {
   }
   section.appendChild(body);
 
+  if (entry) {
+    const title = todayTaskTitle(entry);
+    const actions = document.createElement('div');
+    actions.className = 'today-now-actions';
+    const check = document.createElement('button');
+    check.type = 'button';
+    check.className = 'today-now-check';
+    check.setAttribute('aria-pressed', 'false');
+    check.setAttribute('aria-label', tr('today.markDone', { title }));
+    const rays = Array.from({ length: 8 }, () => '<span class="today-ray"><span class="today-ray-dot"></span></span>').join('');
+    check.innerHTML = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="today-burst" aria-hidden="true">${rays}</span>`;
+    check.addEventListener('click', event => { void checkTodayNow(event.currentTarget); });
+    actions.appendChild(check);
+    // Later is offered only when another open task exists to take its place.
+    if (model.open.length > 1) {
+      const later = document.createElement('button');
+      later.type = 'button';
+      later.className = 'today-now-later';
+      later.setAttribute('aria-label', tr('today.laterLabel', { title }));
+      later.innerHTML = `<span>${esc(tr('today.later'))}</span>${TODAY_ARROW_ICON}`;
+      later.addEventListener('click', event => { void laterTodayNow(event.currentTarget); });
+      actions.appendChild(later);
+    }
+    section.appendChild(actions);
+  }
   return section;
 }
 
@@ -19988,10 +20060,13 @@ function buildTodayCard(workspace, entry) {
   card.dataset.todayId = entry.id;
   const title = todayTaskTitle(entry);
   const when = todayWhenLabel(entry);
-  const check = document.createElement('span');
+  const check = document.createElement('button');
+  check.type = 'button';
   check.className = 'today-card-check';
-  check.setAttribute('aria-hidden', 'true');
+  check.setAttribute('aria-pressed', String(entry.done));
+  check.setAttribute('aria-label', tr(entry.done ? 'today.markNotDone' : 'today.markDone', { title }));
   check.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  check.addEventListener('click', event => { void toggleTodayCard(event.currentTarget); });
   const text = document.createElement('div');
   text.className = 'today-card-text';
   const whenLabel = document.createElement('span');
@@ -20042,6 +20117,142 @@ function openTodayWeek() {
   const workspace = activeWs();
   if (!workspace) return false;
   Router.navigate({ type: 'calendar', wsId: workspace.id, query: { cal: 'week' } });
+  return true;
+}
+
+function focusTodayTarget(selectors) {
+  for (const selector of selectors) {
+    const target = document.querySelector(selector);
+    if (!target || typeof target.focus !== 'function') continue;
+    try { target.focus({ preventScroll: true }); } catch { try { target.focus(); } catch {} }
+    if (document.activeElement === target) return true;
+  }
+  return false;
+}
+
+function setTodayBoardBusy(busy) {
+  const board = document.querySelector('#board .today');
+  if (!board) return;
+  board.classList.toggle('is-busy', !!busy);
+  if (busy) board.setAttribute('aria-busy', 'true');
+  else board.removeAttribute('aria-busy');
+}
+
+// Completion reuses the Board to-do transaction: the same exact-identity
+// context, one localized snapshot (so Undo works), one acknowledged write, and
+// the shared pending token that other writers already respect.
+async function commitTodayTodoToggle(itemId, opener = null) {
+  if (isBoardTodoCompletionPending()
+      || todayCapturePending
+      || (typeof isBoardLocalRecordCreatePending === 'function' && isBoardLocalRecordCreatePending())) return false;
+  if (State.isRecoveryRequired?.()) return false;
+  const workspace = activeWs();
+  const row = workspace
+    ? collectWorkspaceItems(workspace).find(candidate => candidate.item?.type === 'todo' && String(candidate.item.id || '') === String(itemId))
+    : null;
+  const context = row ? createBoardTodoCompletionContext(row.item) : null;
+  const target = context ? resolveBoardTodoCompletionTarget(context) : null;
+  if (!target) return false;
+
+  const transaction = { context, itemId: context.itemId, opener, surface: 'today' };
+  boardTodoCompletionMutationPending = transaction;
+  setTodayBoardBusy(true);
+  try {
+    State.snapshot(tr(target.item.done ? 'detail.markIncomplete' : 'detail.markComplete'));
+    target.item.done = !target.item.done;
+  } catch (error) {
+    if (boardTodoCompletionMutationPending === transaction) boardTodoCompletionMutationPending = null;
+    setTodayBoardBusy(false);
+    State.requireRecovery?.();
+    if (typeof showStateRecoveryRequired === 'function') showStateRecoveryRequired(error);
+    return false;
+  }
+
+  try {
+    await State.persistNow();
+  } catch (error) {
+    if (boardTodoCompletionMutationPending === transaction) boardTodoCompletionMutationPending = null;
+    setTodayBoardBusy(false);
+    if (State.isRecoveryRequired?.() && typeof showStateRecoveryRequired === 'function') {
+      showStateRecoveryRequired(error);
+    }
+    return false;
+  }
+
+  if (boardTodoCompletionMutationPending !== transaction) {
+    setTodayBoardBusy(false);
+    return false;
+  }
+  boardTodoCompletionMutationPending = null;
+  setTodayBoardBusy(false);
+  return true;
+}
+
+// Check: the box fills, the title is struck, and the write is acknowledged;
+// then the task leaves and the next one slides in.
+async function checkTodayNow(button) {
+  const card = button?.closest('.today-now');
+  const itemId = card?.dataset.todayId;
+  if (!itemId || todayMotionPending) return false;
+  todayMotionPending = true;
+  const reduce = todayReducedMotion();
+  card.classList.add('is-checking');
+  card.querySelector('.today-progress-pill:not(.is-done)')?.classList.add('is-done', 'is-pulse');
+  button.setAttribute('aria-pressed', 'true');
+  const [accepted] = await Promise.all([commitTodayTodoToggle(itemId, button), todayWait(reduce ? 0 : 600)]);
+  if (!accepted) {
+    card.classList.remove('is-checking');
+    card.querySelector('.today-progress-pill.is-pulse')?.classList.remove('is-done', 'is-pulse');
+    button.setAttribute('aria-pressed', 'false');
+    todayMotionPending = false;
+    return false;
+  }
+  card.classList.add('is-leaving');
+  await todayWait(reduce ? 0 : 240);
+  todayMotionPending = false;
+  todayNowEnters = !reduce;
+  renderBoard();
+  focusTodayTarget(['#board .today-now-check', '#today-capture-input']);
+  return true;
+}
+
+async function laterTodayNow(button) {
+  const card = button?.closest('.today-now');
+  const itemId = card?.dataset.todayId;
+  if (!itemId || todayMotionPending) return false;
+  todayMotionPending = true;
+  const reduce = todayReducedMotion();
+  card.classList.add('is-leaving');
+  await todayWait(reduce ? 0 : 240);
+  deferTodayTask(itemId);
+  todayMotionPending = false;
+  todayNowEnters = !reduce;
+  renderBoard();
+  focusTodayTarget(['#board .today-now-later', '#board .today-now-check', '#today-capture-input']);
+  return true;
+}
+
+async function toggleTodayCard(button) {
+  const card = button?.closest('.today-card');
+  const itemId = card?.dataset.todayId;
+  if (!itemId || todayMotionPending) return false;
+  todayMotionPending = true;
+  const reduce = todayReducedMotion();
+  const wasDone = card.classList.contains('is-done');
+  card.classList.add(wasDone ? 'is-unchecking' : 'is-checking');
+  const [accepted] = await Promise.all([commitTodayTodoToggle(itemId, button), todayWait(reduce ? 0 : 340)]);
+  todayMotionPending = false;
+  if (!accepted) {
+    card.classList.remove('is-checking', 'is-unchecking');
+    return false;
+  }
+  renderBoard();
+  const escaped = CSS.escape(String(itemId));
+  focusTodayTarget([
+    `#board .today-card[data-today-id="${escaped}"] .today-card-check`,
+    `#board .today-now[data-today-id="${escaped}"] .today-now-check`,
+    '#today-capture-input',
+  ]);
   return true;
 }
 
@@ -20313,7 +20524,7 @@ function bindTodayBoard() {
 }
 
 function buildTodayBoard(workspace, now = Date.now()) {
-  const model = todayTaskModel(workspace, now, []);
+  const model = todayTaskModel(workspace, now, readTodayLaterIds(now));
   const root = document.createElement('div');
   root.className = 'today';
   root.dataset.todayDay = todayDayKey(now);

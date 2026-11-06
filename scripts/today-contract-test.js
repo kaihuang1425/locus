@@ -213,6 +213,23 @@ match(extractFunction('openTodayTaskDetail'), /openHomePreviewItem\(workspaceId,
 match(extractFunction('openTodayWeek'), /query: \{ cal: 'week' \}/, 'This week opens the existing Calendar week view');
 const usedKeys = new Set([...source.matchAll(/tr\('(today\.[\w.]+)'/g)].map(m => m[1]));
 
+// ── Now card: completion and Later ──
+const toggle = extractFunction('commitTodayTodoToggle');
+match(toggle, /createBoardTodoCompletionContext\(row\.item\)[\s\S]*resolveBoardTodoCompletionTarget\(context\)/, 'completion reuses the exact Board to-do identity');
+match(toggle, /boardTodoCompletionMutationPending = transaction[\s\S]*State\.snapshot\(tr\(target\.item\.done \? 'detail\.markIncomplete' : 'detail\.markComplete'\)\)[\s\S]*target\.item\.done = !target\.item\.done[\s\S]*await State\.persistNow\(\)/,
+  'completion holds the shared pending token, takes one Undo snapshot, and awaits one acknowledged write');
+const check = extractFunction('checkTodayNow');
+match(check, /Promise\.all\(\[commitTodayTodoToggle\(itemId, button\), todayWait/, 'the check animation waits for the acknowledged write');
+match(check, /if \(!accepted\)[\s\S]*classList\.remove\('is-checking'\)/, 'a refused or failed write puts the Now card back');
+const later = extractFunction('laterTodayNow');
+match(later, /deferTodayTask\(itemId\)/, 'Later defers the Now task');
+noMatch(later + extractFunction('deferTodayTask'), /State\.(?:snapshot|persist|persistNow)\(/, 'Later is view order only and never writes the stored graph');
+match(extractFunction('deferTodayTask'), /localStorage\.setItem\(TODAY_LATER_STORAGE_KEY/, 'Later order is per-device view state');
+match(source, /const TODAY_LATER_STORAGE_KEY = 'locus\.today\.later';/, 'Later uses one documented localStorage key');
+match(extractFunction('buildTodayBoard'), /todayTaskModel\(workspace, now, readTodayLaterIds\(now\)\)/, 'the board applies the day\'s Later order');
+match(extractFunction('buildTodayNow'), /if \(model\.open\.length > 1\)[\s\S]*today-now-later/, 'Later is offered only when another open task can take its place');
+match(extractFunction('toggleTodayCard'), /commitTodayTodoToggle\(itemId, button\)/, 'a Rest card check uses the same completion transaction');
+
 // ── Locale parity ──
 const enStart = source.indexOf('const I18N = {');
 const zhStart = source.indexOf("'zh-TW': {", enStart);
