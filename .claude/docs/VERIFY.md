@@ -58,6 +58,13 @@ render the board; the installed-browser pass for Today is a throwaway Edge profi
 driven over CDP (capture, check, Later, card toggle, drawer, themes, 1440 and
 390 px, reduced motion).
 
+Known failures as of 2026-11-06, identical on `654b4a7` and on this branch:
+`group-stack-identity` (`groupHasReopenableSavedTab is not defined`) and
+`concurrency` (`isPopupCapturableUrl is not defined`). `item-detail` fails only on a
+CRLF working copy (Windows `core.autocrlf=true`): its rich-text toolbar check looks
+for a `\n`-joined source substring without normalizing line endings. An LF clone
+passes it.
+
 The deterministic suites prove only the contracts they model. They do not promote
 a capability to installed-extension runtime verification.
 `state-storage-order-contract-test.js` (2026-11-05) models Chromium's
