@@ -97,8 +97,69 @@ function testRemainingSurfaces() {
   ok(/@media \(prefers-reduced-motion: reduce\) \{\n\s*body\[data-theme\] :is\(\.library-row, \.archive-row, \.search-result-row, \.gcol \.item\) \{ transition: none; \}/.test(layer), 'card hover motion stops under reduced motion');
 }
 
+// Selectors checked against markup, not against themselves (R1, R3, S9/R5).
+function cssRules(text) {
+  const clean = text.replace(/\/\*[\s\S]*?\*\//g, '');
+  return [...clean.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(match => ({ selector: match[1].trim(), body: match[2] }));
+}
+function classesIn(selector) {
+  return [...selector.replace(/\[[^\]]*\]/g, '').matchAll(/\.(-?[A-Za-z_][\w-]*)/g)].map(match => match[1]);
+}
+function testSelectorsMatchMarkup() {
+  // R1: the popup writes data-theme on <html>, so its canvas layer must root there.
+  const popupCss = read('popup.css');
+  const popupJs = read('popup.js');
+  const popupHtml = read('popup.html');
+  ok(/document\.documentElement\.dataset\.theme = theme;/.test(popupJs) && /<html[^>]*\sdata-theme="/.test(popupHtml), 'the popup keeps its theme on <html>');
+  ok(!/body\[data-theme\]/.test(popupCss), 'no popup rule waits for a data-theme on <body> that is never set');
+  const popupLayer = cssRules(popupCss.slice(popupCss.lastIndexOf('/*', popupCss.indexOf('Toolbar popup (2026-11 canvas)'))));
+  ok(popupLayer.length >= 8, 'the popup canvas layer is present');
+  for (const rule of popupLayer) {
+    ok(rule.selector.split(',').every(part => part.trim().startsWith('html[data-theme]')), `popup layer rule roots on html[data-theme]: ${rule.selector.slice(0, 50)}`);
+  }
+  const popupSources = `${popupHtml}\n${popupJs}`;
+  const popupMissing = new Set();
+  popupLayer.forEach(rule => classesIn(rule.selector).forEach(name => {
+    if (!new RegExp(`(?<![\\w-])${name}(?![\\w-])`).test(popupSources)) popupMissing.add(name);
+  }));
+  eq([...popupMissing], [], 'every class in the popup layer exists in popup.html or popup.js');
+
+  // R3: every class a new-tab canvas rule names exists in the markup or in the
+  // scripts that build it. A class only made from a template literal is listed
+  // with the template that makes it.
+  const sources = [newtab, html, read('plan.js'), read('planner.js')].join('\n');
+  const whenTone = /`today-card-when is-\$\{when\.tone\}`/;
+  const captureKind = /`today-hl is-\$\{token\.kind\}/;
+  const leaving = /classList\.add\(`is-leaving-\$\{choice\}`\)/;
+  const templated = {
+    'plan-lane-today': /`plan-lane plan-lane-\$\{lane\.id\}`/,
+    'plan-lane-someday': /`plan-lane plan-lane-\$\{lane\.id\}`/,
+    'is-anytime': whenTone,
+    'is-when': whenTone,
+    'is-where': captureKind,
+    'is-leaving-today': leaving,
+    'is-leaving-week': leaving,
+    'is-leaving-someday': leaving,
+    'is-leaving-archive': leaving,
+    'is-leaving-skip': leaving,
+  };
+  const layer = cssRules(css.slice(css.lastIndexOf('/*', css.indexOf('TODAY BOARD (2026-11 canvas)'))))
+    .filter(rule => /body\[data-theme\]|#toast|\.plan|\.today|\.wc-|\.landing|\.fl-/.test(rule.selector));
+  ok(layer.length > 200, 'the canvas layers were read');
+  const missing = new Set();
+  layer.forEach(rule => classesIn(rule.selector).forEach(name => {
+    if (new RegExp(`(?<![\\w-])${name}(?![\\w-])`).test(sources)) return;
+    if (templated[name] && templated[name].test(sources)) return;
+    missing.add(name);
+  }));
+  eq([...missing].sort(), [], 'every class in the canvas layers exists in the markup or the scripts that build it');
+  ok(!/\.cal-month \.cal-cell|\.cal-week \.cal-col/.test(css), 'the calendar layer targets .cal-grid .cal-cell and .cal-week-col');
+  ok(/body\[data-theme\] \.search-result-row\.selected,\nbody\[data-theme\] \.archive-row\.selected \{[^}]*box-shadow: inset 4px 0 0 var\(--accent\);/.test(css), 'selected Search and Archive rows keep their marker in the card layer (R2)');
+}
+
 testWelcome();
 testCalmNewTab();
 testRestingPage();
 testRemainingSurfaces();
+testSelectorsMatchMarkup();
 console.log(`Canvas page contracts passed: ${checks} checks (Welcome envelope and stamp, calm new tab clock, recent pages and tone, resting page copy and loading)`);

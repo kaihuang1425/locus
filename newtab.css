@@ -14696,6 +14696,15 @@ body[data-theme] .search-result-row {
 body[data-theme] .library-row:hover,
 body[data-theme] .archive-row:hover,
 body[data-theme] .search-result-row:hover { transform: translateY(-1px); border-color: var(--today-rule-strong); box-shadow: 0 10px 24px rgba(25, 35, 31, .07); }
+/* The card reset above must not erase which row is selected or focused (R2). */
+body[data-theme] .search-result-row.selected,
+body[data-theme] .archive-row.selected {
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--today-rule));
+  background: color-mix(in srgb, var(--accent) 8%, var(--today-card));
+  box-shadow: inset 4px 0 0 var(--accent);
+}
+body[data-theme] .search-result-row:focus-visible,
+body[data-theme] .archive-row:focus-visible { box-shadow: inset 4px 0 0 var(--accent), inset 0 0 0 2px color-mix(in srgb, var(--accent) 38%, transparent); }
 body[data-theme] .library-row .library-title { font-weight: 600; }
 body[data-theme] .archive-summary > div {
   border: 1px solid var(--today-rule);
@@ -14722,7 +14731,9 @@ body[data-theme] .search-type-tabs button {
   color: var(--text2);
   font-weight: 600;
 }
-body[data-theme] .search-type-tabs button[aria-pressed="true"] { background: var(--today-card); color: var(--text); box-shadow: 0 1px 2px rgba(25, 35, 31, .08); }
+/* The pressed tab is a card pill on a near-white track (about 1.2:1), so it
+   also carries an accent underline that reads at 3:1 or better (R6). */
+body[data-theme] .search-type-tabs button[aria-pressed="true"] { background: var(--today-card); color: var(--text); box-shadow: inset 0 -2px 0 var(--index-locator, var(--accent)), 0 1px 2px rgba(25, 35, 31, .08); }
 body[data-theme] .search-filters,
 body[data-theme] .search-results,
 body[data-theme] .search-detail { border-color: var(--today-rule); border-radius: 18px; background: var(--today-card); }
@@ -14745,6 +14756,10 @@ body[data-theme] .gcol .item {
   transition: transform .16s var(--today-ease), box-shadow .2s ease, border-color .14s ease;
 }
 body[data-theme] .gcol .item:hover { transform: translateY(-1px); border-color: var(--today-rule-strong); box-shadow: 0 8px 20px rgba(25, 35, 31, .07); }
+/* After :hover, so the card being dragged keeps its lift-off pose, and the card
+   reset keeps the selection ring (R7). */
+body[data-theme] .gcol .item.dragging { transform: scale(.95) rotate(1.5deg); }
+body[data-theme] .gcol .item.item-selected { box-shadow: inset 0 0 0 1px var(--index-locator, var(--accent)); }
 
 /* Item details */
 body[data-theme] .idp-panel {
@@ -14796,14 +14811,26 @@ body[data-theme] #settings-drawer .toggle-row small[id$="-hint"] {
   white-space: nowrap;
 }
 body[data-theme] #settings-drawer .toggle-row br { display: none; }
+/* The checked track uses the theme's filled accent: on Locus Dark the
+   locator (#8fa8ff) left the white knob at about 2.3:1; #5d73d1 gives 4.3:1 (R6). */
 body[data-theme] #settings-drawer .tog:has(input:checked),
-body[data-theme] #settings-drawer input:checked + .tog { background: var(--index-locator, var(--accent)); }
+body[data-theme] #settings-drawer input:checked + .tog { background: var(--accent-bg, var(--index-locator, var(--accent))); }
 
 /* Calendar inside Plan */
 body[data-theme] .cal-toolbar button,
 body[data-theme] .cal-seg { border-radius: 12px; }
-body[data-theme] .cal-month .cal-cell,
-body[data-theme] .cal-week .cal-col { border-color: var(--today-rule); background: var(--today-card); }
+/* Month cells are .cal-grid > .cal-cell, week columns .cal-week-col, agenda
+   rows .cal-ag-* (newtab.js renderCalendar) (R3). */
+body[data-theme] .cal-grid .cal-cell,
+body[data-theme] .cal-week-col { border-color: var(--today-rule); border-radius: 14px; background: var(--today-card); }
+body[data-theme] .cal-grid .cal-cell:hover { border-color: var(--today-rule-strong); background: var(--today-card); }
+body[data-theme] .cal-grid .cal-cell.dim { background: transparent; }
+body[data-theme] .cal-grid .cal-cell.today,
+body[data-theme] .cal-week-col.today { border-color: var(--accent); }
+body[data-theme] .cal-grid .cal-cell.cal-drop { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--today-card)); }
+body[data-theme] .cal-week-colhd { border-bottom-color: var(--today-rule); }
+body[data-theme] .cal-ag-hd { border-bottom-color: var(--today-rule); font-family: var(--today-display); font-size: 14px; font-weight: 800; }
+body[data-theme] .cal-ag-row { padding: 4px 0; }
 body[data-theme] .cal-dot { border-radius: 8px; }
 
 @media (prefers-reduced-motion: reduce) {

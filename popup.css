@@ -982,22 +982,22 @@ body {
 
 /* Toolbar popup (2026-11 canvas): the same warm ground, white cards, display
    type, and blue action as the new tab. The header logo is unchanged. */
-body[data-theme] { background: var(--ground, var(--bg)); }
-body[data-theme] .popup-search {
+html[data-theme] body { background: var(--ground, var(--bg)); }
+html[data-theme] .popup-search {
   border: 1px solid var(--card-rule, var(--border2));
   border-radius: 12px;
   background: var(--card, var(--panel));
 }
-body[data-theme] .popup-search:focus-within { border-color: var(--locator, var(--accent)); }
-body[data-theme] .window-heading { color: var(--text); font-family: var(--font-brand-display, var(--font)); font-size: 15px; font-weight: 800; letter-spacing: -.01em; }
-body[data-theme] .destination-card,
-body[data-theme] .state-card,
-body[data-theme] .capture-result,
-body[data-theme] .more-list {
+html[data-theme] .popup-search:focus-within { border-color: var(--locator, var(--accent)); }
+html[data-theme] .window-heading { color: var(--text); font-family: var(--font-brand-display, var(--font)); font-size: 15px; font-weight: 800; letter-spacing: -.01em; }
+html[data-theme] .destination-card,
+html[data-theme] .state-card,
+html[data-theme] .capture-result,
+html[data-theme] .more-list {
   border: 1px solid var(--card-rule, var(--border));
   border-radius: 14px;
   background: var(--card, var(--panel));
 }
-body[data-theme] .pa-btn { border-radius: 12px; }
-body[data-theme] .pa-btn.primary { background: var(--locator, var(--accent-bg)); box-shadow: none; }
-body[data-theme] .pa-btn.primary:hover { background: var(--locator-hover, var(--accent-bg)); box-shadow: 0 6px 16px color-mix(in srgb, var(--locator, var(--accent-bg)) 28%, transparent); }
+html[data-theme] .pa-btn { border-radius: 12px; }
+html[data-theme] .pa-btn.primary { background: var(--locator, var(--accent-bg)); box-shadow: none; }
+html[data-theme] .pa-btn.primary:hover { background: var(--locator-hover, var(--accent-bg)); box-shadow: 0 6px 16px color-mix(in srgb, var(--locator, var(--accent-bg)) 28%, transparent); }
