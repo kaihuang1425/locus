@@ -5,7 +5,7 @@
 // Schema version of the in-storage state. Bump when state shape changes,
 // then add a forward-migration branch in migrate(). Older builds reading
 // data stamped with a higher value get a blocking "newer data" guard.
-const CURRENT_SCHEMA = 13;
+const CURRENT_SCHEMA = 14;
 
 const SUPPORTED_LOCALES = ['en', 'zh-TW'];
 
@@ -170,6 +170,177 @@ const I18N = {
     'cal.dotTitle': '{title} — {date}',
     'cal.dotTitleWithSource': '{title} — {date} ({source})',
     'cal.history.addTask': 'Add calendar task',
+    'planner.title': 'Plan with AI',
+    'planner.close': 'Close Plan with AI',
+    'planner.intro': 'Describe the plan, get a draft from Claude, Codex, or Gemini, and check it here. Nothing reaches the Calendar until you add it.',
+    'planner.section.plan': 'Plan',
+    'planner.section.draft': 'Get a draft',
+    'planner.section.preview': 'Preview',
+    'planner.savedPlans': 'Saved plan',
+    'planner.newPlan': 'New plan',
+    'planner.planTitle': 'Title',
+    'planner.horizon': 'Plan for',
+    'planner.horizon.day': 'Day',
+    'planner.horizon.week': 'Week',
+    'planner.horizon.month': 'Month',
+    'planner.defaultTitle.day': 'Plan for {date}',
+    'planner.defaultTitle.week': 'Week of {date}',
+    'planner.defaultTitle.month': 'Month from {date}',
+    'planner.start': 'Start date',
+    'planner.end': 'End date',
+    'planner.timezone': 'Time zone',
+    'planner.goals': 'Goals and tasks',
+    'planner.goalsHint': 'One per line.',
+    'planner.fixed': 'Fixed commitments',
+    'planner.fixedHint': 'One per line, for example: 2026-11-10 14:00-15:00 Supervisor meeting',
+    'planner.dayStart': 'Day starts',
+    'planner.dayEnd': 'Day ends',
+    'planner.maxPerDay': 'Blocks per day',
+    'planner.notes': 'Other constraints',
+    'planner.shareBusy': 'Share my Calendar reminder times in this range (times only, no titles)',
+    'planner.destination': 'Add tasks to',
+    'planner.space': 'Space',
+    'planner.group': 'Group',
+    'planner.newGroup': 'New group: {name}',
+    'planner.groupNameFallback': 'Plan',
+    'planner.save': 'Save plan',
+    'planner.saving': 'Saving…',
+    'planner.saved': 'Plan saved',
+    'planner.savedState': 'Saved in Locus',
+    'planner.unsaved': 'Not saved yet',
+    'planner.saveFailed': 'Locus could not confirm that this plan was saved.',
+    'planner.planLimit': 'Locus keeps up to 50 plans. Reuse a saved plan instead.',
+    'planner.assistant': 'Assistant',
+    'planner.profile': 'Prompt style',
+    'planner.profileName.claude-xml': 'XML sections with a worked example',
+    'planner.profileName.codex-tool': 'Short objective, exact tool and schema',
+    'planner.profileName.codex-compact': 'Compact, for Spark or short-context models',
+    'planner.profileName.gemini-structured': 'Direct goal and constraints, structured output',
+    'planner.model': 'Model or profile (optional)',
+    'planner.modelHint': 'Passed to a local runner; the prompt does not depend on it.',
+    'planner.delivery': 'Reply route',
+    'planner.delivery.paste': 'Paste the reply here',
+    'planner.delivery.mcp': 'Locus companion (MCP tool)',
+    'planner.promptPreview': 'Show prompt',
+    'planner.promptLabel': 'Prompt for the assistant',
+    'planner.copyPrompt': 'Copy prompt',
+    'planner.copied': 'Prompt copied',
+    'planner.copyFailed': 'Copy did not work. Select the prompt and copy it yourself.',
+    'planner.requestBlocked': 'Fix the plan details first.',
+    'planner.companion': 'Locus companion (optional)',
+    'planner.connect': 'Connect companion',
+    'planner.reconnect': 'Reconnect',
+    'planner.share': 'Share with companion',
+    'planner.check': 'Check for drafts',
+    'planner.runner': 'Local runner',
+    'planner.run': 'Generate draft',
+    'planner.companion.off': 'Not connected. The companion is optional; copy and paste work without it.',
+    'planner.companion.connecting': 'Connecting…',
+    'planner.companion.connected': 'Connected. Pairing {id}',
+    'planner.companion.notInstalled': 'The companion is not installed for this browser. Setup steps are in companion/README.md.',
+    'planner.companion.forbidden': 'The companion is installed for a different extension id. Run its install step again with this Locus id.',
+    'planner.companion.denied': 'Locus needs your permission before it can talk to the companion.',
+    'planner.companion.reloadNeeded': 'Permission granted. Reload this tab, then connect again.',
+    'planner.companion.disconnected': 'The companion disconnected. Waiting drafts stay in its queue; reconnect to fetch them.',
+    'planner.companion.error': 'The companion reported an error: {message}',
+    'planner.companion.failed': 'The companion did not finish: {message}',
+    'planner.companion.shared': 'Shared "{title}" with the companion',
+    'planner.companion.none': 'No new drafts',
+    'planner.companion.received': 'Drafts received: {count}',
+    'planner.companion.running': 'Running {name}…',
+    'planner.companion.ran': '{name} returned a draft',
+    'planner.companion.runRejected': '{name} returned a reply Locus could not read as a plan draft.',
+    'planner.companion.mcpHint': 'MCP clients: node companion/locus-planner.js mcp-config --client claude --pairing {id}',
+    'planner.paste': 'Paste a reply',
+    'planner.pastePlaceholder': "Paste the assistant's reply with its JSON draft",
+    'planner.checkDraft': 'Check draft',
+    'planner.pasteChecked': 'Draft checked. Review it below.',
+    'planner.pasteRepeated': 'This draft is already in the list.',
+    'planner.pasteRejected': 'Locus could not use that reply as a draft.',
+    'planner.otherPlanPasted': 'That draft belongs to another plan. Open that plan to review it.',
+    'planner.switchedPlan': 'Opened "{title}", the plan this draft was written for.',
+    'planner.otherPlanDrafts': 'Drafts for other plans: {count}. Choose that plan above to review them.',
+    'planner.source.paste': 'Pasted',
+    'planner.source.mcp': 'MCP · {client}',
+    'planner.source.runner': 'Runner · {client}',
+    'planner.draftMeta': '{source} · {time} · {count} blocks',
+    'planner.dismiss': 'Dismiss',
+    'planner.dismissNamed': 'Dismiss draft {name}',
+    'planner.noDraft': 'No draft yet. Copy the prompt, then paste the reply or check the companion.',
+    'planner.summary': '{ready} ready · {conflict} to check · {invalid} cannot be added · {applied} already added',
+    'planner.blockStatus.ready': 'Ready',
+    'planner.blockStatus.conflict': 'Check',
+    'planner.blockStatus.invalid': 'Cannot add',
+    'planner.blockStatus.fixed': 'Fixed',
+    'planner.blockStatus.duplicate': 'Repeat',
+    'planner.blockStatus.applied': 'Already added',
+    'planner.selectBlock': 'Add "{title}" on {date}',
+    'planner.localTime': 'your time {time}',
+    'planner.timeAssumed': 'no time given',
+    'planner.itemNotes': 'Planned for {date}, {time} ({timezone})',
+    'planner.cancel': 'Close',
+    'planner.apply': 'Add {count} tasks',
+    'planner.applying': 'Adding…',
+    'planner.applyNone': 'Choose at least one block to add.',
+    'planner.applied': 'Added {count} tasks to {space} › {group}',
+    'planner.appliedSkipped': 'Added {count} tasks to {space} › {group}. {skipped} were already there.',
+    'planner.applyScheduleWarning': 'Tasks saved, but their reminders may need attention.',
+    'planner.applyFailed': 'Locus could not confirm that these tasks were saved.',
+    'planner.destinationChanged': 'The destination changed. Choose the Space and Group again.',
+    'planner.nothingNew': 'Every chosen block is already on the Calendar.',
+    'planner.needSpace': 'Create a space first to add planned tasks',
+    'planner.history.save': 'Save plan',
+    'planner.history.apply': 'Add planned tasks',
+    'planner.issue.plan_id_invalid': 'The plan needs a valid id.',
+    'planner.issue.title_invalid': 'Give the plan a title.',
+    'planner.issue.horizon_invalid': 'Choose day, week, or month.',
+    'planner.issue.range_invalid': 'Choose a real start and end date.',
+    'planner.issue.range_reversed': 'The end date is before the start date.',
+    'planner.issue.range_too_long': 'This plan can cover at most {max} days.',
+    'planner.issue.timezone_invalid': '"{value}" is not a time zone this browser knows. Use a name such as Europe/London.',
+    'planner.issue.timezone_missing': 'The draft does not say which time zone its times use.',
+    'planner.issue.hours_invalid': 'Working hours need a start and an end, with the end later.',
+    'planner.issue.capacity_invalid': 'Blocks per day must be a whole number from 1 to 12.',
+    'planner.issue.goals_missing': 'Add at least one goal or task for this plan.',
+    'planner.issue.goals_trimmed': 'Only the first {max} goals are shared.',
+    'planner.issue.fixed_line_invalid': 'Fixed commitment line {line} should look like 2026-11-10 14:00-15:00 Title.',
+    'planner.issue.fixed_out_of_range': '"{title}" on {date} is outside the plan dates and is not shared.',
+    'planner.issue.fixed_dst_gap': '"{title}" starts at {time} on {date}, which does not exist in {timezone} because the clocks skip ahead.',
+    'planner.issue.fixed_dst_ambiguous': '"{title}" at {time} on {date} happens twice in {timezone}; the first one is used.',
+    'planner.issue.fixed_end_invalid': '"{title}" ends before it starts.',
+    'planner.issue.draft_empty': "Paste the assistant's reply first.",
+    'planner.issue.draft_not_json': 'Locus could not find a JSON draft in that text.',
+    'planner.issue.draft_not_object': 'The draft must be a JSON object.',
+    'planner.issue.draft_too_large': 'The draft is larger than Locus accepts.',
+    'planner.issue.contract_missing': 'The draft does not name its contract; Locus read it as locus.plan/v1.',
+    'planner.issue.contract_unsupported': 'This draft uses "{value}"; this version of Locus reads locus.plan/v1.',
+    'planner.issue.plan_mismatch': 'This draft belongs to plan "{value}", not this one.',
+    'planner.issue.plan_id_missing': 'The draft does not name its plan; Locus matched it to this one.',
+    'planner.issue.stale_request': 'The draft was written for an earlier version of this plan. Check it before adding.',
+    'planner.issue.timezone_differs': 'The draft uses {value}; times were converted to {expected}.',
+    'planner.issue.blocks_missing': 'The draft has no list of blocks.',
+    'planner.issue.too_many_blocks': 'The draft has {count} blocks; Locus accepts up to {max}.',
+    'planner.issue.no_blocks': 'The draft has no blocks to add.',
+    'planner.issue.block_not_object': 'Block {index} could not be read.',
+    'planner.issue.title_missing': 'Block {index} has no title.',
+    'planner.issue.invalid_date': 'Block {index}: "{value}" is not a real date.',
+    'planner.issue.invalid_time': 'Block {index}: "{value}" is not a 24-hour time.',
+    'planner.issue.end_before_start': 'Block {index} ends at {end}, not after its start at {start}.',
+    'planner.issue.end_without_start': 'Block {index} has an end but no start; the end was ignored.',
+    'planner.issue.time_missing': 'Block {index} has no time; the reminder will be at {time}.',
+    'planner.issue.out_of_range': 'Block {index} falls on {date}, outside {start} to {end}.',
+    'planner.issue.dst_gap': 'Block {index}: {time} on {date} does not exist in {timezone} because the clocks skip ahead. Try {suggestion}.',
+    'planner.issue.dst_ambiguous': 'Block {index}: {time} on {date} happens twice in {timezone}; the first one is used.',
+    'planner.issue.fixed_moved': 'Block {index} changes the fixed commitment "{title}".',
+    'planner.issue.fixed_unknown': 'Block {index} is marked fixed but matches no fixed commitment.',
+    'planner.issue.duplicate_in_draft': 'Block {index} repeats block {other}.',
+    'planner.issue.overlap': 'Block {index} overlaps block {other}.',
+    'planner.issue.conflict_fixed': 'Block {index} overlaps "{title}".',
+    'planner.issue.conflict_calendar': 'Block {index} overlaps a Calendar reminder at {time}.',
+    'planner.issue.outside_hours': 'Block {index} is outside {dayStart}-{dayEnd}.',
+    'planner.issue.day_over_capacity': '{date} has more than {max} blocks.',
+    'planner.issue.in_past': 'Block {index} starts in the past.',
+    'planner.issue.missing_from_draft': 'The assistant asked: {question}',
     'settings.title': 'Settings',
     'settings.appearance': 'Appearance',
     'settings.behavior': 'Behavior',
@@ -1602,6 +1773,177 @@ const I18N = {
     'cal.dotTitle': '{title} — {date}',
     'cal.dotTitleWithSource': '{title} — {date}（{source}）',
     'cal.history.addTask': '新增行事曆待辦',
+    'planner.title': '用 AI 規劃',
+    'planner.close': '關閉用 AI 規劃',
+    'planner.intro': '寫下規劃內容，向 Claude、Codex 或 Gemini 取得草稿，再在這裡確認。加入之前，行事曆不會有任何變動。',
+    'planner.section.plan': '規劃',
+    'planner.section.draft': '取得草稿',
+    'planner.section.preview': '預覽',
+    'planner.savedPlans': '已儲存的規劃',
+    'planner.newPlan': '新規劃',
+    'planner.planTitle': '標題',
+    'planner.horizon': '規劃範圍',
+    'planner.horizon.day': '日',
+    'planner.horizon.week': '週',
+    'planner.horizon.month': '月',
+    'planner.defaultTitle.day': '{date} 的規劃',
+    'planner.defaultTitle.week': '{date} 起的一週',
+    'planner.defaultTitle.month': '{date} 起的一個月',
+    'planner.start': '開始日期',
+    'planner.end': '結束日期',
+    'planner.timezone': '時區',
+    'planner.goals': '目標與待辦',
+    'planner.goalsHint': '每行一項。',
+    'planner.fixed': '固定行程',
+    'planner.fixedHint': '每行一項，例如：2026-11-10 14:00-15:00 與指導教授開會',
+    'planner.dayStart': '每天開始',
+    'planner.dayEnd': '每天結束',
+    'planner.maxPerDay': '每天上限',
+    'planner.notes': '其他限制',
+    'planner.shareBusy': '分享這段期間的行事曆提醒時間（只含時間，不含標題）',
+    'planner.destination': '待辦加入位置',
+    'planner.space': '空間',
+    'planner.group': '群組',
+    'planner.newGroup': '新群組：{name}',
+    'planner.groupNameFallback': '規劃',
+    'planner.save': '儲存規劃',
+    'planner.saving': '正在儲存…',
+    'planner.saved': '規劃已儲存',
+    'planner.savedState': '已儲存在 Locus',
+    'planner.unsaved': '尚未儲存',
+    'planner.saveFailed': 'Locus 無法確認這份規劃是否已儲存。',
+    'planner.planLimit': 'Locus 最多保留 50 份規劃，請改用已儲存的規劃。',
+    'planner.assistant': 'AI 助理',
+    'planner.profile': '提示詞樣式',
+    'planner.profileName.claude-xml': 'XML 分段，附完整範例',
+    'planner.profileName.codex-tool': '簡短目標，精確指定工具與結構',
+    'planner.profileName.codex-compact': '精簡版，適合 Spark 或短上下文模型',
+    'planner.profileName.gemini-structured': '直接說明目標與限制，使用結構化輸出',
+    'planner.model': '模型或設定檔（選填）',
+    'planner.modelHint': '提供給本機執行器使用，提示詞內容不受影響。',
+    'planner.delivery': '回覆方式',
+    'planner.delivery.paste': '把回覆貼回這裡',
+    'planner.delivery.mcp': 'Locus 輔助程式（MCP 工具）',
+    'planner.promptPreview': '顯示提示詞',
+    'planner.promptLabel': '給 AI 助理的提示詞',
+    'planner.copyPrompt': '複製提示詞',
+    'planner.copied': '已複製提示詞',
+    'planner.copyFailed': '無法自動複製，請選取提示詞後自行複製。',
+    'planner.requestBlocked': '請先修正規劃內容。',
+    'planner.companion': 'Locus 輔助程式（選用）',
+    'planner.connect': '連接輔助程式',
+    'planner.reconnect': '重新連接',
+    'planner.share': '分享給輔助程式',
+    'planner.check': '檢查新草稿',
+    'planner.runner': '本機執行器',
+    'planner.run': '產生草稿',
+    'planner.companion.off': '尚未連接。輔助程式為選用，不連接也能複製與貼上。',
+    'planner.companion.connecting': '正在連接…',
+    'planner.companion.connected': '已連接，配對代碼 {id}',
+    'planner.companion.notInstalled': '這個瀏覽器尚未安裝輔助程式，安裝步驟請見 companion/README.md。',
+    'planner.companion.forbidden': '輔助程式設定的是其他擴充功能 ID，請用這個 Locus 的 ID 重新執行安裝步驟。',
+    'planner.companion.denied': 'Locus 需要您的同意，才能與輔助程式連線。',
+    'planner.companion.reloadNeeded': '已取得權限。請重新整理這個分頁，再連接一次。',
+    'planner.companion.disconnected': '輔助程式已中斷連線。等待中的草稿會留在佇列裡，重新連接後即可取得。',
+    'planner.companion.error': '輔助程式回報錯誤：{message}',
+    'planner.companion.failed': '輔助程式未完成：{message}',
+    'planner.companion.shared': '已將「{title}」分享給輔助程式',
+    'planner.companion.none': '沒有新草稿',
+    'planner.companion.received': '已收到草稿：{count} 份',
+    'planner.companion.running': '正在執行 {name}…',
+    'planner.companion.ran': '{name} 已傳回草稿',
+    'planner.companion.runRejected': '{name} 傳回的內容無法當作規劃草稿。',
+    'planner.companion.mcpHint': 'MCP 用戶端設定：node companion/locus-planner.js mcp-config --client claude --pairing {id}',
+    'planner.paste': '貼上回覆',
+    'planner.pastePlaceholder': '貼上 AI 助理的回覆，需包含 JSON 草稿',
+    'planner.checkDraft': '檢查草稿',
+    'planner.pasteChecked': '草稿檢查完成，請在下方確認。',
+    'planner.pasteRepeated': '這份草稿已在清單中。',
+    'planner.pasteRejected': '這段回覆無法當作草稿使用。',
+    'planner.otherPlanPasted': '這份草稿屬於其他規劃，請開啟該規劃後再確認。',
+    'planner.switchedPlan': '已開啟這份草稿對應的規劃「{title}」。',
+    'planner.otherPlanDrafts': '其他規劃的草稿：{count} 份。在上方選擇該規劃即可查看。',
+    'planner.source.paste': '貼上',
+    'planner.source.mcp': 'MCP・{client}',
+    'planner.source.runner': '執行器・{client}',
+    'planner.draftMeta': '{source}・{time}・{count} 個時段',
+    'planner.dismiss': '略過',
+    'planner.dismissNamed': '略過草稿 {name}',
+    'planner.noDraft': '還沒有草稿。複製提示詞後貼上回覆，或向輔助程式檢查新草稿。',
+    'planner.summary': '{ready} 項可加入・{conflict} 項需確認・{invalid} 項無法加入・{applied} 項已加入',
+    'planner.blockStatus.ready': '可加入',
+    'planner.blockStatus.conflict': '需確認',
+    'planner.blockStatus.invalid': '無法加入',
+    'planner.blockStatus.fixed': '固定行程',
+    'planner.blockStatus.duplicate': '重複',
+    'planner.blockStatus.applied': '已加入',
+    'planner.selectBlock': '加入「{title}」（{date}）',
+    'planner.localTime': '您的時間 {time}',
+    'planner.timeAssumed': '未指定時間',
+    'planner.itemNotes': '規劃於 {date} {time}（{timezone}）',
+    'planner.cancel': '關閉',
+    'planner.apply': '加入 {count} 項待辦',
+    'planner.applying': '正在加入…',
+    'planner.applyNone': '請至少勾選一個時段。',
+    'planner.applied': '已在「{space} › {group}」加入 {count} 項待辦',
+    'planner.appliedSkipped': '已在「{space} › {group}」加入 {count} 項待辦，另有 {skipped} 項先前已加入。',
+    'planner.applyScheduleWarning': '待辦已儲存，但提醒排程可能需要處理。',
+    'planner.applyFailed': 'Locus 無法確認這些待辦是否已儲存。',
+    'planner.destinationChanged': '加入位置已變更，請重新選擇空間與群組。',
+    'planner.nothingNew': '勾選的時段都已在行事曆上。',
+    'planner.needSpace': '請先建立空間，才能加入規劃的待辦',
+    'planner.history.save': '儲存規劃',
+    'planner.history.apply': '加入規劃待辦',
+    'planner.issue.plan_id_invalid': '規劃需要有效的識別碼。',
+    'planner.issue.title_invalid': '請替規劃取個標題。',
+    'planner.issue.horizon_invalid': '請選擇日、週或月。',
+    'planner.issue.range_invalid': '請選擇實際存在的開始與結束日期。',
+    'planner.issue.range_reversed': '結束日期早於開始日期。',
+    'planner.issue.range_too_long': '這個規劃範圍最多 {max} 天。',
+    'planner.issue.timezone_invalid': '這個瀏覽器不認得「{value}」這個時區，請改用像 Asia/Taipei 這樣的名稱。',
+    'planner.issue.timezone_missing': '草稿沒有註明時間使用的時區。',
+    'planner.issue.hours_invalid': '每天的開始與結束時間都要填，而且結束要晚於開始。',
+    'planner.issue.capacity_invalid': '每天上限需為 1 到 12 的整數。',
+    'planner.issue.goals_missing': '請至少寫下一項目標或待辦。',
+    'planner.issue.goals_trimmed': '只會分享前 {max} 項目標。',
+    'planner.issue.fixed_line_invalid': '固定行程第 {line} 行的格式應為：2026-11-10 14:00-15:00 標題。',
+    'planner.issue.fixed_out_of_range': '「{title}」在 {date}，不在規劃日期內，因此不會分享。',
+    'planner.issue.fixed_dst_gap': '「{title}」在 {date} {time} 開始，但 {timezone} 那天因日光節約時間跳過這個時刻。',
+    'planner.issue.fixed_dst_ambiguous': '「{title}」在 {date} {time}，這個時刻在 {timezone} 會出現兩次，將使用第一次。',
+    'planner.issue.fixed_end_invalid': '「{title}」的結束時間早於開始時間。',
+    'planner.issue.draft_empty': '請先貼上 AI 助理的回覆。',
+    'planner.issue.draft_not_json': '這段文字裡找不到 JSON 草稿。',
+    'planner.issue.draft_not_object': '草稿必須是 JSON 物件。',
+    'planner.issue.draft_too_large': '草稿超過 Locus 可接受的大小。',
+    'planner.issue.contract_missing': '草稿沒有註明格式版本，Locus 已依 locus.plan/v1 讀取。',
+    'planner.issue.contract_unsupported': '這份草稿使用「{value}」，此版 Locus 只能讀取 locus.plan/v1。',
+    'planner.issue.plan_mismatch': '這份草稿屬於規劃「{value}」，不是目前這份。',
+    'planner.issue.plan_id_missing': '草稿沒有註明規劃，Locus 已對應到目前這份。',
+    'planner.issue.stale_request': '這份草稿是依較早的規劃內容產生，加入前請再確認一次。',
+    'planner.issue.timezone_differs': '草稿使用 {value}，時間已換算為 {expected}。',
+    'planner.issue.blocks_missing': '草稿缺少時段清單。',
+    'planner.issue.too_many_blocks': '草稿有 {count} 個時段，Locus 最多接受 {max} 個。',
+    'planner.issue.no_blocks': '草稿裡沒有可加入的時段。',
+    'planner.issue.block_not_object': '無法讀取第 {index} 個時段。',
+    'planner.issue.title_missing': '第 {index} 個時段沒有標題。',
+    'planner.issue.invalid_date': '第 {index} 個時段：「{value}」不是實際存在的日期。',
+    'planner.issue.invalid_time': '第 {index} 個時段：「{value}」不是 24 小時制時間。',
+    'planner.issue.end_before_start': '第 {index} 個時段在 {end} 結束，沒有晚於開始時間 {start}。',
+    'planner.issue.end_without_start': '第 {index} 個時段只有結束時間，已略過結束時間。',
+    'planner.issue.time_missing': '第 {index} 個時段沒有指定時間，提醒會設在 {time}。',
+    'planner.issue.out_of_range': '第 {index} 個時段在 {date}，不在 {start} 至 {end} 之間。',
+    'planner.issue.dst_gap': '第 {index} 個時段：{timezone} 在 {date} 因日光節約時間跳過 {time}，可改成 {suggestion}。',
+    'planner.issue.dst_ambiguous': '第 {index} 個時段：{date} {time} 在 {timezone} 會出現兩次，將使用第一次。',
+    'planner.issue.fixed_moved': '第 {index} 個時段更動了固定行程「{title}」。',
+    'planner.issue.fixed_unknown': '第 {index} 個時段標為固定行程，但找不到對應的固定行程。',
+    'planner.issue.duplicate_in_draft': '第 {index} 個時段與第 {other} 個重複。',
+    'planner.issue.overlap': '第 {index} 個時段與第 {other} 個時間重疊。',
+    'planner.issue.conflict_fixed': '第 {index} 個時段與「{title}」時間重疊。',
+    'planner.issue.conflict_calendar': '第 {index} 個時段與 {time} 的行事曆提醒重疊。',
+    'planner.issue.outside_hours': '第 {index} 個時段超出 {dayStart}-{dayEnd}。',
+    'planner.issue.day_over_capacity': '{date} 的時段超過 {max} 個。',
+    'planner.issue.in_past': '第 {index} 個時段的開始時間已經過了。',
+    'planner.issue.missing_from_draft': 'AI 助理想確認：{question}',
     'settings.title': '設定',
     'settings.appearance': '外觀',
     'settings.behavior': '行為',
@@ -2978,6 +3320,9 @@ function applyLocale() {
   if (richTextLink && !richTextLink.classList.contains('hidden')) {
     paintRichTextLinkDialog();
   }
+  if (typeof paintPlanner === 'function' && typeof plannerCtx !== 'undefined' && plannerCtx) {
+    paintPlanner();
+  }
   const emojiPicker = document.getElementById('emoji-picker');
   if (emojiPicker && !emojiPicker.classList.contains('hidden')) {
     paintEmojiPicker();
@@ -4219,6 +4564,7 @@ const Router = (() => {
       || isItemDetailMutationPending()
       || isReminderMutationPending()
       || isCalendarTaskMutationPending()
+      || (typeof isPlannerMutationPending === 'function' && isPlannerMutationPending())
       || isPasteImportPending()
       || settingsPreferencePendingTransaction();
     if (foregroundBlocksNavigation) {
@@ -4244,6 +4590,11 @@ const Router = (() => {
       // destination before applying the requested history entry.
       closeCalendarTaskDialog({ restoreFocus: false });
     }
+    if (typeof closePlannerDialog === 'function') {
+      // A non-pending planner keeps its inputs in memory for the next open;
+      // its frozen destination must not survive into another route.
+      closePlannerDialog({ restoreFocus: false });
+    }
     flushActiveItemDetailEditor();
     // A dirty editor can synchronously start an acknowledged write from blur.
     // Recheck before parsing or applying the browser's requested history entry.
@@ -4256,6 +4607,7 @@ const Router = (() => {
         || isItemDetailMutationPending()
         || isReminderMutationPending()
         || isCalendarTaskMutationPending()
+        || (typeof isPlannerMutationPending === 'function' && isPlannerMutationPending())
         || isPasteImportPending()
         || settingsPreferencePendingTransaction()) {
       restoreStableRoute();
@@ -4322,6 +4674,7 @@ const Router = (() => {
         || isItemDetailMutationPending()
         || isReminderMutationPending()
         || isCalendarTaskMutationPending()
+        || (typeof isPlannerMutationPending === 'function' && isPlannerMutationPending())
         || isPasteImportPending()
         || settingsPreferencePendingTransaction()) return false;
       flushActiveItemDetailEditor();
@@ -4334,6 +4687,7 @@ const Router = (() => {
           || isItemDetailMutationPending()
           || isReminderMutationPending()
           || isCalendarTaskMutationPending()
+          || (typeof isPlannerMutationPending === 'function' && isPlannerMutationPending())
           || isPasteImportPending()
           || settingsPreferencePendingTransaction()) return false;
       const hash = '#' + build(route);
@@ -4889,6 +5243,14 @@ function migrate() {
     // back to the clean Home surface.
     s.settings = s.settings || {};
     if (typeof s.settings.showLanding !== 'boolean') s.settings.showLanding = false;
+  }
+
+  if (from < 14) {
+    // Schema 14 adds two optional, additive fields for AI planning: top-level
+    // `plans[]` (saved planner inputs plus a bounded apply ledger) and an
+    // item-level `plan { id, draft, key, date, start, end, tz }` provenance
+    // record on to-dos created from a plan. Absent means no plans and an
+    // ordinary to-do, which is today's behavior, so nothing is rewritten here.
   }
 
   s.schema = CURRENT_SCHEMA;
@@ -20873,6 +21235,7 @@ function selectedItemMutationBlocked() {
     || (typeof isItemDetailMutationPending === 'function' && isItemDetailMutationPending())
     || (typeof isReminderMutationPending === 'function' && isReminderMutationPending())
     || (typeof isCalendarTaskMutationPending === 'function' && isCalendarTaskMutationPending())
+    || (typeof isPlannerMutationPending === 'function' && isPlannerMutationPending())
     || (typeof isPasteImportPending === 'function' && isPasteImportPending());
 }
 
@@ -28601,6 +28964,18 @@ function buildCalToolbar(shownCount, totalCount) {
   });
   bar.appendChild(seg);
 
+  // AI planning opens a reviewed sheet; drafts only become Calendar to-dos
+  // through its explicit, receipt-gated Apply.
+  if (typeof openPlannerDialog === 'function') {
+    const plan = document.createElement('button');
+    plan.type = 'button';
+    plan.id = 'cal-plan-btn';
+    plan.className = 'cal-plan-btn';
+    plan.textContent = tr('planner.title');
+    plan.onclick = () => openPlannerDialog(plan);
+    bar.appendChild(plan);
+  }
+
   // Right: filter input (the differentiator, §5.2).
   const filter = document.createElement('div');
   filter.className = 'cal-filter';
@@ -31853,6 +32228,7 @@ function bindStatic() {
     if (handlePasteImportGlobalKey(e)) return;
     if (handleReminderGlobalKey(e)) return;
     if (handleCalendarTaskGlobalKey(e)) return;
+    if (typeof handlePlannerGlobalKey === 'function' && handlePlannerGlobalKey(e)) return;
     if (handleEmojiPickerGlobalKey(e)) return;
     if (handleIdentityEditorGlobalKey(e)) return;
     if (handleOrganizationDeleteGlobalKey(e)) return;
@@ -31898,7 +32274,7 @@ function bindStatic() {
       // The launch layer is the base overlay. Dismiss it only when nothing is
       // open above it, so Escape from Welcome/Settings never pops two layers.
       const landingLayer = document.getElementById('landing-layer');
-      const higherLayerIds = ['state-recovery-overlay','paste-overlay','rich-text-link-overlay','reminder-overlay','calendar-task-overlay','cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','trash-delete-overlay','organization-name-overlay','organization-delete-overlay','welcome','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub','about-overlay','context-menu'];
+      const higherLayerIds = ['state-recovery-overlay','paste-overlay','rich-text-link-overlay','reminder-overlay','calendar-task-overlay','planner-overlay','cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','trash-delete-overlay','organization-name-overlay','organization-delete-overlay','welcome','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub','about-overlay','context-menu'];
       const higherLayerOpen = higherLayerIds.some(id => { const el = document.getElementById(id); return el && !el.classList.contains('hidden'); });
       if (landingLayer && !landingLayer.classList.contains('hidden') && !higherLayerOpen) {
         e.preventDefault(); closeLandingLayer(); return;
@@ -31906,7 +32282,7 @@ function bindStatic() {
       // Snapshot which layered overlays were open *before* we start closing
       // them, so a single Escape only pops the topmost one — not the group page
       // sitting beneath a modal/menu/tool overlay.
-      const _escBlockers = ['state-recovery-overlay','paste-overlay','rich-text-link-overlay','reminder-overlay','calendar-task-overlay','landing-layer','cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','trash-delete-overlay','organization-name-overlay','organization-delete-overlay','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub'];
+      const _escBlockers = ['state-recovery-overlay','paste-overlay','rich-text-link-overlay','reminder-overlay','calendar-task-overlay','planner-overlay','landing-layer','cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','trash-delete-overlay','organization-name-overlay','organization-delete-overlay','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub'];
       const _overlayWasOpen = _escBlockers.some(id => { const el = document.getElementById(id); return el && !el.classList.contains('hidden'); });
       if (!_overlayWasOpen && handleOpenTabsEscape(e)) return;
       closeCommandPalette();
@@ -31972,6 +32348,7 @@ function bindStatic() {
   bindRichTextLinkDialog();
   bindReminderUI();
   bindCalendarTaskDialog();
+  if (typeof bindPlannerDialog === 'function') bindPlannerDialog();
   bindImportUI();
   bindPasteImportUI();
   bindQuotaOverlay();

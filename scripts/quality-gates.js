@@ -17,6 +17,7 @@ const RELEASE_PERMISSIONS = [
   'notifications',
   'favicon',
 ];
+const OPTIONAL_RELEASE_PERMISSIONS = ['nativeMessaging'];
 
 function validateManifestTrustBoundary(candidate) {
   if (candidate?.manifest_version !== 3) fail('manifest_version must be 3');
@@ -28,12 +29,24 @@ function validateManifestTrustBoundary(candidate) {
   if (missing.length || extra.length || duplicates.length || permissions.length !== RELEASE_PERMISSIONS.length) {
     fail(`Manifest permissions must be exactly: ${RELEASE_PERMISSIONS.join(', ')}`);
   }
-  for (const field of ['host_permissions', 'optional_host_permissions', 'optional_permissions']) {
+  for (const field of ['host_permissions', 'optional_host_permissions']) {
     const value = candidate[field];
     if (value != null && (!Array.isArray(value) || value.length)) {
       fail(`Locus manifest must keep ${field} absent or empty`);
     }
   }
+  // The only optional API permission is the opt-in planner companion. It is
+  // requested from a click in the planner, never at install, and grants no
+  // host, tab-content, or network access.
+  const optional = candidate.optional_permissions;
+  if (optional != null) {
+    const ok = Array.isArray(optional)
+      && optional.length <= OPTIONAL_RELEASE_PERMISSIONS.length
+      && optional.every(permission => OPTIONAL_RELEASE_PERMISSIONS.includes(permission))
+      && new Set(optional).size === optional.length;
+    if (!ok) fail(`Locus manifest optional_permissions may only list: ${OPTIONAL_RELEASE_PERMISSIONS.join(', ')}`);
+  }
+  if (permissions.includes('nativeMessaging')) fail('nativeMessaging must stay optional, never an install-time permission');
   if (candidate.content_scripts != null
     && (!Array.isArray(candidate.content_scripts) || candidate.content_scripts.length)) {
     fail('Locus must not declare automatic page content scripts');
@@ -64,6 +77,9 @@ for (const [label, mutate] of [
   ['required host permission', candidate => { candidate.host_permissions = ['https://*/*']; }],
   ['optional host permission', candidate => { candidate.optional_host_permissions = ['https://*/*']; }],
   ['optional API permission', candidate => { candidate.optional_permissions = ['activeTab']; }],
+  ['extra optional API permission', candidate => { candidate.optional_permissions = ['nativeMessaging', 'scripting']; }],
+  ['duplicate optional API permission', candidate => { candidate.optional_permissions = ['nativeMessaging', 'nativeMessaging']; }],
+  ['install-time native messaging', candidate => { candidate.permissions.push('nativeMessaging'); }],
   ['automatic content script', candidate => { candidate.content_scripts = [{ matches: ['https://*/*'], js: ['prepaint.js'] }]; }],
   ['external messaging', candidate => { candidate.externally_connectable = { matches: ['https://example.com/*'] }; }],
 ]) {
@@ -172,7 +188,7 @@ for (const file of htmlFiles) {
   if (duplicates.length) fail(`${file} contains duplicate ids: ${duplicates.join(', ')}`);
 }
 
-const runtimeFiles = ['newtab.js', 'popup.js', 'suspended.js', 'background.js', 'import-utils.js', 'prepaint.js'];
+const runtimeFiles = ['newtab.js', 'popup.js', 'suspended.js', 'background.js', 'import-utils.js', 'prepaint.js', 'plan-contract.js', 'planner.js'];
 for (const file of runtimeFiles) {
   const source = read(file);
   validateExtensionNetworkSource(file, source, 'runtime');

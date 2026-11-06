@@ -297,6 +297,25 @@ Slices, in order:
 
 ## Done (newest first)
 
+- **2026-11-06 - AI planning for day, week, and month (Calendar planner + local MCP companion)**
+  - **What:** `plan-contract.js` (`locus.plan/v1`), `planner.js` (Calendar **Plan with
+    AI** sheet: plan create/edit, day/week/month, range, time zone, Claude/Codex/Gemini
+    profiles, copy prompt, paste import, preview, receipt-gated Apply with Undo),
+    schema 14 (`plans[]`, item `plan` provenance), and `companion/` (stdio MCP server,
+    Native Messaging host with per-profile pairing and a bounded queue, opt-in local
+    runners, Windows setup CLI). Optional `nativeMessaging` permission only.
+  - **Evidence:** `plan-contract-test.js` (176 checks), `plan-companion-contract-test.js`
+    (66), `calendar-planner-contract-test.js` (556), quality gates, export/import
+    schemas 0-14. Throwaway Edge 156 profile over CDP: create/save/reload, invalid
+    date, DST gap, conflict, Apply, Undo, re-apply, duplicate import, zh-TW, Escape,
+    400 px. Real clients: Claude Code CLI and Codex CLI submitted over MCP; Antigravity
+    CLI ran as a runner through `native-host.js`; their drafts were previewed and one
+    applied in Locus by paste. Details and gaps: `companion/README.md`.
+  - **Not exercised:** the browser launching the host (no HKCU registration in this
+    pass), so Connect/Share/Check/Generate were not clicked in a browser; Claude
+    Desktop, Codex desktop, Antigravity's MCP client, Gemini CLI.
+  - **Implemented: yes. Verified: partial. User-validated: no. Released: no.**
+
 - **2026-11-05 - Fresh profile opened the reload dialog: storage key order, fixed**
   - **Root cause:** `chrome.storage` hands every object back with sorted keys, and
     `State` compared graphs as raw `JSON.stringify` strings. The default graph that

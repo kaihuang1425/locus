@@ -450,6 +450,153 @@
     </form>
   </div>
 
+  <div id="planner-overlay" class="hidden" role="dialog" aria-modal="true" aria-labelledby="planner-title" aria-describedby="planner-intro" aria-busy="false">
+    <section class="rm-panel planner-panel">
+      <div class="modal-hd">
+        <h2 id="planner-title" data-i18n="planner.title">Plan with AI</h2>
+        <button id="planner-close" class="icon-btn" type="button" aria-label="Close Plan with AI" data-i18n-aria-label="planner.close">
+          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="modal-bd planner-bd">
+        <p id="planner-intro" class="planner-intro" data-i18n="planner.intro">Describe the plan, get a draft from Claude, Codex, or Gemini, and check it here. Nothing reaches the Calendar until you add it.</p>
+        <div class="planner-grid">
+          <form id="planner-form" class="planner-col planner-plan" novalidate>
+            <h3 class="planner-h" data-i18n="planner.section.plan">Plan</h3>
+            <label class="field-lbl" for="planner-plan-select" data-i18n="planner.savedPlans">Saved plan</label>
+            <select id="planner-plan-select" class="planner-input"></select>
+            <label class="field-lbl" for="planner-plan-title" data-i18n="planner.planTitle">Title</label>
+            <input id="planner-plan-title" class="planner-input" type="text" maxlength="120" autocomplete="off">
+            <div id="planner-horizon-label" class="field-lbl" data-i18n="planner.horizon">Plan for</div>
+            <div id="planner-horizon" class="cal-seg planner-seg" role="radiogroup" aria-labelledby="planner-horizon-label">
+              <button class="cal-seg-btn" type="button" role="radio" data-horizon="day" data-i18n="planner.horizon.day">Day</button>
+              <button class="cal-seg-btn" type="button" role="radio" data-horizon="week" data-i18n="planner.horizon.week">Week</button>
+              <button class="cal-seg-btn" type="button" role="radio" data-horizon="month" data-i18n="planner.horizon.month">Month</button>
+            </div>
+            <div class="planner-row">
+              <div class="planner-field">
+                <label class="field-lbl" for="planner-start" data-i18n="planner.start">Start date</label>
+                <input id="planner-start" class="planner-input" type="date">
+              </div>
+              <div class="planner-field">
+                <label class="field-lbl" for="planner-end" data-i18n="planner.end">End date</label>
+                <input id="planner-end" class="planner-input" type="date">
+              </div>
+            </div>
+            <label class="field-lbl" for="planner-timezone" data-i18n="planner.timezone">Time zone</label>
+            <input id="planner-timezone" class="planner-input" type="text" list="planner-timezones" autocomplete="off" spellcheck="false">
+            <datalist id="planner-timezones"></datalist>
+            <label class="field-lbl" for="planner-goals" data-i18n="planner.goals">Goals and tasks</label>
+            <textarea id="planner-goals" class="planner-input" rows="3" aria-describedby="planner-goals-hint"></textarea>
+            <p id="planner-goals-hint" class="planner-hint" data-i18n="planner.goalsHint">One per line.</p>
+            <label class="field-lbl" for="planner-fixed" data-i18n="planner.fixed">Fixed commitments</label>
+            <textarea id="planner-fixed" class="planner-input" rows="3" spellcheck="false" aria-describedby="planner-fixed-hint"></textarea>
+            <p id="planner-fixed-hint" class="planner-hint" data-i18n="planner.fixedHint">One per line, for example: 2026-11-10 14:00-15:00 Supervisor meeting</p>
+            <div class="planner-row planner-row-3">
+              <div class="planner-field">
+                <label class="field-lbl" for="planner-day-start" data-i18n="planner.dayStart">Day starts</label>
+                <input id="planner-day-start" class="planner-input" type="time">
+              </div>
+              <div class="planner-field">
+                <label class="field-lbl" for="planner-day-end" data-i18n="planner.dayEnd">Day ends</label>
+                <input id="planner-day-end" class="planner-input" type="time">
+              </div>
+              <div class="planner-field">
+                <label class="field-lbl" for="planner-max-per-day" data-i18n="planner.maxPerDay">Blocks per day</label>
+                <input id="planner-max-per-day" class="planner-input" type="number" min="1" max="12" step="1">
+              </div>
+            </div>
+            <label class="field-lbl" for="planner-notes" data-i18n="planner.notes">Other constraints</label>
+            <textarea id="planner-notes" class="planner-input" rows="2"></textarea>
+            <label class="planner-check">
+              <input id="planner-share-busy" type="checkbox">
+              <span data-i18n="planner.shareBusy">Share my Calendar reminder times in this range (times only, no titles)</span>
+            </label>
+            <div class="field-lbl" data-i18n="planner.destination">Add tasks to</div>
+            <div class="planner-row">
+              <div class="planner-field">
+                <label class="field-lbl" for="planner-space" data-i18n="planner.space">Space</label>
+                <select id="planner-space" class="planner-input"></select>
+              </div>
+              <div class="planner-field">
+                <label class="field-lbl" for="planner-group" data-i18n="planner.group">Group</label>
+                <select id="planner-group" class="planner-input"></select>
+              </div>
+            </div>
+            <ul id="planner-request-issues" class="planner-issues" aria-live="polite" hidden></ul>
+            <div class="planner-actions">
+              <button id="planner-save" class="btn-secondary" type="submit" data-i18n="planner.save">Save plan</button>
+              <span id="planner-save-state" class="planner-hint"></span>
+            </div>
+          </form>
+          <div class="planner-col planner-draft">
+            <h3 class="planner-h" data-i18n="planner.section.draft">Get a draft</h3>
+            <div class="planner-row">
+              <div class="planner-field">
+                <label class="field-lbl" for="planner-provider" data-i18n="planner.assistant">Assistant</label>
+                <select id="planner-provider" class="planner-input">
+                  <option value="claude">Claude</option>
+                  <option value="codex">Codex</option>
+                  <option value="gemini">Gemini</option>
+                </select>
+              </div>
+              <div class="planner-field">
+                <label class="field-lbl" for="planner-profile" data-i18n="planner.profile">Prompt style</label>
+                <select id="planner-profile" class="planner-input"></select>
+              </div>
+            </div>
+            <label class="field-lbl" for="planner-model" data-i18n="planner.model">Model or profile (optional)</label>
+            <input id="planner-model" class="planner-input" type="text" maxlength="80" autocomplete="off" spellcheck="false" aria-describedby="planner-model-hint">
+            <p id="planner-model-hint" class="planner-hint" data-i18n="planner.modelHint">Passed to a local runner; the prompt does not depend on it.</p>
+            <label class="field-lbl" for="planner-delivery" data-i18n="planner.delivery">Reply route</label>
+            <select id="planner-delivery" class="planner-input">
+              <option value="paste" data-i18n="planner.delivery.paste">Paste the reply here</option>
+              <option value="mcp" data-i18n="planner.delivery.mcp">Locus companion (MCP tool)</option>
+            </select>
+            <details id="planner-prompt-wrap" class="planner-details">
+              <summary data-i18n="planner.promptPreview">Show prompt</summary>
+              <textarea id="planner-prompt" class="planner-input planner-prompt" rows="8" readonly spellcheck="false" aria-labelledby="planner-prompt-label"></textarea>
+              <span id="planner-prompt-label" class="sr-only" data-i18n="planner.promptLabel">Prompt for the assistant</span>
+            </details>
+            <div class="planner-actions">
+              <button id="planner-copy" class="btn-primary" type="button" data-i18n="planner.copyPrompt">Copy prompt</button>
+            </div>
+            <fieldset class="planner-companion">
+              <legend data-i18n="planner.companion">Locus companion (optional)</legend>
+              <p id="planner-companion-status" class="planner-hint" role="status" aria-live="polite"></p>
+              <p id="planner-mcp-setup" class="planner-hint planner-code" hidden></p>
+              <div class="planner-actions">
+                <button id="planner-connect" class="btn-secondary" type="button" data-i18n="planner.connect">Connect companion</button>
+                <button id="planner-share" class="btn-secondary" type="button" data-i18n="planner.share" hidden>Share with companion</button>
+                <button id="planner-check" class="btn-secondary" type="button" data-i18n="planner.check" hidden>Check for drafts</button>
+              </div>
+              <div id="planner-runner-row" class="planner-row" hidden>
+                <div class="planner-field">
+                  <label class="field-lbl" for="planner-runner" data-i18n="planner.runner">Local runner</label>
+                  <select id="planner-runner" class="planner-input"></select>
+                </div>
+                <button id="planner-run" class="btn-secondary planner-run" type="button" data-i18n="planner.run">Generate draft</button>
+              </div>
+            </fieldset>
+            <label class="field-lbl" for="planner-paste" data-i18n="planner.paste">Paste a reply</label>
+            <textarea id="planner-paste" class="planner-input" rows="4" spellcheck="false" placeholder="Paste the assistant's reply with its JSON draft" data-i18n-placeholder="planner.pastePlaceholder"></textarea>
+            <div class="planner-actions">
+              <button id="planner-check-paste" class="btn-secondary" type="button" data-i18n="planner.checkDraft">Check draft</button>
+            </div>
+            <h3 class="planner-h" data-i18n="planner.section.preview">Preview</h3>
+            <div id="planner-drafts" class="planner-drafts"></div>
+            <div id="planner-preview" class="planner-preview"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-ft planner-ft">
+        <p id="planner-status" class="calendar-task-status planner-status" role="status" aria-live="polite" aria-atomic="true"></p>
+        <button id="planner-cancel" class="btn-secondary" type="button" data-i18n="planner.cancel">Close</button>
+        <button id="planner-apply" class="btn-primary" type="button" disabled>Add tasks</button>
+      </div>
+    </section>
+  </div>
+
   <div id="intent-overlay" class="hidden">
     <div class="rm-panel">
       <div class="modal-hd">
@@ -2150,6 +2297,8 @@
   <!-- Toast with undo button -->
   <!-- emoji-data.js is loaded lazily on first emoji-picker open (see loadEmojiData). -->
   <script src="import-utils.js"></script>
+  <script src="plan-contract.js"></script>
+  <script src="planner.js"></script>
   <script src="newtab.js"></script>
 </body>
 </html>

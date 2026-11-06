@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "runners": [
+    {
+      "name": "claude",
+      "label": "Claude Code (signed-in CLI)",
+      "enabled": false,
+      "provider": "claude",
+      "profile": "claude-xml",
+      "prompt": "stdin",
+      "argv": [
+        "C:\\Users\\YOU\\.local\\bin\\claude.exe",
+        "-p",
+        "--output-format", "json",
+        "--json-schema", "{schema_json}",
+        "--tools", "",
+        "--strict-mcp-config",
+        "--no-session-persistence",
+        "--setting-sources", "user"
+      ],
+      "model_args": ["--model", "{model}"],
+      "output": { "mode": "stdout", "json_path": "result" },
+      "timeout_sec": 240
+    },
+    {
+      "name": "codex",
+      "label": "Codex CLI (signed-in)",
+      "enabled": false,
+      "provider": "codex",
+      "profile": "codex-tool",
+      "prompt": "stdin",
+      "argv": [
+        "C:\\Users\\YOU\\AppData\\Local\\Programs\\OpenAI\\Codex\\bin\\codex.exe",
+        "exec",
+        "--skip-git-repo-check",
+        "--ephemeral",
+        "-s", "read-only",
+        "--output-schema", "{schema_file}",
+        "-o", "{output_file}",
+        "-"
+      ],
+      "model_args": ["-m", "{model}"],
+      "output": { "mode": "file" },
+      "timeout_sec": 300
+    },
+    {
+      "name": "antigravity",
+      "label": "Gemini via Antigravity CLI",
+      "enabled": false,
+      "provider": "gemini",
+      "profile": "gemini-structured",
+      "prompt": "arg",
+      "argv": [
+        "C:\\path\\to\\agy.exe",
+        "-p", "{prompt}",
+        "--output-format", "json",
+        "--json-schema", "{schema_file}"
+      ],
+      "model_args": ["--model", "{model}"],
+      "model": "gemini-3.8-flash-low",
+      "output": { "mode": "stdout", "json_path": "structured_output" },
+      "timeout_sec": 240
+    }
+  ]
+}

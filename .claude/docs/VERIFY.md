@@ -41,6 +41,9 @@ node scripts/undo-contract-test.js
 node scripts/state-sync-contract-test.js
 node scripts/concurrency-contract-test.js
 node scripts/state-storage-order-contract-test.js
+node scripts/plan-contract-test.js
+node scripts/plan-companion-contract-test.js
+node scripts/calendar-planner-contract-test.js
 git diff --check
 ```
 

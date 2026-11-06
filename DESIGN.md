@@ -4869,3 +4869,34 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
 
   **Implemented: yes. Verified: partial (throwaway profiles over CDP and a
   deterministic suite, not Kai's live profile). User-validated: no. Released: no.**
+
+- **2026-11-06 - Plan a day, week, or month with an AI assistant, then review it on the Calendar.**
+  Calendar gains a **Plan with AI** sheet. A plan holds its dates, IANA time zone,
+  goals, fixed commitments, working hours, and a destination Space and Group; it is
+  saved as an optional schema-14 `plans[]` record. The sheet builds one
+  `locus.plan/v1` brief and a prompt tailored to the chosen assistant: XML sections
+  and a worked example for Claude, a short objective with the exact tool and schema
+  for Codex (plus a compact form for Spark or short-context models), and a direct
+  goal with native structured output for Gemini. A reply comes back by paste, or
+  through the optional local companion that MCP clients write to. Either way the
+  same validator runs: real dates only, explicit 24-hour times, DST gaps refused with
+  a suggested time, other time zones converted, fixed commitments kept, conflicts and
+  missing inputs listed. Nothing reaches the Calendar until the person chooses
+  **Add N tasks**; that is one acknowledged write with the normal Undo, and repeated
+  imports or deliveries never add the same block twice.
+
+  The companion (`companion/`) is a stdio MCP server and a Chromium Native Messaging
+  host with per-profile pairing and a bounded file queue. It opens no port and never
+  touches browser storage; Locus requests the optional `nativeMessaging` permission
+  only when the person clicks Connect. `connect-src 'none'` and the no-host-permission
+  rule are unchanged, and the quality gate now pins `nativeMessaging` as the only
+  optional permission.
+
+  Evidence: three new suites (176, 66, and 556 checks), quality gates, export/import
+  schemas 0-14; a throwaway Edge 156 profile driven over CDP for the full paste flow,
+  Undo, duplicate import, zh-TW, and 400 px layout; Claude Code CLI and Codex CLI
+  submitting through MCP and the Antigravity CLI as a structured-output runner, with
+  those drafts previewed and one applied in Locus. The browser-launched host path
+  was not exercised because the per-user registry registration was not run.
+
+  **Implemented: yes. Verified: partial. User-validated: no. Released: no.**

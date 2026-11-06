@@ -31,6 +31,14 @@ Run one full improvement cycle with the `/iterate` command (`.claude/commands/it
   contextMenus, bookmarks, alarms, notifications, favicon. No host
   permissions.
 - `newtab.html` / `newtab.js` (~14k lines) / `newtab.css` — the whole newtab app.
+- `plan-contract.js` — `locus.plan/v1` AI planning contract (request, validator, DST/
+  time-zone rules, idempotency keys, prompt profiles, JSON Schemas). Pure; shared by
+  the new tab and `companion/`. `planner.js` — Calendar **Plan with AI** sheet, loaded
+  before newtab.js; applies drafts through one acknowledged State receipt.
+- `companion/` — optional local stdio MCP server + Native Messaging host + setup CLI
+  (Node, no dependencies). Not loaded by the extension. Optional permission
+  `nativeMessaging` is requested only from the planner's Connect button. Setup and
+  boundaries: `companion/README.md`.
 - `themes.css` — all theme palettes as `[data-theme]` CSS vars (default `folio` / `folio-dark`).
 - `popup.*` — capture UI (quick-capture honors the `capture*` settings).
 - `background.js` — context menus, capture target resolution, quota notifications.

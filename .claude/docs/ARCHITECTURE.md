@@ -19,6 +19,7 @@ installed-extension runtime evidence; current limitations are in `STATUS.md`.
       groups: [{ id, name, symbol, color, collapsed, reminders?: [EntityReminder], items: [Item] }]
     }]
   }],
+  plans?: [PlanRecord],          // schema 14, optional: saved AI-planner inputs + bounded apply ledger
   archive: [ArchiveEntry],       // deliberately hidden groups/items; durable until restored/deleted
   trash: [TrashEntry],           // ArchiveEntry envelope + trashedAt; auto-purged after 30 days
   settings: { ... }              // see below
@@ -29,6 +30,14 @@ installed-extension runtime evidence; current limitations are in `STATUS.md`.
 fields (schema 5+): `favorite`, `readLaterAt`/`readAt`, `tags[]`, `notes` (rich text),
 `customFields[]`, `checklist[]`, `cover {color|emoji}`, `color`, reminder fields,
 `createdAt`. Tabs carry `url`, `fav` (favicon URL), `title`.
+
+Schema 14 (additive, no rewrite): `PlanRecord` is `{ id, title, horizon, start, end,
+timezone, goals[], fixedText, constraints { dayStart, dayEnd, maxPerDay, notes },
+shareBusy, client { provider, profile, model }, delivery, destination { workspaceId,
+spaceId, groupId }, createdAt, updatedAt, applied[≤20] }`. A to-do created from a plan
+carries `plan { id, draft, key, date, start, end, tz }`; `key` is the content key that
+makes re-apply idempotent. Absent fields mean no plans and an ordinary to-do. Replace
+import keeps `plans` from the backup; merge import keeps the local ones.
 
 `EntityReminder` is `{ id, at, notified, label?, color?, recur? }`. Schema 12 adds
 the persistent `id` to active category/group reminders and to group payloads held
@@ -455,6 +464,7 @@ in sync via `applySettings()` — never write it by hand.
 | Group/Space reminder mutation | `createEntityReminderMutationContext`, `resolveEntityReminderMutationTarget`, `buildEntityReminderMutationValue`, `commitEntityReminderMutation`, `focusEntityReminderMutationTarget`; Group picker and Calendar drag |
 | Group/Space reminder removal | `openEntityReminderPicker`, `openEntityReminderPickerOrReport`, `createEntityReminderRemovalContext`, `entityReminderOwnerMatchesContext`, `resolveEntityReminderRemovalTarget`, `commitEntityReminderRemoval`, `focusEntityReminderRemovalFallback`, `focusEntityReminderOwnerFallback`, `setReminderMutationBusy`, `isReminderMutationPending`; `#reminder-overlay` |
 | Calendar | `openCalendar`, `renderCalendar`, `openCalDay`, `createCalendarTaskMutationContext`, `resolveCalendarTaskMutationTarget`, `commitCalendarTaskMutation`, `handleCalendarTaskGlobalKey`; `#calendar-task-overlay` |
+| AI planner (planner.js + plan-contract.js) | `openPlannerDialog`, `closePlannerDialog`, `plannerRebuild`, `plannerAddDraft`, `plannerRefreshPreview`, `plannerAppliedKeyIndex`, `createPlannerApplyContext`, `resolvePlannerApplyTarget`, `commitPlannerApply`, `commitPlannerSave`, `isPlannerMutationPending`, `handlePlannerGlobalKey`, `plannerCompanionConnect`, `plannerCompanionPull`, `plannerCompanionAck`; `LocusPlan.buildPlanRequest`, `LocusPlan.validatePlanDraft`, `LocusPlan.buildPlanPrompt`; `#planner-overlay`, `#cal-plan-btn` |
 | Search + operators | `renderSearchSurface`, `collectWorkspaceItems`, `searchItemMatches`, `searchHiddenFilterCount`, `searchFiltersActive`, `searchFilterResetPatch`, `searchResultLimit`, `searchVisibleRows`, `showNextSearchResultBatch`, `createSearchRecoveryContext`, `resolveSearchRecoveryTarget`, `searchRecoveryContextForActivation`, `searchDetailRoute`, `handleSearchQueryKeydown`, `startSearchQueryComposition`, `queueSearchQueryInput`, `endSearchQueryComposition`, `_searchMoveSelection`, `bindSearchResultActivation`, `_searchOpenPrimary`, `_searchOpenDetails`, `applySearchFilter`; operators `type: is: domain: site: url: in: tag: color:` with `-` negation |
 | Command palette | `openCommandPalette`, `buildPaletteCommands`, `_palSavedLinkCommand` |
 | Shared empty states | `buildSystemEmptyState`, `buildEmptySpaceState`, `SYSTEM_EMPTY_ICONS` |
@@ -2495,3 +2505,45 @@ plugin disclosures do not add another Settings route or stored plugin state.
 - Unsupported retained/imported records remain visible and available to Details;
   no record is rewritten, normalized, or removed.
 - No schema, locale, writer, permission, host/network, or privacy boundary changed.
+
+## AI planning contract, Calendar planner, and companion boundary (2026-11-06)
+
+- One versioned contract, `locus.plan/v1`, lives in `plan-contract.js` (UMD: browser
+  global `LocusPlan`, Node `require`). It owns the request shape, the draft validator,
+  English issue text, idempotency keys, JSON Schemas (strict structured-output form and
+  an MCP tool form), and four prompt profiles. The new tab, `companion/mcp-server.js`,
+  and `companion/native-host.js` all call the same functions.
+- Dates are validated as real calendar dates; times are 24-hour `HH:MM` wall times in
+  the plan's IANA zone and resolve to instants with `zonedWallToEpoch()`. A wall time in
+  a spring-forward gap is an error with a suggested shifted time; a fall-back time that
+  occurs twice uses the earlier instant with a warning. A draft in another zone is
+  converted to the plan zone before range checks.
+- Fixed commitments are constraints: an exact echo with `fixed: true` is shown as
+  locked, a block that moves one is an error, and overlap is a conflict. Shared busy
+  times are Calendar reminder instants only (no titles) and only when the person ticks
+  the share option. Conflicts and past starts stay selectable but unticked; errors,
+  repeats, fixed echoes, and blocks already in the graph are not selectable.
+- Calendar stays authoritative. Apply freezes an exact Workspace/Space/Group (or a new
+  Group named after the plan), re-reads plan keys across active, Archive, and Trash
+  right before mutation, takes one localized snapshot, and awaits one
+  `State.persistNow({ reconcileReminders: true })`. Each block becomes a to-do with
+  `reminder { at, notified: false }` and `plan` provenance; the plan record gains a
+  ledger entry. Success, the alarm warning, Undo, Calendar focus, and the companion
+  ack happen only after the receipt; rejection keeps the dirty graph behind recovery.
+  Saving plan inputs is its own snapshot-plus-receipt write.
+- `isPlannerMutationPending()` joins the Router and selection guards, the sheet owns
+  global keys while open, joins the Escape layer lists, refuses to open over another
+  modal (Welcome included), and repaints on locale change. Drafts in the sheet are
+  memory only; the companion queue is the durable inbox.
+- Companion: no listener. MCP is stdio JSON-RPC (protocol 2025-11-25 back to
+  2024-11-05). Native Messaging uses 32-bit native-order framing with host-to-browser
+  messages under 1 MB. Each browser profile pairs with a random 32-byte key kept in
+  `chrome.storage.local.te_planner_link` (outside `te`, not exported); the host keeps
+  only its SHA-256. Delivery is at least once: pulled drafts stay `delivered` until
+  `ack`; Locus dedupes by draft id and fingerprint and applies by block key. Queue
+  bounds: 25 waiting, 256 KiB each, 14-day expiry, 200 tombstones. A newer waiting
+  draft from the same client label supersedes the older one. Local runners are
+  opt-in commands in `runners.json`, run without a shell in an empty temporary folder.
+- Manifest: `optional_permissions: ["nativeMessaging"]` only, requested from the
+  Connect click; `quality-gates.js` rejects any other optional permission, an
+  install-time `nativeMessaging`, host permissions, and loss of `connect-src 'none'`.
