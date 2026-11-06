@@ -145,9 +145,62 @@ function testRollOver() {
   eq(changes.map(change => [change.id, change.to]), [
     ['yesterday-9', at(2026, 11, 11, 11)],
     ['yesterday-14', at(2026, 11, 11, 14)],
-  ], 'open past to-dos come to today at their time, or the next whole hour when it has passed');
+  ], 'yesterday’s open to-dos come to today at their time, or the next whole hour when it has passed');
+  ok(!changes.some(change => change.id === 'done'), 'a done to-do from yesterday does not move');
   const late = context.planRollOverChanges([ws], at(2026, 11, 11, 23, 30));
   eq(late.map(change => change.to), [at(2026, 11, 12, 9), at(2026, 11, 12, 14)], 'after the last whole hour the move lands tomorrow at the same time');
+}
+
+// P2, owner decision 2026-11-06: only yesterday's unfinished to-dos move.
+// "Yesterday" is the local calendar day before the run.
+function testRollOverYesterdayOnly() {
+  const { context } = sandbox();
+  const ws = workspace({
+    work: [
+      todo('yesterday-start', { reminder: rem(at(2026, 11, 10, 0, 0)) }),
+      todo('yesterday-end', { reminder: rem(at(2026, 11, 10, 23, 59)) }),
+      todo('two-days', { reminder: rem(at(2026, 11, 9, 23, 59)) }),
+      todo('last-week', { reminder: rem(at(2026, 11, 3, 9)) }),
+      todo('done-yesterday', { done: true, reminder: rem(at(2026, 11, 10, 15)) }),
+    ],
+  });
+  const ids = context.planRollOverChanges([ws], NOW).map(change => change.id);
+  eq(ids, ['yesterday-start', 'yesterday-end'], 'a to-do due yesterday moves, from 00:00 to 23:59');
+  ok(!ids.includes('two-days') && !ids.includes('last-week'), 'a to-do due two or more days ago stays put');
+  ok(!ids.includes('done-yesterday'), 'a done to-do from yesterday does not move');
+  // Older to-dos stay overdue where they were: Plan's Today lane, marked overdue.
+  const lanes = context.planLaneModel(context.planCollect(ws), NOW);
+  const todayLane = lanes.find(lane => lane.id === 'today').items;
+  eq(todayLane.filter(item => ['two-days', 'last-week'].includes(item.id)).map(item => [item.id, item.overdue]), [['last-week', true], ['two-days', true]],
+    'a to-do left behind still shows in Today, marked overdue');
+  // Just after midnight, "yesterday" is the day that just ended.
+  const justAfter = context.planRollOverChanges([ws], at(2026, 11, 11, 0, 5)).map(change => change.id);
+  eq(justAfter, ['yesterday-start', 'yesterday-end'], 'just after midnight, only the day that just ended moves');
+}
+
+// Gap case: Locus was last opened two days ago, so nothing was due yesterday.
+// The run claims the day, moves nothing and shows no toast; the older to-do
+// keeps its date.
+async function testRollOverGapDay() {
+  const toasts = [];
+  let writes = 0;
+  const items = { old: todo('old', { reminder: rem(at(2026, 11, 9, 9)) }) };
+  const harness = sandbox({
+    State: {
+      get: () => ({ settings: { planRollOver: true }, workspaces: [workspace({ work: [items.old] })] }),
+      isRecoveryRequired: () => false,
+      snapshot: () => 4,
+      persistNow: async () => { writes += 1; return { reminderReconciliation: { ok: true } }; },
+    },
+    isReminderMutationPending: () => false,
+    renderBoard: () => {},
+    toast: (message, options) => toasts.push([message, options]),
+  });
+  harness.store.set('locus.plan.rolloverDay', String(at(2026, 11, 9, 8)));
+  const result = await harness.context.runPlanRollOver(NOW);
+  eq([result.ran, result.moved, writes, toasts.length, items.old.reminder.at], [true, 0, 0, 0, at(2026, 11, 9, 9)],
+    'after a day away, a to-do due two days ago is not moved and no toast appears');
+  eq(harness.store.get('locus.plan.rolloverDay'), String(NOW), 'the day is still claimed, so the run does not repeat');
 }
 
 function testMoveAndSortTimes() {
@@ -369,7 +422,11 @@ async function testRollOverUndoWithRealState() {
   const stored = {
     schema: 14, _revision: 5, activeWsId: 'ws1',
     settings: { language: 'en', planRollOver: true },
-    workspaces: [workspace({ work: [todo('y', { reminder: rem(at(2026, 11, 10, 9)) }), todo('z', { reminder: rem(at(2026, 11, 9, 14)) })] })],
+    workspaces: [workspace({ work: [
+      todo('y', { reminder: rem(at(2026, 11, 10, 9)) }),
+      todo('w', { reminder: rem(at(2026, 11, 10, 14)) }),
+      todo('z', { reminder: rem(at(2026, 11, 9, 14)) }),
+    ] })],
   };
   const real = realState(stored);
   await real.State.load();
@@ -382,14 +439,16 @@ async function testRollOverUndoWithRealState() {
   vm.runInContext('var itemReminderMutationPending = null;', harness.context);
   const result = await harness.context.runPlanRollOver(NOW);
   const items = () => real.State.get().workspaces[0].categories[0].groups[1].items;
-  eq([result.ran, result.moved, items().map(item => item.reminder.at)], [true, 2, [at(2026, 11, 11, 11), at(2026, 11, 11, 14)]], 'roll-over moves both through one real write');
+  eq([result.ran, result.moved, items().map(item => item.reminder.at)], [true, 2, [at(2026, 11, 11, 11), at(2026, 11, 11, 14), at(2026, 11, 9, 14)]],
+    'roll-over moves yesterday’s two through one real write and leaves the older one');
   eq(real.writes.length, 1, 'one acknowledged write');
   const actionId = toasts.at(-1)[1].undo;
   ok(typeof actionId === 'number', 'the toast carries the real Undo action');
-  eq(JSON.parse(harness.store.get('locus.plan.moves')), { y: 1, z: 1 }, 'each moved to-do counts one move');
+  eq(toasts.at(-1)[0], 'plan.rolledOver:{"count":2}', 'the toast counts only what moved');
+  eq(JSON.parse(harness.store.get('locus.plan.moves')), { y: 1, w: 1 }, 'each moved to-do counts one move');
   await real.State.undo(actionId);
   harness.context.planUndoMoves(actionId);
-  eq(items().map(item => item.reminder.at), [at(2026, 11, 10, 9), at(2026, 11, 9, 14)], 'real State.undo restores the original times');
+  eq(items().map(item => item.reminder.at), [at(2026, 11, 10, 9), at(2026, 11, 10, 14), at(2026, 11, 9, 14)], 'real State.undo restores exactly what moved');
   eq(JSON.parse(harness.store.get('locus.plan.moves')), {}, 'Undo takes the moves back off the ↻ count (P10)');
   ok(/if \(typeof planUndoMoves === 'function' && undoneId !== true\) planUndoMoves\(undoneId\);/.test(newtab), 'performUndo drops the moves of the action it undid');
 }
@@ -643,10 +702,12 @@ async function main() {
   testLanes();
   testWeekAndEvenOut();
   testRollOver();
+  testRollOverYesterdayOnly();
   testMoveAndSortTimes();
   testRules();
   await testBatchCommit();
   await testRollOverRunsOncePerDay();
+  await testRollOverGapDay();
   await testRulesWithRealState();
   await testRollOverUndoWithRealState();
   await testRollOverTwoTabs();
@@ -657,7 +718,7 @@ async function main() {
   testPlanHeaderBuilds();
   testWiring();
   testLocalesAndPrivacy();
-  console.log(`Plan page contracts passed: ${checks} checks (lanes, week bar and Even out on one count, roll-over once per day across pages and zones, duplicate ids, landing-day toasts, real State defaults, export/import and Undo, move counts, Sort tally, header built in a VM, wiring, locales, privacy)`);
+  console.log(`Plan page contracts passed: ${checks} checks (lanes, week bar and Even out on one count, roll-over of yesterday's to-dos once per day across pages and zones, duplicate ids, landing-day toasts, real State defaults, export/import and Undo, move counts, Sort tally, header built in a VM, wiring, locales, privacy)`);
 }
 
 main().catch(error => {

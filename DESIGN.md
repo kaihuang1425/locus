@@ -4957,9 +4957,12 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   saved-page and board-local Archive transactions; Even out and roll-over use one
   snapshot and one acknowledged write with alarm reconciliation. Auto-plan has two
   rules: "Warn me when a day has more than 5" (display only) and "Unfinished things
-  move to tomorrow" (on the first open of a day, open to-dos whose date has passed
-  come to today at their own time or the next whole hour, reported as "Moved N to
-  today" with Undo). Both are settings keys; a profile without them keeps today's
+  move to tomorrow" (on the first open of a day, open to-dos due yesterday come to
+  today at their own time or the next whole hour, reported as "Moved N to today"
+  with Undo; older overdue to-dos stay where they are and show as overdue, also
+  when Locus was not opened yesterday. The owner chose yesterday only on
+  2026-11-06; before that, roll-over moved overdue to-dos of any age). Both are
+  settings keys; a profile without them keeps today's
   behaviour (no roll-over), and new profiles start with both on. Someday marks for
   Inbox pages and the move counts behind "↻" are per-device `localStorage` view state
   (`locus.plan.someday`, `locus.plan.moves`), like Today's Later order. No schema,

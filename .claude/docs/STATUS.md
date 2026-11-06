@@ -297,6 +297,16 @@ Slices, in order:
 
 ## Done (newest first)
 
+- **2026-11-06 - Roll-over moves only yesterday's to-dos (owner decision, P2)**
+  - **What:** roll-over moves an open, non-repeating to-do only when it was due
+    yesterday (the local calendar day before the run). Older overdue to-dos stay
+    put and show as overdue on Today and in Plan's Today lane, including after
+    a day when Locus was not opened. Workspace scope is unchanged. The failure
+    and Undo history copy now name yesterday's to-dos (EN and zh-TW).
+  - **Evidence:** `plan-page-contract-test.js` (296 checks: yesterday's bounds,
+    older and done to-dos left alone, the day-away case, real State Undo
+    restoring exactly what moved); all 41 suites.
+
 - **2026-11-06 - Triage section 1 fixed (second review of the canvas branch)**
   - **What:** the 46 "fix now" findings, one commit per area: Today capture
     parsing (passed default times roll, spaced and full-width zh-TW times, 12
@@ -315,8 +325,9 @@ Slices, in order:
   - **Evidence:** all 41 suites on Node 26 after each commit and on Node 22 at
     HEAD; Edge 156 computed-style and behaviour checks; a fresh-context review
     whose findings 1-7 were then fixed.
-  - **Left for the owner:** P2 roll-over scope, P14 wording, T5 bare `3點`, T7
-    undated to-dos at midnight, S3, S8, R4, and T6 two-digit bare times (see
+  - **Left for the owner:** P2 roll-over scope (since decided, see above), P14
+    wording, T5 bare `3點`, T7 undated to-dos at midnight, S3, S8, R4, and T6
+    two-digit bare times (see
     the triage report in the session notes).
 
 - **2026-11-06 - Review fixes for the canvas steps**

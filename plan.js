@@ -306,9 +306,11 @@ function planEvenOutChanges(collected, dayStart, now = Date.now()) {
 }
 
 // "Unfinished things move to tomorrow": on the first open of a day, every open
-// to-do whose date has passed comes forward to today at its own time, or the
-// next whole hour when that time is already gone. Repeating reminders re-arm on
-// their own and are left alone.
+// to-do due yesterday (the local calendar day before the run) comes forward to
+// today at its own time, or the next whole hour when that time is already gone.
+// Older overdue to-dos stay where they are and show as overdue, also when Locus
+// was not opened yesterday (the owner chose yesterday only, 2026-11-06).
+// Repeating reminders re-arm on their own and are left alone.
 // An id that appears more than once anywhere (planCollect dedupes inside one
 // workspace only) can't be resolved to one record, so it is left out rather
 // than blocking every other to-do.
@@ -329,12 +331,13 @@ function planIdCounts(workspaces) {
 }
 function planRollOverChanges(workspaces, now = Date.now()) {
   const today = planDayStart(now);
+  const yesterday = planAddDays(today, -1);
   const tomorrow = planAddDays(today, 1);
   const changes = [];
   const idCounts = planIdCounts(workspaces);
   (Array.isArray(workspaces) ? workspaces : []).forEach(workspace => {
     planCollect(workspace).dated.forEach(entry => {
-      if (entry.type !== 'todo' || entry.recur || entry.at >= today) return;
+      if (entry.type !== 'todo' || entry.recur || entry.at >= today || entry.at < yesterday) return;
       if (idCounts.get(entry.id) !== 1) return;
       let to = planSameTimeOn(entry.at, today);
       if (to <= now) to = planNextWholeHour(now);
