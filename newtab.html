@@ -263,6 +263,14 @@
         </button>
       </div>
     </aside>
+    <!-- Today keeps the Opened Tabs rail behind this edge tab. The tab opens
+         the same #tabrail as a temporary drawer; it never changes the saved
+         rail preference. Shown on Home only (see the TODAY BOARD CSS). -->
+    <button id="today-tabs-ear" class="today-tabs-ear" type="button" aria-controls="tabrail" aria-expanded="false" aria-label="Open tabs" data-i18n-aria-label="today.tabs.openNone">
+      <svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 4.5h7.5a1 1 0 0 1 1 1V12a1 1 0 0 1-1 1H5.5a1 1 0 0 1-1-1V5.5a1 1 0 0 1 1-1zM2 10.5V3a1 1 0 0 1 1-1h7.5"/></svg>
+      <span id="today-tabs-badge" class="today-tabs-badge" aria-hidden="true" hidden></span>
+    </button>
+    <div id="today-tabs-scrim" class="today-tabs-scrim" aria-hidden="true" hidden></div>
   </div>
 
   <!-- Workspace grid overlay -->

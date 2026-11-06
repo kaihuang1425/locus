@@ -1367,6 +1367,9 @@ const I18N = {
     'today.capture.needTitle': 'Add what to do as well as when.',
     'today.capture.unavailable': 'Locus couldn’t confirm where to save this task, so nothing was added.',
     'today.history.add': 'Add task',
+    'today.tabs.open': 'Open tabs, {count}',
+    'today.tabs.openNone': 'Open tabs',
+    'today.tabs.close': 'Hide open tabs',
     'capture.pending': 'Another save is still being confirmed — your tabs were left open',
     'capture.startFailed': 'Save could not start safely — your tabs were left open',
     'capture.unconfirmedLater': 'Save was not confirmed — your tabs stayed open and later edits remain visible. Reload Locus before continuing.',
@@ -2991,6 +2994,9 @@ const I18N = {
     'today.capture.needTitle': '除了時間，也請輸入要做的事。',
     'today.capture.unavailable': 'Locus 無法確認這個待辦的儲存位置，因此沒有新增任何內容。',
     'today.history.add': '新增待辦',
+    'today.tabs.open': '開啟的分頁，共 {count} 個',
+    'today.tabs.openNone': '開啟的分頁',
+    'today.tabs.close': '收合開啟的分頁',
     'capture.pending': '另一個儲存動作仍在確認中，原分頁都保持開啟。',
     'capture.startFailed': '無法安全地開始儲存，原分頁都保持開啟。',
     'capture.unconfirmedLater': '無法確認是否已儲存。原分頁保持開啟，後續編輯仍顯示在畫面上。請重新載入 Locus 後再繼續。',
@@ -3304,15 +3310,19 @@ function updateRailToggleLabel() {
   const rail = document.getElementById('tabrail');
   const toggle = document.getElementById('tabrail-toggle');
   if (!rail || !toggle) return;
-  const key = rail.classList.contains('collapsed')
-    ? 'action.expandOpenedTabs'
-    : 'action.collapseOpenedTabs';
+  // On Today the rail is a temporary drawer and its toggle hides it again.
+  const todayDrawer = typeof isTodayTabsDrawerOpen === 'function' && isTodayTabsDrawerOpen();
+  const key = todayDrawer
+    ? 'today.tabs.close'
+    : rail.classList.contains('collapsed')
+      ? 'action.expandOpenedTabs'
+      : 'action.collapseOpenedTabs';
   const label = tr(key);
   toggle.dataset.i18nTitle = key;
   toggle.dataset.i18nAriaLabel = key;
   toggle.title = label;
   toggle.setAttribute('aria-label', label);
-  toggle.setAttribute('aria-expanded', String(!rail.classList.contains('collapsed')));
+  toggle.setAttribute('aria-expanded', String(todayDrawer || !rail.classList.contains('collapsed')));
 }
 
 function applyLocale() {
@@ -15012,7 +15022,8 @@ function restoreOpenTabSelectionFocus(tabId) {
   requestAnimationFrame(() => {
     if (!isOpenTabsRailAvailable()) return;
     const rail = document.getElementById('tabrail');
-    if (rail?.classList.contains('collapsed')) {
+    const todayDrawer = typeof isTodayTabsDrawerOpen === 'function' && isTodayTabsDrawerOpen();
+    if (rail?.classList.contains('collapsed') && !todayDrawer) {
       document.getElementById('tabrail-toggle')?.focus();
       return;
     }
@@ -15061,6 +15072,7 @@ function toggleOpenTabSelection(tabId, { range = false, restoreFocus = false } =
 function setOpenTabRailCount(value) {
   const count = document.getElementById('open-count');
   if (count) count.textContent = String(value);
+  if (typeof syncTodayTabsEar === 'function') syncTodayTabsEar(value);
 }
 
 function renderOpenTabRailState(kind, options = {}) {
@@ -15890,6 +15902,13 @@ function setOpenTabsRailCollapsed(collapsed, options = {}) {
 function focusOpenTabFilter() {
   if (!isOpenTabsRailAvailable()) return false;
   const rail = document.getElementById('tabrail');
+  // Today keeps the rail behind its edge tab: S opens that drawer instead of
+  // changing the saved collapsed preference.
+  if (typeof todayTabsDrawerAvailable === 'function' && todayTabsDrawerAvailable()) {
+    setTodayTabsDrawer(true, { opener: document.activeElement });
+    focusTodayTabsDrawerTarget('tab-filter');
+    return true;
+  }
   if (rail.classList.contains('collapsed')) {
     setOpenTabsRailCollapsed(false, { persist: true });
   }
@@ -15904,7 +15923,8 @@ function handleOpenTabsEscape(event) {
   if (event?.key !== 'Escape' || !isOpenTabsRailAvailable()) return false;
   const rail = document.getElementById('tabrail');
   const filter = document.getElementById('tab-filter');
-  if (!rail.contains(document.activeElement)) return false;
+  const todayDrawer = typeof isTodayTabsDrawerOpen === 'function' && isTodayTabsDrawerOpen();
+  if (!rail.contains(document.activeElement) && !todayDrawer) return false;
   if (document.activeElement === filter && filter.value) {
     event.preventDefault();
     filter.value = '';
@@ -15919,6 +15939,11 @@ function handleOpenTabsEscape(event) {
     updateSelectedBadge();
     renderOpenTabs();
     if (focusId != null) restoreOpenTabSelectionFocus(focusId);
+    return true;
+  }
+  if (todayDrawer) {
+    event.preventDefault();
+    setTodayTabsDrawer(false, { restoreFocus: true });
     return true;
   }
   if (isOpenTabsRailDrawerOpen()) {
@@ -16617,6 +16642,10 @@ function renderBoard() {
   // from the flags so it stays correct through every early-returning gate.
   document.body.dataset.surface = activeSearch ? 'search' : activeCalendar ? 'calendar' : activeGroupPage ? 'group' : activeLibraryMode ? 'library' : activeHome ? 'home' : 'board';
   renderTopbarContext();
+  // Today's open-tabs drawer belongs to Home only.
+  if (document.body.dataset.surface !== 'home' && typeof isTodayTabsDrawerOpen === 'function' && isTodayTabsDrawerOpen()) {
+    setTodayTabsDrawer(false, { restoreFocus: false });
+  }
   // The calendar (§5) and group pages (§4.1) are surfaces that sit above the
   // layout registry: when one is open every re-render keeps showing it. Each
   // renderer returns false if the user has navigated away, so we fall through to
@@ -16636,6 +16665,9 @@ function renderBoard() {
   hideBreadcrumb();
   document.body.dataset.surface = 'board';
   renderTopbarContext();
+  if (typeof isTodayTabsDrawerOpen === 'function' && isTodayTabsDrawerOpen()) {
+    setTodayTabsDrawer(false, { restoreFocus: false });
+  }
   const $b = document.getElementById('board');
   $b.classList.remove('group-page-mode', 'list-mode', 'canvas-mode', 'explorer-mode', 'timeline-mode', 'gallery-mode', 'graph-mode', 'calendar-mode', 'home-mode');
   const mode = getViewMode();
@@ -20560,7 +20592,102 @@ async function commitTodayCapture(parsed, wrap = null) {
   return true;
 }
 
+// ── Open-tabs edge tab ──
+// The edge tab opens the existing Opened Tabs rail as a temporary drawer. The
+// open state lives on <body> so the shared rail helpers can read it without a
+// second copy of rail state, and the saved rail preference is never touched.
+function isTodayTabsDrawerOpen() {
+  return !!document.body && document.body.classList.contains('today-tabs-open');
+}
+
+function todayTabsDrawerAvailable() {
+  return !!activeHome && document.body?.dataset.surface === 'home' && isOpenTabsRailAvailable();
+}
+
+function syncTodayTabsEar(value = null) {
+  const ear = document.getElementById('today-tabs-ear');
+  const badge = document.getElementById('today-tabs-badge');
+  if (!ear || !badge) return false;
+  const raw = value == null ? (openTabsLoadState === 'ready' ? allOpenTabs.length : null) : value;
+  const count = Number.isInteger(raw) && raw > 0 ? raw : 0;
+  const text = count > 99 ? '99+' : String(count);
+  if (count) {
+    if (badge.hidden || badge.textContent !== text) {
+      badge.textContent = text;
+      badge.hidden = false;
+      badge.classList.remove('is-pop');
+      void badge.offsetWidth;
+      badge.classList.add('is-pop');
+    }
+  } else {
+    badge.hidden = true;
+    badge.textContent = '';
+  }
+  const label = count ? tr('today.tabs.open', { count }) : tr('today.tabs.openNone');
+  ear.setAttribute('aria-label', label);
+  ear.title = label;
+  ear.setAttribute('aria-expanded', String(isTodayTabsDrawerOpen()));
+  return true;
+}
+
+// The drawer's visibility flips on the next frame (a zero-length visibility
+// transition), so focus retries there and once more after a short timeout,
+// which also covers a background tab whose frames are paused.
+let todayTabsFocusRequest = 0;
+function focusTodayTabsDrawerTarget(id) {
+  const request = ++todayTabsFocusRequest;
+  const attempt = () => {
+    const target = document.getElementById(id);
+    if (request !== todayTabsFocusRequest || !target || !isTodayTabsDrawerOpen()) return true;
+    // Never pull focus back once the person has moved within the drawer.
+    const rail = document.getElementById('tabrail');
+    if (rail?.contains(document.activeElement) && document.activeElement !== target) return true;
+    try { target.focus({ preventScroll: true }); } catch {}
+    return document.activeElement === target;
+  };
+  if (attempt()) return;
+  requestAnimationFrame(attempt);
+  setTimeout(attempt, 60);
+}
+
+function setTodayTabsDrawer(open, { opener = null, restoreFocus = true } = {}) {
+  const rail = document.getElementById('tabrail');
+  const ear = document.getElementById('today-tabs-ear');
+  const scrim = document.getElementById('today-tabs-scrim');
+  if (!rail || !ear || !document.body) return false;
+  const next = !!open && todayTabsDrawerAvailable();
+  if (next === isTodayTabsDrawerOpen()) return next;
+  document.body.classList.toggle('today-tabs-open', next);
+  if (scrim) scrim.hidden = !next;
+  updateRailToggleLabel();
+  syncTodayTabsEar();
+  if (next) {
+    rememberOpener(rail, opener && opener !== document.body ? opener : ear);
+    focusTodayTabsDrawerTarget('tabrail-toggle');
+  } else if (restoreFocus) {
+    if (!restoreOpener(rail)) {
+      try { ear.focus({ preventScroll: true }); } catch {}
+    }
+  } else {
+    _overlayOpeners.delete(rail);
+  }
+  return next;
+}
+
 function bindTodayBoard() {
+  const ear = document.getElementById('today-tabs-ear');
+  const scrim = document.getElementById('today-tabs-scrim');
+  const rail = document.getElementById('tabrail');
+  ear?.addEventListener('click', event => {
+    setTodayTabsDrawer(!isTodayTabsDrawerOpen(), { opener: event.currentTarget });
+  });
+  scrim?.addEventListener('click', () => setTodayTabsDrawer(false));
+  rail?.addEventListener('keydown', event => {
+    if (isTodayTabsDrawerOpen()) trapTabKey(event, rail);
+  });
+  window.addEventListener('resize', rafThrottle(() => {
+    if (isTodayTabsDrawerOpen() && !todayTabsDrawerAvailable()) setTodayTabsDrawer(false, { restoreFocus: false });
+  }));
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) return;
     const board = document.querySelector('#board .today');
@@ -20615,6 +20742,7 @@ function renderHome() {
       try { if (selection) rebuilt.setSelectionRange(selection[0], selection[1]); } catch {}
     }
   }
+  syncTodayTabsEar();
   startTodayClock();
   return true;
 }
@@ -32901,6 +33029,10 @@ function bindStatic() {
   // ── Opened-tabs rail ──
   const railToggle = document.getElementById('tabrail-toggle');
   if (railToggle) railToggle.onclick = () => {
+    if (isTodayTabsDrawerOpen()) {
+      setTodayTabsDrawer(false);
+      return;
+    }
     const rail = document.getElementById('tabrail');
     setOpenTabsRailCollapsed(!rail.classList.contains('collapsed'), { persist: true });
   };

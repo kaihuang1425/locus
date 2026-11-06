@@ -239,6 +239,21 @@ match(extractFunction('buildTodayCapture'), /today-capture-mirror" aria-hidden="
 match(css, /\.today-capture-input\s*\{[^}]*color: transparent;[^}]*caret-color: var\(--text\)/, 'the real input keeps the caret while the mirror draws the text');
 match(css, /@media \(forced-colors: active\)[\s\S]*\.today-capture-mirror \{ display: none; \}[\s\S]*\.today-capture-input \{ color: CanvasText; \}/, 'forced colors show the plain input instead of the mirror');
 
+// ── Edge tab and the reused open-tabs rail ──
+match(html, /<button id="today-tabs-ear"[^>]*aria-controls="tabrail"[^>]*aria-expanded="false"/, 'the edge tab controls the existing rail');
+equal((html.match(/id="tabrail"/g) || []).length, 1, 'Today reuses the one Opened Tabs rail');
+match(html, /id="today-tabs-scrim"[^>]*hidden/, 'the drawer scrim starts hidden');
+const drawer = extractFunction('setTodayTabsDrawer');
+noMatch(drawer, /setOpenTabsRailCollapsed|State\.persist|railCollapsed/, 'opening the drawer never changes the saved rail preference');
+match(drawer, /rememberOpener\(rail,[\s\S]*restoreOpener\(rail\)/, 'closing the drawer returns focus to its opener');
+match(extractFunction('handleOpenTabsEscape'), /todayDrawer[\s\S]*setTodayTabsDrawer\(false, \{ restoreFocus: true \}\)/, 'Escape closes the drawer');
+match(extractFunction('focusOpenTabFilter'), /todayTabsDrawerAvailable\(\)[\s\S]*setTodayTabsDrawer\(true/, 'S opens the drawer on Today');
+match(extractFunction('setOpenTabRailCount'), /syncTodayTabsEar\(value\)/, 'the badge follows the rail count');
+match(extractFunction('bindTodayBoard'), /trapTabKey\(event, rail\)/, 'Tab stays inside the open drawer');
+match(css, /@media \(max-width: 820px\)\s*\{\s*body\[data-surface="home"\] \.today-tabs-ear \{ display: none; \}/, 'the edge tab follows the rail, which is absent at 820 px and below');
+match(html, /data-i18n-aria-label="today\.tabs\.openNone"/, 'the edge tab has a localized fallback name');
+usedKeys.add('today.tabs.openNone');
+
 // ── Locale parity ──
 const enStart = source.indexOf('const I18N = {');
 const zhStart = source.indexOf("'zh-TW': {", enStart);
