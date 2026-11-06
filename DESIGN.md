@@ -5133,6 +5133,10 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
     recovery boundary; a highlight glides to the row under the pointer or
     keyboard focus. Details, Favorite, Read later and Archive show on hover;
     at phone width and on touch screens they fold into More.
+  - At phone width a row is the title (up to two lines) beside a 24 px icon,
+    or the read tick in Read later, and More; the meta line runs across the
+    full row below it. The destination wraps whole there rather than being
+    cut, then the source domain and the date follow on the same line.
   - Kept from 2026-08-12: each row still shows its title, the complete
     Workspace › Space › Group › Stack destination (wrapping, never cut) and its
     source (now the domain), and More still never repeats an action the row is
@@ -5144,9 +5148,9 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
     also left the page for Home.
   - Archive and Trash keep their own pages and look.
 
-  Evidence: `library-page-contract-test.js` (141 checks, 12 mutations caught),
+  Evidence: `library-page-contract-test.js` (149 checks, 12 mutations caught),
   the ported `library-recovery`, `canvas-pages`, `inbox-page` and
-  `privacy-settings` suites, and every suite; a throwaway Edge 156 profile (82
+  `privacy-settings` suites, and every suite; a throwaway Edge 156 profile (93
   behaviour checks, Light, Dark, zh-TW, reduced motion, 1440 and 390 px).
 
   **Implemented: yes. Verified: partial. User-validated: no. Released: no.**

@@ -15820,6 +15820,8 @@ body[data-page="inbox"]:has(#item-sel-toolbar) :is(#toast, #toast-behind) { bott
   text-overflow: ellipsis;
   vertical-align: bottom;
 }
+/* The date and marks on the meta line, shown at phone width only. */
+.lib-meta-when { display: none; align-items: center; gap: 6px; margin-left: 10px; white-space: nowrap; vertical-align: bottom; }
 .lib-when {
   display: flex;
   align-items: center;
@@ -16038,8 +16040,10 @@ body[data-page="inbox"]:has(#item-sel-toolbar) :is(#toast, #toast-behind) { bott
 .lib-ebtn:active { transform: scale(.97); }
 .lib-ebtn.is-primary { border-color: transparent; background: var(--lib-go-bg); color: var(--accent-text, #fff); }
 
-/* Phone width: the rows fold their actions into More, and the date sits
-   under the destination. */
+/* Phone width: each row is the title beside a small icon (the read tick in
+   Read later) and More, then one meta line across the full row: the
+   destination wraps whole there, followed by the source and the date. The
+   hover actions fold into More. */
 @container (max-width: 640px) {
   .lib-tools { gap: 10px; }
   .lib-modes,
@@ -16050,32 +16054,46 @@ body[data-page="inbox"]:has(#item-sel-toolbar) :is(#toast, #toast-behind) { bott
   .lib-sort svg { right: 12px; }
   .lib-seg-btn { gap: 5px; padding: 0 4px; font-size: 13px; }
   .lib-cnt { font-size: 12px; }
+  .lib-card { padding: 4px; }
   .lib-row {
     display: grid;
-    grid-template-columns: 32px minmax(0, 1fr) 44px;
-    grid-template-areas: "fav copy more" "fav when more";
-    gap: 0 12px;
-    padding: 10px 2px 10px 10px;
+    grid-template-columns: 24px minmax(0, 1fr) 44px;
+    grid-template-areas: "fav title more" "meta meta meta";
+    gap: 2px 10px;
+    min-height: 0;
+    padding: 6px 0 10px 10px;
   }
   /* In Read later the read tick leads the row in place of the favicon. */
   .lib[data-mode="read-later"] .lib-row {
     grid-template-columns: 44px minmax(0, 1fr) 44px;
-    grid-template-areas: "check copy more" "check when more";
-    column-gap: 6px;
+    grid-template-areas: "check title more" "meta meta meta";
+    column-gap: 2px;
     padding-left: 0;
   }
-  .lib-meta .library-url { margin-left: 0; display: block; }
+  .lib[data-mode="read-later"] .lib-row .lib-meta { padding-left: 10px; }
   .lib[data-mode="read-later"] .lib-row .ibx-fav { display: none; }
-  .lib-row .lib-check { grid-area: check; margin: 0; }
-  .lib-row .ibx-fav { grid-area: fav; }
+  /* The tick and More keep 44 px targets but take less of the title line, so a
+     one-line title sits close to its meta line. */
+  .lib-row .lib-check { grid-area: check; margin: -10px 0; }
+  .lib-row .ibx-fav { grid-area: fav; width: 24px; height: 24px; border-radius: 7px; font-size: 11px; }
+  .lib-row .lib-copy { display: contents; }
+  .lib-row .lib-open { grid-area: title; }
   .lib-tt { display: -webkit-box; white-space: normal; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
   .lib-tt::after { display: none; }
-  .lib-row .lib-copy { grid-area: copy; }
-  .lib-row .lib-when { grid-area: when; justify-content: flex-start; min-width: 0; margin-top: 2px; font-size: 12px; }
+  .lib-row .lib-meta { grid-area: meta; min-width: 0; padding-right: 10px; font-size: 11.5px; line-height: 16px; }
+  .lib-row .lib-meta-when { display: inline-flex; }
+  /* The date column stays for assistive tech; its visible copy is on the meta line. */
+  .lib-row .lib-when {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    min-width: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
   .lib-row .lib-acts { display: none; }
-  .lib-row .lib-more { grid-area: more; display: grid; }
-  .lib-row:hover .lib-when,
-  .lib-row:has(:focus-visible) .lib-when { opacity: 1; }
+  .lib-row .lib-more { grid-area: more; display: grid; margin: -6px 0; }
   .lib-empty { padding: 40px 12px 44px; }
 }
 /* Touch screens have no hover: More holds the row's actions. */

@@ -18609,7 +18609,7 @@ function buildLibraryLedgerRow(rowData, state, rows, index, paint = {}) {
     ${inboxFavMarkup(item)}
     <div class="library-copy lib-copy">
       <button class="library-primary lib-open" data-lib-focus="open:${key}" type="button" aria-label="${esc(tr('library.openPageFor', { title: model.title }))}"><span class="library-title lib-tt">${libraryTitleMarkup(model.title, paint.query)}</span>${librarySvg('go', 13, 1.9, 'lib-go')}</button>
-      <span class="lib-meta"><span class="lib-dot" style="--dot:${esc(dot)}" aria-hidden="true"></span><span class="library-destination">${esc(model.destination)}</span><span class="library-url">${esc(planSortMeta(item).domain || model.url)}</span></span>
+      <span class="lib-meta"><span class="lib-dot" style="--dot:${esc(dot)}" aria-hidden="true"></span><span class="library-destination">${esc(model.destination)}</span><span class="library-url">${esc(planSortMeta(item).domain || model.url)}</span>${marks || shortTime ? `<span class="lib-meta-when" aria-hidden="true">${marks}${shortTime ? `<span>${esc(shortTime)}</span>` : ''}</span>` : ''}</span>
     </div>
     <span class="lib-when">${marks}${shortTime ? `<time${Number.isFinite(timestamp) && timestamp > 0 ? ` datetime="${new Date(timestamp).toISOString()}"` : ''}><span class="sr-only">${esc(timeCopy)}</span><span aria-hidden="true">${esc(shortTime)}</span></time>` : ''}</span>
     <div class="lib-acts">

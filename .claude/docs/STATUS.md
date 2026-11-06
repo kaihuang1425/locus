@@ -309,9 +309,12 @@ Slices, in order:
     round read tick fills, leaving rows fold away, and the receipts offer Undo.
     The scope chip, toolbar rows and empty-state paragraphs are gone; every
     action is kept. Escape that clears the filter no longer also leaves the page.
-  - **Evidence:** `library-page-contract-test.js` (141 checks, 12 mutations
+    At phone width a row is the title beside a small icon (the read tick in
+    Read later) and More, with the destination wrapping whole on one meta line
+    across the row below, followed by the source and the date.
+  - **Evidence:** `library-page-contract-test.js` (149 checks, 12 mutations
     caught); `library-recovery`, `canvas-pages`, `inbox-page` and
-    `privacy-settings` suites ported; all 43 `scripts/*.js` checks pass; Edge 156 proof with 82
+    `privacy-settings` suites ported; all 43 `scripts/*.js` checks pass; Edge 156 proof with 93
     behaviour checks and screenshots in the shared notes
     `locus-redesign-evidence/pages/library/`.
 

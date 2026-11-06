@@ -410,8 +410,10 @@ function testLedgerPresentationKeepsRecoveryContextReachable() {
     'keyboard-opened row menus must not fall back to the viewport origin');
   assert.doesNotMatch(css, /@media \(max-width: 1500px\)[\s\S]*?\.lib-row\s*\{/s,
     'the ledger must not fragment every 1280px record into three disconnected bands');
-  assert.match(libraryCss, /@container \(max-width: 640px\) \{[\s\S]*?\.lib-row \{\n\s*display: grid;[\s\S]*?grid-template-areas: "fav copy more" "fav when more";[\s\S]*?\.lib-row \.lib-when \{ grid-area: when;[\s\S]*?\.lib-row \.lib-acts \{ display: none; \}[\s\S]*?\.lib-row \.lib-more \{ grid-area: more; display: grid; \}/,
-    'at phone width the row folds its actions into More and keeps the date under the destination, which stays whole');
+  assert.match(libraryCss, /@container \(max-width: 640px\) \{[\s\S]*?\.lib-row \{\n\s*display: grid;\n\s*grid-template-columns: 24px minmax\(0, 1fr\) 44px;\n\s*grid-template-areas: "fav title more" "meta meta meta";[\s\S]*?\.lib-row \.lib-meta \{ grid-area: meta;[\s\S]*?\.lib-row \.lib-acts \{ display: none; \}\n\s*\.lib-row \.lib-more \{ grid-area: more; display: grid;/,
+    'at phone width the title takes the row beside a small icon and More, the destination wraps whole on the meta line across the full row, and the row actions fold into More');
+  assert.doesNotMatch(libraryCss.slice(libraryCss.indexOf('@container (max-width: 640px)')), /\.library-destination \{[^}]*(?:white-space: nowrap|text-overflow|display: none)/,
+    'the phone layout wraps the destination rather than cutting it');
   assert.match(libraryCss, /@media \(hover: none\) \{\n\s*\.lib-row \.lib-acts \{ display: none; \}\n\s*\.lib-row \.lib-more \{ display: grid; \}/,
     'touch screens reach the row actions through More');
   assert.doesNotMatch(css, /\.library-destination\s*\{[^}]*(?:display:\s*none|text-overflow)/,

@@ -383,6 +383,22 @@ function testWiring() {
 function testStyles() {
   ok(libraryCss.length > 4000, 'the Library page layer is present');
   ok(!/(?:linear|radial|conic)-gradient\s*\(/.test(libraryCss), 'no gradients');
+  const phone = libraryCss.slice(libraryCss.indexOf('@container (max-width: 640px) {'), libraryCss.indexOf('/* Touch screens have no hover'));
+  ok(phone.length > 500, 'the phone layout is extractable');
+  ok(/\.lib-row \{\n\s*display: grid;\n\s*grid-template-columns: 24px minmax\(0, 1fr\) 44px;\n\s*grid-template-areas: "fav title more" "meta meta meta";/.test(phone),
+    'phone rows: the title takes the row beside a 24 px icon and the 44 px More, the meta runs across the full row below');
+  ok(/\.lib\[data-mode="read-later"\] \.lib-row \{\n\s*grid-template-columns: 44px minmax\(0, 1fr\) 44px;\n\s*grid-template-areas: "check title more" "meta meta meta";/.test(phone)
+    && /\.lib\[data-mode="read-later"\] \.lib-row \.ibx-fav \{ display: none; \}/.test(phone),
+  'in Read later the 44 px read tick leads in place of the icon');
+  ok(/\.lib-row \.lib-copy \{ display: contents; \}\n\s*\.lib-row \.lib-open \{ grid-area: title; \}/.test(phone) && /\.lib-row \.lib-meta \{ grid-area: meta;/.test(phone),
+    'the title and the meta line are placed separately, so the meta is not squeezed beside the icon');
+  ok(/\.lib-row \.lib-meta-when \{ display: inline-flex; \}/.test(phone) && /\.lib-meta-when \{ display: none;/.test(libraryCss),
+    'the date and marks sit on the meta line at phone width only');
+  ok(/\.lib-row \.lib-when \{\n\s*position: absolute;\n\s*width: 1px;\n\s*height: 1px;[\s\S]*?clip: rect\(0 0 0 0\);/.test(phone),
+    'the date column stays for assistive tech at phone width (its full "Saved …" text), hidden visually');
+  ok(!/\.library-destination[^{]*\{[^}]*(?:text-overflow|white-space: nowrap)/.test(phone), 'the destination wraps whole at phone width');
+  ok(/<span class="lib-meta-when" aria-hidden="true">\$\{marks\}\$\{shortTime \? `<span>\$\{esc\(shortTime\)\}<\/span>` : ''\}<\/span>/.test(extract('buildLibraryLedgerRow')),
+    'the meta line’s copy of the date is hidden from assistive tech, which reads the date column');
   ok(/@media \(prefers-reduced-motion: reduce\) \{\n\s*\.lib, \.lib \*, \.lib \*::before, \.lib \*::after \{ animation: none !important; transition: none !important; \}/.test(libraryCss), 'reduced motion stops every Library animation');
   ok(/\.lib-thumb \{[^}]*transform: translateX\(calc\(var\(--lib-i, 0\) \* 100%\)\);[^}]*transition: transform \.3s var\(--today-ease\);/.test(libraryCss), 'the active pill slides between views in 300 ms');
   ok(/\.lib-glide \{[^}]*transform: translateY\(var\(--lib-y, 0\)\);[^}]*transition: transform \.26s var\(--today-ease\)/.test(libraryCss) && /\.lib-glide\.is-jump \{ transition: opacity \.18s ease; \}/.test(libraryCss), 'the highlight glides between rows and appears in place');
