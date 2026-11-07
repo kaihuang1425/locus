@@ -203,6 +203,90 @@ assert.doesNotMatch(css,
   /body\.blur-privacy[^\n]*:hover|body\.blur-privacy[\s\S]{0,520}transition:\s*filter/,
   'masked content must not reveal on hover or use ornamental blur motion');
 
+// Finding R1-2: the mask covers every rebuilt page. The walk lists each page's
+// title-like and meta-like classes in newtab.js; every one is either masked
+// (or sits inside a masked element), or is listed here as interface copy: a
+// heading, a label, a time or count, a container, or a chooser that, like the
+// rail, names Spaces and Groups. A new title or meta class fails until it is
+// masked or listed.
+{
+  const masked = new Map();
+  for (const rule of css.matchAll(/([^{}]*body\.blur-privacy[^{}]*)\{([^}]*)\}/g)) {
+    if (!/filter:\s*blur\(6px\)/.test(rule[2])) continue;
+    const selectors = [];
+    let depth = 0;
+    let part = '';
+    for (const ch of rule[1].replace(/\/\*[\s\S]*?\*\//g, '')) {
+      if (ch === '(') depth += 1;
+      if (ch === ')') depth -= 1;
+      if (ch === ',' && depth === 0) { selectors.push(part); part = ''; } else part += ch;
+    }
+    selectors.push(part);
+    for (const selector of selectors.map(s => s.trim()).filter(Boolean)) {
+      if (!selector.startsWith('body.blur-privacy')) continue;
+      const rest = selector.replace('body.blur-privacy', '').trim();
+      const last = rest.match(/(?:^|\s)((?::is\([^)]*\))|[^\s]+)$/)?.[1] || rest;
+      const context = rest.slice(0, rest.length - last.length).trim();
+      for (const cls of last.matchAll(/\.([\w-]+)/g)) masked.set(cls[1], context);
+    }
+  }
+  const PRIVATE = {
+    // Inbox
+    'ibx-card-title': '', 'ibx-domain': '', 'ibx-row-title': '', 'ibx-row-sub': '',
+    // Library (the row's lib-tt is the library-title element)
+    'library-title': '', 'library-url': '', 'library-destination': '',
+    // Space and its views (a group hub's label; the centre is the Space's name)
+    'spc-gname': '', 'lv-stack-name': '', 'spc-inext': '', 'gl-sec-name': '', 'gr-label': '', 'gr-pill-text': '.gr-hub',
+    'ex-row-label': '.ex-col:not(:first-child)', 'stack-name': '', 'item-title': '', 'item-url': '', 'note-text': '', 'todo-text': '',
+    // Details (its title and URL fields, location, checklist, fields and tags; notes are .note-text)
+    'dtl-title': '', 'dtl-url': '', 'idp-location': '', 'idp-cl-text': '', 'idp-cf-label': '', 'idp-cf-value': '', 'idp-tag': '',
+    // Find again and the palette's saved-link rows
+    'fnd-tt': '', 'fnd-src': '', 'fnd-snip': '', 'search-recovery-path': '', 'cmdp-row-label': '.cmdp-row.is-link', 'cmdp-row-desc': '.cmdp-row.is-link',
+    // Calendar
+    'cal-dot-t': '', 'cld-chip-n': '', 'cld-arow-n': '',
+    // Archive & Trash
+    'arv-tt': '', 'arv-meta': '',
+  };
+  const INSIDE = {
+    'ibx-sub-status': 'ibx-row-sub', 'lib-tt': 'library-title', 'lv-group-name': 'spc-gname', 'idp-title-input': 'dtl-title', 'idp-url-input': 'dtl-url',
+    'idp-notes': 'note-text', 'idp-note-editor': 'note-text', 'search-result-snippet': 'fnd-snip', 'archive-restore-destination': 'arv-meta', 'arv-src': 'arv-meta',
+    'idp-tag-x': 'idp-tag',
+  };
+  const INTERFACE = new Set([
+    // headings and labels
+    'ibx-title', 'ibx-btn-label', 'ibx-clear-title', 'ibx-clear-copy', 'ibx-ghost', 'lib-title', 'lib-etitle', 'lib-seg-label', 'lib-text', 'library-local-note',
+    'spc-title', 'spc-newg-label', 'spc-tab-label', 'tl-bucket-label', 'tl-now-label', 'fnd-title', 'fnd-seg-label', 'fnd-details-label', 'arv-title', 'arv-sb-label',
+    'arv-seg-label', 'stg-pv-body', 'stg-pv-clock', 'cld-ph-text', 'idp-hd-copy', 'idp-docket-line', 'ibx-drop-line', 'dtl-tline', 'spc-uline', 'lib-bm-lines',
+    // times, counts and kinds
+    'lib-meta-when', 'fnd-meta-when', 'arv-meta-when', 'ex-row-meta', 'lv-stack-meta', 'ibx-age', 'lib-when', 'ibx-row-age', 'arv-when', 'fnd-when',
+    'cld-due-when', 'cld-arow-t', 'cld-chip-t', 'cld-due-n', 'gr-pill-n', 'idp-sec-t',
+    // a Space's own name with its kind (readable, as in the rail)
+    'cld-rmeta', 'cld-arow-s',
+    // containers whose saved text is masked inside them
+    'ibx-src', 'ibx-src-text', 'lib-copy', 'library-copy', 'lib-meta', 'spc-gmeta', 'lv-stack-copy', 'ex-col-body', 'dtl-loc', 'idp-body', 'idp-advanced-body',
+    'fnd-copy', 'fnd-meta', 'search-result-location', 'cmdp-row-copy', 'cld-wbody', 'cld-ghost', 'arv-copy', 'cld-agenda', 'search-page', 'idp-tags',
+    // the user's own typing, and destination choosers that name Spaces and Groups as the rail does
+    'fnd-mirror-line', 'idp-tag-input', 'ibx-mi-where', 'arv-dests', 'archive-selection-destinations',
+  ]);
+  const tokens = new Set();
+  for (const m of source.matchAll(/class(?:Name)?(?:="|\s*=\s*['`])([^"'`]*)/g)) {
+    for (const token of m[1].split(/\s+/)) if (/^[\w-]+$/.test(token)) tokens.add(token);
+  }
+  const PAGES = /^(?:ibx|lib|library|spc|lv|gl|gr|ex|tl|dtl|idp|fnd|search|cmdp|cld|cal|arv|archive|stg)-/;
+  const TITLE_OR_META = /title|-tt$|-t$|-n$|-s$|name|domain|url|sub|meta|src|dest|loc|label|snip|text|path|where|desc|next|tag|value|copy|line|note|when|age/;
+  const walked = [...tokens].filter(token => PAGES.test(token) && TITLE_OR_META.test(token)).sort();
+  assert.ok(walked.length > 60, `the walk finds the rebuilt pages' title and meta classes (${walked.length})`);
+  const unlisted = walked.filter(token => !(token in PRIVATE) && !(token in INSIDE) && !INTERFACE.has(token));
+  assert.deepEqual(unlisted, [], 'every title or meta class on a rebuilt page is masked or listed as interface copy (finding R1-2)');
+  const missing = Object.entries(PRIVATE).filter(([cls, context]) => !masked.has(cls) || masked.get(cls) !== context).map(([cls]) => cls);
+  assert.deepEqual(missing, [], 'every saved title, domain, sub-line and meta class is in the blur list (finding R1-2)');
+  const orphaned = Object.entries(INSIDE).filter(([, parent]) => !masked.has(parent)).map(([cls]) => cls);
+  assert.deepEqual(orphaned, [], 'a class counted as inside a masked element has a masked parent');
+  for (const [page, prefix] of [['Inbox', 'ibx-'], ['Library', 'library-'], ['Space', 'spc-'], ['Details', 'dtl-'], ['Find again', 'fnd-'], ['Calendar', 'cld-'], ['Archive', 'arv-']]) {
+    assert.ok([...masked.keys()].some(cls => cls.startsWith(prefix)), `${page} has masked classes`);
+  }
+}
+
 function initialSettings(overrides = {}) {
   return { blurPrivacy: false, ...overrides };
 }

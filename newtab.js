@@ -1564,6 +1564,7 @@ const I18N = {
     'library.itemUnavailable': 'This saved item changed or moved. Nothing was opened. Refresh the ledger and try again.',
     'library.view': 'Library view',
     'library.modeCount': '{label}, {count}',
+    'library.showMore': 'Show {count} more',
     'library.archiveNamed': 'Archive {title}',
     'library.allCaughtUp': 'All caught up',
     'library.nothingRead': 'Nothing read yet',
@@ -3275,6 +3276,7 @@ const I18N = {
     'library.itemUnavailable': '這個已儲存項目已變更或移動，因此沒有執行任何操作。請重新整理清單後再試一次。',
     'library.view': '連結檢視方式',
     'library.modeCount': '{label}，{count}',
+    'library.showMore': '再顯示 {count} 個頁面',
     'library.archiveNamed': '封存「{title}」',
     'library.allCaughtUp': '都讀完了',
     'library.nothingRead': '還沒有已讀的連結',
@@ -10926,6 +10928,8 @@ function clearContextMenuExpandedOwner() {
 
 function showContextMenu(x, y, items, opts) {
   const menu = document.getElementById('context-menu');
+  // One floating layer at a time: a menu closes the Inbox page's Space picker.
+  if (typeof closeFloatingInboxSpacePicker === 'function') closeFloatingInboxSpacePicker();
   // Tear down any previously-open menu's listeners before opening a new one.
   if (_cmCleanup) { _cmCleanup(); _cmCleanup = null; }
   clearContextMenuExpandedOwner();
@@ -16880,6 +16884,8 @@ function setOpenTabsRailCollapsed(collapsed, options = {}) {
   settings.railCollapsed = next;
   if (changed) applySettings();
   else updateRailToggleLabel();
+  // The open-tabs drawer is a floating layer: it closes the Inbox page's Space picker.
+  if (!next && isOpenTabsRailDrawerOpen()) closeFloatingInboxSpacePicker();
   if (changed && options.persist !== false) State.persist();
   if (options.restoreFocus) {
     requestAnimationFrame(() => focusDialogOpener(toggle));
@@ -18313,6 +18319,9 @@ const LIBRARY_PATHS = {
   link: 'M6.2 8.8a2.4 2.4 0 0 0 3.4 0l2.5-2.5a2.4 2.4 0 1 0-3.4-3.4l-1 1M8.8 6.2a2.4 2.4 0 0 0-3.4 0L2.9 8.7a2.4 2.4 0 1 0 3.4 3.4l1-1',
 };
 const LIBRARY_MODE_LABELS = { all: 'library.all', favorites: 'nav.favorites', 'read-later': 'nav.readLater' };
+// A paint draws this many rows; further rows arrive as the list scrolls, or
+// with Show more (Archive's window).
+const LIBRARY_PAGE_WINDOW = 120;
 
 function librarySvg(name, size = 16, stroke = 1.4, cls = '') {
   return `<svg${cls ? ` class="${cls}"` : ''} width="${size}" height="${size}" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="${stroke}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${LIBRARY_PATHS[name] || ''}"/></svg>`;
@@ -18518,24 +18527,59 @@ async function runLibraryLedgerMutation(rows, index, mutation, { itemRemains = f
 // One saved page as a quiet row. The title is the Open action and covers the
 // row; Details, the markers and Archive show on hover or focus. `paint` carries
 // the filter text, the row's entry motion and the control whose write landed.
-function buildLibraryLedgerRow(rowData, state, rows, index, paint = {}) {
-  const item = rowData.item;
-  const model = libraryLedgerRowModel(rowData, state.mode);
-  const recovery = createLibraryRecoveryContext(rowData, state);
+// A row from the last paint (`previous`) whose content is unchanged is kept:
+// only its filter highlight, motion and the data its handlers read are
+// refreshed, so a repaint or a filter keystroke does not rebuild every row.
+function buildLibraryLedgerRow(rowData, state, rows, index, paint = {}, previous = null) {
+  let item = rowData.item;
+  let model = libraryLedgerRowModel(rowData, state.mode);
+  let recovery = createLibraryRecoveryContext(rowData, state);
   const later = state.mode === 'read-later';
   const key = esc(model.id);
   const fx = paint.fx && paint.fx.id === model.id ? paint.fx.kind : '';
-  const row = document.createElement('div');
-  row.className = 'library-row lib-row' + (later && item.readAt ? ' is-read' : '') + (paint.motion ? ` ${paint.motion}` : '');
-  row.setAttribute('role', 'listitem');
-  row.dataset.id = model.id;
-  row.dataset.libraryFocusKey = recovery?.focusKey || libraryRowFocusKey(rowData, state);
-  if (paint.delay) row.style.setProperty('--lib-d', `${paint.delay}ms`);
   const timestamp = Number(later ? item.readLaterAt : item.createdAt);
   const timeCopy = model.age
     ? tr(later ? 'library.queuedWhen' : 'library.savedWhen', { time: model.age })
     : '';
   const shortTime = Number.isFinite(timestamp) && timestamp > 0 ? inboxSavedLabel(timestamp) : '';
+  const dot = reminderDotColor(rowData.group?.color || null);
+  const domain = planSortMeta(item).domain || model.url;
+  const titleMarkup = libraryTitleMarkup(model.title, paint.query);
+  // All links and Favorites draw a row the same way, so a switch between them
+  // keeps the rows; Read later draws the read tick instead of the star.
+  const signature = [later, appLocale(), model.title, model.destination, domain, dot, timestamp, timeCopy, shortTime,
+    model.statusLabel, !!item.favorite, !!item.readLaterAt, !!item.readAt, fx].join('\u0001');
+  const kept = previous && previous.dataset.sig === signature && typeof previous.__libRefresh === 'function' ? previous : null;
+  const row = kept || document.createElement('div');
+  const className = 'library-row lib-row' + (later && item.readAt ? ' is-read' : '') + (paint.motion ? ` ${paint.motion}` : '');
+  if (row.className !== className) row.className = className;
+  if (paint.delay) row.style.setProperty('--lib-d', `${paint.delay}ms`);
+  else if (kept && row.style.getPropertyValue('--lib-d')) row.style.removeProperty('--lib-d');
+  if (kept) {
+    kept.__libRefresh(rowData, state, rows, index);
+    if (kept.__libTitle !== titleMarkup) {
+      kept.querySelector('.lib-tt').innerHTML = titleMarkup;
+      kept.__libTitle = titleMarkup;
+    }
+    return kept;
+  }
+  row.setAttribute('role', 'listitem');
+  row.dataset.id = model.id;
+  row.dataset.sig = signature;
+  row.dataset.libraryFocusKey = recovery?.focusKey || libraryRowFocusKey(rowData, state);
+  // A later paint that keeps this row hands it the current records, so its
+  // handlers never act on a replaced item (Undo) or a stale route.
+  row.__libRefresh = (nextData, nextState, nextRows, nextIndex) => {
+    rowData = nextData;
+    state = nextState;
+    rows = nextRows;
+    index = nextIndex;
+    item = rowData.item;
+    model = libraryLedgerRowModel(rowData, state.mode);
+    recovery = createLibraryRecoveryContext(rowData, state);
+    row.dataset.libraryFocusKey = recovery?.focusKey || libraryRowFocusKey(rowData, state);
+  };
+  row.__libTitle = titleMarkup;
   const favoriteLabel = tr(item.favorite ? 'itemAction.removeFavorite' : 'itemAction.addFavorite');
   const laterLabel = tr(item.readLaterAt ? 'itemAction.removeReadLater' : 'itemAction.saveReadLater');
   const readStatusAction = later
@@ -18548,13 +18592,12 @@ function buildLibraryLedgerRow(rowData, state, rows, index, paint = {}) {
     ? ''
     : `<button class="library-star lib-ai lib-star${item.favorite ? ' is-on' : ''}${fx === 'favorite-on' ? ' is-pop' : ''}" data-return-marker="favorite" data-lib-focus="star:${key}" type="button" aria-pressed="${!!item.favorite}" title="${esc(favoriteLabel)}" aria-label="${esc(favoriteLabel)}">${librarySvg('star', 18, 1.35)}${burst}</button>`;
   const marks = later ? '' : `${item.favorite ? `<span class="lib-mark is-star">${librarySvg('star', 13, 1.2)}</span>` : ''}${item.readLaterAt ? `<span class="lib-mark is-later">${libraryLaterSvg(13)}</span>` : ''}`;
-  const dot = reminderDotColor(rowData.group?.color || null);
   row.innerHTML = `
     ${readStatusAction}
     ${inboxFavMarkup(item)}
     <div class="library-copy lib-copy">
-      <button class="library-primary lib-open" data-lib-focus="open:${key}" type="button" aria-label="${esc(tr('library.openPageFor', { title: model.title }))}"><span class="library-title lib-tt">${libraryTitleMarkup(model.title, paint.query)}</span>${librarySvg('go', 13, 1.9, 'lib-go')}</button>
-      <span class="lib-meta"><span class="lib-dot" style="--dot:${esc(dot)}" aria-hidden="true"></span><span class="library-destination">${esc(model.destination)}</span><span class="library-url">${esc(planSortMeta(item).domain || model.url)}</span>${marks || shortTime ? `<span class="lib-meta-when" aria-hidden="true">${marks}${shortTime ? `<span>${esc(shortTime)}</span>` : ''}</span>` : ''}</span>
+      <button class="library-primary lib-open" data-lib-focus="open:${key}" type="button" aria-label="${esc(tr('library.openPageFor', { title: model.title }))}"><span class="library-title lib-tt">${titleMarkup}</span>${librarySvg('go', 13, 1.9, 'lib-go')}</button>
+      <span class="lib-meta"><span class="lib-dot" style="--dot:${esc(dot)}" aria-hidden="true"></span><span class="library-destination">${esc(model.destination)}</span><span class="library-url">${esc(domain)}</span>${marks || shortTime ? `<span class="lib-meta-when" aria-hidden="true">${marks}${shortTime ? `<span>${esc(shortTime)}</span>` : ''}</span>` : ''}</span>
     </div>
     <span class="lib-when">${marks}${shortTime ? `<time${Number.isFinite(timestamp) && timestamp > 0 ? ` datetime="${new Date(timestamp).toISOString()}"` : ''}><span class="sr-only">${esc(timeCopy)}</span><span aria-hidden="true">${esc(shortTime)}</span></time>` : ''}</span>
     <div class="lib-acts">
@@ -18575,7 +18618,7 @@ function buildLibraryLedgerRow(rowData, state, rows, index, paint = {}) {
   };
   details.onclick = () => activateLibraryRecovery(recovery, 'details', details);
 
-  const receipt = { undo: true, sub: planSortMeta(item).domain || model.url };
+  const receipt = { undo: true, sub: domain };
   const shown = element => !!element && element.isConnected && element.getClientRects().length > 0;
   const toggleFavoriteFrom = opener => runLibraryLedgerMutation(rows, index, () => toggleFavorite(item, opener, receipt), {
     itemRemains: state.mode !== 'favorites' || !item.favorite,
@@ -18629,6 +18672,16 @@ function buildLibraryLedgerRow(rowData, state, rows, index, paint = {}) {
   return row;
 }
 
+// The Show more button under the list: hidden once every row of the view is
+// drawn.
+function syncLibraryMoreRows(view) {
+  const more = libraryPageRoot()?.querySelector('.lib-morebtn');
+  if (!more || !view) return;
+  const remaining = view.rows.length - view.rendered;
+  more.hidden = remaining <= 0;
+  if (remaining > 0) more.textContent = tr('library.showMore', { count: Math.min(LIBRARY_PAGE_WINDOW, remaining) });
+}
+
 function bindLibraryQueryControl(input, applyQuery) {
   if (!input || typeof applyQuery !== 'function') return false;
   let committedValue = String(input.value ?? '');
@@ -18675,7 +18728,7 @@ function bindLibraryQueryControl(input, applyQuery) {
 
 // Renders the Library page into #board. The page root stays across repaints of
 // the same workspace, so the view switch's pill slides, the filter keeps its
-// caret and a repaint keeps the scroll position; the rows are rebuilt.
+// caret and a repaint keeps the scroll position; unchanged rows are kept.
 function renderLibraryLedgerSurface() {
   const ws = activeWs();
   const mode = activeLibraryMode;
@@ -18818,18 +18871,55 @@ function renderLibraryLedgerSurface() {
     const viewKey = `${current.mode}|${current.status}|${current.sort}`;
     const changedView = s.viewKey != null && s.viewKey !== viewKey;
     const sameList = s.viewKey === viewKey && s.query === current.query && !!s.seen;
-    list.innerHTML = '';
+    // A new view or filter starts with one window of rows; a repaint keeps as
+    // many as were showing. Rows of the last paint are kept by id and reused
+    // where nothing they show has changed.
+    if (!sameList || !s.shown) s.shown = LIBRARY_PAGE_WINDOW;
+    const reuse = new Map();
+    list.querySelectorAll(':scope > .lib-row').forEach(row => {
+      if (!row.classList.contains('is-gone')) reuse.set(row.dataset.id, row);
+    });
     card.querySelector(':scope > .lib-empty')?.remove();
-    rows.forEach((row, index) => {
+    const fx = s.fx;
+    const view = { rows, rendered: 0 };
+    const buildRows = (from, to) => rows.slice(from, to).map((row, offset) => {
+      const index = from + offset;
       // A new view rises in; a row that comes back (Undo) flashes in place.
       const motion = changedView ? 'is-rise' : (sameList && !s.seen.has(String(row.item.id)) ? 'is-back' : '');
-      list.appendChild(buildLibraryLedgerRow(row, current, rows, index, {
+      return buildLibraryLedgerRow(row, current, rows, index, {
         query: current.query,
-        fx: s.fx,
+        fx,
         motion,
         delay: changedView ? Math.min(index, 10) * 24 : 0,
-      }));
+      }, reuse.get(String(row.item.id)) || null);
     });
+    // Further rows of this paint, as the list scrolls or from Show more.
+    view.append = upto => {
+      const end = Math.min(upto, rows.length);
+      if (end <= view.rendered || libraryPageSession?.view !== view) return 0;
+      const added = buildRows(view.rendered, end);
+      list.append(...added);
+      view.rendered = end;
+      s.shown = Math.max(s.shown, end);
+      syncLibraryMoreRows(view);
+      return added.length;
+    };
+    s.view = view;
+    // Unchanged rows stay where they are; only new, moved or leaving rows touch
+    // the list.
+    const nodes = buildRows(0, Math.min(rows.length, s.shown));
+    let cursor = list.firstChild;
+    nodes.forEach(node => {
+      if (node === cursor) cursor = cursor.nextSibling;
+      else list.insertBefore(node, cursor);
+    });
+    while (cursor) {
+      const next = cursor.nextSibling;
+      cursor.remove();
+      cursor = next;
+    }
+    view.rendered = nodes.length;
+    syncLibraryMoreRows(view);
     s.viewKey = viewKey;
     s.query = current.query;
     s.seen = new Set(rows.map(row => String(row.item.id)));
@@ -18909,8 +18999,27 @@ function renderLibraryLedgerSurface() {
       <div class="lib-card">
         <span class="lib-glide" aria-hidden="true"><span class="lib-gi"></span></span>
         <div class="library-list lib-list" role="list" aria-labelledby="library-title" aria-describedby="library-sub"></div>
-      </div>`;
+      </div>
+      <button type="button" class="lib-morebtn" data-lib-focus="more-rows" hidden></button>`;
     board.appendChild(page);
+    // Further rows arrive before the reader reaches the end of the list (as on
+    // Archive); Show more adds them from the keyboard and focuses the first.
+    const moreRows = page.querySelector('.lib-morebtn');
+    moreRows.addEventListener('click', () => {
+      const view = libraryPageSession?.view;
+      if (!view?.append) return;
+      const first = view.rendered;
+      if (view.append(view.rendered + LIBRARY_PAGE_WINDOW)) {
+        inboxFocus(libraryPageRoot()?.querySelectorAll('.lib-list > .lib-row')[first]?.querySelector('.library-primary'));
+      }
+    });
+    if (typeof IntersectionObserver === 'function') {
+      new IntersectionObserver(found => {
+        if (!found.some(entry => entry.isIntersecting) || libraryPageSession?.holdRender) return;
+        const view = libraryPageSession?.view;
+        if (view?.append) view.append(view.rendered + LIBRARY_PAGE_WINDOW);
+      }, { root: board, rootMargin: '0px 0px 600px 0px' }).observe(moreRows);
+    }
 
     const search = page.querySelector('.lib-field input');
     bindLibraryQueryControl(search, query => {
@@ -23165,19 +23274,22 @@ function attachItemSelection(el, it, { target: suppliedTarget = null, bindContai
   return chk;
 }
 
+// The Inbox page draws its items as rows (the triage card's item is not one).
 function visibleItemSelectionOrder() {
   const root = document.getElementById('board') || document;
-  return Array.from(root.querySelectorAll('.item[data-id], .lv-stack[data-id]'))
+  return Array.from(root.querySelectorAll('.item[data-id], .lv-stack[data-id], .ibx-list > .ibx-row[data-ibx-id]:not(.is-gone)'))
     .filter(el => {
       if (el.classList.contains('hidden') || !el.getClientRects().length) return false;
       const closedStack = el.parentElement?.closest('.stack:not(.expanded):not(.search-expand), .lv-stack:not(.expanded):not(.search-expand)');
       return !closedStack;
     })
-    .map(el => el.dataset.id)
+    .map(el => el.dataset.id || el.dataset.ibxId)
     .filter(id => id && findItem(id));
 }
 
-// Range selection in the current visual order, with a data-list fallback.
+// Range selection in the current visual order, with a data-list fallback. On
+// the Inbox page the range covers only rows drawn on screen: the data-list
+// fallback would pull in the triage card's item, which is not a row.
 function selectRangeTo(itemId) {
   if (!lastSelectedItemId) {
     selectedItemIds.add(itemId);
@@ -23200,7 +23312,8 @@ function selectRangeTo(itemId) {
     return;
   }
   const a = findItem(lastSelectedItemId), b = findItem(itemId);
-  if (!a || !b || a.parent !== b.parent) { toggleItemSelect(itemId); lastSelectedItemId = itemId; return; }
+  const inboxPage = typeof isInboxPageActive === 'function' && isInboxPageActive();
+  if (inboxPage || !a || !b || a.parent !== b.parent) { toggleItemSelect(itemId); lastSelectedItemId = itemId; return; }
   const [lo, hi] = a.index < b.index ? [a.index, b.index] : [b.index, a.index];
   for (let i = lo; i <= hi; i++) selectedItemIds.add(a.parent[i].id);
   lastSelectedItemId = itemId;
@@ -28064,7 +28177,7 @@ function bindReminderUI() {
       if (!reminderCtx || reminderCtx.unavailable) return;
       clearReminderTimeError();
       const receiptCommit = reminderCtx.kind === 'item' || !!reminderCtx.mutationContext;
-      const result = commitReminderSet(Date.now() + (+b.dataset.offset), readRecurControl());
+      const result = commitReminderSet(quickReminderAt(b.dataset.offset), readRecurControl());
       if (receiptCommit) void result;
       else closeReminderPicker();
     };
@@ -28795,14 +28908,26 @@ function inboxWhenLabel(at, now = Date.now()) {
 
 // A waiting row's quiet right edge: the time it was saved today, the weekday
 // this week, else the date.
+// The formats are Plan's (planTimeLabel, planWeekdayLabel), built once per
+// language: a long Inbox or Library paints hundreds of these.
 function inboxSavedLabel(createdAt, now = Date.now()) {
   const at = Number(createdAt);
   if (!Number.isFinite(at) || at <= 0) return '';
+  const locale = appLocale();
+  if (inboxSavedLabel.cache?.locale !== locale) {
+    inboxSavedLabel.cache = {
+      locale,
+      time: new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }),
+      weekday: new Intl.DateTimeFormat(locale, { weekday: 'short' }),
+      date: new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' }),
+    };
+  }
+  const f = inboxSavedLabel.cache;
   const day = planDayStart(at);
   const today = planDayStart(now);
-  if (day === today) return planTimeLabel(at);
-  if (day > planAddDays(today, -7)) return planWeekdayLabel(at);
-  return new Date(at).toLocaleDateString(appLocale(), { month: 'short', day: 'numeric' });
+  if (day === today) return f.time.format(at);
+  if (day > planAddDays(today, -7)) return f.weekday.format(at);
+  return f.date.format(at);
 }
 
 function inboxSpaceMatches(option, query) {
@@ -28945,12 +29070,41 @@ function inboxSpaceOptions(review) {
   });
 }
 
+// The floating picker is one of the page's floating layers (a menu, the
+// open-tabs drawer, Details); the inline one belongs to Details.
+function closeFloatingInboxSpacePicker() {
+  if (!inboxSpacePicker || inboxSpacePicker.inline) return false;
+  return closeInboxSpacePicker();
+}
+
+// Finds the picker's owner again after a repaint replaced it.
+function inboxPickerAnchorSelector(anchor) {
+  if (anchor?.dataset?.ibxFocus) return `[data-ibx-focus="${CSS.escape(anchor.dataset.ibxFocus)}"]`;
+  if (anchor?.closest?.('#item-sel-toolbar') && anchor.dataset?.act) return `#item-sel-toolbar [data-act="${CSS.escape(anchor.dataset.act)}"]`;
+  return '';
+}
+
 // `host` mounts the same picker inline (Item details folds it open under its
 // location) instead of floating it beside the anchor.
 function openInboxSpacePicker(anchor, review, onPick, { host = null } = {}) {
   if (inboxSpacePicker && inboxSpacePicker.owner === anchor) return closeInboxSpacePicker({ restoreFocus: true });
   closeInboxSpacePicker();
   hideContextMenu();
+  if (!host) {
+    // One floating layer at a time: the floating picker closes the open-tabs
+    // drawer and Details first. Details hands focus back on the next task, so
+    // the picker opens after that.
+    if (isOpenTabsRailDrawerOpen()) setOpenTabsRailCollapsed(true, { persist: true });
+    if (document.getElementById('item-detail')?.classList.contains('open')) {
+      const selector = inboxPickerAnchorSelector(anchor);
+      if (!closeItemDetail()) return false;
+      setTimeout(() => {
+        const owner = anchor?.isConnected ? anchor : (selector ? document.querySelector(selector) : null);
+        if (owner && !document.getElementById('item-detail')?.classList.contains('open')) openInboxSpacePicker(owner, review, onPick);
+      }, 0);
+      return true;
+    }
+  }
   const options = review ? inboxSpaceOptions(review) : null;
   if (!options) return reportSelectedItemMutationUnavailable(anchor);
   if (!options.length) {
@@ -29034,6 +29188,7 @@ function openInboxSpacePicker(anchor, review, onPick, { host = null } = {}) {
   el.addEventListener('focusout', leave);
   inboxSpacePicker = {
     el,
+    inline: !!host,
     owner: anchor,
     ownerKey: anchor.dataset?.ibxFocus || '',
     cleanup: () => document.removeEventListener('pointerdown', outside, true),
@@ -29129,6 +29284,9 @@ async function inboxRowAct(groupId, id, choice, opener = null, option = null) {
   const neighbor = rows[index + 1] || rows[index - 1] || null;
   const leaves = choice === 'archive' || choice === 'move';
   const reduce = planReducedMotion();
+  // Sort progress counts answers to items that were waiting in the Sort queue
+  // only; a planned, Someday, done or stack row leaving does not advance it.
+  const wasWaiting = planSortQueue(group, planSomedayIds()).some(entry => String(entry.id) === String(id));
   session.busy = true;
   session.holdRender = true;
   if (row && !reduce) {
@@ -29153,7 +29311,7 @@ async function inboxRowAct(groupId, id, choice, opener = null, option = null) {
     console.error('Inbox row action failed', error);
     ok = false;
   }
-  if (ok) session.decided.set(String(id), choice);
+  if (ok && wasWaiting) session.decided.set(String(id), choice);
   await settle;
   session.busy = false;
   session.holdRender = false;
@@ -29464,40 +29622,71 @@ function buildInboxClear(model, session) {
   return wrap;
 }
 
-function buildInboxList(group, model, session) {
-  const list = document.createElement('div');
+// The rows under the card. `previous` is the last paint's list: its rows are
+// kept where nothing they show changed (and they still hold the same records),
+// so a repaint of a long Inbox only rebuilds what changed.
+function buildInboxList(group, model, session, previous = null) {
+  const list = previous || document.createElement('div');
   list.className = 'ibx-list';
   list.setAttribute('role', 'list');
   list.setAttribute('aria-label', tr('inbox.items'));
+  const reuse = new Map();
+  if (previous) {
+    previous.querySelectorAll(':scope > .ibx-row').forEach(row => {
+      if (!row.classList.contains('is-gone')) reuse.set(row.dataset.ibxId, row);
+    });
+  }
   const seen = session.seen;
+  const nodes = [];
   model.rows.forEach(({ item, waiting, status }) => {
-    list.appendChild(buildInboxRow(group, item, {
+    nodes.push(buildInboxRow(group, item, {
       status,
       waiting,
       parentItems: group.items,
       fresh: !!seen && !seen.has(String(item.id)),
-    }));
+    }, reuse.get(String(item.id))));
     if (item.type === 'stack' && item.expanded) {
       (Array.isArray(item.items) ? item.items : []).filter(child => child && typeof child === 'object').forEach(child => {
-        list.appendChild(buildInboxRow(group, child, {
+        nodes.push(buildInboxRow(group, child, {
           status: inboxItemStatus(child, model.somedayIds),
           waiting: false,
           parentItems: item.items,
           child: true,
-        }));
+        }, reuse.get(String(child.id))));
       });
     }
   });
+  // Unchanged rows stay in place; only new, moved or leaving rows touch the list.
+  let cursor = list.firstChild;
+  nodes.forEach(node => {
+    if (node === cursor) cursor = cursor.nextSibling;
+    else list.insertBefore(node, cursor);
+  });
+  while (cursor) {
+    const next = cursor.nextSibling;
+    cursor.remove();
+    cursor = next;
+  }
   return list;
 }
 
-function buildInboxRow(group, item, { status, waiting, parentItems, child = false, fresh = false }) {
+function buildInboxRow(group, item, { status, waiting, parentItems, child = false, fresh = false }, previous = null) {
   const id = String(item.id);
   const key = esc(id);
   const title = inboxItemTitle(item);
   const selected = selectedItemIds.has(id);
-  const row = document.createElement('div');
-  row.className = `ibx-row${selected ? ' is-selected' : ''}${child ? ' is-child' : ''}${fresh ? ' is-new' : ''}`;
+  const signature = [appLocale(), item.type, title, inboxItemSource(item), status.kind, status.label, !!status.overdue,
+    waiting, child, selected, !!item.done, !!item.expanded, item.color || '', inboxSavedLabel(item.createdAt)].join('\u0001');
+  const kept = previous && previous.dataset.sig === signature
+    && previous.__ibxItem === item && previous.__ibxParent === parentItems && previous.__ibxGroup === group ? previous : null;
+  const row = kept || document.createElement('div');
+  const className = `ibx-row${selected ? ' is-selected' : ''}${child ? ' is-child' : ''}${fresh ? ' is-new' : ''}`;
+  if (row.className !== className) row.className = className;
+  if (kept) return kept;
+  row.dataset.sig = signature;
+  row.__ibxItem = item;
+  row.__ibxParent = parentItems;
+  row.__ibxGroup = group;
   row.dataset.ibxId = id;
   row.dataset.ibxFocus = `row:${id}`;
   row.dataset.kind = String(item.type || '');
@@ -29711,8 +29900,8 @@ function renderInboxPage(info) {
     about = fresh;
   }
   const card = buildInboxCard(group, model, session);
-  const list = buildInboxList(group, model, session);
-  page.querySelectorAll(':scope > .ibx-hd, :scope > .ibx-card, :scope > .ibx-list').forEach(node => node.remove());
+  const list = buildInboxList(group, model, session, page.querySelector(':scope > .ibx-list'));
+  page.querySelectorAll(':scope > .ibx-hd, :scope > .ibx-card').forEach(node => node.remove());
   const live = page.querySelector(':scope > [data-ibx-live]');
   if (about) {
     if (!about.isConnected) live.after(about);
@@ -29722,7 +29911,8 @@ function renderInboxPage(info) {
     live.after(header);
     header.after(card);
   }
-  card.after(list);
+  // The kept list stays where it is (moving it would drop a row's focus).
+  if (card.nextElementSibling !== list) card.after(list);
   const cardId = model.current ? String(model.current.id) : null;
   if (!firstShow && cardId !== session.cardId) {
     live.textContent = model.current ? inboxItemTitle(model.current) : tr('plan.inboxClear');
@@ -30153,6 +30343,10 @@ function restoreItemDetailFocus(root, itemId, returnFocusKey = '') {
       ...(escapedReturnKey ? [`.library-row[data-library-focus-key="${escapedReturnKey}"] .library-primary`] : []),
       `.library-row[data-id="${escaped}"] .library-more`,
       `.read-later-row[data-id="${escaped}"] .library-more`,
+      // The Inbox page: the row (or the triage card) Details was opened from.
+      `.ibx-row[data-ibx-id="${escaped}"] .ibx-row-title`,
+      `.ibx-row[data-ibx-id="${escaped}"]`,
+      `.ibx-card[data-id="${escaped}"] .ibx-card-open`,
       `.item[data-id="${escaped}"] > .item-top[data-item-primary="true"]`,
       `.item[data-id="${escaped}"] > .item-top > [data-item-primary="true"]`,
       `.item[data-id="${escaped}"]`,
@@ -30653,6 +30847,8 @@ function renderItemDetail() {
     if (typeof isTodayTabsDrawerOpen === 'function' && isTodayTabsDrawerOpen()) {
       setTodayTabsDrawer(false, { restoreFocus: false });
     }
+    // So does the Inbox page's floating Space picker (finding R1-6).
+    closeFloatingInboxSpacePicker();
   }
   const reminderOverlay = document.getElementById('reminder-overlay');
   setElementInertOwner(root, 'reminder', !!(reminderOverlay && !reminderOverlay.classList.contains('hidden')));
@@ -31686,7 +31882,7 @@ function openSpaceSheet(kind, id, opener = null) {
     || (kind === 'category' ? 'space-more' : `col:${key}:more`);
   if (session.sheet && session.sheet.kind === kind && session.sheet.id === key) return closeSpaceSheet({ restoreFocus: true });
   session.sheet = { kind, id: key, ownerKey, opening: true };
-  renderBoard();
+  if (!placeSpaceSheet(session)) renderBoard();
   if (spacePageSession?.sheet) spacePageSession.sheet.opening = false;
   focusSpaceKey('sheet:0');
   return true;
@@ -31697,8 +31893,32 @@ function closeSpaceSheet({ restoreFocus = false } = {}) {
   const sheet = session?.sheet;
   if (!sheet) return false;
   session.sheet = null;
-  renderBoard();
+  if (!placeSpaceSheet(session)) renderBoard();
   if (restoreFocus) focusSpaceKey(sheet.ownerKey);
+  return true;
+}
+
+// Opening or closing the sheet touches only the sheet: it goes into the Space
+// header's slot, or under its group's header (Board column, List group), where
+// a full paint would put it. False when its place is not on the page (the
+// caller then repaints).
+function placeSpaceSheet(session) {
+  const page = spacePageRoot();
+  if (!page || !session) return false;
+  page.querySelectorAll('.spc-sheet').forEach(sheet => sheet.remove());
+  const open = session.sheet;
+  if (!open) return true;
+  const entity = findEntity(open.kind, open.id);
+  if (!entity) return false;
+  if (open.kind === 'category') {
+    const slot = page.querySelector('.spc-sheet-slot');
+    if (!slot) return false;
+    slot.appendChild(buildSpaceSheet('category', entity, open.opening));
+    return true;
+  }
+  const fold = page.querySelector(`.spc-vw [data-spc-gid="${CSS.escape(open.id)}"] > .spc-fold`);
+  if (!fold) return false;
+  fold.before(buildSpaceSheet('group', entity, open.opening));
   return true;
 }
 
@@ -31711,7 +31931,7 @@ async function spaceSheetPick(kind, id, offset) {
     toast(tr('reminder.entityUnavailable'), { danger: true });
     return false;
   }
-  const changed = await commitEntityReminderMutation(context, { at: Date.now() + offset });
+  const changed = await commitEntityReminderMutation(context, { at: quickReminderAt(offset) });
   if (!changed) renderBoard();
   return changed;
 }
@@ -31734,7 +31954,7 @@ function spaceSheetCustom(kind, id) {
   const target = spaceReminderTarget(findEntity(kind, id));
   const ownerKey = spacePageSession?.sheet?.ownerKey;
   if (spacePageSession) spacePageSession.sheet = null;
-  renderBoard();
+  if (!placeSpaceSheet(spacePageSession)) renderBoard();
   const opener = spacePageRoot()?.querySelector(`[data-spc-focus="${CSS.escape(String(ownerKey || ''))}"]`) || null;
   return openEntityReminderPickerOrReport(kind, id, target?.reminder?.id, { opener });
 }
@@ -31749,7 +31969,7 @@ function buildSpaceSheet(kind, entity, opening = false) {
   sheet.setAttribute('aria-label', tr('space.reminderFor', { name: entity.name || '' }));
   sheet.innerHTML = `
     <div class="spc-shops">
-      ${SPACE_QUICK_TIMES.map(([offset, key], index) => `<button type="button" class="spc-sho" data-offset="${offset}" data-spc-focus="sheet:${index}" style="--spc-d:${index * 30}ms"><span>${esc(tr(key))}</span><span class="spc-mono">${esc(inboxWhenLabel(now + offset, now))}</span></button>`).join('')}
+      ${SPACE_QUICK_TIMES.map(([offset, key], index) => `<button type="button" class="spc-sho" data-offset="${offset}" data-spc-focus="sheet:${index}" style="--spc-d:${index * 30}ms"><span>${esc(tr(key))}</span><span class="spc-mono">${esc(inboxWhenLabel(quickReminderAt(offset, now), now))}</span></button>`).join('')}
       <button type="button" class="spc-sho" data-spc-sheet="custom" data-spc-focus="sheet:custom" style="--spc-d:120ms"><span>${esc(tr('space.reminderCustom'))}</span></button>
       ${target ? `<button type="button" class="spc-sho is-clear" data-spc-sheet="clear" data-spc-focus="sheet:clear" style="--spc-d:150ms"><span>${esc(tr('reminder.clear'))}</span>${target.at ? `<span class="spc-mono">${esc(inboxWhenLabel(target.at, now))}</span>` : ''}</button>` : ''}
     </div>
@@ -32149,6 +32369,12 @@ function renderSpacePage(mode) {
   const focusKey = page && active && page.contains(active)
     ? active.closest('[data-spc-focus]')?.dataset.spcFocus || null
     : null;
+  // A card control the repaint will replace: which card, and which control.
+  const focusCard = page && !focusKey && active && page.contains(active) ? active.closest('[data-id]') : null;
+  const focusMemo = page && active && (page.contains(active) || active === document.body)
+    ? { inPage: page.contains(active), id: focusCard?.dataset.id || '', cls: focusCard && active !== focusCard ? active.classList[0] || '' : '' }
+    : null;
+  const seenBefore = page ? session.seenItems : null;
   if (!page) {
     board.innerHTML = '';
     page = buildSpacePage(cat);
@@ -32179,12 +32405,46 @@ function renderSpacePage(mode) {
   host.dataset.view = mode;
   session.host = host;
   (LAYOUTS[mode] || LAYOUTS.board).render();
+  const arrived = seenBefore && !changed && session.view != null
+    ? [...host.querySelectorAll('.item[data-id], .lv-stack[data-id]')].map(card => card.dataset.id).filter(id => !seenBefore.has(id))
+    : [];
   markSpaceArrivals(host, session, changed || session.view == null);
   placeSpaceUnderline(page, mode);
   session.view = mode;
   if (keepScroll && board.scrollTop !== keepScroll) board.scrollTo({ top: keepScroll, behavior: 'instant' });
   if (focusKey && !page.contains(document.activeElement)) focusSpaceKey(focusKey);
+  else if (focusMemo && (focusMemo.inPage || arrived.length)) restoreSpaceFocus(page, focusMemo, arrived);
   return true;
+}
+
+// After a repaint that dropped focus (Undo rebuilds the view's cards), focus
+// goes to a card that came back with this paint (the record Undo restored),
+// else the same control on the card that had it, else the chosen view tab or
+// the Space's actions: a control on screen, never <body> and never a text
+// field.
+function restoreSpaceFocus(page, memo, arrived = []) {
+  const active = document.activeElement;
+  if (!page || (active && active !== document.body && active.isConnected)) return false;
+  const usable = el => !!el && el.isConnected && !el.disabled && typeof el.focus === 'function'
+    && !el.matches('input, textarea, select, [contenteditable="true"]')
+    && !el.closest('[hidden], [inert], [aria-hidden="true"]')
+    && el.getClientRects().length > 0;
+  const card = id => (id ? page.querySelector(`.spc-vw [data-id="${CSS.escape(String(id))}"]`) : null);
+  const control = (el, cls = '') => {
+    if (!el) return null;
+    return [
+      cls ? el.querySelector(`.${CSS.escape(cls)}`) : null,
+      el.querySelector('[data-item-primary="true"], .item-primary, .board-record-primary, .stack-toggle, .lv-stack-toggle'),
+      ...el.querySelectorAll('button'),
+    ].find(usable) || null;
+  };
+  const targets = [
+    ...arrived.map(id => control(card(id))),
+    control(card(memo?.id), memo?.cls),
+    page.querySelector('.spc-tab[aria-selected="true"]'),
+    page.querySelector('[data-spc-focus="space-more"]'),
+  ];
+  return targets.some(target => usable(target) && inboxFocus(target));
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -33212,14 +33472,14 @@ function renderGraphView() {
   leaves.forEach((node, i) => {
     const label = graphItemLabel(node.it);
     s += `<g class="gr-node gr-item" data-item-id="${esc(node.it.id)}" data-g="${esc(node.gid)}" style="--i:${Math.min(i,20)}" tabindex="0" role="button" aria-label="${esc(label)}">`
-      + `<circle class="gr-hit" r="15" cx="${f(node.x)}" cy="${f(node.y)}"/>`
+      + `<circle class="gr-hit" r="22" cx="${f(node.x)}" cy="${f(node.y)}"/>`
       + `<circle class="gr-leaf" r="5.5" cx="${f(node.x)}" cy="${f(node.y)}" style="fill:${node.color}"/>`
       + `<text class="gr-label" text-anchor="${node.right ? 'start' : 'end'}" x="${f(node.x + (node.right ? 12 : -12))}" y="${f(node.y + 4)}">${esc(_grClip(label, 26))}</text>`
       + `<title>${esc(label)}</title></g>`;
   });
   hubs.forEach((h, i) => {
     s += `<g class="gr-node gr-hub" data-group-id="${esc(h.g.id)}" data-g="${esc(h.g.id)}" style="--i:${Math.min(i,14)};--gr-c:${h.color}" tabindex="0" role="button" aria-label="${esc(`${h.g.name} · ${tr('groupAction.openAsPage')}`)}">`
-      + `<rect class="gr-pill" rx="21"/>`
+      + `<rect class="gr-pill" rx="22"/>`
       + `<circle class="gr-hub-dot" r="4.5" cx="${f(h.x)}" cy="${f(h.y)}" style="fill:${h.color}"/>`
       + `<text class="gr-pill-text" x="${f(h.x)}" y="${f(h.y + 5)}">${esc(_grClip(h.g.name, 22))}<tspan class="gr-pill-n" dx="8">${h.count}</tspan></text>`
       + `<title>${esc(`${h.g.name} · ${tr('groupAction.openAsPage')}`)}</title></g>`;
@@ -33280,7 +33540,7 @@ function sizeGraphPills(wrap) {
     const hub = node.classList.contains('gr-hub');
     const padX = hub ? 16 : 18;
     const dotRoom = hub ? 14 : 0;
-    const height = hub ? 42 : 36;
+    const height = hub ? 44 : 36;
     const width = box.width + padX * 2 + dotRoom;
     const cxv = box.x + box.width / 2;
     const cyv = Number(text.getAttribute('y')) - (hub ? 5 : 5.5);

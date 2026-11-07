@@ -299,6 +299,22 @@ Slices, in order:
 
 ## Done (newest first)
 
+- **2026-11-07 - Final-review fixes for the Inbox, Library and Space pages (R1-1 to R1-15).**
+  The Library keeps unchanged rows and draws 120 at a time (the rest as the list scrolls, or Show
+  more): at 614 links a repaint went from 1.0–1.5 s to about 30 ms and a filter keystroke from
+  500–690 ms to about 20 ms. The Inbox repaint at 300 items keeps its rows (360–610 ms to about
+  20 ms); the Space reminder sheet opens in place (190–360 ms to about 5 ms). Privacy blur covers every rebuilt
+  page (a suite walk keeps the list complete). Shift-click in the Inbox covers drawn rows only; Sort
+  progress counts waiting items only and Undo puts it back; one floating layer (picker, Details,
+  drawer, menu); focus returns to the restored card after Undo on the Space page and to the row
+  after Details. Text on the three pages holds 4.5:1 in all 19 themes (theme-aware inks, the triage
+  card included); every Space target is 44 px on both sides; the Inbox card fits beside an expanded
+  rail at 390 px (container queries); the Library view pill shows its whole name and count at 390 px;
+  the List carries its Group colour as a full-height locator again. Space quick times and the
+  reminder picker keep the clock time across DST. Suites: inbox page, library page, space page,
+  privacy settings, onboarding; 35/35 mutations caught. Evidence:
+  `locus-redesign-evidence/pages/fixes-r1/` (Edge 157: 55/55 after, 9/55 before on HEAD 88bba46).
+
 - **2026-11-07 - Final-review fixes for Details, Find again with the palette, and the Calendar (R2-1 to R2-18).**
   Focus returns to the same Calendar control after paging, a view change, Undo and quick add, and
   leaving Search or the Calendar lands on a control, never `<body>`. Quick add on today after 9:00

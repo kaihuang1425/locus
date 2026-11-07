@@ -5484,3 +5484,68 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
 
   **Implemented: yes. Verified: suites and Edge (locus-redesign-evidence/pages/fixes-r2).
   User-validated: no. Released: no.**
+
+- **2026-11-07 - Fixes from the final review: Inbox, Library and Space pages (R1).**
+  - The Library draws one window of 120 rows (Archive's window); further rows arrive before the
+    reader reaches the end of the list, and Show more adds them from the keyboard. A repaint or a
+    filter keystroke keeps every row whose content is unchanged (kept by id and a signature of what
+    the row shows); a kept row only redraws its filter highlight and takes the current records, so
+    its handlers never act on a copy Undo replaced or on a stale route. All links and Favorites
+    draw a row alike, so a switch between them keeps the rows. The Inbox keeps its rows the same
+    way (a row is reused only while it holds the same record), and a long Inbox or Library builds
+    its short-date formats once per language. At 614 links the Library repaint went from 1.0–1.5 s
+    to 25–45 ms and a filter keystroke from 500–690 ms to 13–40 ms (before the redesign the ledger
+    took 140–240 ms); the Inbox repaint at 300 items from 360–610 ms to 15–35 ms. The Space reminder
+    sheet opens and closes in place, under its group's header or in the Space's own slot, without
+    repainting the Space (190–360 ms to 4–11 ms at 600 items).
+  - Privacy blur covers every rebuilt page: the Inbox titles, domains and sub-lines; Space group
+    and stack names, the next action, Gallery sections, Graph labels and group hubs, Explorer rows
+    past the Spaces column; Details' title, address, location, checklist, fields and tags; Find
+    again's titles, sources, snippets and paths; the palette's saved-link rows; Calendar titles. A
+    Space's own name stays readable, as in the rail, and so do the destination choosers (the Inbox
+    Space picker, Archive's route list), which name Spaces and Groups the way the rail does.
+  - Shift-click in the Inbox covers the rows drawn on screen only: the triage card's item, which is
+    not a row, is never pulled into a range, and an anchor that is not a drawn row selects only the
+    clicked row.
+  - One floating layer at a time on the Inbox page: the floating Space picker closes a menu, the
+    open-tabs drawer and Details (then opens on its owner once Details has handed focus back); a
+    menu, the drawer or Details closes the picker. The picker folded into Details is part of
+    Details, not a layer of its own.
+  - Sort progress counts answers to items that were waiting in the Sort queue only; archiving or
+    moving a planned, Someday, done or stack row leaves it, and Undo puts a waiting item's count back.
+  - Focus never falls to `<body>`: after Undo rebuilds the Space's cards, focus goes to the card that
+    came back, else the same control on the card that had it, else the chosen view tab. Closing
+    Details opened from an Inbox row returns focus to that row.
+  - Text on the three pages holds 4.5:1 in all 19 themes. Secondary text is --text2 leaned a quarter
+    toward the ink; done text leans the receipt green toward the ink; Space blue text is the canvas
+    locator, else the accent halfway to the ink; the Timeline's Now keeps --when-text, else the
+    orange halfway to the ink. On the triage card (which the older themes draw in --text with --bg2
+    type), quiet text is the registry tone, else a step of the card's type; Today is the canvas
+    orange on the registry, else the orange leaned toward the card's type; Move to a Space is the
+    locator at 30% toward the card's type (close to the board's #B9C8FF on folio). The waiting count
+    is the canvas badge, else a deep step of the theme's red under white type; the orange fills
+    (overdue chip, stamp, a pressed answer) are the canvas orange, else a light step of the theme's
+    orange under the registry ink. On the Space page a stack's count takes the page's quiet ink; the
+    shared `.stack-cnt` and `.lv-stack-cnt` rules (the older group page) are unchanged, as are the
+    shared Today tokens. The Open hint's key cap is outlined instead of tinted.
+  - Every Space target is at least 44 px on both sides: the reminder chip (its 26 px pill drawn
+    inside the box), the group's colour dot, a card's title, note and to-do text, the to-do check,
+    the List stack toggle and More, and the Graph's leaves and group pills (the Graph now never draws
+    below its own scale and scrolls sideways in its frame on a narrow page).
+  - The Inbox card and rows answer to the page's width (container queries, as the Library's rows
+    do), so the card fits beside an expanded rail at 390 px: the answers stack, Move to a Space
+    keeps its icon (its name stays for assistive tech), and a row keeps its title with Archive in
+    its More menu. The rail itself is unchanged.
+  - On a phone-wide Library page each view's count sits under its name, so "Read Later 122" shows
+    whole, in English and zh-TW.
+  - The List carries the real Group colour as a full-height filing locator again (the 2026-08
+    decision): a 4 px edge in the group's colour down the panel's left side, Highlight in forced
+    colours.
+  - The Space page's reminder quick times and the reminder picker's quick buttons use Details'
+    calendar arithmetic, so Tomorrow and Next week keep the clock time across a daylight-saving
+    change.
+  - Not changed: the Inbox's first paint at 300 items (about 400–560 ms; it builds every row, and
+    the finding covered repaints), and the Space Board's repaint at 600 cards.
+
+  **Implemented: yes. Verified: suites and Edge (locus-redesign-evidence/pages/fixes-r1).
+  User-validated: no. Released: no.**

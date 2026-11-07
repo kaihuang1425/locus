@@ -1166,6 +1166,18 @@ assert.match(
   /wrap\.style\.setProperty\('--spc-tint', g\.color \|\| 'var\(--accent\)'\)/,
   'List must preserve the real Group color',
 );
+// Finding R1-15: the 2026-08 decision, restored on the new panel: the real
+// Group colour runs the full height of its List Group as the filing locator.
+assert.match(
+  spaceListCss,
+  /\.spc \.lv-group\.spc-lg::before \{[^}]*position:\s*absolute;[^}]*top:\s*-1px;[^}]*bottom:\s*-1px;[^}]*left:\s*-1px;[^}]*border-left:\s*4px solid var\(--spc-tint, var\(--accent\)\);/s,
+  'List must preserve the real Group color as a full-height filing locator (finding R1-15)',
+);
+assert.match(
+  spaceListCss,
+  /@media \(forced-colors:\s*active\)\s*\{[\s\S]*?\.spc \.lv-group\.spc-lg::before \{ border-left-color: Highlight; forced-color-adjust: none; \}/s,
+  'the List filing locator must survive forced-colors mode',
+);
 assert.match(
   spaceListCss,
   /\.spc-gdot span \{[^}]*background:\s*var\(--spc-tint\);/s,
@@ -1183,11 +1195,15 @@ for (const [selector, label] of [
   ['\\.spc-ib', 'header action'],
   ['\\.spc-fbtn', 'Save here'],
 ]) {
-  assert.match(
-    spaceListCss,
-    new RegExp(`${selector}\\s*\\{[^}]*?(?:width|min-height|height):\\s*44px`, 's'),
-    `the List Group ${label} control must expose a 44 px target`,
-  );
+  // Finding R1-10: both sides, not either one.
+  const rule = spaceListCss.match(new RegExp(`${selector}\\s*\\{[^}]*\\}`, 's'))?.[0] || '';
+  for (const side of ['width', 'height']) {
+    assert.match(
+      rule,
+      new RegExp(`(?:^|[\\s;{])(?:min-)?${side}:\\s*(?:4[4-9]|[5-9]\\d)px`),
+      `the List Group ${label} control must expose a 44 px target (${side}, finding R1-10)`,
+    );
+  }
 }
 assert.doesNotMatch(
   spaceListCss,

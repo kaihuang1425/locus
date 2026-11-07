@@ -122,11 +122,12 @@ function rowSandbox(extra = {}) {
   let menu = null;
   const context = vm.createContext(Object.assign({
     esc, tr,
+    appLocale: () => 'en',
     document: {
       createElement: () => {
         const node = {
           className: '', dataset: {}, attributes: {}, innerHTML: '', props: {},
-          style: { setProperty(name, value) { node.props[name] = value; } },
+          style: { setProperty(name, value) { node.props[name] = value; }, getPropertyValue: name => node.props[name] || '', removeProperty(name) { delete node.props[name]; } },
           setAttribute(name, value) { node.attributes[name] = String(value); },
           querySelector(selector) {
             if (selector === '.library-star' && !/class="library-star/.test(node.innerHTML)) return null;
@@ -415,7 +416,7 @@ function testStyles() {
   ok(/\.lib-ring \{[^}]*border: 2px solid var\(--text3\);/.test(libraryCss) && /\.lib-check\.is-on \.lib-ring \{[^}]*background: var\(--index-receipt, var\(--green\)\);/.test(libraryCss), 'the read tick is green when done');
   ok(/\.lib-later\.is-on \{ color: var\(--today-when-text\); \}/.test(libraryCss), 'Read later is orange, the colour for when');
   ok(/:is\(\.lib-ai, \.lib-text, \.lib-check, \.lib-ebtn, \.lib-clear\):focus-visible \{ outline: 2px solid/.test(libraryCss), 'every control shows keyboard focus');
-  ok(/\.lib-row\.is-read \.lib-tt \{ color: var\(--text2\); \}/.test(libraryCss), 'a read page’s title is muted');
+  ok(/\.lib-row\.is-read \.lib-tt \{ color: var\(--lib-ink-2\); \}/.test(libraryCss), 'a read page’s title is muted (the page’s secondary ink, finding R1-13)');
   for (const selector of ['.lib-seg-btn', '.lib-ai', '.lib-text', '.lib-check', '.lib-clear', '.lib-ebtn']) {
     const rule = libraryCss.match(new RegExp(`\\n${selector.replace('.', '\\.')} \\{[^}]*\\}`));
     ok(rule && /(?:^|\s|;)(?:min-)?height: (?:4[4-9]|5\d)px/.test(rule[0]), `${selector} is at least 44 px tall`);
@@ -452,6 +453,122 @@ function testCi() {
   ok(/run: node scripts\/library-page-contract-test\.js/.test(ci), 'CI runs this suite');
 }
 
+// ── Final-review fixes (R1) ─────────────────────────────────────────
+function testR1Fixes() {
+  // R1-1: a repaint or a filter keystroke keeps the rows whose content did not
+  // change; only the filter highlight and the records their handlers read move.
+  const ws = workspace();
+  const group = ws.categories[0].groups[0];
+  const rowOf = item => ({ ws, cat: ws.categories[0], group, parents: [], item });
+  const box = rowSandbox();
+  const state = { mode: 'all', status: 'all' };
+  let rows = [rowOf(group.items[0]), rowOf(group.items[1])];
+  const built = box.context.buildLibraryLedgerRow(rows[1], state, rows, 1, { query: '' });
+  ok(typeof built.__libRefresh === 'function' && built.dataset.sig, 'a built row carries its content signature');
+  ok(box.context.buildLibraryLedgerRow(rows[1], state, rows, 1, { query: '' }, built) === built, 'a repaint keeps an unchanged row element (finding R1-1)');
+  ok(box.context.buildLibraryLedgerRow(rows[1], state, rows, 1, { query: 'title' }, built) === built
+    && box.control('.lib-tt').innerHTML === '<mark class="lib-hit">Title</mark> b',
+  'a filter keystroke keeps the row and only redraws its highlighted title');
+  ok(box.context.buildLibraryLedgerRow(rows[1], { mode: 'favorites', status: 'all' }, rows, 1, { query: 'title' }, built) === built,
+    'All links and Favorites draw a row alike, so the view switch keeps it');
+  // Undo restores a new copy of the record: the kept row's handlers act on it.
+  const copy = { ...group.items[1] };
+  rows = [rowOf(group.items[0]), rowOf(copy)];
+  ok(box.context.buildLibraryLedgerRow(rows[1], state, rows, 1, { query: 'title' }, built) === built, 'a replaced record with the same content keeps the row');
+  box.calls.length = 0;
+  let written = null;
+  let runRows = null;
+  const realToggle = box.context.toggleFavorite;
+  const realRun = box.context.runLibraryLedgerMutation;
+  box.context.toggleFavorite = item => { written = item; return true; };
+  box.context.runLibraryLedgerMutation = (list, index, mutation) => { runRows = list; return mutation(); };
+  box.control('.library-star').onclick();
+  box.context.toggleFavorite = realToggle;
+  box.context.runLibraryLedgerMutation = realRun;
+  ok(written === copy && runRows === rows, 'and its handlers write the live record, with the current list for the focus that follows');
+  const marked = { ...copy, favorite: true };
+  rows = [rowOf(group.items[0]), rowOf(marked)];
+  ok(box.context.buildLibraryLedgerRow(rows[1], state, rows, 1, { query: 'title' }, built) !== built, 'a row whose marks changed is rebuilt');
+  const readLater = { mode: 'read-later', status: 'all' };
+  ok(box.context.buildLibraryLedgerRow(rows[1], readLater, rows, 1, {}, built) !== built, 'Read later draws the read tick, so it builds its own rows');
+  const fx = box.context.buildLibraryLedgerRow(rows[1], state, rows, 1, { fx: { id: 'b', kind: 'favorite-on' } }, built);
+  ok(fx !== built && /is-pop/.test(fx.innerHTML), 'a row whose write is landing is rebuilt with its motion');
+
+  // R1-1: one window of rows per paint, more as the list scrolls; unchanged
+  // rows stay in place.
+  const page = extract('renderLibraryLedgerSurface');
+  ok(/const LIBRARY_PAGE_WINDOW = 120;/.test(newtab) && /if \(!sameList \|\| !s\.shown\) s\.shown = LIBRARY_PAGE_WINDOW;/.test(page),
+    'a paint draws one window of rows (Archive’s 120); a repaint keeps as many as were showing');
+  ok(/list\.querySelectorAll\(':scope > \.lib-row'\)\.forEach\(row => \{\n\s*if \(!row\.classList\.contains\('is-gone'\)\) reuse\.set\(row\.dataset\.id, row\);/.test(page)
+    && /reuse\.get\(String\(row\.item\.id\)\) \|\| null\);/.test(page),
+  'the last paint’s rows are handed to the builder by id');
+  ok(/if \(node === cursor\) cursor = cursor\.nextSibling;\n\s*else list\.insertBefore\(node, cursor\);/.test(page) && !/list\.innerHTML = '';/.test(page),
+    'unchanged rows stay where they are; the list is never emptied and rebuilt');
+  ok(/new IntersectionObserver\(found => \{[\s\S]*?view\.append\(view\.rendered \+ LIBRARY_PAGE_WINDOW\);[\s\S]*?rootMargin: '0px 0px 600px 0px' \}\)\.observe\(moreRows\);/.test(page)
+    && /<button type="button" class="lib-morebtn" data-lib-focus="more-rows" hidden><\/button>/.test(page),
+  'further rows arrive before the end of the list, and Show more adds them from the keyboard');
+  ok(/more\.textContent = tr\('library\.showMore', \{ count: Math\.min\(LIBRARY_PAGE_WINDOW, remaining\) \}\);/.test(extract('syncLibraryMoreRows')), 'Show more names how many follow');
+  const i18n = vm.runInNewContext(`(${newtab.slice(newtab.indexOf('{', newtab.indexOf('const I18N = {')), newtab.indexOf('\n};', newtab.indexOf('const I18N = {')) + 2)})`);
+  eq([i18n.en['library.showMore'], i18n['zh-TW']['library.showMore']], ['Show {count} more', '再顯示 {count} 個頁面'], 'Show more exists in both languages with the same placeholder');
+  ok(/if \(inboxSavedLabel\.cache\?\.locale !== locale\) \{/.test(extract('inboxSavedLabel')), 'the short dates build their formats once per language');
+
+  // R1-12: at phone width the view pill shows its whole name and count.
+  ok(/@container \(max-width: 400px\) \{\n\s*\.lib-seg-btn \{ flex-direction: column; justify-content: center; gap: 3px; padding: 0 4px; line-height: 1\.1; \}\n\s*\.lib-seg-label \{ max-width: 100%; \}/.test(libraryCss),
+    'on a phone-wide page each view’s count sits under its name, so neither is cut (finding R1-12)');
+
+  // R1-13: Library text holds 4.5:1 in every bundled theme.
+  const block = libraryCss.slice(0, libraryCss.indexOf('SPACE PAGE (2026-11 canvas)'));
+  const shareMatch = /--lib-ink-2: color-mix\(in srgb, var\(--text2\) (\d+)%, var\(--text\)\);/.exec(block);
+  ok(shareMatch, 'the secondary ink is a theme-aware mix');
+  ok(!/color: var\(--text2\)/.test(block), 'no Library text uses the untuned --text2');
+  for (const rule of ['.lib-seg-btn', '.lib-cnt', '.lib-meta', '.lib-when', '.lib-ai']) {
+    ok(new RegExp(`\\n${rule.replace('.', '\\.')} \\{[^}]*color: var\\(--lib-ink-2\\)`).test(block), `${rule} reads --lib-ink-2`);
+  }
+  ok(/\.lib-kbd \{[^}]*box-shadow: inset 0 0 0 1px color-mix\(in srgb, var\(--accent-text, #fff\) 45%, transparent\);/.test(block) && !/\.lib-kbd \{[^}]*background:/.test(block),
+    'the Open hint’s key cap is outlined, so its arrow keeps the hint’s contrast');
+  const parse = value => {
+    const text = String(value || '').trim();
+    let match = /^#([0-9a-f]{6})$/i.exec(text);
+    if (match) return { r: parseInt(match[1].slice(0, 2), 16), g: parseInt(match[1].slice(2, 4), 16), b: parseInt(match[1].slice(4), 16), a: 1 };
+    match = /^rgba?\(([^)]+)\)$/.exec(text);
+    if (match) { const p = match[1].split(',').map(Number); return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 }; }
+    return null;
+  };
+  const mixed = (a, share, b) => ({ r: a.r * share + b.r * (1 - share), g: a.g * share + b.g * (1 - share), b: a.b * share + b.b * (1 - share), a: 1 });
+  const over = (top, bottom) => ({ r: top.r * top.a + bottom.r * (1 - top.a), g: top.g * top.a + bottom.g * (1 - top.a), b: top.b * top.a + bottom.b * (1 - top.a), a: 1 });
+  const lum = ({ r, g, b }) => [r, g, b].map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }).reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
+  const contrast = (fg, bg) => { const a = lum(fg); const b = lum(bg); return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); };
+  const share = Number(shareMatch[1]) / 100;
+  const fails = [];
+  let themes = 0;
+  for (const m of read('themes.css').matchAll(/\n\[data-theme="([\w-]+)"\] \{([^}]*)\}/g)) {
+    themes += 1;
+    const raw = {};
+    for (const d of m[2].matchAll(/--([\w-]+):\s*([^;]+);/g)) raw[d[1]] = d[2].trim();
+    const t = name => parse(raw[name]);
+    const text = t('text');
+    const ground = t('ground') || t('paper') || t('bg');
+    const card = t('card') || t('paper-strong') || t('panel');
+    const locator = t('locator') || t('accent');
+    const ink2 = mixed(t('text2'), share, text);
+    const track = over(t('card-rule') || t('border2'), ground);
+    const highlight = mixed(locator, 0.10, card);
+    const go = mixed(t('accent-bg') || t('accent'), 0.86, t('registry-card') || t('registry-bg') || text);
+    const pairs = {
+      'unpressed view and its count on the track': [ink2, track], 'pressed view on its pill': [text, card],
+      'destination, source and date on the card': [ink2, card], 'destination on the highlight': [ink2, highlight],
+      'a read page’s title on the highlight': [ink2, highlight], 'filter placeholder': [ink2, card],
+      'View details on the highlight': [t('where-soft-text') || text, highlight], 'Open hint': [t('accent-text') || { r: 255, g: 255, b: 255, a: 1 }, go],
+    };
+    for (const [name, [fg, bg]] of Object.entries(pairs)) {
+      const value = contrast(fg, bg);
+      if (value < 4.5) fails.push(`${m[1]}: ${name} ${value.toFixed(2)}`);
+    }
+  }
+  eq(themes, 19, 'all 19 bundled themes are checked');
+  eq(fails, [], 'every Library text pair is at least 4.5:1 in every bundled theme (finding R1-13)');
+}
+
 async function main() {
   testModel();
   testRow();
@@ -461,6 +578,7 @@ async function main() {
   testStyles();
   testLocales();
   testCi();
+  testR1Fixes();
   console.log(`Library page contracts passed: ${checks} checks (counts and rolls, filter marks, rows built in a VM with their exact controls and Undo receipts, row menu folding, landing motion, held repaint and fold, wiring, motion and reduced motion, targets, top bar, locales, CI)`);
 }
 

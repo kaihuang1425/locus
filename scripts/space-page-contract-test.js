@@ -49,6 +49,12 @@ function extractConst(name) {
 const spaceSection = newtab.slice(newtab.indexOf('// SPACE PAGE (2026-11 canvas)'), newtab.indexOf('// CANVAS VIEW (free positioning'));
 const spaceCss = css.slice(css.indexOf('SPACE PAGE (2026-11 canvas)'));
 
+// A rule's own width or height (or its min-), at least 44 px.
+function atLeast44(rule, side) {
+  const sizes = [...rule.matchAll(new RegExp(`(?:^|[\\s;{])(?:min-)?${side}: (\\d+)px`, 'g'))].map(m => Number(m[1]));
+  return sizes.length > 0 && Math.max(...sizes) >= 44;
+}
+
 const esc = value => String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const EN = {
   'groupAction.items': '{count} items',
@@ -336,7 +342,7 @@ async function testSheet() {
     toast: (msg, opts) => calls.push(['toast', msg, plain(opts)]),
     tr: key => key,
   });
-  vm.runInContext([extract('spaceReminderTarget'), extract('spaceSheetPick'), extract('spaceSheetClear')].join('\n'), context);
+  vm.runInContext([extract('quickReminderAt'), extract('spaceReminderTarget'), extract('spaceSheetPick'), extract('spaceSheetClear')].join('\n'), context);
   ok(await context.spaceSheetPick('group', 'g', 3600000), 'a quick time commits');
   eq(calls.shift(), ['set', { kind: 'group', id: 'g', reminderId: 'r1' }, now + 3600000], 'In 1 hour updates the shown reminder through commitEntityReminderMutation');
   ok(context.spacePageSession.sheet === null, 'the sheet closes before the transaction repaints');
@@ -442,8 +448,15 @@ function testStyles() {
   ok(/\.is-folded > \.spc-fold \{ grid-template-rows: 0fr; \}/.test(spaceCss) && /\.is-folded > \.spc-fold > \.spc-fold-in \{ visibility: hidden;/.test(spaceCss), 'a folded group animates shut and leaves the tab order');
   ok(/\.spc \.item\.spc-drop \{ animation: spc-drop \.42s var\(--today-ease\), spc-land \.9s ease; \}/.test(spaceCss), 'a new card drops in and rings once');
   ok(/\.spc-board \{ display: grid; grid-template-columns: repeat\(auto-fill, minmax\(300px, 1fr\)\);/.test(spaceCss), 'Board columns wrap into a grid');
-  for (const [selector, size] of [['\\.spc-ib', 'width: 44px'], ['\\.spc-ibtn', 'width: 44px'], ['\\.spc-sho', 'height: 44px'], ['\\.spc-fbtn', 'height: 44px'], ['\\.spc-newg', 'height: 44px'], ['\\.spc-tab', 'height: 48px']]) {
-    ok(new RegExp(`\\n${selector} \\{[^}]*${size}`, 's').test(spaceCss), `${selector} keeps a 44 px target`);
+  // Finding R1-10: every Space target is at least 44 px on both sides (the
+  // earlier check read one side only).
+  for (const selector of ['.spc-ib', '.spc-ibtn', '.spc-sho', '.spc-fbtn', '.spc-newg', '.spc-tab', '.spc-chip', '.spc-gdot', '.spc .item.todo .todo-check']) {
+    const rule = spaceCss.match(new RegExp(`\\n${selector.replace(/\./g, '\\.')} \\{[^}]*\\}`));
+    ok(rule && atLeast44(rule[0], 'width') && atLeast44(rule[0], 'height'), `${selector} is at least 44 px wide and tall (finding R1-10)`);
+  }
+  for (const selector of ['.spc .spc-lg .lv-stack .lv-stack-toggle', '.spc .spc-lg .lv-stack .lv-stack-more']) {
+    const rule = spaceCss.match(new RegExp(`\\n${selector.replace(/\./g, '\\.')} \\{[^}]*\\}`))?.[0] || '';
+    ok(/flex: 0 0 44px; width: 44px; height: 44px;/.test(rule), `${selector} keeps 44 px against the shared 40 px flex basis`);
   }
   ok(/\.spc \.item \.item-title\.item-primary::after,[\s\S]*?\{ content: ''; position: absolute; inset: 0;/.test(spaceCss), 'the whole card is its main action, as on the board');
   ok(/\n\.spc \.item > \.item-detail-meta \{ position: relative; z-index: 1;/.test(spaceCss), 'the Details… summary sits above the stretched open action, so it opens Details');
@@ -483,6 +496,208 @@ function testCi() {
   ok(/run: node scripts\/space-page-contract-test\.js/.test(ci), 'CI runs this suite');
 }
 
+// ── Final-review fixes (R1) ─────────────────────────────────────────
+function testR1Fixes() {
+  // R1-5: the reminder sheet opens and closes without repainting the Space.
+  const log = [];
+  let sheets = [];
+  const sheetEl = marker => ({ marker, remove() { sheets = sheets.filter(s => s !== this); log.push(['removed', marker]); } });
+  const page = {
+    querySelectorAll: selector => (selector === '.spc-sheet' ? [...sheets] : []),
+    querySelector: selector => {
+      if (selector === '.spc-sheet-slot') return { appendChild: el => { sheets.push(el); log.push(['slot', el.marker]); } };
+      if (selector === '.spc-vw [data-spc-gid="g"] > .spc-fold') return { before: el => { sheets.push(el); log.push(['under group', el.marker]); } };
+      return null;
+    },
+  };
+  const sheetBox = vm.createContext({
+    CSS: { escape: value => String(value) },
+    spacePageSession: { sheet: null },
+    spacePageRoot: () => page,
+    findEntity: (kind, id) => ({ id, name: 'Launch' }),
+    buildSpaceSheet: (kind, entity, opening) => sheetEl(`${kind}:${entity.id}:${opening ? 'opening' : 'still'}`),
+    renderBoard: () => log.push(['render']),
+    hideContextMenu: () => log.push(['menu closed']),
+    focusSpaceKey: key => log.push(['focus', key]),
+  });
+  vm.runInContext([extract('openSpaceSheet'), extract('closeSpaceSheet'), extract('placeSpaceSheet')].join('\n'), sheetBox);
+  sheetBox.openSpaceSheet('group', 'g', { closest: () => ({ dataset: { spcFocus: 'col:g:more' } }) });
+  eq(log, [['menu closed'], ['under group', 'group:g:opening'], ['focus', 'sheet:0']], 'opening a group’s sheet places it under the group, with no repaint of the Space (finding R1-5)');
+  log.length = 0;
+  sheetBox.closeSpaceSheet({ restoreFocus: true });
+  eq(log, [['removed', 'group:g:opening'], ['focus', 'col:g:more']], 'closing it removes only the sheet and returns focus to its owner');
+  log.length = 0;
+  sheetBox.openSpaceSheet('category', 'space', null);
+  ok(log.some(entry => entry[0] === 'slot') && !log.some(entry => entry[0] === 'render'), 'the Space’s own sheet goes into the header slot, also without a repaint');
+  sheetBox.closeSpaceSheet();
+  log.length = 0;
+  sheetBox.openSpaceSheet('group', 'elsewhere', null);
+  ok(log.some(entry => entry[0] === 'render'), 'a sheet whose group is not on this view falls back to a repaint');
+  ok(/if \(!placeSpaceSheet\(spacePageSession\)\) renderBoard\(\);/.test(extract('spaceSheetCustom')), 'Pick a time… also closes the sheet without a repaint');
+
+  // R1-8: after Undo rebuilds the cards, focus lands on the restored record,
+  // else the same control, else the chosen tab: never <body>.
+  const doc = { activeElement: { tagName: 'BODY' }, body: null };
+  doc.body = doc.activeElement;
+  const control = (name, extra = {}) => Object.assign({
+    name, isConnected: true, disabled: false, focus() {}, matches: () => false, closest: () => null, getClientRects: () => [1],
+  }, extra);
+  const card = (id, controls) => ({
+    querySelector: selector => controls.find(c => selector.split(',').some(part => c.sel === part.trim().replace(/^\./, '.'))) || null,
+    querySelectorAll: () => controls.filter(c => c.button),
+  });
+  const restored = card('r', [Object.assign(control('restored title'), { sel: '.item-primary', button: true })]);
+  const memoCard = card('m', [Object.assign(control('memo more'), { sel: '.board-record-menu', button: true }), Object.assign(control('memo title'), { sel: '.item-primary', button: true })]);
+  const tab = control('board tab');
+  const cards = { r: restored, m: memoCard };
+  const spaceFocus = vm.createContext({
+    CSS: { escape: value => String(value) },
+    document: doc,
+    inboxFocus: target => { doc.activeElement = target; return true; },
+  });
+  vm.runInContext(extract('restoreSpaceFocus'), spaceFocus);
+  const focusPage = {
+    querySelector: selector => {
+      const m = /\[data-id="(\w+)"\]/.exec(selector);
+      if (m) return cards[m[1]] || null;
+      if (selector === '.spc-tab[aria-selected="true"]') return tab;
+      return null;
+    },
+  };
+  ok(spaceFocus.restoreSpaceFocus(focusPage, { inPage: true, id: 'm', cls: 'board-record-menu' }, ['r']) && doc.activeElement.name === 'restored title',
+    'Undo returns focus to the restored card’s main action (finding R1-8)');
+  doc.activeElement = doc.body;
+  ok(spaceFocus.restoreSpaceFocus(focusPage, { inPage: true, id: 'm', cls: 'board-record-menu' }, []) && doc.activeElement.name === 'memo more', 'with nothing restored, the same control on the same card');
+  doc.activeElement = doc.body;
+  ok(spaceFocus.restoreSpaceFocus(focusPage, { inPage: true, id: 'gone', cls: '' }, []) && doc.activeElement.name === 'board tab', 'with that card gone, the chosen view tab');
+  doc.activeElement = control('a field the user is in');
+  ok(!spaceFocus.restoreSpaceFocus(focusPage, { inPage: true, id: 'm' }, ['r']), 'focus that is still somewhere is left alone');
+  const render = extract('renderSpacePage');
+  ok(/const arrived = seenBefore && !changed && session\.view != null/.test(render)
+    && /else if \(focusMemo && \(focusMemo\.inPage \|\| arrived\.length\)\) restoreSpaceFocus\(page, focusMemo, arrived\);/.test(render),
+  'every Space repaint that dropped focus restores it');
+
+  // R1-10: the Graph's targets are 44 units and it never draws below its scale.
+  const graph = extract('renderGraphView');
+  ok(/<circle class="gr-hit" r="22"/.test(graph) && /<rect class="gr-pill" rx="22"\/>/.test(graph) && /const height = hub \? 44 : 36;/.test(extract('sizeGraphPills'))
+    && /const W = 960, H = 640/.test(graph) && /\.spc \.gr-svg \{[^}]*min-width: 960px;/.test(spaceCss),
+  'Graph leaves and groups are 44-unit targets drawn at 1:1 or larger (finding R1-10)');
+  ok(/\.spc \.item \.item-title\.item-primary \{[^}]*min-height: 44px;/.test(spaceCss) && /\.spc \.item\.note > \.board-record-primary \{[^}]*min-height: 44px;/.test(spaceCss)
+    && /\.spc \.item\.todo \.board-record-todo-primary \{[^}]*min-height: 44px;/.test(spaceCss),
+  'a card’s title, note and to-do text are 44 px boxes (negative margins keep the layout)');
+  ok(/\.spc-chip::before \{[^}]*inset: 9px 0;[^}]*background: var\(--today-when-soft\);/.test(spaceCss) && !/\.spc-chip::after/.test(spaceCss) && !/\.spc-gdot::after/.test(spaceCss),
+    'the chip keeps its 26 px pill drawn inside its 44 px box; no hit areas made of pseudo-elements');
+
+  // R1-13 and R1-14: Space text holds 4.5:1 in every bundled theme.
+  const block = spaceCss.slice(0, spaceCss.indexOf('CALENDAR (2026-11 canvas)'));
+  const share = (pattern, label) => { const m = pattern.exec(block); ok(m, `${label} is a theme-aware mix`); return Number(m[1]) / 100; };
+  const quietShare = share(/--spc-quiet: color-mix\(in srgb, var\(--text2\) (\d+)%, var\(--text\)\);/, 'the quiet ink');
+  const linkShare = share(/--spc-link: var\(--locator, color-mix\(in srgb, var\(--accent\) (\d+)%, var\(--text\)\)\);/, 'the blue text');
+  const doneShare = share(/--spc-done-ink: color-mix\(in srgb, var\(--today-receipt, var\(--green\)\) (\d+)%, var\(--text\)\);/, 'the done text');
+  const whenShare = share(/--spc-when-ink: var\(--when-text, color-mix\(in srgb, var\(--orange\) (\d+)%, var\(--text\)\)\);/, 'the when text');
+  ok(!/color: var\(--text2\)|color: var\(--text3\)|color: var\(--today-when-text\)/.test(block), 'no Space text uses an untuned --text2, --text3 or --today-when-text');
+  ok(!/[\s{;]color: var\(--spc-locator\)(?!.*svg)/.test(block.replace(/\.spc-tab\[aria-selected="true"\] svg \{ color: var\(--spc-locator\); \}|\.spc \.item \.item-check\.checked \{ color: var\(--spc-locator\);/g, '')),
+    'blue text reads --spc-link; --spc-locator stays for fills, rules and icons');
+  ok(/\.spc-fbtn \{[^}]*color: var\(--spc-link\);/.test(block) && /\.spc-tdc\.is-all \{ color: var\(--spc-done-ink\);/.test(block) && /\.spc \.tl-now \{[^}]*color: var\(--spc-when-ink\);/.test(block),
+    'Save here, an all-done to-do count and the Timeline’s Now use the tuned inks (finding R1-13)');
+  ok(/\.spc :is\(\.stack-cnt, \.lv-stack-cnt\) \{ color: var\(--spc-quiet\); \}/.test(block),
+    'a stack’s count on the Space page reads the quiet ink, not the shared --text3 (finding R1-14)');
+  const parse = value => {
+    const text = String(value || '').trim();
+    let match = /^#([0-9a-f]{6})$/i.exec(text);
+    if (match) return { r: parseInt(match[1].slice(0, 2), 16), g: parseInt(match[1].slice(2, 4), 16), b: parseInt(match[1].slice(4), 16), a: 1 };
+    match = /^rgba?\(([^)]+)\)$/.exec(text);
+    if (match) { const p = match[1].split(',').map(Number); return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 }; }
+    return null;
+  };
+  const mixed = (a, s, b) => ({ r: a.r * s + b.r * (1 - s), g: a.g * s + b.g * (1 - s), b: a.b * s + b.b * (1 - s), a: 1 });
+  const over = (top, bottom) => ({ r: top.r * top.a + bottom.r * (1 - top.a), g: top.g * top.a + bottom.g * (1 - top.a), b: top.b * top.a + bottom.b * (1 - top.a), a: 1 });
+  const alpha = (c, a) => ({ ...c, a: (c.a ?? 1) * a });
+  const lum = ({ r, g, b }) => [r, g, b].map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }).reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
+  const contrast = (fg, bg) => { const a = lum(fg); const b = lum(bg); return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); };
+  const fails = [];
+  let themes = 0;
+  for (const m of read('themes.css').matchAll(/\n\[data-theme="([\w-]+)"\] \{([^}]*)\}/g)) {
+    themes += 1;
+    const raw = {};
+    for (const d of m[2].matchAll(/--([\w-]+):\s*([^;]+);/g)) raw[d[1]] = d[2].trim();
+    const t = name => parse(raw[name]);
+    const text = t('text');
+    const ground = t('ground') || t('paper') || t('bg');
+    const card = t('card') || t('paper-strong') || t('panel');
+    const ruleRaw = t('card-rule') || t('border2');
+    const column = over(alpha(ruleRaw, 0.6), ground);
+    const locator = t('locator') || t('accent');
+    const quiet = mixed(t('text2'), quietShare, text);
+    const link = t('locator') || mixed(t('accent'), linkShare, text);
+    const done = mixed(t('receipt') || t('green'), doneShare, text);
+    const when = t('when-text') || mixed(t('orange'), whenShare, text);
+    const pairs = {
+      'quiet text on the ground': [quiet, ground], 'quiet text on a column': [quiet, column], 'quiet text on a card': [quiet, card],
+      'quiet text on the scale switch': [quiet, over(alpha(ruleRaw, 0.8), ground)], 'quiet text on a hovered quick time': [quiet, mixed(text, 0.09, ground)],
+      'Save here and other blue text on a column': [link, column], 'blue text on a hovered Save here': [link, over(alpha(locator, 0.06), column)],
+      'blue text on a card': [link, card], 'blue text on the ground': [link, ground],
+      'all-done to-do count on a column': [done, column], 'all-done to-do count on a List panel': [done, card],
+      'reminder chip': [t('when-soft-text') || text, over(t('when-soft') || alpha(t('orange'), 0.18), ground)],
+      'Now on the Timeline': [when, ground], 'status pill': [card, text],
+      'Explorer’s chosen row': [t('where-soft-text') || text, over(t('where-soft') || alpha(locator, 0.18), card)],
+    };
+    for (const [name, [fg, bg]] of Object.entries(pairs)) {
+      const value = contrast(fg, bg);
+      if (value < 4.5) fails.push(`${m[1]}: ${name} ${value.toFixed(2)}`);
+    }
+  }
+  eq(themes, 19, 'all 19 bundled themes are checked');
+  eq(fails, [], 'every Space text pair is at least 4.5:1 in every bundled theme (findings R1-13, R1-14)');
+
+  // Daylight saving: the Space sheet and the reminder picker use Details'
+  // calendar arithmetic, so Tomorrow keeps its clock time.
+  const { spawnSync } = require('node:child_process');
+  for (const zone of ['America/New_York', 'Europe/Berlin']) {
+    const child = spawnSync(process.execPath, [__filename, '--space-quick-times', zone], { encoding: 'utf8', env: { ...process.env, TZ: zone } });
+    assert.equal(child.status, 0, `${zone} Space quick times failed:\n${child.stderr || child.stdout}`);
+    const r = JSON.parse(child.stdout.trim().split(/\r?\n/).at(-1));
+    eq(r.tomorrow.slice(1), [10, 15, 30], `${zone}: the Space sheet’s Tomorrow keeps the clock time across the DST change`);
+    eq(r.tomorrowHours, 25, `${zone}: so it is 25 hours away that day, not a fixed 24`);
+    eq(r.oneHour, 1, `${zone}: In 1 hour stays a duration`);
+  }
+  ok(/inboxWhenLabel\(quickReminderAt\(offset, now\), now\)/.test(extract('buildSpaceSheet')), 'the sheet labels each quick time with the time it will set');
+  ok(/commitReminderSet\(quickReminderAt\(b\.dataset\.offset\), readRecurControl\(\)\)/.test(newtab) && !/Date\.now\(\) \+ \(\+b\.dataset\.offset\)/.test(newtab),
+    'the reminder picker’s quick buttons use the same calendar arithmetic');
+}
+
+// Run in one time zone per child process: the Space sheet's quick times on
+// the day before each zone's autumn change (Berlin 25 Oct, New York 1 Nov 2026).
+if (process.argv[2] === '--space-quick-times') {
+  const zone = process.argv[3];
+  assert.equal(Intl.DateTimeFormat().resolvedOptions().timeZone, zone);
+  const now = zone === 'Europe/Berlin' ? new Date(2026, 9, 24, 10, 15, 30).getTime() : new Date(2026, 9, 31, 10, 15, 30).getTime();
+  const commits = [];
+  class FixedDate extends Date { static now() { return now; } }
+  const context = vm.createContext({
+    Date: FixedDate,
+    spacePageSession: { sheet: { kind: 'group', id: 'g' } },
+    findEntity: () => ({ id: 'g', reminders: [] }),
+    pendingReminderTime: () => null,
+    createEntityReminderMutationContext: () => ({ kind: 'group' }),
+    commitEntityReminderMutation: async (ctx, changes) => { commits.push(changes.at); return true; },
+    renderBoard() {}, toast() {},
+  });
+  vm.runInContext([extract('quickReminderAt'), extract('spaceReminderTarget'), extract('spaceSheetPick')].join('\n'), context);
+  (async () => {
+    await context.spaceSheetPick('group', 'g', 86400000);
+    await context.spaceSheetPick('group', 'g', 3600000);
+    const wall = ts => { const d = new Date(ts); return [d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds()]; };
+    console.log(JSON.stringify({ tomorrow: wall(commits[0]), tomorrowHours: (commits[0] - now) / 3600000, oneHour: (commits[1] - now) / 3600000 }));
+    process.exit(0);
+  })();
+} else {
+  main().catch(error => {
+    console.error(error);
+    process.exit(1);
+  });
+}
+
 async function main() {
   testModel();
   testBoardColumn();
@@ -492,10 +707,6 @@ async function main() {
   testStyles();
   testLocales();
   testCi();
+  testR1Fixes();
   console.log(`Space page contracts passed: ${checks} checks (counts and rolls, reminder target, page memory, Space and Group menus, arrivals, Board columns and List groups built in a VM with their exact controls, the reminder sheet over the reminder transactions, switcher, crossfade, shared hooks, the five views’ labels, motion and reduced motion, targets, phone layout, locales, CI)`);
 }
-
-main().catch(error => {
-  console.error(error);
-  process.exit(1);
-});

@@ -393,6 +393,278 @@ function testCi() {
   ok(/run: node scripts\/inbox-page-contract-test\.js/.test(ci), 'CI runs this suite');
 }
 
+// ── Final-review fixes (R1) ─────────────────────────────────────────
+// WCAG contrast over the 19 bundled themes, as the Calendar and Details suites
+// compute it: each theme's own tokens, mixed the way the page's CSS mixes them.
+function bundledThemes() {
+  const parse = value => {
+    const text = String(value || '').trim();
+    let match = /^#([0-9a-f]{6})$/i.exec(text);
+    if (match) return { r: parseInt(match[1].slice(0, 2), 16), g: parseInt(match[1].slice(2, 4), 16), b: parseInt(match[1].slice(4), 16), a: 1 };
+    match = /^rgba?\(([^)]+)\)$/.exec(text);
+    if (match) { const p = match[1].split(',').map(Number); return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 }; }
+    return null;
+  };
+  return [...read('themes.css').matchAll(/\n\[data-theme="([\w-]+)"\] \{([^}]*)\}/g)].map(m => {
+    const raw = {};
+    for (const d of m[2].matchAll(/--([\w-]+):\s*([^;]+);/g)) raw[d[1]] = d[2].trim();
+    return { id: m[1], t: name => parse(raw[name]) };
+  });
+}
+const mix = (a, share, b) => ({ r: a.r * share + b.r * (1 - share), g: a.g * share + b.g * (1 - share), b: a.b * share + b.b * (1 - share), a: 1 });
+const over = (top, bottom) => ({ r: top.r * top.a + bottom.r * (1 - top.a), g: top.g * top.a + bottom.g * (1 - top.a), b: top.b * top.a + bottom.b * (1 - top.a), a: 1 });
+const alpha = (c, a) => ({ ...c, a: (c.a ?? 1) * a });
+const lum = ({ r, g, b }) => [r, g, b].map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }).reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
+const contrast = (fg, bg) => { const a = lum(fg); const b = lum(bg); return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); };
+const WHITE = { r: 255, g: 255, b: 255, a: 1 };
+const BLACK = { r: 0, g: 0, b: 0, a: 1 };
+const REGISTRY_INK = { r: 0x19, g: 0x23, b: 0x1f, a: 1 };
+
+// A list element stand-in with real child order, for the row reuse checks.
+function fakeElement(created) {
+  const node = {
+    className: '', dataset: {}, attributes: {}, innerHTML: '', children: [], parent: null, style: { setProperty() {} },
+    classList: { contains: name => node.className.split(/\s+/).includes(name) },
+    setAttribute(name, value) { node.attributes[name] = String(value); },
+    querySelector: () => ({ addEventListener() {}, dataset: {} }),
+    querySelectorAll(selector) { return selector === ':scope > .ibx-row' ? node.children.filter(child => child.classList.contains('ibx-row')) : []; },
+    addEventListener() {},
+    get firstChild() { return node.children[0] || null; },
+    get nextSibling() { return node.parent ? node.parent.children[node.parent.children.indexOf(node) + 1] || null : null; },
+    insertBefore(child, ref) {
+      child.remove();
+      child.parent = node;
+      const at = ref ? node.children.indexOf(ref) : -1;
+      node.children.splice(at < 0 ? node.children.length : at, 0, child);
+      return child;
+    },
+    remove() { if (node.parent) node.parent.children.splice(node.parent.children.indexOf(node), 1); node.parent = null; },
+  };
+  created.push(node);
+  return node;
+}
+
+async function testR1Fixes() {
+  // R1-5: a repaint keeps every row whose content and records are unchanged.
+  const created = [];
+  const { context } = sandbox({
+    document: { createElement: () => fakeElement(created) },
+    esc: value => String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'),
+    favUrl: () => '', dispUrl: value => value, boardNotePreviewText: item => item.html,
+    selectedItemIds: new Set(),
+    applyBoardRecordMarker() {}, bindInboxFavicons() {}, bindBoardItemContextMenu() {}, attachItemDrag() {},
+  });
+  vm.runInContext(['const INBOX_ICONS = {};', extract('inboxIcon'), extract('inboxDotsIcon'), extract('inboxItemTitle'), extract('inboxItemSource'), extract('inboxFavMarkup'), extract('buildInboxRow'), extract('buildInboxList')].join('\n'), context);
+  const session = context.inboxPageState('inbox');
+  const group = { id: 'inbox', name: 'Inbox', items: [tab('a'), tab('b'), tab('c'), tab('d')] };
+  const paint = previous => context.buildInboxList(group, context.inboxPageModel(group, new Set(), session, NOW), session, previous);
+  const list = paint(null);
+  const first = list.children.map(row => row.dataset.ibxId);
+  eq(first, ['b', 'c', 'd'], 'the rows are the Inbox minus the card’s item');
+  const rows = [...list.children];
+  created.length = 0;
+  ok(paint(list) === list && list.children.every((row, i) => row === rows[i]) && created.length === 0,
+    'a repaint with nothing changed keeps the list and every row element and builds nothing (finding R1-5)');
+  group.items[2] = { ...group.items[2], title: 'c renamed' };
+  paint(list);
+  ok(list.children[0] === rows[0] && list.children[1] !== rows[1] && list.children[2] === rows[2] && created.length === 1,
+    'a row whose title changed is rebuilt alone; its neighbours stay');
+  const cRow = list.children[1];
+  group.items[3] = { ...group.items[3] };
+  paint(list);
+  ok(list.children[2] !== rows[2], 'a row whose record was replaced (Undo restores a new copy) is rebuilt, so its handlers act on the live record');
+  context.selectedItemIds.add('b');
+  paint(list);
+  ok(list.children[0] !== rows[0] && /is-selected/.test(list.children[0].className), 'a selected row repaints its state');
+  context.selectedItemIds.clear();
+  group.items.splice(2, 1);
+  paint(list);
+  eq(list.children.map(row => row.dataset.ibxId), ['b', 'd'], 'a row that left the Inbox leaves the list');
+  ok(!list.children.includes(cRow), 'the departed row element is removed');
+  const source = extract('renderInboxPage');
+  ok(/buildInboxList\(group, model, session, page\.querySelector\(':scope > \.ibx-list'\)\)/.test(source)
+    && /if \(card\.nextElementSibling !== list\) card\.after\(list\);/.test(source)
+    && !/:scope > \.ibx-list'\)\.forEach/.test(source),
+  'the page hands its list to the next paint and does not move a list that is already in place');
+
+  // R1-3: Shift-click covers the rows drawn on screen, never the card's item.
+  const order = ['b', 'c', 'd'];
+  const inboxList = ['a', 'b', 'c', 'd'];
+  const rowEl = id => ({ dataset: { ibxId: id }, classList: { contains: () => false }, getClientRects: () => [1], parentElement: { closest: () => null } });
+  const range = vm.createContext({
+    document: { getElementById: () => ({ querySelectorAll: selector => (/\.ibx-list > \.ibx-row\[data-ibx-id\]/.test(selector) ? order.map(rowEl) : []) }) },
+    findItem: id => ({ parent: inboxList, index: inboxList.indexOf(id) }),
+    isInboxPageActive: () => true,
+    syncItemSelMode() {}, renderBoard() {}, renderItemSelToolbar() {},
+  });
+  vm.runInContext(['var selectedItemIds = new Set(); var lastSelectedItemId = null;',
+    'function toggleItemSelect(id) { if (selectedItemIds.has(id)) selectedItemIds.delete(id); else selectedItemIds.add(id); lastSelectedItemId = selectedItemIds.size ? id : null; return true; }',
+    extract('visibleItemSelectionOrder'), extract('selectRangeTo'),
+    'globalThis.__sel = () => [...selectedItemIds].sort(); globalThis.__anchor = id => { lastSelectedItemId = id; selectedItemIds.add(id); };'].join('\n'), range);
+  eq(range.visibleItemSelectionOrder(), ['b', 'c', 'd'], 'the Inbox rows are the visual order (finding R1-3)');
+  range.__anchor('b');
+  range.selectRangeTo('d');
+  eq(range.__sel(), ['b', 'c', 'd'], 'Shift-click selects the rows between, and not the triage card’s item (finding R1-3)');
+  vm.runInContext('selectedItemIds.clear(); lastSelectedItemId = null;', range);
+  range.__anchor('a');
+  range.selectRangeTo('c');
+  eq(range.__sel(), ['a', 'c'], 'an anchor that is not a drawn row adds only the clicked row: no data-list range on the Inbox page (finding R1-3)');
+
+  // R1-6: the floating picker is the one floating layer.
+  const layer = [];
+  let detailOpen = true;
+  let drawer = true;
+  let later = null;
+  const picker = vm.createContext({
+    CSS: { escape: value => String(value) },
+    document: {
+      getElementById: id => (id === 'item-detail' ? { classList: { contains: name => name === 'open' && detailOpen } } : null),
+      querySelector: selector => (selector === '[data-ibx-focus="card-move"]' ? { isConnected: true, dataset: { ibxFocus: 'card-move' }, fresh: true } : null),
+    },
+    hideContextMenu: () => layer.push('menu closed'),
+    isOpenTabsRailDrawerOpen: () => drawer,
+    setOpenTabsRailCollapsed: (collapsed, options) => { drawer = !collapsed; layer.push(['drawer', collapsed, options.persist]); },
+    closeItemDetail: () => { detailOpen = false; layer.push('details closed'); return true; },
+    setTimeout: fn => { later = fn; return 1; },
+    inboxSpaceOptions: () => { layer.push('options'); return null; },
+    reportSelectedItemMutationUnavailable: () => false,
+  });
+  vm.runInContext(['let inboxSpacePicker = null;', extract('closeInboxSpacePicker'), extract('closeFloatingInboxSpacePicker'), extract('inboxPickerAnchorSelector'), extract('openInboxSpacePicker')].join('\n'), picker);
+  const anchor = { isConnected: false, dataset: { ibxFocus: 'card-move' } };
+  ok(picker.openInboxSpacePicker(anchor, { review: true }, () => {}) === true, 'the picker waits for Details to close (finding R1-6)');
+  eq(layer, ['menu closed', ['drawer', true, true], 'details closed'], 'opening the floating picker closes a menu, the open-tabs drawer and Details (finding R1-6)');
+  layer.length = 0;
+  later();
+  eq(layer, ['menu closed', 'options'], 'then it opens on its owner found again after the repaint');
+  layer.length = 0;
+  detailOpen = true;
+  picker.openInboxSpacePicker(anchor, { review: true }, () => {}, { host: {} });
+  ok(!layer.includes('details closed'), 'the picker inside Details leaves Details open');
+  ok(/if \(typeof closeFloatingInboxSpacePicker === 'function'\) closeFloatingInboxSpacePicker\(\);/.test(extract('showContextMenu')),
+    'a menu closes the floating picker');
+  ok(/if \(!next && isOpenTabsRailDrawerOpen\(\)\) closeFloatingInboxSpacePicker\(\);/.test(extract('setOpenTabsRailCollapsed')),
+    'opening the open-tabs drawer closes the floating picker');
+  ok(/if \(!wasOpen\) \{[\s\S]*?closeFloatingInboxSpacePicker\(\);\n\s*\}/.test(extract('renderItemDetail')),
+    'opening Details closes the floating picker');
+  ok(/if \(!inboxSpacePicker \|\| inboxSpacePicker\.inline\) return false;/.test(extract('closeFloatingInboxSpacePicker')) && /inline: !!host,/.test(extract('openInboxSpacePicker')),
+    'the picker folded into Details is not a floating layer');
+
+  // R1-7: Sort progress counts only answers to items that were waiting.
+  const queueGroup = { id: 'inbox', name: 'Inbox', items: [tab('w1'), tab('w2'), { id: 'st', type: 'stack', name: 'Pile', items: [tab('kid')], createdAt: NOW }, tab('planned', { reminder: { at: at(2026, 11, 12, 9), notified: false } })] };
+  const act = sandbox({
+    findGroup: () => ({ group: queueGroup }),
+    findItem: id => { const item = queueGroup.items.find(entry => entry.id === id); return item ? { item, group: queueGroup } : null; },
+    document: { querySelector: () => null },
+    CSS: { escape: value => String(value) },
+    setTimeout: fn => { fn(); return 1; },
+    toast() {}, renderBoard() {},
+  }).context;
+  act.planReducedMotion = () => true;
+  act.inboxDecide = async () => true;
+  vm.runInContext([extract('inboxPageRoot'), extract('inboxFocus'), extract('focusInboxCard'), extract('focusInboxKey'), extract('inboxRowAct'), 'globalThis.__s = () => inboxPageSession;'].join('\n'), act);
+  const tallyNow = () => { const model = act.inboxPageModel(queueGroup, new Set(), act.__s(), NOW); return `${model.done}/${model.total}`; };
+  act.inboxPageState('inbox');
+  eq(tallyNow(), '0/2', 'two items wait');
+  await act.inboxRowAct('inbox', 'st', 'archive');
+  queueGroup.items.splice(2, 1);
+  await act.inboxRowAct('inbox', 'planned', 'archive');
+  queueGroup.items.splice(2, 1);
+  eq(tallyNow(), '0/2', 'archiving a stack and a planned row does not advance Sort progress (finding R1-7)');
+  await act.inboxRowAct('inbox', 'w2', 'archive');
+  const w2 = queueGroup.items.splice(1, 1)[0];
+  eq(tallyNow(), '1/2', 'archiving a waiting row counts once');
+  queueGroup.items.splice(1, 0, w2);
+  eq(tallyNow(), '0/2', 'Undo puts the item back in the queue and the count back');
+  ok(/const wasWaiting = planSortQueue\(group, planSomedayIds\(\)\)\.some\(entry => String\(entry\.id\) === String\(id\)\);[\s\S]*if \(ok && wasWaiting\) session\.decided\.set\(String\(id\), choice\);/.test(extract('inboxRowAct')),
+    'a row records its answer only when it was waiting');
+
+  // R1-9: closing Details opened from a row returns focus to that row.
+  const focused = [];
+  const titleButton = { name: 'row title' };
+  const detailFocus = vm.createContext({
+    CSS: { escape: value => String(value) },
+    restoreOpener: () => false,
+    document: {
+      querySelector: selector => (selector === '.ibx-row[data-ibx-id="x1"] .ibx-row-title' ? titleButton : null),
+      getElementById: () => ({ querySelector: () => ({ name: 'Inbox heading' }) }),
+    },
+    focusItemDetailTarget: target => { focused.push(target?.name); return !!target; },
+  });
+  vm.runInContext(extract('restoreItemDetailFocus'), detailFocus);
+  detailFocus.restoreItemDetailFocus({}, 'x1', '');
+  eq(focused, ['row title'], 'closing Details from an Inbox row returns focus to that row’s title, not the Inbox heading (finding R1-9)');
+
+  // R1-4: the triage card, rows, chips and picker hold 4.5:1 in every theme.
+  const share = (pattern, label) => { const m = pattern.exec(inboxCss); ok(m, `${label} is a theme-aware mix`); return Number(m[1]) / 100; };
+  const ink2Share = share(/--ibx-ink-2: color-mix\(in srgb, var\(--text2\) (\d+)%, var\(--text\)\);/, 'the secondary ink');
+  const doneShare = share(/--ibx-done-ink: color-mix\(in srgb, var\(--index-receipt, var\(--green\)\) (\d+)%, var\(--text\)\);/, 'the done ink');
+  const fillShare = share(/--ibx-when-fill: var\(--when, color-mix\(in srgb, var\(--orange\) (\d+)%, #fff\)\);/, 'the when fill');
+  const badgeShare = share(/--ibx-badge: var\(--badge, color-mix\(in srgb, var\(--red\) (\d+)%, #000\)\);/, 'the waiting badge');
+  const whereShare = share(/--ibx-where-on-ink: color-mix\(in srgb, var\(--index-locator, var\(--accent\)\) (\d+)%, var\(--today-now-text\)\);/, 'the where ink on the card');
+  const mutedShare = share(/--ibx-now-muted: var\(--registry-muted, color-mix\(in srgb, var\(--today-now-text\) (\d+)%, var\(--today-now\)\)\);/, 'the quiet ink on the card');
+  const whenShare = share(/--ibx-when-on-now: var\(--when-on-registry, color-mix\(in srgb, var\(--orange\) (\d+)%, var\(--today-now-text\)\)\);/, 'the when ink on the card');
+  const onMutedShare = share(/--ibx-on-muted: color-mix\(in srgb, var\(--today-now-text\) (\d+)%, var\(--today-now\)\);/, 'the card’s muted ink');
+  const block = inboxCss.slice(0, inboxCss.indexOf('LIBRARY PAGE (2026-11 canvas)'));
+  ok(!/color: var\(--text2\)|color: var\(--today-now-muted\)|color: var\(--today-when-registry\)|background: var\(--today-badge\)/.test(block),
+    'no Inbox text uses an untuned --text2, --today-now-muted, --today-when-registry or --today-badge');
+  for (const [rule, token] of [
+    ['.ibx-row-sub', 'ibx-ink-2'], ['.ibx-row-age', 'ibx-ink-2'], ['.ibx-mi-where', 'ibx-ink-2'], ['.ibx-age', 'ibx-now-muted'],
+    ['.ibx-big.is-when', 'ibx-when-on-now'], ['.ibx-chip.is-done', 'ibx-done-ink'], ['.ibx-tally', 'ibx-now-muted'],
+  ]) ok(new RegExp(`\\n${rule.replace(/\./g, '\\.')} \\{[^}]*color: var\\(--${token}\\)`).test(block), `${rule} reads --${token}`);
+  ok(/\.ibx-bub \{[^}]*background: var\(--ibx-badge\);/.test(block) && /\.ibx-chip\.is-when\.is-overdue \{ background: var\(--ibx-when-fill\); color: #19231f; \}/.test(block)
+    && /\.ibx-big\.is-hit \{ border-color: var\(--ibx-when-fill\); background: var\(--ibx-when-fill\); color: #19231f;/.test(block)
+    && /\.ibx-ghost\.is-where:hover \{ color: var\(--today-now-text\); \}/.test(block),
+  'the count bubble, the orange fills and the hovered Move use the tuned pairs');
+  const fails = [];
+  const themes = bundledThemes();
+  for (const { id, t } of themes) {
+    const text = t('text');
+    const ground = t('ground') || t('paper') || t('bg');
+    const card = t('card') || t('paper-strong') || t('panel');
+    const rule = over(t('card-rule') || t('border2'), ground);
+    const now = t('registry-card') || t('registry-bg') || text;
+    const nowText = t('registry-text') || t('bg2');
+    const locator = t('locator') || t('accent');
+    const orange = t('orange');
+    const ink2 = mix(t('text2'), ink2Share, text);
+    const done = mix(t('receipt') || t('green'), doneShare, text);
+    const fill = t('when') || mix(orange, fillShare, WHITE);
+    const badge = t('badge') || mix(t('red'), badgeShare, BLACK);
+    const where = mix(locator, whereShare, nowText);
+    const muted = t('registry-muted') || mix(nowText, mutedShare, now);
+    const when = t('when-on-registry') || mix(orange, whenShare, nowText);
+    const onMuted = mix(nowText, onMutedShare, now);
+    const whenSoft = over(t('when-soft') || alpha(orange, 0.18), ground);
+    const whenSoftText = t('when-soft-text') || text;
+    const hover = over(alpha(nowText, 0.08), now);
+    const pairs = {
+      'row sub-line on the ground': [ink2, ground], 'row sub-line on a hovered row': [ink2, card],
+      'row sub-line on a selected row': [ink2, over(t('where-soft') || alpha(locator, 0.18), ground)],
+      'grey chip': [ink2, over(alpha(text, 0.08), ground)], 'done chip': [done, over(alpha(t('receipt') || t('green'), 0.14), ground)],
+      'when chip and Today action': [whenSoftText, whenSoft], 'Today action on its hover': [whenSoftText, rule],
+      'overdue chip, stamp and pressed answer': [REGISTRY_INK, fill], 'waiting count': [t('badge-text') || WHITE, badge],
+      'picker place on the picker': [ink2, card], 'picker place on its hover': [ink2, ground],
+      'card title and answers': [nowText, now], 'card domain, Archive, Skip and key caps': [onMuted, now],
+      'key cap on its tint': [onMuted, hover], 'card age and tally': [muted, now],
+      'Today on the card': [when, now], 'Today on the card, hovered': [when, hover], 'Move to a Space on the card': [where, now],
+    };
+    for (const [name, [fg, bg]] of Object.entries(pairs)) {
+      const value = contrast(fg, bg);
+      if (value < 4.5) fails.push(`${id}: ${name} ${value.toFixed(2)}`);
+    }
+  }
+  eq(themes.length, 19, 'all 19 bundled themes are checked');
+  eq(fails, [], 'every Inbox text pair is at least 4.5:1 in every bundled theme (finding R1-4)');
+
+  // R1-11: the card and rows answer to the page's width, not the window's.
+  const media = [...inboxCss.slice(0, inboxCss.indexOf('LIBRARY PAGE (2026-11 canvas)')).matchAll(/@media \((?:max|min)-width:[^{]*\{([\s\S]*?)\n\}/g)].map(m => m[1]).join('\n');
+  ok(!/\.ibx-(?:card|big|ghost|row|hd|title|bub|btn)/.test(media), 'no Inbox card or row rule sits in a viewport-width media query (finding R1-11)');
+  ok(/@container \(max-width: 630px\) \{[^}]*\.ibx-card \{ padding: 22px 20px 20px;/.test(inboxCss) && /@container \(max-width: 482px\) \{[\s\S]*?\.ibx-big \{ height: 52px;/.test(inboxCss),
+    'the phone layout follows the page’s width (a container query)');
+  ok(/@container \(max-width: 240px\) \{[\s\S]*?\.ibx-bigs \{ grid-template-columns: minmax\(0, 1fr\); \}[\s\S]*?\.ibx-ghost\.is-where span \{ position: absolute; width: 1px;/.test(inboxCss),
+    'beside an expanded rail at 390 px the answers stack and Move keeps its icon, its name for assistive tech');
+}
+
 async function main() {
   testModel();
   testLabels();
@@ -405,6 +677,7 @@ async function main() {
   testStyles();
   testLocales();
   testCi();
+  await testR1Fixes();
   console.log(`Inbox page contracts passed: ${checks} checks (Sort queue and Skip rotation, tally, labels, picker filter, drop index, shared planSortDecide, triage hold and Undo return, header and card built in a VM, routes, features kept, motion, locales, CI)`);
 }
 
