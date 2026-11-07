@@ -7015,6 +7015,8 @@ async function commitAppearanceSettingsChange(controlId, patch) {
   }
   appearanceSettingsPending = null;
   appearanceSettingsStatus = { key: 'settings.appearanceSaved', state: 'success' };
+  // A newer appearance choice ends an earlier "Use core defaults" Undo.
+  withdrawAppearanceResetUndo();
   renderAppearanceSettings();
   return true;
 }
@@ -7862,6 +7864,47 @@ function openPlannerFromSettings() {
   return typeof openPlannerDialog === 'function'
     ? openPlannerDialog(document.getElementById('plan-ai-btn'))
     : false;
+}
+
+// "Use core defaults" offers Undo on the shared receipt. That Undo puts back
+// the exact optional theme, typeface and width, but only while the reset is the
+// newest appearance change: as with a receipt whose Undo is no longer the
+// latest action, a later appearance change takes the Undo away (the message
+// stays and drains), so a newer choice is never overwritten.
+let appearanceResetUndo = null;
+
+function withdrawAppearanceResetUndo() {
+  const entry = appearanceResetUndo;
+  appearanceResetUndo = null;
+  if (!entry || entry.busy || !toastEntries.includes(entry)) return false;
+  if (toastFront() === entry) return settleToastAction(entry, { message: entry.msg, tone: entry.tone });
+  return removeToastEntry(entry);
+}
+
+async function resetAppearanceStylePack(button) {
+  const settings = State.get()?.settings || {};
+  const patch = appearanceStylePackResetPatch(settings);
+  if (!Object.keys(patch).length) return false;
+  const previous = Object.fromEntries(Object.keys(patch).map(key => [key, appearanceSettingValue(settings, key)]));
+  if (!await commitAppearanceSettingsChange(button.id, patch)) return false;
+  toast(tr('settings.stylePackResetDone'), {
+    actionLabel: tr('history.undoAction'),
+    action: () => undoAppearanceStylePackReset(button, patch, previous),
+  });
+  appearanceResetUndo = toastFront();
+  return true;
+}
+
+function undoAppearanceStylePackReset(button, patch, previous) {
+  appearanceResetUndo = null;
+  const settings = State.get()?.settings || {};
+  // A newer choice (here or from another tab) is never overwritten.
+  if (!Object.keys(patch).every(key => appearanceSettingValue(settings, key) === patch[key])) {
+    return { message: tr('history.undoStale'), tone: 'warning' };
+  }
+  return commitAppearanceSettingsChange(button.id, previous).then(ok => (ok
+    ? { message: tr('history.undid', { action: tr('settings.stylePackReset') }), tone: 'info' }
+    : { message: tr('toast.actionFailed'), tone: 'error' }));
 }
 
 // Download: the button fills while the backup is prepared, then the request is
@@ -13422,15 +13465,16 @@ function restoreTrashEntries(entries) {
 function restoreStoredEntries(entries, collectionName) {
   const s = State.get();
   const collection = Array.isArray(s[collectionName]) ? s[collectionName] : [];
-  const valid = (entries || []).filter(entry => collection.includes(entry));
+  const valid = [...new Set(entries || [])].filter(entry => collection.includes(entry));
   if (!valid.length) return;
   const fromTrash = collectionName === 'trash';
   State.snapshot(valid.length === 1 ? 'Restore' : `Restore ${collectionName} items`);
   for (const entry of valid) {
     const destination = archiveRestoreDestination(entry);
-    if (!destination) continue;
+    const at = collection.indexOf(entry);
+    if (!destination || at < 0) continue;
     const { cat } = destination;
-    collection.splice(collection.indexOf(entry), 1);
+    collection.splice(at, 1);
     if (entry.kind === 'item') {
       let group = cat.groups.find(g => g.id === entry.groupId)
         || cat.groups.find(g => g.name === entry.groupName);
@@ -13462,12 +13506,14 @@ function restoreArchive(idx) {
 }
 function moveArchiveEntriesToTrash(entries) {
   const s = State.get();
-  const valid = (entries || []).filter(entry => s.archive.includes(entry));
+  const valid = [...new Set(entries || [])].filter(entry => s.archive.includes(entry));
   if (!valid.length) return;
   State.snapshot(valid.length === 1 ? 'Move to Trash' : 'Move archive items to Trash');
   const now = Date.now();
   valid.forEach(entry => {
-    s.archive.splice(s.archive.indexOf(entry), 1);
+    const at = s.archive.indexOf(entry);
+    if (at < 0) return;
+    s.archive.splice(at, 1);
     s.trash.unshift({ ...entry, trashedAt: now });
   });
   State.persist();
@@ -13512,17 +13558,31 @@ function closeTrashDeleteAsk({ restoreFocus = true } = {}) {
   return !!ask;
 }
 
-// Re-reads the asked entries from Trash by key (an Undo rebuilds every stored
-// object). If one has left Trash, the ask closes.
+function trashDeleteKeyIndex() {
+  return archiveEntryKeys((State.get()?.trash || []).filter(entry => entry && entry.data));
+}
+
+// Re-reads the asked entries: the same stored objects while they are still in
+// Trash, else (an Undo rebuilds every stored object) the entries that now hold
+// their keys, which no other entry shares. If one has left Trash, or a key no
+// longer names exactly one entry, the ask closes and nothing is deleted.
 function reconcileTrashDeleteAsk() {
   if (!trashDeleteKeys.length || trashDeleteBusy) return true;
-  const byKey = new Map((State.get()?.trash || []).filter(entry => entry && entry.data).map(entry => [archiveEntryKey(entry), entry]));
-  const entries = trashDeleteKeys.map(key => byKey.get(key));
-  if (entries.some(entry => !entry) || !isTrashDeleteAskOpen()) {
+  const keyOf = trashDeleteKeyIndex();
+  let entries = trashDeleteEntries.length === trashDeleteKeys.length && trashDeleteEntries.every(entry => keyOf.has(entry))
+    ? trashDeleteEntries.slice()
+    : null;
+  if (!entries) {
+    const byKey = new Map();
+    keyOf.forEach((key, entry) => byKey.set(key, entry));
+    entries = trashDeleteKeys.map(key => byKey.get(key));
+  }
+  if (entries.some(entry => !entry) || new Set(entries).size !== entries.length || !isTrashDeleteAskOpen()) {
     closeTrashDeleteAsk();
     return false;
   }
   trashDeleteEntries = entries;
+  trashDeleteKeys = entries.map(entry => keyOf.get(entry));
   return true;
 }
 
@@ -13547,8 +13607,9 @@ function permanentlyDeleteTrashEntries(entries, { run = null } = {}) {
   if (!valid.length || trashDeleteBusy) return false;
   // A new ask replaces an open one.
   if (trashDeleteAsk) closeTrashDeleteAsk({ restoreFocus: false });
+  const keyOf = trashDeleteKeyIndex();
   trashDeleteEntries = valid;
-  trashDeleteKeys = valid.map(archiveEntryKey);
+  trashDeleteKeys = valid.map(entry => keyOf.get(entry));
   trashDeleteRun = typeof run === 'function' ? run : null;
   const one = valid.length === 1;
   toast(one ? tr('trash.confirmTitle') : tr('trash.askMany', { count: valid.length }), {
@@ -13582,9 +13643,13 @@ async function confirmTrashDelete() {
     return false;
   }
   const s = State.get();
-  const valid = trashDeleteEntries.filter(entry => s.trash.includes(entry));
+  // Exactly the asked entries leave, found by identity; nothing else in Trash
+  // is touched.
+  const doomed = new Set(trashDeleteEntries);
   setTrashDeleteBusy(true);
-  valid.forEach(entry => s.trash.splice(s.trash.indexOf(entry), 1));
+  for (let index = s.trash.length - 1; index >= 0; index -= 1) {
+    if (doomed.has(s.trash[index])) s.trash.splice(index, 1);
+  }
   try {
     await State.persistNow();
   } catch {
@@ -19092,13 +19157,51 @@ function archiveEntryKey(entry) {
   return `${entry?.kind === 'group' ? 'g' : 'i'}:${String(entry?.data?.id || '')}:${time}`;
 }
 
+// A key for every stored entry of one collection that no other entry shares.
+// Two entries can share kind, id and filing time (an import, older data);
+// those get a fingerprint of their content, and exact copies a count, so a
+// pick, a Restore or a Delete forever acts on the one row it came from and
+// never on its twin. Content survives an Undo, so the keys do too. An entry
+// without a twin keeps its plain key.
+function archiveEntryKeys(entries) {
+  const keys = new Map();
+  const shared = new Map();
+  for (const entry of entries || []) {
+    if (!entry || keys.has(entry)) continue;
+    const key = archiveEntryKey(entry);
+    keys.set(entry, key);
+    shared.set(key, (shared.get(key) || 0) + 1);
+  }
+  const copies = new Map();
+  for (const [entry, key] of keys) {
+    if (shared.get(key) < 2) continue;
+    let text = '';
+    try { text = JSON.stringify(entry) || ''; } catch {}
+    let hash = 0x811c9dc5;
+    for (let i = 0; i < text.length; i += 1) hash = Math.imul(hash ^ text.charCodeAt(i), 0x01000193) >>> 0;
+    const print = `${key}~${hash.toString(36)}`;
+    const count = (copies.get(print) || 0) + 1;
+    copies.set(print, count);
+    keys.set(entry, count === 1 ? print : `${print}#${count}`);
+  }
+  return keys;
+}
+
 // The stored entries of one collection, newest first. Malformed legacy or
 // imported records stay in storage for lossless export but are not listed.
 function archivePageEntries(mode) {
   const stored = Array.isArray(State.get()?.[mode]) ? State.get()[mode] : [];
   const time = mode === 'trash' ? trashTimestamp : archiveEntryTimestamp;
-  const entries = stored.filter(entry => entry && entry.data).sort((a, b) => time(b) - time(a));
-  return { stored, entries };
+  const entries = stored.filter(entry => entry && entry.data);
+  // Keys are given in stored order, as the Delete forever ask gives them.
+  const keys = archiveEntryKeys(entries);
+  entries.sort((a, b) => time(b) - time(a));
+  return { stored, entries, keys };
+}
+
+// The page's key for an entry: unique within the open collection.
+function archivePageKey(entry) {
+  return archivePageSession?.view?.keys?.get(entry) || archiveEntryKey(entry);
 }
 
 // One pass over every stored id, so each row's Restore review can check that
@@ -19273,7 +19376,7 @@ function archivePageWhenLabel(at, now = Date.now()) {
 function buildArchivePageRow(entry, mode, index, paint = {}, previous = null) {
   const trash = mode === 'trash';
   const review = archivePageRowReview(entry, mode, index);
-  const key = archiveEntryKey(entry);
+  const key = paint.key || archiveEntryKey(entry);
   const title = review.title;
   const unavailable = review.kind !== 'legacy' && !review.context;
   let when = '';
@@ -19328,6 +19431,8 @@ function buildArchivePageRow(entry, mode, index, paint = {}, previous = null) {
     const more = row.querySelector('.arv-more');
     // The menu reads the row's current review (an Undo rebuilds the entry).
     bindBoardItemContextMenu(row, opener => {
+      // One floating layer at a time: the menu closes the route list.
+      closeArchivePageRoutes();
       const owner = opener?.isConnected ? opener : more;
       const current = archivePageViewEntry(key)?.review || review;
       const restoreButton = row.querySelector('.arv-restore');
@@ -19365,16 +19470,20 @@ function archivePageFocus(target) {
 }
 
 // Where focus goes after a write or a repaint: the same control on the named
-// row, else that row's pick, else the filter field.
+// row (else the first row), else that row's More, else its pick; with no row
+// left, the empty state's button, else the heading. Only a control that is on
+// screen counts: at phone width and on touch screens Restore and the Trash
+// icon are folded into More. Never the filter field: Ctrl+Z and Escape skip
+// text fields, and Undo must stay one key away after the last row leaves.
 function focusArchivePageTarget(key = '', control = 'restore') {
   const root = archivePageRoot();
   if (!root) return false;
-  const row = archivePageRowFor(key);
-  const target = (row && (row.querySelector(`[data-arv-focus^="${control}:"]:not(:disabled)`) || row.querySelector('.arv-pick')))
-    || root.querySelector('.arv-find:not([hidden]) .arv-field input')
-    || root.querySelector('.lib-empty .lib-ebtn')
-    || root.querySelector('.arv-title');
-  return archivePageFocus(target);
+  const row = archivePageRowFor(key) || root.querySelector('.arv-row:not(.is-gone)');
+  const targets = row
+    ? [row.querySelector(`[data-arv-focus^="${control}:"]`), row.querySelector('.arv-more'), row.querySelector('.arv-pick')]
+    : [];
+  targets.push(root.querySelector('.lib-empty .lib-ebtn'), root.querySelector('.arv-title'));
+  return targets.some(target => !!target && !target.disabled && target.getClientRects().length > 0 && archivePageFocus(target));
 }
 
 // The row after (or before) the ones leaving, for focus to land on.
@@ -19382,7 +19491,7 @@ function archivePageNeighbourKey(keys) {
   const view = archivePageSession?.view;
   if (!view) return '';
   const leaving = new Set(keys);
-  const order = view.visible.map(archiveEntryKey);
+  const order = view.visible.map(archivePageKey);
   const last = Math.max(...keys.map(key => order.indexOf(key)));
   const first = Math.min(...keys.map(key => order.indexOf(key)).filter(i => i >= 0));
   return order.slice(last + 1).find(key => !leaving.has(key))
@@ -19503,7 +19612,7 @@ function archivePageSelectedEntries() {
   const session = archivePageSession;
   const view = session?.view;
   if (!view) return [];
-  return view.visible.filter(entry => session.selected.has(archiveEntryKey(entry)));
+  return view.visible.filter(entry => session.selected.has(archivePageKey(entry)));
 }
 
 function archivePageClearSelection({ focus = true } = {}) {
@@ -19535,6 +19644,15 @@ function archivePageEscape() {
     return true;
   }
   return archivePageClearSelection();
+}
+
+// The route list and a row menu are both floating layers; opening one closes
+// the other ("three layers, never more").
+function closeArchivePageRoutes() {
+  const routes = archivePageRoot()?.querySelector('.arv-dests[open]');
+  if (!routes) return false;
+  routes.open = false;
+  return true;
 }
 
 // The selection bar: the count, then where Restore will file the picked rows
@@ -19658,7 +19776,7 @@ async function archivePageRestoreSelected(restoreSelected) {
   const trash = view.mode === 'trash';
   const selectedEntries = archivePageSelectedEntries();
   if (!selectedEntries.length) return false;
-  const keys = selectedEntries.map(archiveEntryKey);
+  const keys = selectedEntries.map(archivePageKey);
   const containsArchivedPage = selectedEntries.some(
     entry => entry?.kind === 'item' && entry.data?.type === 'tab',
   );
@@ -19702,7 +19820,7 @@ function archivePageKillSelected() {
   if (!view) return false;
   const selectedEntries = archivePageSelectedEntries();
   if (!selectedEntries.length) return false;
-  const keys = selectedEntries.map(archiveEntryKey);
+  const keys = selectedEntries.map(archivePageKey);
   if (view.mode === 'trash') {
     return permanentlyDeleteTrashEntries(selectedEntries, { run: archivePageDeleteRun(keys, 'pick') });
   }
@@ -19733,10 +19851,13 @@ function syncArchivePageDoom({ closedKeys = null } = {}) {
   root.querySelectorAll('.arv-row').forEach(row => row.classList.toggle('is-doomed', doomed.has(row.dataset.key)));
   if (!closedKeys) return;
   // Keep or Escape on the ask: the shared receipt returns focus to the row's
-  // Delete forever; if that row was rebuilt meanwhile, focus stays on the page.
+  // Delete forever; if that row was rebuilt meanwhile, or the ask came from a
+  // row menu (at phone width), focus stays on the page. Focus is lost too when
+  // it is still on Keep while an older receipt comes forward without one.
   const active = document.activeElement;
   const t = document.getElementById('toast');
-  const lost = !active || active === document.body || (!!t && t.contains(active) && t.classList.contains('hidden'));
+  const lost = !active || active === document.body
+    || (!!t && t.contains(active) && (t.classList.contains('hidden') || !active.getClientRects().length));
   if (lost) focusArchivePageTarget(closedKeys[0] || '', 'kill');
 }
 
@@ -19763,9 +19884,10 @@ function appendArchivePageRows(upto) {
       section.innerHTML = `<h2 class="arv-gh">${esc(label)}<span class="arv-gn">${view.bucketCounts.get(bucket) || 0}</span></h2><div class="arv-rows" role="list" aria-label="${esc(label)}"></div>`;
       list.appendChild(section);
     }
-    const key = archiveEntryKey(entry);
+    const key = view.keys.get(entry) || archiveEntryKey(entry);
     const motion = view.motion || (view.seen && !view.seen.has(key) ? 'is-back' : '');
     const { row, review } = buildArchivePageRow(entry, view.mode, view.index, {
+      key,
       query: view.query,
       selected: session.selected.has(key),
       doomed: view.doomed.has(key),
@@ -19790,7 +19912,7 @@ function showMoreArchivePageRows({ focus = false } = {}) {
   if (!view || session.holdRender || view.rendered >= view.visible.length) return false;
   const first = view.rendered;
   appendArchivePageRows(view.rendered + ARCHIVE_PAGE_WINDOW);
-  if (focus) focusArchivePageTarget(archiveEntryKey(view.visible[first]), 'pick');
+  if (focus) focusArchivePageTarget(archivePageKey(view.visible[first]), 'pick');
   return true;
 }
 
@@ -19800,7 +19922,6 @@ function archivePageReveal(entry) {
   const session = archivePageSession;
   const root = archivePageRoot();
   if (!session?.view || !root || !entry) return false;
-  const key = archiveEntryKey(entry);
   let at = session.view.visible.findIndex(candidate => candidate === entry);
   if (at < 0 && (session.query || session.type !== 'all')) {
     session.query = '';
@@ -19812,7 +19933,7 @@ function archivePageReveal(entry) {
   }
   if (at < 0) return false;
   if (at >= session.view.rendered) appendArchivePageRows(at + 20);
-  return !!archivePageRowFor(key);
+  return !!archivePageRowFor(archivePageKey(entry));
 }
 
 // The heading, the switch with its rolling counts, the field and the chips'
@@ -19870,7 +19991,7 @@ function paintArchivePage() {
   if (!root || !session) return;
   const mode = activeLibraryMode;
   const trash = mode === 'trash';
-  const { stored, entries } = archivePageEntries(mode);
+  const { stored, entries, keys } = archivePageEntries(mode);
   const query = session.query.trim().toLowerCase();
   const typeCounts = Object.fromEntries(ARCHIVE_PAGE_TYPES.map(type => [type, 0]));
   const visible = [];
@@ -19903,7 +20024,7 @@ function paintArchivePage() {
     session.shown = ARCHIVE_PAGE_WINDOW;
     document.getElementById('board')?.scrollTo({ top: 0, behavior: 'instant' });
   }
-  const present = new Set(entries.map(archiveEntryKey));
+  const present = new Set(keys.values());
   [...session.selected].forEach(key => { if (!present.has(key)) session.selected.delete(key); });
   const time = trash ? trashTimestamp : archiveEntryTimestamp;
   const bucketCounts = new Map();
@@ -19915,6 +20036,7 @@ function paintArchivePage() {
     mode,
     query,
     visible,
+    keys,
     bucketCounts,
     index: createArchiveRestoreIndex(),
     byKey: new Map(),
@@ -19959,7 +20081,7 @@ function paintArchivePage() {
     list.appendChild(empty);
   }
   session.viewKey = viewKey;
-  session.seen = new Set(visible.map(archiveEntryKey));
+  session.seen = new Set(visible.map(entry => keys.get(entry)));
   syncArchivePageSelection();
 }
 
@@ -20021,6 +20143,9 @@ function bindArchivePage(page) {
   bar.querySelector('.arv-sel-kill').addEventListener('click', () => archivePageKillSelected());
   bar.querySelector('.arv-sel-clear').addEventListener('click', () => archivePageClearSelection());
   const routes = bar.querySelector('.archive-selection-destinations');
+  routes.addEventListener('toggle', () => {
+    if (routes.open && !document.getElementById('context-menu')?.classList.contains('hidden')) hideContextMenu();
+  });
   routes.addEventListener('keydown', event => {
     if (event.key !== 'Escape' || !routes.open) return;
     event.preventDefault();
@@ -20093,7 +20218,8 @@ function renderArchivePage(mode) {
   const firstShow = !page;
   const keepScroll = firstShow ? 0 : board.scrollTop;
   const active = document.activeElement;
-  const focusKey = page && active && page.contains(active)
+  const focusOnPage = !!(page && active && page.contains(active));
+  const focusKey = focusOnPage
     ? active.closest('[data-arv-focus]')?.dataset.arvFocus || null
     : null;
   const modeChanged = session.mode != null && session.mode !== mode;
@@ -20151,6 +20277,10 @@ function renderArchivePage(mode) {
     const [kind, ...rest] = focusKey.split(':');
     if (exact) archivePageFocus(exact);
     else focusArchivePageTarget(rest.join(':'), kind);
+  } else if (focusOnPage && !page.contains(document.activeElement)) {
+    // The empty state's button went with the empty state (an Undo brought a
+    // row back): focus moves to that row instead of falling to the body.
+    focusArchivePageTarget(page.querySelector('.arv-row.is-back')?.dataset.key || '', 'pick');
   }
   updateNavChrome();
   return true;
@@ -37649,19 +37779,7 @@ function bindStatic() {
   const appearancePackReset = document.getElementById('appearance-pack-reset');
   // The reset's receipt offers Undo, which puts back the exact optional theme,
   // typeface, and width through the same acknowledged write.
-  if (appearancePackReset) appearancePackReset.onclick = async () => {
-    const settings = State.get().settings || {};
-    const patch = appearanceStylePackResetPatch(settings);
-    if (!Object.keys(patch).length) return;
-    const previous = Object.fromEntries(Object.keys(patch).map(key => [key, appearanceSettingValue(settings, key)]));
-    if (!await commitAppearanceSettingsChange(appearancePackReset.id, patch)) return;
-    toast(tr('settings.stylePackResetDone'), {
-      actionLabel: tr('history.undoAction'),
-      action: () => commitAppearanceSettingsChange(appearancePackReset.id, previous).then(ok => (ok
-        ? { message: tr('history.undid', { action: tr('settings.stylePackReset') }), tone: 'info' }
-        : { message: tr('toast.actionFailed'), tone: 'error' })),
-    });
-  };
+  if (appearancePackReset) appearancePackReset.onclick = () => { void resetAppearanceStylePack(appearancePackReset); };
   const bindGeneralToggle = (id, key) => {
     const control = document.getElementById(id);
     if (!control) return;

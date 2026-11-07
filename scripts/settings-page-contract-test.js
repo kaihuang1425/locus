@@ -520,8 +520,10 @@ function testBindings() {
   ok(/const granted = on && typeof plannerRequestNativePermission === 'function'\n\s*\? plannerRequestNativePermission\(\)/.test(init),
     'the permission prompt opens inside the click');
   ok(/if \(!closeSettingsPage\(\{ restoreFocus: false \}\)\) return;\n\s*openLibrarySurface\('archive'\);/.test(init), 'Open archive leaves Settings, then opens Archive');
-  ok(/if \(!await commitAppearanceSettingsChange\(appearancePackReset\.id, patch\)\) return;\n\s*toast\(tr\('settings\.stylePackResetDone'\), \{\n\s*actionLabel: tr\('history\.undoAction'\),\n\s*action: \(\) => commitAppearanceSettingsChange\(appearancePackReset\.id, previous\)/.test(init),
-    'Use core defaults offers Undo, which puts the exact previous choices back through the same write');
+  ok(/appearancePackReset\.onclick = \(\) => \{ void resetAppearanceStylePack\(appearancePackReset\); \};/.test(init)
+    && /if \(!await commitAppearanceSettingsChange\(button\.id, patch\)\) return false;\n\s*toast\(tr\('settings\.stylePackResetDone'\), \{\n\s*actionLabel: tr\('history\.undoAction'\),\n\s*action: \(\) => undoAppearanceStylePackReset\(button, patch, previous\),/.test(extractFunction('resetAppearanceStylePack'))
+    && /return commitAppearanceSettingsChange\(button\.id, previous\)/.test(extractFunction('undoAppearanceStylePackReset')),
+  'Use core defaults offers Undo, which puts the exact previous choices back through the same write');
   ok(/shortcutsClear\.onclick = \(\) => \{\n\s*shortcutsFilter\.value = '';\n\s*filterAppShortcuts\(\);\n\s*shortcutsFilter\.focus\(\);/.test(init), 'Clear empties the filter and returns to it');
   ok(/document\.getElementById\('export-btn'\)\.onclick = \(\) => \{\n\s*runSettingsExport\(\);/.test(source), 'Download runs the filling export');
   ok(/function renderBoard\(\) \{\n  invalidateItemCache\(\);\n[^\n]*\n  closeSettingsPageOnRouteChange\(\);/.test(source), 'every board render checks whether the route left Settings');
@@ -595,6 +597,146 @@ function testCss() {
   ok(!/#settings-drawer \.drawer-sec|\.sp-side|\.sp-hd|\.appearance-setting|\.privacy-contract|\.capture-contract-route\s*\{/.test(css), 'the old Settings ledger CSS is gone');
 }
 
+// Review finding R3-7: the Undo of "Use core defaults" never overwrites a
+// newer appearance choice. As with a receipt whose Undo is no longer the
+// latest action, a later appearance change withdraws it (the message stays
+// and drains); an Undo that still arrives late finds a newer choice and
+// writes nothing.
+async function testResetUndo() {
+  const settings = { theme: 'nord', font: 'lora', width: 'normal', size: 'normal' };
+  const toastEntries = [];
+  const log = [];
+  const context = vm.createContext({
+    State: { get: () => ({ settings }) },
+    APPEARANCE_SETTING_DEFAULTS: { theme: 'folio', size: 'normal', width: 'normal', font: 'dm', showUrls: true, animate: true },
+    isCoreAppearanceTheme: id => ['auto', 'folio', 'folio-dark'].includes(id),
+    normalizeThemeId: id => id,
+    tr: (key, vars) => (vars ? `${key}:${JSON.stringify(vars)}` : key),
+    toastEntries,
+    toast: (msg, opts = {}) => { toastEntries.push({ msg, tone: 'success', busy: false, ...opts }); return true; },
+    toastFront: () => toastEntries[toastEntries.length - 1] || null,
+    settleToastAction: (entry, outcome) => { log.push(['settle', entry.msg, plain(outcome)]); entry.action = null; return true; },
+    removeToastEntry: entry => { log.push(['remove', entry.msg]); toastEntries.splice(toastEntries.indexOf(entry), 1); return true; },
+    writes: [],
+  });
+  // The acknowledged write is stubbed; like the real one (asserted below), it
+  // withdraws an earlier reset's Undo once storage has accepted the change.
+  vm.runInContext(`${extractFunction('appearanceSettingValue')}\n${extractFunction('appearanceStylePackResetPatch')}\n${between('let appearanceResetUndo = null;', '\n// Download: the button fills')}
+async function commitAppearanceSettingsChange(id, patch) { writes.push([id, JSON.parse(JSON.stringify(patch))]); Object.assign(State.get().settings, patch); withdrawAppearanceResetUndo(); return true; }
+globalThis.x = { resetAppearanceStylePack, commitAppearanceSettingsChange, current: () => appearanceResetUndo };`, context, { filename: 'settings-reset-undo.js' });
+  const button = { id: 'appearance-pack-reset' };
+
+  ok(await context.x.resetAppearanceStylePack(button) === true, 'Use core defaults writes the core choices');
+  eq(context.writes, [['appearance-pack-reset', { theme: 'folio', font: 'dm' }]], '…only what differs from the core');
+  const first = toastEntries.at(-1);
+  eq([first.msg, first.actionLabel, typeof first.action, context.x.current() === first], ['settings.stylePackResetDone', 'history.undoAction', 'function', true], 'its receipt offers Undo');
+  const lateUndo = first.action;
+  await context.x.commitAppearanceSettingsChange('theme-folio-dark', { theme: 'folio-dark' });
+  eq(log, [['settle', 'settings.stylePackResetDone', { message: 'settings.stylePackResetDone', tone: 'success' }]],
+    'a later appearance choice withdraws that Undo: the message stays, the action goes and the receipt drains (finding R3-7)');
+  eq([first.action, context.x.current()], [null, null], 'nothing is left to undo');
+  const stale = await lateUndo();
+  eq([stale.message, stale.tone, context.writes.length, settings.theme], ['history.undoStale', 'warning', 2, 'folio-dark'],
+    'an Undo that still arrives finds the newer choice, writes nothing and says Undo is no longer available');
+
+  Object.assign(settings, { theme: 'nord', font: 'lora' });
+  log.length = 0;
+  await context.x.resetAppearanceStylePack(button);
+  const second = toastEntries.at(-1);
+  const undone = await second.action();
+  eq([undone.message, undone.tone, settings.theme, settings.font, context.writes.at(-1)],
+    ['history.undid:{"action":"settings.stylePackReset"}', 'info', 'nord', 'lora', ['appearance-pack-reset', { theme: 'nord', font: 'lora' }]],
+    'with no change in between, Undo puts the exact previous theme and typeface back');
+  eq(log, [], 'the Undo’s own write does not withdraw itself');
+
+  Object.assign(settings, { theme: 'nord', font: 'lora' });
+  await context.x.resetAppearanceStylePack(button);
+  const behind = toastEntries.at(-1);
+  toastEntries.push({ msg: 'newer receipt', busy: false });
+  await context.x.commitAppearanceSettingsChange('appearance-size-large', { size: 'large' });
+  ok(log.some(entry => entry[0] === 'remove' && entry[1] === 'settings.stylePackResetDone') && !toastEntries.includes(behind),
+    'a reset receipt waiting behind a newer one leaves with its Undo');
+
+  const commit = extractFunction('commitAppearanceSettingsChange');
+  ok(/appearanceSettingsStatus = \{ key: 'settings\.appearanceSaved', state: 'success' \};\n\s*\/\/[^\n]*\n\s*withdrawAppearanceResetUndo\(\);/.test(commit),
+    'the real write withdraws the reset’s Undo only after storage accepts a change');
+  ok(!/withdrawAppearanceResetUndo/.test(commit.slice(commit.indexOf('if (expected === previous)'), commit.indexOf('const transaction ='))), 'a no-op choice keeps it');
+  ok(/if \(toastFront\(\) === entry\) return settleToastAction\(entry, \{ message: entry\.msg, tone: entry\.tone \}\);\n\s*return removeToastEntry\(entry\);/.test(extractFunction('withdrawAppearanceResetUndo')),
+    'the shared receipt’s own stale-Undo rule: the front one keeps its message, one behind leaves');
+}
+
+// Findings R3-4 and R3-5: every text pair on the page holds 4.5:1 in every
+// bundled theme, computed from themes.css and the mixes this layer declares.
+function testContrast() {
+  const parse = value => {
+    const text = String(value || '').trim();
+    let match = /^#([0-9a-f]{6})$/i.exec(text);
+    if (match) return { r: parseInt(match[1].slice(0, 2), 16), g: parseInt(match[1].slice(2, 4), 16), b: parseInt(match[1].slice(4), 16), a: 1 };
+    match = /^rgba?\(([^)]+)\)$/.exec(text);
+    if (match) { const p = match[1].split(',').map(Number); return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 }; }
+    return null;
+  };
+  const over = (top, bottom) => ({ r: top.r * top.a + bottom.r * (1 - top.a), g: top.g * top.a + bottom.g * (1 - top.a), b: top.b * top.a + bottom.b * (1 - top.a), a: 1 });
+  const mix = (a, share, b) => ({ r: a.r * share + b.r * (1 - share), g: a.g * share + b.g * (1 - share), b: a.b * share + b.b * (1 - share), a: 1 });
+  const lum = ({ r, g, b }) => [r, g, b].map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }).reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
+  const contrast = (fg, bg) => { const a = lum(fg); const b = lum(bg); return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); };
+  const black = { r: 0, g: 0, b: 0, a: 1 };
+  const white = { r: 255, g: 255, b: 255, a: 1 };
+  const num = (pattern, label) => { const m = pattern.exec(layer); ok(m, `${label} is declared as a theme-aware mix`); return Number(m[1]) / 100; };
+  const ink2 = num(/--stg-ink-2: color-mix\(in srgb, var\(--text2\) (\d+)%, var\(--text\)\);/, 'the secondary ink on cards and tints');
+  const nowMuted = num(/--stg-now-muted: var\(--registry-muted, color-mix\(in srgb, var\(--today-now-text\) (\d+)%, var\(--today-now\)\)\);/, 'the facts’ quiet label');
+  const seg = num(/--stg-seg: var\(--card-rule, color-mix\(in srgb, var\(--text\) (\d+)%, var\(--stg-card\)\)\);/, 'the segment track');
+  const chip = num(/\.stg-chip\[data-state="active"\],[\s\S]*?\{[^}]*color: color-mix\(in srgb, var\(--today-receipt\) (\d+)%, var\(--text\)\);/, 'the Active chip text');
+  const onDark = num(/body\[data-theme="folio-dark"\] #settings-drawer \{ --stg-on: color-mix\(in srgb, var\(--accent-bg\) (\d+)%, #000\); \}/, 'Locus Dark’s filled button');
+  const doneLight = num(/body\[data-theme-mode="light"\] \.stg-export\[data-state="done"\] \{ background: color-mix\(in srgb, var\(--today-receipt\) (\d+)%, #000\); \}/, 'the light themes’ done fill');
+  const doneDark = num(/body\[data-theme-mode="dark"\] \.stg-export\[data-state="done"\] \{ color: color-mix\(in srgb, var\(--today-ground\) (\d+)%, #000\); \}/, 'the dark themes’ done text');
+  for (const selector of ['.stg-meta', '.stg-seg button', '.stg-chip', '.stg-filter', '.stg-empty', '.stg-note', '.stg-licence', '#storage-breakdown .sp-breakdown-meta']) {
+    const block = layer.match(new RegExp(`\\n${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\{[^}]*\\}`))?.[0] || '';
+    ok(/color: var\(--stg-ink-2\);/.test(block), `${selector} uses the secondary ink`);
+  }
+  ok(/\.stg-fact-k \{ color: var\(--stg-now-muted\);/.test(layer), 'the facts’ labels use their quiet label colour (finding R3-4)');
+  const themesCss = read('themes.css');
+  const darkTheme = {};
+  for (const m of source.matchAll(/\{ id:'([\w-]+)',\s*label:'[^']*',\s*colors:\['#([0-9a-f]{6})'/g)) {
+    const [r, g, b] = [0, 2, 4].map(i => parseInt(m[2].slice(i, i + 2), 16));
+    darkTheme[m[1]] = (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5; // isDarkTheme's rule
+  }
+  const fails = [];
+  let themes = 0;
+  for (const m of themesCss.matchAll(/\n\[data-theme="([\w-]+)"\] \{([^}]*)\}/g)) {
+    if (!(m[1] in darkTheme) || m.index !== themesCss.indexOf(`\n[data-theme="${m[1]}"] {`)) continue;
+    themes += 1;
+    const raw = {};
+    for (const d of m[2].matchAll(/--([\w-]+):\s*([^;]+);/g)) raw[d[1]] = d[2].trim();
+    const c = name => parse(raw[name]);
+    const text = c('text');
+    const card = c('card') || c('paper-strong') || c('panel');
+    const ground = c('ground') || c('paper') || c('bg');
+    const now = c('registry-card') || c('registry-bg') || text;
+    const receipt = c('receipt') || c('green');
+    const ink = mix(c('text2'), ink2, text);
+    const track = c('card-rule') ? over(c('card-rule'), card) : mix(text, seg, card);
+    const fill = m[1] === 'folio-dark' ? mix(c('accent-bg'), onDark, black) : c('accent-bg');
+    const pairs = {
+      'meta on a card': [ink, card],
+      'chip on its tint': [ink, mix(text, 0.06, card)],
+      'segment on its track': [ink, track],
+      'shortcut status on its tint': [ink, mix(text, 0.05, card)],
+      'section list on the page': [c('text2'), ground],
+      'fact label on the dark fact': [c('registry-muted') || mix(c('registry-text') || c('bg2'), nowMuted, now), now],
+      'Active chip on its green tint': [mix(receipt, chip, text), mix(receipt, 0.14, card)],
+      'Download on the filled button': [c('accent-text'), fill],
+      'Download done': darkTheme[m[1]] ? [mix(ground, doneDark, black), receipt] : [white, mix(receipt, doneLight, black)],
+    };
+    for (const [name, [fg, bg]] of Object.entries(pairs)) {
+      const value = contrast(fg, bg);
+      if (value < 4.5) fails.push(`${m[1]}: ${name} ${value.toFixed(2)}`);
+    }
+  }
+  eq(themes, 19, 'all 19 bundled themes are checked');
+  eq(fails, [], 'every Settings text pair is at least 4.5:1 in every bundled theme (findings R3-4, R3-5)');
+}
+
 function testCi() {
   ok(ci.includes('scripts/settings-page-contract-test.js'), 'CI syntax-checks this suite');
   ok(/run: node scripts\/settings-page-contract-test\.js/.test(ci), 'CI runs this suite');
@@ -613,8 +755,10 @@ function testCi() {
   testPermissionBoundary();
   testLocales();
   testCss();
+  await testResetUndo();
+  testContrast();
   testCi();
-  console.log(`Settings page contract tests passed: ${checks} checks (seven sections and the pill, switch rows, hidden descriptions, Privacy & data panes, rail and route exits, theme preview crossfade, companion off switch on the optional permission, the filling download, locales, CSS)`);
+  console.log(`Settings page contract tests passed: ${checks} checks (seven sections and the pill, switch rows, hidden descriptions, Privacy & data panes, rail and route exits, theme preview crossfade, companion off switch on the optional permission, the filling download, the reset Undo withdrawn by a newer choice, locales, CSS, 4.5:1 in 19 themes)`);
 })().catch(error => {
   console.error(error);
   process.exitCode = 1;

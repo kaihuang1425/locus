@@ -2807,6 +2807,9 @@ function repaintSavedMarks() {
 // Undo takes back exactly the item this receipt saved, through the same
 // receipt-gated write as the save. Everything else in the graph stays.
 async function undoQuickSave(receipt) {
+  // Undo takes the item back, so a Move list still open over its receipt has
+  // nothing left to move.
+  closeQuickSaveMove();
   if (!beginPopupCapture()) return 'keep';
   let snapshot;
   try {
@@ -2835,8 +2838,15 @@ function openQuickSaveMove(receipt) {
   return 'keep';
 }
 
+function closeQuickSaveMove({ restoreFocus = false } = {}) {
+  if (openLayer?.kind !== 'list' || openLayer.mode !== 'move') return false;
+  return closeFloatingLayer({ restoreFocus });
+}
+
 // Move puts the saved item into another Group with the same receipt-gated write
 // and keeps the receipt, now naming the new Group, with its actions and drain.
+// "Skip duplicate URLs" applies exactly as to Save: a Group that already holds
+// the page gets no second copy, the item stays put and the receipt says so.
 async function moveQuickSave(receipt, groupId) {
   if (!beginPopupCapture()) return 'keep';
   let snapshot;
@@ -2850,6 +2860,7 @@ async function moveQuickSave(receipt, groupId) {
       return { message: tr('savedItemChanged'), tone: 'warning' };
     }
     if (destination.group === found.group) return 'keep';
+    if (!filterPopupCaptureTabs([found.item], destination.group.items).length) return { message: tr('alreadySaved'), tone: 'info', keepActions: true };
     found.group.items.splice(found.index, 1);
     if (destination.group.items == null) destination.group.items = [];
     destination.group.items.push(found.item);
@@ -3316,6 +3327,9 @@ function dismissToastForEscape() {
 function undoFromPopupKeyboard() {
   const front = popupToastFront();
   if (!$('pop-toast').classList.contains('show') || typeof front?.undo !== 'function' || front.busy) return false;
+  // The Move list closes first and hands focus back to the receipt, so focus
+  // follows the result instead of falling to the page.
+  closeQuickSaveMove({ restoreFocus: true });
   runPopupToastAction(front, front.undo);
   return true;
 }

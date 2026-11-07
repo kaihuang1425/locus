@@ -235,7 +235,7 @@ function buildHarness(overrides = {}) {
   let currentState = { settings: initialSettings(overrides) };
   let recoveryRequired = false;
   let persistNow = async () => ({ ok: true });
-  const calls = { persists: 0, applies: 0, renders: 0, focuses: 0, recoveries: 0, requires: 0 };
+  const calls = { persists: 0, applies: 0, renders: 0, focuses: 0, recoveries: 0, requires: 0, withdraws: 0 };
   const controls = new Map();
   const document = {
     activeElement: null,
@@ -269,6 +269,8 @@ function buildHarness(overrides = {}) {
     tr: key => `en:${key}`,
     document,
     paintSettingsPreferenceBusy: () => {},
+    // Settings' "Use core defaults" Undo, which a newer accepted choice ends.
+    withdrawAppearanceResetUndo: () => { calls.withdraws += 1; },
     applySettings: () => { calls.applies += 1; calls.renders += 1; },
     showStateRecoveryRequired: () => { calls.recoveries += 1; },
     State: {
@@ -323,9 +325,13 @@ async function run() {
     'duplicate activation must not enqueue another whole-graph write');
   assert.equal(pending.calls.focuses, 1,
     'duplicate activation must return focus to the initiating control');
+  assert.equal(pending.calls.withdraws, 0,
+    'nothing is withdrawn before storage accepts the choice');
   releaseReceipt({ ok: true });
   assert.equal(await runPending, true,
     'an exact acknowledged Appearance choice must complete');
+  assert.equal(pending.calls.withdraws, 1,
+    'an accepted Appearance choice withdraws an earlier "Use core defaults" Undo, so it can never overwrite this newer choice (finding R3-7)');
   assert.equal(pending.api.pending(), null,
     'acknowledgement must release the Appearance interlock');
   assert.deepEqual({ ...pending.api.status() },

@@ -325,6 +325,8 @@ function oneClickContext(state, { persist = () => Promise.resolve({ ok: true }),
     setQuickCaptureDoneAction: value => log.done.push(value),
     runQuickCaptureAction: async action => { log.runs.push([action, plain(ctx.quickCaptureRecoveryIntent)]); return true; },
   });
+  // Move applies Save's own duplicate rule, so the real one runs here.
+  vm.runInContext(slice('function filterPopupCaptureTabs(', '\nfunction popupCaptureError(', 'Duplicate URL rule'), ctx);
   return ctx;
 }
 
@@ -417,6 +419,44 @@ async function testOneClickMoveAndLocate() {
 
   vm.runInContext(`closeFloatingLayer()`, ctx);
   eq([ctx.openLayer, pins], [null, [true, false]], 'closing the Move list unpins the receipt');
+
+  // Review finding R3-6: Undo takes the item back, so a Move list open over
+  // the receipt closes first instead of offering a move that can only fail.
+  {
+    const layered = oneClickContext(oneClickFixture());
+    const [, layeredOptions] = oneClickReceipt(layered);
+    layered.$('pop-toast').getBoundingClientRect = () => ({ left: 14, top: 420, width: 352, bottom: 518 });
+    layered.$('popup').getBoundingClientRect = () => ({ left: 0, top: 0, width: 380, bottom: 600 });
+    layered.$('dest-list').contains = () => false;
+    layered.$('dest-list').querySelector = () => null;
+    layered.pinPopupToast = () => {};
+    layeredOptions.move();
+    eq(layered.openLayer?.mode, 'move', 'the Move list is open over the receipt');
+    const undone = await layeredOptions.undo();
+    eq([undone.message, layered.openLayer, vm.runInContext('quickSaveMoveReceipt', layered), layered.$('dest-list').classList.contains('hidden')],
+      ['undone', null, null, true], 'Undo closes the Move list and forgets its receipt (finding R3-6)');
+    ok(/closeQuickSaveMove\(\{ restoreFocus: true \}\);\s*runPopupToastAction\(front, front\.undo\);/.test(popupJs),
+      'Ctrl Z / Cmd Z closes the Move list first, handing focus to the receipt so it follows the result');
+  }
+
+  // Review finding R3-8: Move follows "Skip duplicate URLs" exactly as Save
+  // does. Reading already holds https://example.test/a in the fixture.
+  for (const dedupe of [true, false]) {
+    const dup = oneClickContext(oneClickFixture());
+    if (!dedupe) dup.state.settings.captureDeduplicate = false;
+    oneClickReceipt(dup);
+    const before = plain(dup.state);
+    const outcome = await vm.runInContext(`moveQuickSave(receipt, 'reading')`, dup);
+    const copies = dup.state.workspaces[0].categories[0].groups[1].items.filter(item => item.url === 'https://example.test/a').length;
+    if (dedupe) {
+      eq([outcome.message, outcome.tone, outcome.keepActions, dup.log.persisted.length, plain(dup.state), copies], ['alreadySaved', 'info', true, 0, before, 1],
+        'with Skip duplicate URLs on, Move into a Group that holds the page writes nothing and says "Already saved", as Save does; Undo, Move and Locate stay (finding R3-8)');
+    } else {
+      eq([outcome.message, dup.log.persisted.length, copies], ['savedTo:Reading', 1, 2], 'with it off, Move puts the copy in, as Save would');
+    }
+  }
+  ok(/if \(!filterPopupCaptureTabs\(\[found\.item\], destination\.group\.items\)\.length\) return \{ message: tr\('alreadySaved'\), tone: 'info', keepActions: true \};\s*found\.group\.items\.splice\(found\.index, 1\);/.test(popupJs),
+    'Move checks Save\'s duplicate rule before it takes the item out of its Group');
 
   for (const closeSource of [true, false]) {
     const locate = oneClickContext(oneClickFixture());

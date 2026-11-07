@@ -5417,3 +5417,34 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
     keyboard shortcut and the context menu" (the popup's one-click Save uses it too).
 
   **Implemented: yes. Verified: partial. User-validated: no. Released: no.**
+
+- **2026-11-07 - Fixes from the final review: Archive & Trash, Settings, popup (R3).**
+  - Delete forever removes exactly the entries it asked about, found by identity. Two
+    stored entries that share kind, id and filing time (an import, older data) no longer
+    collapse into one row: each gets a key no other entry shares (a fingerprint of its
+    content, and a count for exact copies), so one pick is one entry. Before, a pick
+    selected both twins and a stale index removed the last entry in Trash.
+  - After Restore, Move to Trash or Delete forever, focus goes to a control that is on
+    screen: the next row's same control, else its More (phone width and touch fold
+    Restore and Trash into More), else its pick; with no row left, the empty state's
+    button, else the heading. Never the filter field, where Ctrl+Z and Escape do not
+    reach the app. Keep from a row menu also lands on the row's More.
+  - A row menu and the restore route list are one floating layer: opening either closes
+    the other. The type chips are at least 44 px wide ("All" was 34 px at phone width).
+  - Text on Settings and Archive & Trash holds 4.5:1 in all 19 themes. Secondary text on
+    cards and tints is --text2 leaned a quarter toward --text (the older themes tune
+    --text2 for their ground only); text on the page ground keeps --text2. Quiet text on
+    the dark facts and the selection bar uses the theme's registry tone, else a step of
+    the bar's own text. Locus Dark's filled buttons take a deeper step of its accent
+    (white type 5.7:1); the Active chip is half green, half ink; the Download done state
+    deepens its green in light themes and puts dark type on it in dark themes.
+  - Use core defaults: a later appearance change withdraws the reset's Undo (the message
+    stays and drains), as the shared receipt does for an Undo that is no longer the
+    latest; an Undo that still arrives finds the newer choice and writes nothing.
+  - Popup: Undo on the save receipt closes an open Move list first. Move follows "Skip
+    duplicate URLs" exactly as Save: a Group that already holds the page gets no second
+    copy, the item stays where it was and the receipt says "Already saved" with Undo,
+    Move and Locate kept.
+
+  **Implemented: yes. Verified: suites and Edge (locus-redesign-evidence/pages/fixes-r3).
+  User-validated: no. Released: no.**

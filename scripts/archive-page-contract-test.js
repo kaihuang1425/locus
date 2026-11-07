@@ -47,9 +47,48 @@ const rule = selector => {
   return layer.match(new RegExp(`\\n${escaped} \\{[^}]*\\}`))?.[0] || '';
 };
 
+// Colour arithmetic for the contrast contract: each theme's tokens from
+// themes.css, resolved the way the canvas layers resolve them.
+function parseColour(value) {
+  const text = String(value || '').trim();
+  let match = /^#([0-9a-f]{6})$/i.exec(text);
+  if (match) return { r: parseInt(match[1].slice(0, 2), 16), g: parseInt(match[1].slice(2, 4), 16), b: parseInt(match[1].slice(4), 16), a: 1 };
+  match = /^rgba?\(([^)]+)\)$/.exec(text);
+  if (match) { const p = match[1].split(',').map(Number); return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 }; }
+  return null;
+}
+const overC = (top, bottom) => ({ r: top.r * top.a + bottom.r * (1 - top.a), g: top.g * top.a + bottom.g * (1 - top.a), b: top.b * top.a + bottom.b * (1 - top.a), a: 1 });
+const mixC = (a, share, b) => ({ r: a.r * share + b.r * (1 - share), g: a.g * share + b.g * (1 - share), b: a.b * share + b.b * (1 - share), a: 1 });
+const luminanceC = ({ r, g, b }) => [r, g, b].map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }).reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
+const contrastC = (fg, bg) => { const a = luminanceC(fg); const b = luminanceC(bg); return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); };
+function themeTokens(themesCss) {
+  const out = {};
+  for (const match of themesCss.matchAll(/\n\[data-theme="([\w-]+)"\] \{([^}]*)\}/g)) {
+    if (out[match[1]]) continue;
+    const raw = {};
+    for (const decl of match[2].matchAll(/--([\w-]+):\s*([^;]+);/g)) raw[decl[1]] = decl[2].trim();
+    const c = name => parseColour(raw[name]);
+    const text = c('text');
+    const card = c('card') || c('paper-strong') || c('panel');
+    out[match[1]] = {
+      text, text2: c('text2'), card,
+      ground: c('ground') || c('paper') || c('bg'),
+      rule: c('card-rule') || c('border2'),
+      cardRule: c('card-rule'),
+      now: c('registry-card') || c('registry-bg') || text,
+      nowText: c('registry-text') || c('bg2'),
+      registryMuted: c('registry-muted'),
+      receipt: c('receipt') || c('green'),
+      locator: c('locator') || c('accent'),
+      accentBg: c('accent-bg'), accentText: c('accent-text'),
+    };
+  }
+  return out;
+}
+
 // ── 1. The one-pass Restore index matches the per-row checks ─────────────
 const RESTORE_SLICES = [
-  'archiveEntryTimestamp', 'archiveEntryKey', 'activeArchivedPageItemIdCount',
+  'archiveEntryTimestamp', 'archiveEntryKey', 'archiveEntryKeys', 'activeArchivedPageItemIdCount',
   'resolveArchivedPageRestoreDestination', 'createArchivedPageRestoreContext', 'createTrashedPageRestoreContext',
   'archivedLocalItemEntityIds', 'archivedLocalItemIdsAvailable', 'createArchivedLocalItemRestoreContext',
   'createTrashedLocalItemRestoreContext', 'archivedGroupEntityIds', 'archivedGroupIdsAvailable',
@@ -186,6 +225,27 @@ const groupEntry = (data, extra = {}) => ({ kind: 'group', data, wsId: 'ws', cat
   eq(ctx.archiveEntryKey(JSON.parse(JSON.stringify(archived))), ctx.archiveEntryKey(archived), 'a rebuilt entry keeps its key');
   ok(ctx.archiveEntryKey(trashed) !== ctx.archiveEntryKey(archived), 'the Trash copy has its own key');
   ok(ctx.archiveEntryKey(groupEntry({ id: 'k1', items: [] }, { at: 123 })) !== ctx.archiveEntryKey(archived), 'a group and an item never share a key');
+
+  // Review finding R3-1: two stored entries can share kind, id and filing time
+  // (an import, older data). The page and the Delete forever ask key every
+  // entry uniquely, so one pick is one entry and its twin never collapses
+  // into it; the keys survive an Undo rebuild.
+  const twinA = itemEntry({ id: 'dup', type: 'tab', title: 'Twin A', url: 'https://twin.test/a' }, { at: 200 });
+  const twinB = itemEntry({ id: 'dup', type: 'tab', title: 'Twin B', url: 'https://twin.test/b' }, { at: 200 });
+  const copy1 = itemEntry({ id: 'same', type: 'tab', title: 'Copy', url: 'https://copy.test/' }, { at: 300 });
+  const copy2 = JSON.parse(JSON.stringify(copy1));
+  const single = itemEntry(tab('alone'), { at: 400 });
+  const stored = [twinA, twinB, copy1, copy2, single];
+  const keys = ctx.archiveEntryKeys(stored);
+  eq(new Set(stored.map(entry => keys.get(entry))).size, 5, 'every stored entry gets a key no other entry shares (twins and exact copies too)');
+  eq(keys.get(single), ctx.archiveEntryKey(single), 'an entry without a twin keeps its plain key');
+  ok(keys.get(twinA).startsWith(`${ctx.archiveEntryKey(twinA)}~`) && keys.get(twinA) !== keys.get(twinB), 'twins are told apart by their content');
+  ok(keys.get(copy2) === `${keys.get(copy1)}#2`, 'exact copies are told apart by count, in stored order');
+  const rebuilt = JSON.parse(JSON.stringify(stored));
+  const rebuiltKeys = ctx.archiveEntryKeys(rebuilt);
+  eq(rebuilt.map(entry => rebuiltKeys.get(entry)), stored.map(entry => keys.get(entry)), 'an Undo rebuild keeps every key, twins included');
+  const listed = ctx.archiveEntryKeys([single, twinB]);
+  eq([listed.get(single), listed.get(twinB)], [ctx.archiveEntryKey(single), ctx.archiveEntryKey(twinB)], 'with its twin gone, an entry is back to its plain key');
 }
 
 // ── 2. The write runner: hold, motion, one repaint, then focus ───────────
@@ -315,6 +375,103 @@ function runnerHarness() {
   ok(/trash \? stored\.length - entries\.length : 0/.test(paint) && /tr\('trash\.invalid', \{ count: invalid \}\)/.test(paint), 'damaged Trash entries are still reported');
   ok(!/confirm\(/.test(extractFunction('permanentlyDeleteTrashEntries')), 'no native confirmation');
 
+  // R3-1: rows, picks, the neighbour and the bar's writes use the page's
+  // unique keys, never the plain key two twins can share.
+  ok(/const keys = archiveEntryKeys\(entries\);\n\s*entries\.sort\(/.test(extractFunction('archivePageEntries')), 'the page keys its entries in stored order, as the Delete forever ask does');
+  ok(/const \{ stored, entries, keys \} = archivePageEntries\(mode\);/.test(paint) && /const present = new Set\(keys\.values\(\)\);/.test(paint)
+    && /\n\s*keys,\n/.test(paint) && /session\.seen = new Set\(visible\.map\(entry => keys\.get\(entry\)\)\);/.test(paint),
+  'a paint keeps its unique keys for the selection, the rows and the drop-in check');
+  ok(/const key = view\.keys\.get\(entry\) \|\| archiveEntryKey\(entry\);/.test(extractFunction('appendArchivePageRows')) && /const key = paint\.key \|\| archiveEntryKey\(entry\);/.test(row),
+    'each row carries its unique key');
+  ok(/session\.selected\.has\(archivePageKey\(entry\)\)/.test(extractFunction('archivePageSelectedEntries'))
+    && /selectedEntries\.map\(archivePageKey\)/.test(extractFunction('archivePageRestoreSelected'))
+    && /selectedEntries\.map\(archivePageKey\)/.test(extractFunction('archivePageKillSelected'))
+    && /view\.visible\.map\(archivePageKey\)/.test(extractFunction('archivePageNeighbourKey')),
+  'one pick is one entry: selection, the bar and the neighbour all use the unique key');
+  for (const name of ['restoreStoredEntries', 'moveArchiveEntriesToTrash', 'confirmTrashDelete']) {
+    ok(!/splice\([^;]*indexOf\(/.test(extractFunction(name)), `${name} never splices at a searched index (indexOf can be -1, which removes the last entry)`);
+  }
+
+  // R3-2 and R3-3: focus after a write goes to a control that is on screen,
+  // and never to the filter field, whose Ctrl+Z and Escape the global handler
+  // skips. At phone width Restore and the Trash icon are folded into More.
+  function focusHarness({ rows = [], empty = false }) {
+    const focused = [];
+    const make = (name, { visible = true, disabled = false } = {}) => ({
+      name, disabled, isConnected: true,
+      getClientRects: () => (visible ? [{ width: 44 }] : []),
+      focus() { focused.push(name); },
+    });
+    const built = rows.map(spec => {
+      const controls = {
+        restore: make(`${spec.key}:restore`, spec.restore),
+        kill: make(`${spec.key}:kill`, spec.kill),
+        more: make(`${spec.key}:more`, spec.more),
+        pick: make(`${spec.key}:pick`, spec.pick),
+      };
+      return {
+        key: spec.key,
+        querySelector(selector) {
+          const kind = /\^="(\w+):"/.exec(selector)?.[1];
+          if (kind) return controls[kind] || null;
+          if (selector === '.arv-more') return controls.more;
+          if (selector === '.arv-pick') return controls.pick;
+          return null;
+        },
+      };
+    });
+    const input = make('filter-input');
+    const pageRoot = {
+      querySelector(selector) {
+        if (selector === '.arv-row:not(.is-gone)') return built[0] || null;
+        if (selector === '.lib-empty .lib-ebtn') return empty ? make('empty-button') : null;
+        if (selector === '.arv-title') return make('heading');
+        if (/arv-field input/.test(selector)) return input;
+        return null;
+      },
+    };
+    const context = vm.createContext({
+      archivePageRoot: () => pageRoot,
+      archivePageRowFor: key => built.find(item => item.key === key) || null,
+      archivePageFocus: target => { target.focus(); return true; },
+    });
+    vm.runInContext(extractFunction('focusArchivePageTarget'), context, { filename: 'archive-page-focus.js' });
+    return { focus: (key, control) => context.focusArchivePageTarget(key, control), focused };
+  }
+  {
+    const desk = focusHarness({ rows: [{ key: 'a' }, { key: 'b' }] });
+    desk.focus('b', 'restore');
+    eq(desk.focused, ['b:restore'], 'desktop: the same control on the named row');
+    const phone = focusHarness({ rows: [{ key: 'a', restore: { visible: false }, kill: { visible: false } }] });
+    phone.focus('a', 'kill');
+    eq(phone.focused, ['a:more'], 'phone width: the row’s More when its Trash icon is folded away (finding R3-3)');
+    const unavailable = focusHarness({ rows: [{ key: 'a', restore: { disabled: true }, more: { visible: false } }] });
+    unavailable.focus('a', 'restore');
+    eq(unavailable.focused, ['a:pick'], 'a Restore that is off falls to the row’s pick');
+    const moved = focusHarness({ rows: [{ key: 'x' }] });
+    moved.focus('gone', 'pick');
+    eq(moved.focused, ['x:pick'], 'a row that is gone hands focus to the first row');
+    const emptied = focusHarness({ rows: [], empty: true });
+    emptied.focus('', 'restore');
+    eq(emptied.focused, ['empty-button'], 'with no row left, the empty state’s button, never the filter field (finding R3-2)');
+    const bare = focusHarness({ rows: [] });
+    bare.focus('', 'kill');
+    eq(bare.focused, ['heading'], 'with no button either, the heading');
+    ok(!/arv-field input/.test(extractFunction('focusArchivePageTarget')), 'the filter field is never a landing place after a write');
+  }
+  ok(/const focusOnPage = !!\(page && active && page\.contains\(active\)\);/.test(page)
+    && /\} else if \(focusOnPage && !page\.contains\(document\.activeElement\)\) \{[\s\S]*?focusArchivePageTarget\(page\.querySelector\('\.arv-row\.is-back'\)\?\.dataset\.key \|\| '', 'pick'\);/.test(page),
+  'when an Undo brings a row back and the empty state goes, focus moves to that row instead of the body');
+  ok(/\|\| \(!!t && t\.contains\(active\) && \(t\.classList\.contains\('hidden'\) \|\| !active\.getClientRects\(\)\.length\)\);\n\s*if \(lost\) focusArchivePageTarget\(closedKeys\[0\] \|\| '', 'kill'\);/.test(extractFunction('syncArchivePageDoom')),
+    'Keep from a row menu returns focus to the page, also while an older receipt comes forward without Keep');
+
+  // R3-9: one floating layer. A row menu closes the route list; the route
+  // list closes an open row menu.
+  ok(/bindBoardItemContextMenu\(row, opener => \{\n\s*\/\/[^\n]*\n\s*closeArchivePageRoutes\(\);/.test(row), 'opening a row menu closes the route list');
+  ok(/routes\.addEventListener\('toggle', \(\) => \{\n\s*if \(routes\.open && !document\.getElementById\('context-menu'\)\?\.classList\.contains\('hidden'\)\) hideContextMenu\(\);/.test(extractFunction('bindArchivePage')),
+    'opening the route list closes an open row menu');
+  ok(/const routes = archivePageRoot\(\)\?\.querySelector\('\.arv-dests\[open\]'\);\n\s*if \(!routes\) return false;\n\s*routes\.open = false;/.test(extractFunction('closeArchivePageRoutes')), 'closing the route list is one shared step');
+
   // ── 4. Locales ──────────────────────────────────────────────────────────
   const i18nStart = source.indexOf('const I18N = ');
   const literal = source.slice(i18nStart + 'const I18N = '.length, source.lastIndexOf('};', source.indexOf('\nfunction tr(', i18nStart)) + 1);
@@ -354,6 +511,43 @@ function runnerHarness() {
   for (const selector of ['.arv-seg-btn', '.arv-pick', '.arv-ai', '.arv-restore', '.arv-chip', '.arv-clear', '.arv-sb', '.arv-morebtn', '.arv-field']) {
     ok(/(?:^|\s|;)(?:min-)?height: (?:4[4-9]|5\d)px/.test(rule(selector)), `${selector} is at least 44 px tall`);
   }
+  // R3-10: a chip with a short name ("All") stays 44 px wide at phone width.
+  ok(/\.arv-chip \{[^}]*min-width: 44px;/.test(rule('.arv-chip')), 'a type chip is at least 44 px wide, whatever its name (finding R3-10)');
+  ok(!/\.arv-chip \{[^}]*min-width: (?:[0-3]?\d|4[0-3])px/.test(layer), 'no narrower rule (the phone padding included) brings it under 44 px');
+
+  // R3-4 / R3-5 on this page: every text pair holds 4.5:1 in every bundled
+  // theme, computed from themes.css and the mixes this layer declares.
+  {
+    const ink2 = /--arv-ink-2: color-mix\(in srgb, var\(--text2\) (\d+)%, var\(--text\)\);/.exec(layer);
+    const nowMuted = /--arv-now-muted: var\(--registry-muted, color-mix\(in srgb, var\(--today-now-text\) (\d+)%, var\(--today-now\)\)\);/.exec(layer);
+    ok(ink2 && nowMuted, 'the page declares its secondary ink and its quiet bar text as theme-aware mixes');
+    for (const [selector, token] of [['.arv-seg-btn', '--arv-ink-2'], ['.arv-meta', '--arv-ink-2'], ['.arv-when', '--arv-ink-2'], ['.arv-days', '--arv-ink-2'], ['.arv-route', '--arv-now-muted']]) {
+      ok(new RegExp(`color: var\\(${token}\\);`).test(rule(selector)), `${selector} uses ${token}`);
+    }
+    ok(/\.arv-sel-clear \{[^}]*color: var\(--arv-now-muted\);/.test(layer), 'the bar’s clear icon uses the bar’s quiet tone');
+    ok(/\.arv-cnt \{[^}]*color: var\(--text\);/.test(layer), 'the switch counts use full ink on their double tint');
+    const themes = themeTokens(read('themes.css'));
+    eq(Object.keys(themes).length, 19, 'all 19 bundled themes are checked');
+    const fails = [];
+    for (const [id, k] of Object.entries(themes)) {
+      const ink = mixC(k.text2, ink2[1] / 100, k.text);
+      const bar = k.registryMuted || mixC(k.nowText, nowMuted[1] / 100, k.now);
+      const pairs = {
+        'meta on the page': [ink, k.ground],
+        'meta on a hovered or focused row': [ink, k.card],
+        'meta on a picked row': [ink, mixC(k.locator, 0.10, k.card)],
+        'switch label on its track': [ink, overC(k.rule, k.ground)],
+        'switch count on its pill': [k.text, overC({ ...k.text, a: 0.08 }, overC(k.rule, k.ground))],
+        'chip and day heading on the page': [k.text2, k.ground],
+        'route on the bar': [bar, k.now],
+      };
+      for (const [name, [fg, bg]] of Object.entries(pairs)) {
+        const value = contrastC(fg, bg);
+        if (value < 4.5) fails.push(`${id}: ${name} ${value.toFixed(2)}`);
+      }
+    }
+    eq(fails, [], 'every Archive & Trash text pair is at least 4.5:1 in every bundled theme (findings R3-4, R3-5)');
+  }
   ok(/@container \(max-width: 640px\) \{[\s\S]*?grid-template-areas: "pick title more" "meta meta meta";[\s\S]*?\.arv-row \.arv-copy \{ display: contents; \}[\s\S]*?\.arv-row \.arv-acts \{ display: none; \}[\s\S]*?\.arv-row \.arv-more \{ grid-area: more; display: grid;/.test(layer),
     'phone: the title takes the row beside the pick and More, the meta line runs under it, actions fold into More');
   ok(/@media \(hover: none\) \{\n\s*\.arv-row \.arv-acts \{ display: none; \}\n\s*\.arv-row \.arv-more \{ display: grid; \}/.test(layer), 'touch screens get More instead of hover actions');
@@ -369,7 +563,7 @@ function runnerHarness() {
   ok(/scripts\/archive-page-contract-test\.js/.test(ci.split('\n').find(line => line.includes('for f in')) || ''), 'CI syntax-checks this suite');
   ok(/run: node scripts\/archive-page-contract-test\.js/.test(ci), 'CI runs this suite');
 
-  console.log(`Archive page contracts passed: ${checks} checks (one-pass Restore index equal to the per-row checks, also at 1,024; keys across Undo; the write runner's hold, motion, one repaint and focus; switch, counts, rows, selection bar, Escape, empty states, locales, CSS, CI)`);
+  console.log(`Archive page contracts passed: ${checks} checks (one-pass Restore index equal to the per-row checks, also at 1,024; unique keys for twins across Undo; the write runner's hold, motion, one repaint and focus; focus on a visible control after a write, never the filter; one floating layer; switch, counts, rows, selection bar, Escape, empty states, locales, CSS, 4.5:1 in 19 themes, CI)`);
 })().catch(error => {
   console.error(error);
   process.exitCode = 1;

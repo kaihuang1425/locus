@@ -14930,6 +14930,14 @@ body[data-page="archive"] .topbar-search:hover { border-color: var(--today-rule-
   --arv-sel: color-mix(in srgb, var(--index-locator, var(--accent)) 10%, var(--today-card));
   --arv-ink: var(--text);
   --arv-on-ink: var(--today-card);
+  /* Secondary text on a card, a tint or the switch track. The older themes
+     tune --text2 for their page ground only, so it leans a quarter toward the
+     ink to keep 4.5:1 on tinted surfaces in every theme. */
+  --arv-ink-2: color-mix(in srgb, var(--text2) 75%, var(--text));
+  /* Quiet text on the dark selection bar: the theme's registry tone, else a
+     step from the bar's own text toward the bar (themes without a registry
+     put --text2 there, which can be nearly the bar's colour). */
+  --arv-now-muted: var(--registry-muted, color-mix(in srgb, var(--today-now-text) 80%, var(--today-now)));
   /* The shared empty state's primary button (Library's look). */
   --lib-go-bg: color-mix(in srgb, var(--accent-bg, var(--accent)) 86%, var(--today-now));
 }
@@ -14987,7 +14995,7 @@ body[data-page="archive"] .topbar-search:hover { border-color: var(--today-rule-
   border: 0;
   border-radius: 12px;
   background: none;
-  color: var(--text2);
+  color: var(--arv-ink-2);
   font-size: 15px;
   font-weight: 600;
   white-space: nowrap;
@@ -15006,14 +15014,14 @@ body[data-page="archive"] .topbar-search:hover { border-color: var(--today-rule-
   padding: 0 7px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--text) 8%, transparent);
-  color: var(--text2);
+  /* Full ink: the count sits on a double tint (its pill on the track). */
+  color: var(--text);
   font-family: var(--today-mono);
   font-size: 12.5px;
   font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
-.arv-seg-btn[aria-pressed="true"] .arv-cnt { color: var(--text); }
 .arv-cnt.is-bump { animation: arv-bump .32s var(--today-spring); }
 @keyframes arv-bump { 45% { transform: scale(1.25); background: var(--today-when-soft); color: var(--today-when-soft-text); } }
 
@@ -15041,7 +15049,7 @@ body[data-page="archive"] .topbar-search:hover { border-color: var(--today-rule-
 .arv-field:focus-within { border-color: var(--index-locator, var(--accent)); box-shadow: 0 0 0 4px color-mix(in srgb, var(--index-locator, var(--accent)) 14%, transparent); }
 .arv-field svg { flex-shrink: 0; }
 .arv-field input { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; outline: none; background: transparent; color: var(--text); font-size: 14px; }
-.arv-field input::placeholder { color: var(--text2); }
+.arv-field input::placeholder { color: var(--arv-ink-2); }
 .arv-field input::-webkit-search-cancel-button { display: none; }
 .arv-clear {
   display: grid;
@@ -15063,6 +15071,7 @@ body[data-page="archive"] .topbar-search:hover { border-color: var(--today-rule-
 @keyframes arv-pop { from { transform: scale(.5); } }
 .arv-types { display: flex; flex-wrap: wrap; gap: 2px; }
 .arv-chip {
+  min-width: 44px;
   height: 44px;
   padding: 0 15px;
   border: 0;
@@ -15098,7 +15107,7 @@ body[data-page="archive"] .topbar-search:hover { border-color: var(--today-rule-
 .arv-route {
   flex: 1 1 220px;
   min-width: 0;
-  color: var(--today-now-muted);
+  color: var(--arv-now-muted);
   font-family: var(--today-mono);
   font-size: 12.5px;
   line-height: 1.35;
@@ -15180,7 +15189,7 @@ body[data-page="archive"] .topbar-search:hover { border-color: var(--today-rule-
 .arv-sb.is-pri { background: var(--today-now-text); color: var(--today-now); }
 .arv-sb.is-pri:hover:not(:disabled) { background: var(--today-now-text); }
 .arv-sb:disabled { opacity: .45; cursor: default; }
-.arv-sel-clear { padding: 0; color: var(--today-now-muted); }
+.arv-sel-clear { padding: 0; color: var(--arv-now-muted); }
 .arv-sel :focus-visible { outline: 2px solid var(--today-now-text); outline-offset: 2px; }
 .arv-error { margin: 14px 0 0; color: var(--text2); font-size: 13px; }
 .arv-error[hidden] { display: none; }
@@ -15295,7 +15304,7 @@ body[data-page="archive"] .topbar-search:hover { border-color: var(--today-rule-
 .arv-meta {
   display: block;
   min-width: 0;
-  color: var(--text2);
+  color: var(--arv-ink-2);
   font-family: var(--today-mono);
   font-size: 12.5px;
   line-height: 17px;
@@ -15318,7 +15327,7 @@ body[data-page="archive"] .topbar-search:hover { border-color: var(--today-rule-
   justify-content: flex-end;
   flex-shrink: 0;
   min-width: 64px;
-  color: var(--text2);
+  color: var(--arv-ink-2);
   font-family: var(--today-mono);
   font-size: 12.5px;
   white-space: nowrap;
@@ -15330,7 +15339,7 @@ body[data-page="archive"] .topbar-search:hover { border-color: var(--today-rule-
   height: 28px;
   padding: 0 11px;
   border-radius: 999px;
-  color: var(--text2);
+  color: var(--arv-ink-2);
   font-family: var(--today-mono);
   font-size: 12px;
   font-weight: 600;
@@ -15539,12 +15548,24 @@ body.blur-privacy :is(.arv-tt, .arv-meta) { filter: blur(6px); }
   --stg-rule-soft: color-mix(in srgb, var(--today-rule, var(--border2)) 62%, var(--today-card, var(--panel)));
   --stg-track: var(--today-rule-strong, var(--border2));
   --stg-on: var(--accent-bg, var(--index-locator, var(--accent)));
-  --stg-seg: var(--today-rule, var(--border2));
+  /* The canvas themes' card rule, else a light tint of the card: the older
+     themes' --border2 is too heavy under secondary text. */
+  --stg-seg: var(--card-rule, color-mix(in srgb, var(--text) 8%, var(--stg-card)));
+  /* Secondary text on a card or a tint. The older themes tune --text2 for
+     their page ground only, so it leans a quarter toward the ink to keep 4.5:1
+     on cards and tints in every theme. Text on the ground keeps --text2. */
+  --stg-ink-2: color-mix(in srgb, var(--text2) 75%, var(--text));
+  /* Quiet labels on the dark facts: the theme's registry tone, else a step
+     from the facts' own text toward their fill. */
+  --stg-now-muted: var(--registry-muted, color-mix(in srgb, var(--today-now-text) 80%, var(--today-now)));
   /* Resolved here, so a theme button that carries its own data-theme (and so
      that theme's tokens) still draws in the page's ink and accent. */
   --stg-ink: var(--text);
   --stg-locator: var(--index-locator, var(--accent));
 }
+/* Locus Dark lifts its accent for text; white type on a filled button needs a
+   deeper step of the same blue (4.34:1 before, about 5.8:1 now). */
+body[data-theme="folio-dark"] #settings-drawer { --stg-on: color-mix(in srgb, var(--accent-bg) 84%, #000); }
 /* Layout stays measurable while hidden, so the pill is placed before it shows. */
 #settings-drawer.hidden {
   display: block !important;
@@ -15700,7 +15721,7 @@ label.stg-l { cursor: pointer; }
 .stg-meta {
   display: inline-block;
   margin-left: 8px;
-  color: var(--text2);
+  color: var(--stg-ink-2);
   font-family: var(--today-mono);
   font-size: 12px;
   font-weight: 400;
@@ -15841,7 +15862,7 @@ label.stg-l { cursor: pointer; }
   border: 0;
   border-radius: 10px;
   background: transparent;
-  color: var(--text2);
+  color: var(--stg-ink-2);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -15892,16 +15913,18 @@ label.stg-l { cursor: pointer; }
   padding: 0 12px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--text) 6%, var(--stg-card));
-  color: var(--text2);
+  color: var(--stg-ink-2);
   font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
 }
+/* Half receipt, half ink: the older themes' mid-tone greens need the ink to
+   read at 4.5:1 on their tint (Sepia 3.89, Solarized Light 3.03 at 80%). */
 .stg-chip[data-state="active"],
 .stg-chip[data-state="paired"],
 #storage-capacity[data-state="available"] .stg-chip {
   background: color-mix(in srgb, var(--today-receipt) 14%, var(--stg-card));
-  color: color-mix(in srgb, var(--today-receipt) 80%, var(--text));
+  color: color-mix(in srgb, var(--today-receipt) 50%, var(--text));
 }
 .stg-chip[data-state="active"]::before,
 .stg-chip[data-state="paired"]::before {
@@ -16092,7 +16115,7 @@ label.stg-l { cursor: pointer; }
   border: 1px solid var(--stg-rule);
   border-radius: 12px;
   background: var(--stg-card);
-  color: var(--text2);
+  color: var(--stg-ink-2);
   transition: border-color .15s ease, box-shadow .2s ease;
 }
 .stg-filter:focus-within {
@@ -16100,7 +16123,7 @@ label.stg-l { cursor: pointer; }
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--index-locator, var(--accent)) 14%, transparent);
 }
 .stg-filter input { flex: 1; min-width: 0; min-height: 40px; border: 0; outline: none; background: transparent; color: var(--text); font-size: 14px; }
-.stg-filter input::placeholder { color: var(--text2); }
+.stg-filter input::placeholder { color: var(--stg-ink-2); }
 #settings-drawer .sp-shortcut-row {
   display: flex;
   flex-wrap: wrap;
@@ -16132,7 +16155,7 @@ label.stg-l { cursor: pointer; }
   align-items: center;
   gap: 12px;
   min-height: 64px;
-  color: var(--text2);
+  color: var(--stg-ink-2);
   font-size: 15px;
 }
 #shortcuts-global-status:not([hidden]) {
@@ -16145,7 +16168,7 @@ label.stg-l { cursor: pointer; }
   clip: auto;
   border-radius: 12px;
   background: color-mix(in srgb, var(--text) 5%, var(--stg-card));
-  color: var(--text2);
+  color: var(--stg-ink-2);
   font-size: 13.5px;
   white-space: normal;
 }
@@ -16165,7 +16188,7 @@ label.stg-l { cursor: pointer; }
   background: var(--today-now);
   color: var(--today-now-text);
 }
-.stg-fact-k { color: var(--today-now-muted); font-size: 12.5px; font-weight: 600; }
+.stg-fact-k { color: var(--stg-now-muted); font-size: 12.5px; font-weight: 600; }
 .stg-facts strong { font-size: 15px; font-weight: 700; line-height: 1.3; }
 .stg-storage { padding: 18px 20px 6px; }
 .stg-cap-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
@@ -16225,9 +16248,9 @@ label.stg-l { cursor: pointer; }
   font-size: 13px;
 }
 #storage-breakdown .sp-breakdown-rank { width: 9px; height: 9px; border-radius: 3px; background: var(--stg-kind); }
-#storage-breakdown .sp-breakdown-meta { color: var(--text2); font-family: var(--today-mono); font-size: 12px; }
+#storage-breakdown .sp-breakdown-meta { color: var(--stg-ink-2); font-family: var(--today-mono); font-size: 12px; }
 #storage-breakdown .sp-breakdown-track { display: none; }
-.stg-note { margin: 10px 0 0; color: var(--text2); font-size: 13.5px; }
+.stg-note { margin: 10px 0 0; color: var(--stg-ink-2); font-size: 13.5px; }
 #storage-archive-row { border-top: 1px solid var(--stg-rule-soft); }
 
 /* Download: the fill runs, then the button turns green with a check. */
@@ -16249,6 +16272,11 @@ label.stg-l { cursor: pointer; }
   background: var(--today-receipt);
   color: #fff;
 }
+/* The older themes' greens are mid-tone (light themes) or pale (dark themes),
+   where white type falls under 4.5:1: light themes take a deeper step of their
+   green, dark themes put dark type on it. */
+body[data-theme-mode="light"] .stg-export[data-state="done"] { background: color-mix(in srgb, var(--today-receipt) 80%, #000); }
+body[data-theme-mode="dark"] .stg-export[data-state="done"] { color: color-mix(in srgb, var(--today-ground) 35%, #000); }
 .stg-export[data-state="done"] .stg-export-fill { display: none; }
 .stg-export[data-state="done"] .stg-export-ico { display: none; }
 .stg-export[data-state="done"] .stg-export-done { display: block; }
@@ -16275,7 +16303,7 @@ label.stg-l { cursor: pointer; }
   font-weight: 600;
 }
 .stg-proof svg { flex-shrink: 0; color: var(--today-receipt); }
-.stg-licence { margin: 18px 0 0; color: var(--text2); font-size: 13.5px; }
+.stg-licence { margin: 18px 0 0; color: var(--stg-ink-2); font-size: 13.5px; }
 
 /* Phone width: the section list becomes one scrolling strip; rows keep the
    label beside its switch and put wide controls under the label. */

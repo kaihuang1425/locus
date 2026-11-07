@@ -299,6 +299,16 @@ Slices, in order:
 
 ## Done (newest first)
 
+- **2026-11-07 - Final-review fixes for Archive & Trash, Settings and the popup (R3-1 to R3-10).**
+  Delete forever removes exactly the chosen entries by identity (twins that share a key no longer
+  collapse; an unrelated entry can no longer be removed). Focus after a write lands on a visible
+  control and never the filter field, so Ctrl+Z and Escape keep working, also at 390 px. One floating
+  layer on Archive; the All chip is 44 px. Settings and Archive text holds 4.5:1 in all 19 themes
+  (theme-aware inks). A later appearance change withdraws the Use core defaults Undo. Popup Undo closes
+  the Move list; Move follows Skip duplicate URLs. Suites: archive page, trash recovery, settings page,
+  popup page, appearance settings, library recovery; 28/28 mutations caught. Evidence:
+  `locus-redesign-evidence/pages/fixes-r3/` (Edge 157: 38/38 after, 9/38 before on HEAD 6684069).
+
 - **2026-11-07 - Settings built from its canvas board (pages build, page 8 of 9).** Settings is a
   page beside the rail (`Settings.dc.html`): a big heading, seven sections with a sliding white pill
   (General, Appearance, Capture, Plan, Shortcuts, Privacy & data, About), and cards of rows with

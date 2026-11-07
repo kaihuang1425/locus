@@ -2667,7 +2667,10 @@ async function testSelectedLocalItemsRestoreAfterOneReceipt() {
     /--arv-sel: color-mix\(in srgb, var\(--index-locator, var\(--accent\)\) 10%, var\(--today-card\)\);[\s\S]*?\.arv-row\.is-selected \{ background: var\(--arv-sel\); box-shadow: inset 3px 0 0 var\(--index-locator, var\(--accent\)\); \}/,
     'selected recovery rows must keep the filing edge while preserving readable destination and retention metadata');
   const metaRule = css.match(/\n\.arv-meta \{[^}]*\}/)?.[0] || '';
-  assert.ok(/display: block;/.test(metaRule) && /color: var\(--text2\);/.test(metaRule) && !/nowrap|ellipsis/.test(metaRule)
+  // The metadata ink is --text2 leaned toward --text, so it reads at 4.5:1 on
+  // a picked or hovered row in every theme (review finding R3-5).
+  assert.ok(/display: block;/.test(metaRule) && /color: var\(--arv-ink-2\);/.test(metaRule) && !/nowrap|ellipsis/.test(metaRule)
+    && /--arv-ink-2: color-mix\(in srgb, var\(--text2\) \d+%, var\(--text\)\);/.test(css)
     && /\.arv-meta \.archive-restore-destination \{ overflow-wrap: anywhere; \}/.test(css),
   'exact Restore destinations must wrap without clipping while other recovery metadata stays compact');
   // The Local and retention trust cards were hidden by the 2026-11 canvas layer

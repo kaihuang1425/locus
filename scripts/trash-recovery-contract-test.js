@@ -23,7 +23,7 @@ const dialogSource = extractBetween(
   'let trashDeleteEntries = [];',
   '\n// CRUD',
 );
-const keySource = extractBetween('function archiveEntryKey(entry) {', '\n}\n') + '\n}\n';
+const keySource = extractBetween('function archiveEntryKey(entry) {', '\n// The stored entries of one collection');
 const commonActsSource = extractBetween(
   'function commonActs(',
   '\nfunction renderReminderBadge',
@@ -271,11 +271,62 @@ const clone = value => JSON.parse(JSON.stringify(value));
   await hooked.calls.toasts[0].options.action();
   assert.deepEqual(ran, ['before', true], 'the page runs the confirmed write inside its own motion hold');
 
+  // Review finding R3-1: two entries can share kind, id and filing time (an
+  // import, older data). Delete forever removes exactly the chosen entry, by
+  // identity: its twin and an unrelated entry survive. (Before, both twins
+  // collapsed into one key and splice(indexOf(...)) at -1 removed the last
+  // entry in Trash.)
+  const twinA = { kind: 'item', data: { id: 'dup', type: 'tab', title: 'Twin A' }, at: 100, trashedAt: 900 };
+  const twinB = { kind: 'item', data: { id: 'dup', type: 'tab', title: 'Twin B' }, at: 100, trashedAt: 900 };
+  const keeper = entry('keep', 'Unrelated keeper', 500);
+  const twins = buildHarness({ entries: [twinA, twinB, keeper], persistNow: async () => undefined });
+  twins.api.permanentlyDeleteTrashEntries([twinA]);
+  assert.equal(twins.calls.toasts[0].options.sub, 'Twin A', 'the ask names the chosen twin');
+  assert.notEqual(twins.api.state().keys[0], 'i:dup:900', 'a twin is held by a key its twin does not share');
+  assert.deepEqual(clone(await twins.calls.toasts[0].options.action()), { message: 'Permanently deleted', tone: 'info' });
+  assert.deepEqual(twins.state.trash, [twinB, keeper], 'only the chosen twin is deleted; its twin and the unrelated entry survive (finding R3-1)');
+
+  const bothTwins = buildHarness({ entries: [twinA, twinB, keeper], persistNow: async () => undefined });
+  bothTwins.api.permanentlyDeleteTrashEntries([twinA, twinB]);
+  assert.equal(bothTwins.calls.toasts[0].message, 'Delete 2 items forever?', 'two picked twins are two entries');
+  await bothTwins.calls.toasts[0].options.action();
+  assert.deepEqual(bothTwins.state.trash, [keeper], 'deleting both twins leaves the unrelated entry alone');
+
+  const rebuiltTwins = buildHarness({ entries: [twinA, twinB, keeper], persistNow: async () => undefined });
+  rebuiltTwins.api.permanentlyDeleteTrashEntries([twinB]);
+  const rebuiltCopies = clone(rebuiltTwins.state.trash);
+  const survivors = [rebuiltCopies[0], rebuiltCopies[2]];
+  rebuiltTwins.setState(rebuiltCopies);
+  assert.equal(rebuiltTwins.api.reconcileTrashDeleteAsk(), true, 'an Undo rebuild keeps the ask about a twin');
+  await rebuiltTwins.calls.toasts[0].options.action();
+  assert.ok(rebuiltTwins.state.trash.length === 2 && rebuiltTwins.state.trash.every((item, index) => item === survivors[index]), 'after the rebuild the ask still deletes the twin it named, and only it');
+
+  const twinBack = buildHarness({ entries: [twinB, keeper], persistNow: async () => undefined });
+  twinBack.api.permanentlyDeleteTrashEntries([twinB]);
+  twinBack.setState(clone([twinA, twinB, keeper]));
+  assert.equal(twinBack.api.reconcileTrashDeleteAsk(), false, 'an Undo that brings a twin back makes the held key ambiguous: the ask closes');
+  assert.equal(await twinBack.calls.toasts[0].options.action(), null, 'and a late Delete deletes nothing');
+  assert.equal(twinBack.calls.persists, 0, 'nor writes');
+
+  const copyOne = { kind: 'item', data: { id: 'same', type: 'tab', title: 'Exact copy' }, at: 100, trashedAt: 700 };
+  const copyTwo = clone(copyOne);
+  const exactCopies = buildHarness({ entries: [copyOne, copyTwo, keeper], persistNow: async () => undefined });
+  exactCopies.api.permanentlyDeleteTrashEntries([copyTwo]);
+  await exactCopies.calls.toasts[0].options.action();
+  assert.equal(exactCopies.state.trash.length, 2, 'an exact copy is deleted on its own');
+  assert.ok(exactCopies.state.trash[0] === copyOne && exactCopies.state.trash[1] === keeper, 'the other copy and the unrelated entry are the very objects that stay');
+  assert.equal(/splice\([^;]*indexOf\(/.test(dialogSource), false, 'Delete forever never splices at a searched index (-1 would remove the last entry)');
+  for (const name of ['function restoreStoredEntries(', 'function moveArchiveEntriesToTrash(']) {
+    const body = extractBetween(name, '\n}\n');
+    assert.equal(/splice\([^;]*indexOf\(/.test(body), false, `${name} never splices at a searched index`);
+    assert.match(body, /\[\.\.\.new Set\(entries \|\| \[\]\)\]/, `${name} acts on each entry once`);
+  }
+
   const invalid = buildHarness({ entries: [], persistNow: async () => undefined });
   assert.equal(invalid.api.permanentlyDeleteTrashEntries([first]), false, 'A foreign entry must not open a destructive ask');
   assert.equal(invalid.calls.toasts.length, 0, 'A foreign entry must not show an ask');
 
-  console.log('Trash recovery contract passed (recoverable active removal, the shared Keep / Delete ask naming the item, persistence gating, no Undo bypass, an Undo closes a stale ask, focus on Keep)');
+  console.log('Trash recovery contract passed (recoverable active removal, the shared Keep / Delete ask naming the item, persistence gating, no Undo bypass, an Undo closes a stale ask, focus on Keep, Delete forever by identity: twins sharing a key and an unrelated entry survive)');
 })().catch(error => {
   console.error(error);
   process.exitCode = 1;
