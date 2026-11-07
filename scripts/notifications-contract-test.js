@@ -93,6 +93,8 @@ function testToastWiring() {
     ok(new RegExp(`#toast\\[data-tone="${tone}"\\][^{]*\\{ --toast-icon: ${colour}; \\}`).test(css), `${tone} receipts use the ${colour} icon circle`);
   }
   ok(/background: var\(--registry-card, var\(--registry-bg, #19231f\)\);/.test(css), 'the receipt is the dark registry card');
+  ok(/body\[data-theme\] #toast \.toast-copy:has\(> \.toast-sub\[hidden\]\) #toast-mark \{ grid-row: 1; \}/.test(css),
+    'without a sub-label the icon spans one row, so the message centres on it');
   // The receipt's ink and muted text hold 4.5:1 on its card in every bundled
   // theme (the card once fell back to --text, light in the dark themes).
   const themesCss = read('themes.css');
