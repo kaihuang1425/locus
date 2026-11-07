@@ -77,6 +77,20 @@ function extractFunction(name) {
   assert.fail(`${name} function body is unterminated`);
 }
 
+// Archive and Trash became one page in the 2026-11 build: the row review, the
+// row builder, row Restore, the selection bar and its Restore, the write runner
+// and the page renderer together take the place of the two old renderers.
+function archivePageSource() {
+  return [
+    'archivePageRowReview', 'buildArchivePageRow', 'archivePageRestoreRow',
+    'syncArchivePageSelection', 'archivePageRestoreSelected', 'renderArchivePage', 'runArchivePageWrite',
+  ].map(extractFunction).join('\n');
+}
+
+// The mixed-selection refusal: `refuse` disables the selection's Restore, then
+// each mixed case names why.
+const MIXED_SELECTION_REFUSAL = /const refuse = key => \{[\s\S]*?restoreSelected\.disabled = true;[\s\S]*?if \(containsArchivedPage && \(containsArchivedGroup \|\| containsLocalItem\)\) \{\s*refuse\(trash \? 'trash\.restorePagesSeparately' : 'archive\.restorePagesSeparately'\);[\s\S]*?else if \(containsArchivedGroup && containsLocalItem\) \{\s*refuse\(trash \? 'trash\.restoreGroupsSeparately' : 'archive\.restoreGroupsSeparately'\);/;
+
 function loadFunctions(names, globals = {}) {
   const context = vm.createContext({ ...globals });
   vm.runInContext(names.map(extractFunction).join('\n\n'), context, {
@@ -1162,7 +1176,10 @@ async function testArchivedPageRestoreShowsAndKeepsExactDestination() {
 
   const interlockSource = extractFunction('setArchivedPageRestoreInterlock');
   const busySource = extractFunction('setArchivedPageRestoreBusy');
-  const renderSource = extractFunction('renderArchiveSurface');
+  // The Archive & Trash page (2026-11): one row review, one row builder, and one
+  // write runner that holds focus until the write is accepted.
+  const renderSource = ['archivePageRowReview', 'buildArchivePageRow', 'archivePageRestoreRow', 'runArchivePageWrite']
+    .map(extractFunction).join('\n');
   assert.match(interlockSource,
     /setElementInertOwner\(sibling, 'archived-page-restore', true\)[\s\S]*?setElementInertOwner\(element, 'archived-page-restore', false\)/,
     'Restore must own and later release its exact Archive-row path');
@@ -1172,10 +1189,10 @@ async function testArchivedPageRestoreShowsAndKeepsExactDestination() {
   assert.ok([...source.matchAll(/isArchivedPageRestorePending\(\)/g)].length >= 7,
     'pending Restore must block duplicate action, routes, navigation, and global shortcuts');
   assert.match(renderSource,
-    /createArchivedPageRestoreContext\(entry\)[\s\S]*?archivedPageRestoreDestinationText\(restoreContext\)/,
+    /createArchivedPageRestoreContext\(entry, 'archive', index\)[\s\S]*?line: archivedPageRestoreDestinationText\(context\)/,
     'the Archive row must display the destination owned by its exact Restore review');
   assert.match(renderSource,
-    /data-archived-page-restore="true"[\s\S]*?await restoreArchivedPage\(restoreContext, restoreButton\)[\s\S]*?focusArchivedPageRestoreTarget/,
+    /data-archived-page-restore="true"[\s\S]*?runArchivePageWrite\(\[key\], 'restore', async \(\) => \{[\s\S]*?restoreArchivedPage\(review\.context, button\)[\s\S]*?changed = !!\(await write\(\)\);[\s\S]*?if \(changed\) requestAnimationFrame\(\(\) => focusArchivePageTarget\(nextKey, control\)\)/,
     'the row must await acceptance before focusing its rebuilt Archive neighbor');
   assert.match(css,
     /\[data-archived-page-restore\]\[aria-busy="true"\][\s\S]*?animation:\s*return-marker-receipt-pulse/,
@@ -1243,12 +1260,15 @@ function testCompactSavedPageRestoreUsesCanonicalReview() {
     'review navigation must not share the Restore mutation or persistence path');
 
   const focusSource = extractFunction('focusArchivedPageRestoreReview');
-  const archiveSource = extractFunction('renderArchiveSurface');
+  const archiveSource = extractFunction('buildArchivePageRow');
   assert.match(focusSource,
-    /resolveArchivedPageRestoreTarget\(context\)[\s\S]*?__archivedPageRestoreEntry === target\.entry/,
+    /resolveArchivedPageRestoreTarget\(context\)[\s\S]*?focusArchivedEntryRestoreReview\(target\?\.entry, '__archivedPageRestoreEntry'/,
     'review focus must resolve and match the exact Archive entry reference');
+  assert.match(extractFunction('focusArchivedEntryRestoreReview'),
+    /if \(entry\) archivePageReveal\(entry\);[\s\S]*?candidate\[property\] === entry/,
+    'review focus renders the exact entry’s row, then matches it by reference');
   assert.match(archiveSource,
-    /__archivedPageRestoreEntry = entry/,
+    /__archivedPageRestoreEntry = review\.kind === 'page' \? entry : undefined;/,
     'each primary archived-page Restore control must own its exact entry reference');
 
   const searchSource = extractFunction('renderArchiveSearchResults');
@@ -1517,18 +1537,17 @@ async function testSelectedSavedPagesRestoreAfterOneReceipt() {
   assert.equal(i18n['zh-TW']['archive.restoredPagesTo'], '已將 {count} 個頁面復原到 {destination}');
   assert.equal(i18n['zh-TW']['archive.restoredPagesToMany'], '已將 {count} 個頁面復原到 {destinationCount} 個位置');
 
-  const renderSource = extractFunction('renderArchiveSurface');
+  const renderSource = archivePageSource();
   assert.match(renderSource,
     /archive-selection-destinations/,
     'the selection bar must retain one compact destination disclosure');
   assert.match(renderSource,
-    /createArchivedPageBatchRestoreContext\(\[\.\.\.selected\]\)/,
+    /createArchivedPageBatchRestoreContext\(selectedEntries\)/,
     'the destination disclosure must derive from the reviewed saved pages');
   assert.match(renderSource,
-    /await commitArchivedPageBatchRestore\(selectedRestoreReview, restoreSelected\)[\s\S]*?focusArchivedPageRestoreTarget/,
+    /runArchivePageWrite\(keys, 'restore', \(\) => \{[\s\S]*?commitArchivedPageBatchRestore\(selectedRestoreReview, restoreSelected\)[\s\S]*?changed = !!\(await write\(\)\);[\s\S]*?if \(changed\) requestAnimationFrame\(\(\) => focusArchivePageTarget\(nextKey, control\)\)/,
     'selected saved pages must wait for batch acceptance before focus continuation');
-  assert.match(renderSource,
-    /containsArchivedPage[\s\S]*?containsArchivedGroup[\s\S]*?containsLocalItem[\s\S]*?archive\.restorePagesSeparately[\s\S]*?restoreSelected\.disabled = true/,
+  assert.match(renderSource, MIXED_SELECTION_REFUSAL,
     'mixed selections must not route saved pages through the legacy batch writer');
   assert.match(css,
     /\[data-archived-page-batch-restore\]\[aria-busy="true"\][\s\S]*?animation:\s*return-marker-receipt-pulse/,
@@ -1587,21 +1606,20 @@ async function testTrashedSavedPagesRestoreAfterOneReceipt() {
   assert.equal(i18n['zh-TW']['trash.restoredPagesToMany'],
     '已將 {count} 個頁面從垃圾桶復原到 {destinationCount} 個位置');
 
-  const renderSource = extractFunction('renderTrashSurface');
+  const renderSource = archivePageSource();
   assert.match(renderSource,
-    /createTrashedPageRestoreContext\(entry\)[\s\S]*?archivedPageRestoreDestinationText\(restoreContext\)/,
+    /createTrashedPageRestoreContext\(entry, index\)[\s\S]*?line: archivedPageRestoreDestinationText\(context\)/,
     'each trashed saved-page row must display the destination owned by its exact review');
   assert.match(renderSource,
-    /trash\.restoreToFor[\s\S]*?destination:\s*restorePath/,
+    /tr\(trash \? 'trash\.restoreToFor' : 'archive\.restoreToFor', \{ title, destination: path \}\)/,
     'the saved-page Restore control must name its exact page and destination');
   assert.match(renderSource,
-    /await commitTrashedPageRestore\(restoreContext, restoreButton\)[\s\S]*?focusArchivedPageRestoreTarget/,
+    /commitTrashedPageRestore\(review\.context, button\)[\s\S]*?changed = !!\(await write\(\)\);[\s\S]*?if \(changed\) requestAnimationFrame\(\(\) => focusArchivePageTarget\(nextKey, control\)\)/,
     'row Restore must wait for the Trash receipt before focus continuation');
   assert.match(renderSource,
-    /createTrashedPageBatchRestoreContext\(\[\.\.\.selected\]\)[\s\S]*?await commitTrashedPageBatchRestore\(selectedRestoreReview, restoreSelected\)/,
+    /createTrashedPageBatchRestoreContext\(selectedEntries\)[\s\S]*?commitTrashedPageBatchRestore\(selectedRestoreReview, restoreSelected\)/,
     'selected trashed pages must share one reviewed batch receipt');
-  assert.match(renderSource,
-    /containsTrashedPage[\s\S]*?containsTrashedGroup[\s\S]*?containsLocalItem[\s\S]*?trash\.restorePagesSeparately[\s\S]*?restoreSelected\.disabled = true/,
+  assert.match(renderSource, MIXED_SELECTION_REFUSAL,
     'mixed Trash selections must not route saved pages through the legacy writer');
 }
 
@@ -1822,26 +1840,26 @@ async function testArchivedGroupRestoreWaitsForOneReceipt() {
   assert.equal(i18n['zh-TW']['archive.restoreGroupToFor'], '將群組「{title}」復原到 {destination}');
   assert.equal(i18n['zh-TW']['trash.restoreGroupToFor'], '將垃圾桶內的群組「{title}」復原到 {destination}');
 
-  const archiveRender = extractFunction('renderArchiveSurface');
+  const archiveRender = archivePageSource();
   assert.match(archiveRender,
-    /createArchivedGroupRestoreContext\(entry, 'archive'\)[\s\S]*?archivedGroupRestoreDestinationText\(groupRestoreContext\)/,
+    /createArchivedGroupRestoreContext\(entry, 'archive', index\)[\s\S]*?line: archivedGroupRestoreDestinationText\(context\)/,
     'each archived Group row must display the destination owned by its exact review');
   assert.match(archiveRender,
-    /archive\.restoreGroupToFor[\s\S]*?destination:\s*groupRestorePath/,
+    /tr\(trash \? 'trash\.restoreGroupToFor' : 'archive\.restoreGroupToFor', \{ title, destination: archivedGroupRestorePathText\(context\) \}\)/,
     'the Archive Group control must name the raw destination path once');
   assert.match(archiveRender,
-    /data-archived-group-restore="true"[\s\S]*?await commitArchivedGroupRestore\(groupRestoreContext, restoreButton\)[\s\S]*?focusArchivedGroupRestoreTarget/,
+    /data-archived-group-restore="true"[\s\S]*?commitArchivedGroupRestore\(review\.context, button\)[\s\S]*?changed = !!\(await write\(\)\);[\s\S]*?if \(changed\) requestAnimationFrame\(\(\) => focusArchivePageTarget\(nextKey, control\)\)/,
     'individual Archive Group Restore must wait for acceptance before focus continuation');
 
-  const trashRender = extractFunction('renderTrashSurface');
+  const trashRender = archivePageSource();
   assert.match(trashRender,
-    /createTrashedGroupRestoreContext\(entry\)[\s\S]*?archivedGroupRestoreDestinationText\(groupRestoreContext\)/,
+    /createTrashedGroupRestoreContext\(entry, index\)[\s\S]*?line: archivedGroupRestoreDestinationText\(context\)/,
     'each trashed Group row must retain its exact destination beside the countdown');
   assert.match(trashRender,
-    /trash\.restoreGroupToFor[\s\S]*?destination:\s*groupRestorePath/,
-    'the Trash Group control must name the raw destination path once');
+    /trashDaysLeft\(entry\)/,
+    'every Trash row keeps its countdown beside the destination');
   assert.match(trashRender,
-    /trash\.restoreGroupToFor[\s\S]*?await commitTrashedGroupRestore\(groupRestoreContext, restoreButton\)[\s\S]*?focusArchivedGroupRestoreTarget/,
+    /commitTrashedGroupRestore\(review\.context, button\)[\s\S]*?changed = !!\(await write\(\)\);/,
     'individual Trash Group Restore must wait for acceptance before focus continuation');
 
   const compactSearch = extractFunction('renderArchiveSearchResults');
@@ -2087,20 +2105,20 @@ async function testArchivedLocalItemRestoreWaitsForOneReceipt() {
   assert.equal(i18n['zh-TW']['archive.restoreToFor'], '將「{title}」復原到 {destination}');
   assert.equal(i18n['zh-TW']['trash.restoreToFor'], '將「{title}」復原到 {destination}');
 
-  const archiveRender = extractFunction('renderArchiveSurface');
+  const archiveRender = archivePageSource();
   assert.match(archiveRender,
-    /isArchivedLocalItem[\s\S]*?createArchivedLocalItemRestoreContext\(entry, 'archive'\)[\s\S]*?archivedLocalItemRestoreDestinationText\(localRestoreContext\)/,
+    /\['note', 'todo', 'stack'\]\.includes\(entry\.data\?\.type\)[\s\S]*?createArchivedLocalItemRestoreContext\(entry, 'archive', index\)[\s\S]*?line: archivedLocalItemRestoreDestinationText\(context\)/,
     'each archived local-item row must display its exact reviewed Group destination');
   assert.match(archiveRender,
-    /archive\.restoreToFor[\s\S]*?destination:\s*localRestorePath[\s\S]*?data-archived-local-item-restore="true"[\s\S]*?await commitArchivedLocalItemRestore\(localRestoreContext, restoreButton\)[\s\S]*?focusArchivedLocalItemRestoreTarget/,
+    /tr\(trash \? 'trash\.restoreToFor' : 'archive\.restoreToFor', \{ title, destination: archivedLocalItemRestorePathText\(context\) \}\)[\s\S]*?data-archived-local-item-restore="true"[\s\S]*?commitArchivedLocalItemRestore\(review\.context, button\)[\s\S]*?changed = !!\(await write\(\)\);[\s\S]*?if \(changed\) requestAnimationFrame\(\(\) => focusArchivePageTarget\(nextKey, control\)\)/,
     'individual Archive local-item Restore must wait for acceptance before focus continuation');
 
-  const trashRender = extractFunction('renderTrashSurface');
+  const trashRender = archivePageSource();
   assert.match(trashRender,
-    /isTrashedLocalItem[\s\S]*?createTrashedLocalItemRestoreContext\(entry\)[\s\S]*?archivedLocalItemRestoreDestinationText\(localRestoreContext\)/,
+    /createTrashedLocalItemRestoreContext\(entry, index\)[\s\S]*?line: archivedLocalItemRestoreDestinationText\(context\)/,
     'each trashed local-item row must retain its exact destination beside the countdown');
   assert.match(trashRender,
-    /trash\.restoreToFor[\s\S]*?destination:\s*localRestorePath[\s\S]*?data-archived-local-item-restore="true"[\s\S]*?await commitTrashedLocalItemRestore\(localRestoreContext, restoreButton\)[\s\S]*?focusArchivedLocalItemRestoreTarget/,
+    /commitTrashedLocalItemRestore\(review\.context, button\)[\s\S]*?changed = !!\(await write\(\)\);/,
     'individual Trash local-item Restore must wait for acceptance before focus continuation');
 
   const compactSearch = extractFunction('renderArchiveSearchResults');
@@ -2359,20 +2377,20 @@ async function testSelectedGroupsRestoreAfterOneReceipt() {
   assert.equal(i18n['zh-TW']['trash.restoredGroupsTo'], '已將垃圾桶內的 {count} 個群組復原到 {destination}');
   assert.equal(i18n['zh-TW']['trash.restoredGroupsToMany'], '已將垃圾桶內的 {count} 個群組復原到 {destinationCount} 個位置');
 
-  const archiveRender = extractFunction('renderArchiveSurface');
+  const archiveRender = archivePageSource();
   assert.match(archiveRender,
-    /containsArchivedGroup[\s\S]*?archive\.restoreGroupsSeparately[\s\S]*?createArchivedGroupBatchRestoreContext\(\[\.\.\.selected\], 'archive'\)/,
+    /containsArchivedGroup && containsLocalItem[\s\S]*?archive\.restoreGroupsSeparately[\s\S]*?createArchivedGroupBatchRestoreContext\(selectedEntries, 'archive'\)[\s\S]*?showRoutes\(view\.selectedReview, 'library\.spaceDestinationPath', archivedGroupRestoreDestinationText\)/,
     'Archive Group-only selection must own its destination review and mixed-selection refusal');
   assert.match(archiveRender,
-    /library\.spaceDestinationPath[\s\S]*?await commitArchivedGroupBatchRestore\(selectedRestoreReview, restoreSelected\)[\s\S]*?focusArchivedGroupRestoreTarget/,
+    /commitArchivedGroupBatchRestore\(selectedRestoreReview, restoreSelected\)[\s\S]*?changed = !!\(await write\(\)\);[\s\S]*?if \(changed\) requestAnimationFrame\(\(\) => focusArchivePageTarget\(nextKey, control\)\)/,
     'selected Archive Groups must wait for one accepted receipt before focus continuation');
 
-  const trashRender = extractFunction('renderTrashSurface');
+  const trashRender = archivePageSource();
   assert.match(trashRender,
-    /containsTrashedGroup[\s\S]*?trash\.restoreGroupsSeparately[\s\S]*?createTrashedGroupBatchRestoreContext\(\[\.\.\.selected\]\)/,
+    /containsArchivedGroup && containsLocalItem[\s\S]*?trash\.restoreGroupsSeparately[\s\S]*?createTrashedGroupBatchRestoreContext\(selectedEntries\)/,
     'Trash Group-only selection must own its destination review and mixed-selection refusal');
   assert.match(trashRender,
-    /library\.spaceDestinationPath[\s\S]*?await commitTrashedGroupBatchRestore\(selectedRestoreReview, restoreSelected\)[\s\S]*?focusArchivedGroupRestoreTarget/,
+    /commitTrashedGroupBatchRestore\(selectedRestoreReview, restoreSelected\)[\s\S]*?changed = !!\(await write\(\)\);/,
     'selected Trash Groups must wait for one accepted receipt before focus continuation');
   assert.match(css,
     /\[data-archived-group-batch-restore\]\[aria-busy="true"\][\s\S]*?animation:\s*return-marker-receipt-pulse/,
@@ -2622,62 +2640,60 @@ async function testSelectedLocalItemsRestoreAfterOneReceipt() {
   assert.equal(i18n['zh-TW']['trash.restoredItemsTo'], '已將垃圾桶內的 {count} 個項目復原到 {destination}');
   assert.equal(i18n['zh-TW']['trash.restoredItemsToMany'], '已將垃圾桶內的 {count} 個項目復原到 {destinationCount} 個位置');
 
-  const archiveRender = extractFunction('renderArchiveSurface');
+  const archiveRender = archivePageSource();
   assert.match(archiveRender,
-    /containsArchivedLocalItem[\s\S]*?createArchivedLocalItemBatchRestoreContext\(\[\.\.\.selected\], 'archive'\)[\s\S]*?library\.destinationPath/,
+    /containsArchivedLocalItem[\s\S]*?createArchivedLocalItemBatchRestoreContext\(selectedEntries, 'archive'\)[\s\S]*?showRoutes\(view\.selectedReview, 'library\.destinationPath', archivedLocalItemRestoreDestinationText\)/,
     'Archive local-item-only selection must own its one/many destination review');
   assert.match(archiveRender,
-    /await commitArchivedLocalItemBatchRestore\(selectedRestoreReview, restoreSelected\)[\s\S]*?focusArchivedLocalItemRestoreTarget/,
+    /commitArchivedLocalItemBatchRestore\(selectedRestoreReview, restoreSelected\)[\s\S]*?changed = !!\(await write\(\)\);[\s\S]*?if \(changed\) requestAnimationFrame\(\(\) => focusArchivePageTarget\(nextKey, control\)\)/,
     'selected Archive local items must wait for one accepted receipt before focus continuation');
 
-  const trashRender = extractFunction('renderTrashSurface');
+  const trashRender = archivePageSource();
   assert.match(trashRender,
-    /containsTrashedLocalItem[\s\S]*?createTrashedLocalItemBatchRestoreContext\(\[\.\.\.selected\]\)[\s\S]*?library\.destinationPath/,
+    /containsArchivedLocalItem[\s\S]*?createTrashedLocalItemBatchRestoreContext\(selectedEntries\)[\s\S]*?showRoutes\(view\.selectedReview, 'library\.destinationPath'/,
     'Trash local-item-only selection must own its one/many destination review');
   assert.match(trashRender,
-    /await commitTrashedLocalItemBatchRestore\(selectedRestoreReview, restoreSelected\)[\s\S]*?focusArchivedLocalItemRestoreTarget/,
+    /commitTrashedLocalItemBatchRestore\(selectedRestoreReview, restoreSelected\)[\s\S]*?changed = !!\(await write\(\)\);/,
     'selected Trash local items must wait for one accepted receipt before focus continuation');
   assert.match(css,
     /\[data-archived-local-item-batch-restore\]\[aria-busy="true"\][\s\S]*?animation:\s*return-marker-receipt-pulse/,
     'selected local-item Restore must reuse the established persistence receipt signal');
+  // The Archive & Trash page (2026-11) carries the filing manifest in its dark
+  // selection bar; at phone width the route list spans the full bar.
   assert.match(css,
-    /@media \(max-width: 980px\) \{[\s\S]*?\.archive-selection \{[^}]*position:\s*relative;[\s\S]*?\.archive-selection-destinations \{[^}]*position:\s*static;[\s\S]*?\.archive-selection-destinations > ul \{[^}]*width:\s*min\(430px, 100%\);/,
+    /\n\.arv-sel \{[^}]*position: relative;[\s\S]*?@container \(max-width: 640px\) \{[\s\S]*?\.arv-dests \{ position: static;[^}]*\}[\s\S]*?\.arv-dests > ul \{[^}]*width: min\(430px, 100%\);/,
     'the narrow filing manifest must anchor its route list inside the full selection strip');
   assert.match(css,
-    /\.archive-row\.selected \{[^}]*background:\s*color-mix\(in srgb, var\(--accent\) 10%, var\(--panel\)\)[^}]*box-shadow:\s*inset 3px 0 var\(--accent\);[\s\S]*?\.archive-row\.selected :is\(\.archive-restore-destination, time\) \{[^}]*color:\s*var\(--text2\);/,
+    /--arv-sel: color-mix\(in srgb, var\(--index-locator, var\(--accent\)\) 10%, var\(--today-card\)\);[\s\S]*?\.arv-row\.is-selected \{ background: var\(--arv-sel\); box-shadow: inset 3px 0 0 var\(--index-locator, var\(--accent\)\); \}/,
     'selected recovery rows must keep the filing edge while preserving readable destination and retention metadata');
+  const metaRule = css.match(/\n\.arv-meta \{[^}]*\}/)?.[0] || '';
+  assert.ok(/display: block;/.test(metaRule) && /color: var\(--text2\);/.test(metaRule) && !/nowrap|ellipsis/.test(metaRule)
+    && /\.arv-meta \.archive-restore-destination \{ overflow-wrap: anywhere; \}/.test(css),
+  'exact Restore destinations must wrap without clipping while other recovery metadata stays compact');
+  // The Local and retention trust cards were hidden by the 2026-11 canvas layer
+  // and are gone with the summary; their evidence stays as each page's
+  // description for assistive technology, and every Trash row keeps its days.
+  assert.match(source,
+    /root\.querySelector\('#archive-sub'\)\.textContent = tr\(trash \? 'trash\.subtitle' : 'archive\.subtitle'\);/,
+    'the browser-profile and 30-day evidence stays as the page description');
   assert.match(css,
-    /\.archive-copy \.archive-restore-destination \{[^}]*overflow:\s*visible;[^}]*text-overflow:\s*clip;[^}]*white-space:\s*normal;[^}]*overflow-wrap:\s*anywhere;[^}]*line-height:\s*1\.35;/,
-    'exact Restore destinations must wrap without clipping while other recovery metadata stays compact');
-  assert.match(css,
-    /\.archive-summary \.archive-local \{[^}]*background:\s*color-mix\(in srgb, var\(--accent\) 8%, var\(--panel\)\);[\s\S]*?\.archive-summary \.archive-local strong \{[^}]*color:\s*color-mix\(in srgb, var\(--accent\) 80%, var\(--text\)\);[\s\S]*?\.archive-summary \.archive-local span \{[^}]*color:\s*var\(--text2\);[\s\S]*?\.trash-summary \.archive-local \{[^}]*background:\s*color-mix\(in srgb, var\(--red\) 5%, var\(--panel\)\);[\s\S]*?\.trash-summary \.archive-local strong \{[^}]*color:\s*color-mix\(in srgb, var\(--red\) 80%, var\(--text\)\);/,
-    'the Local and retention trust cards must keep semantic tint without obscuring their evidence copy');
+    /\.arv-days\.is-soon \{ background: var\(--today-when-soft\); color: var\(--today-when-soft-text\); \}/,
+    'a Trash entry close to deletion is marked in the orange of "when", on its readable soft pair');
   for (const theme of ['folio', 'folio-dark']) {
-    const accent = themeHexToken(theme, 'accent');
-    const panel = themeHexToken(theme, 'panel');
+    const locator = themeHexToken(theme, 'locator');
+    const card = themeHexToken(theme, 'card');
     const text = themeHexToken(theme, 'text');
     const text2 = themeHexToken(theme, 'text2');
-    const red = themeHexToken(theme, 'red');
-    const selectedBackground = mixSrgb(
-      accent, panel, 0.1,
-    );
+    const selectedBackground = mixSrgb(locator, card, 0.1);
     assert.ok(contrastRatio(text, selectedBackground) >= 4.5,
       `${theme} selected recovery title must retain 4.5:1 contrast`);
     assert.ok(contrastRatio(text2, selectedBackground) >= 4.5,
       `${theme} selected recovery destination and retention metadata must retain 4.5:1 contrast`);
-    const archiveTrustBackground = mixSrgb(accent, panel, 0.08);
-    const archiveTrustLabel = mixSrgb(accent, text, 0.8);
-    assert.ok(contrastRatio(archiveTrustLabel, archiveTrustBackground) >= 4.5,
-      `${theme} Local trust-card heading must retain 4.5:1 contrast`);
-    assert.ok(contrastRatio(text2, archiveTrustBackground) >= 4.5,
-      `${theme} Local trust-card evidence must retain 4.5:1 contrast`);
-    const trashTrustBackground = mixSrgb(red, panel, 0.05);
-    const trashTrustLabel = mixSrgb(red, text, 0.8);
-    assert.ok(contrastRatio(trashTrustLabel, trashTrustBackground) >= 4.5,
-      `${theme} retention-card heading must retain 4.5:1 contrast`);
-    assert.ok(contrastRatio(text2, trashTrustBackground) >= 4.5,
-      `${theme} retention-card evidence must retain 4.5:1 contrast`);
+    assert.ok(contrastRatio(text2, card) >= 4.5,
+      `${theme} recovery metadata on a hovered row must retain 4.5:1 contrast`);
   }
+  assert.ok(contrastRatio(themeHexToken('folio', 'when-soft-text'), themeHexToken('folio', 'when-soft')) >= 4.5,
+    'folio days-left pill must retain 4.5:1 contrast');
 }
 
 (async () => {

@@ -295,7 +295,6 @@ function buildHarness({
   const recoveryOverlay = makeElement('state-recovery-overlay', ['hidden'], { bodyChild: true });
   const recoveryReload = makeElement('state-recovery-reload');
   const deleteOverlay = makeElement('organization-delete-overlay', ['hidden'], { bodyChild: true });
-  const trashOverlay = makeElement('trash-delete-overlay', ['hidden'], { bodyChild: true });
   const legacyModal = makeElement('modal-overlay', ['hidden'], { bodyChild: true });
   const overlay = makeElement('organization-name-overlay', ['hidden'], { bodyChild: true });
   const title = makeElement('organization-name-title', [], { overlayChild: true });
@@ -462,7 +461,6 @@ function buildHarness({
     recoveryOverlay,
     recoveryReload,
     deleteOverlay,
-    trashOverlay,
     legacyModal,
     overlay,
     title,
@@ -1023,7 +1021,8 @@ async function testLocaleRepaintFocusKeyboardAndLayering() {
   for (const [layerName, layer] of [
     ['recovery', keyboard.recoveryOverlay],
     ['organization deletion', keyboard.deleteOverlay],
-    ['Trash deletion', keyboard.trashOverlay],
+    // Delete forever asks on the shared Keep / Delete receipt (2026-11 Archive &
+    // Trash page), not a modal, so it no longer blocks creation.
     ['legacy modal', keyboard.legacyModal],
   ]) {
     layer.classList.remove('hidden');

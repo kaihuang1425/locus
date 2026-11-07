@@ -366,7 +366,9 @@ function testWiring() {
   ok(!/empty\.(?:favorites|readLater|library|noMatch)Body|empty\.localNote/.test(page), 'empty states carry no helper paragraph');
   const library = extract('renderLibrarySurface');
   ok(/if \(activeLibraryMode === 'archive'\) return renderArchiveSurface\(\);\n\s*if \(activeLibraryMode === 'trash'\) return renderTrashSurface\(\);/.test(library), 'Archive and Trash keep their own renderers');
-  ok(/board\.classList\.add\('library-mode', 'archive-mode'\);/.test(extract('renderArchiveSurface')) && /board\.classList\.add\('library-mode', 'trash-mode'\);/.test(extract('renderTrashSurface')), 'Archive and Trash keep their board classes');
+  ok(/return renderArchivePage\('archive'\);/.test(extract('renderArchiveSurface')) && /return renderArchivePage\('trash'\);/.test(extract('renderTrashSurface'))
+    && /board\.classList\.add\('arv-mode'\);/.test(extract('renderArchivePage')) && !/lib-mode/.test(extract('renderArchivePage')),
+  'Archive and Trash share their own page and board class (2026-11 Archive page), apart from the Library page');
   const focus = extract('focusLibraryLedgerTarget');
   ok(/'\.lib-later'[\s\S]*'\.library-more'[\s\S]*'\.library-primary'/.test(focus) && /\.lib-empty \.lib-ebtn[\s\S]*\.lib-field input[\s\S]*library-title/.test(focus), 'focus after a write finds the bookmark or More, then the next step of an empty view');
   const commit = extract('commitSavedTabReturnMutation');
@@ -420,7 +422,8 @@ function testStyles() {
   }
   ok(/body:is\(\[data-page="inbox"\], \[data-page="library"\]\) #topbar \.tb-left \{/.test(css) && /body\[data-page="inbox"\] #topbar-save \{ display: none; \}/.test(css),
     'the Library page shares the Inbox page’s top bar (search on the right, title for assistive tech); only the Inbox hides Save tab');
-  ok(!/\.library-row|\.library-list|\.library-status|\.library-sort|\.read-later-row/.test(css.slice(0, css.indexOf('LIBRARY PAGE (2026-11 canvas)'))), 'the old ledger styles are gone; Archive and Trash keep .library-search and .library-head');
+  ok(!/\.library-row|\.library-list|\.library-status|\.library-sort|\.read-later-row/.test(css.slice(0, css.indexOf('LIBRARY PAGE (2026-11 canvas)'))), 'the old ledger styles are gone');
+  ok(!/\.library-search|\.library-head|\.library-shell|#board\.library-mode/.test(css), 'the old Archive and Trash shell styles are gone too (2026-11 Archive page)');
 }
 
 function testLocales() {

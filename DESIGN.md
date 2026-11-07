@@ -5343,3 +5343,36 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   (`locus-redesign-evidence/pages/just-today/`).
 
   **Implemented: yes. Verified: partial. User-validated: no. Released: no.**
+
+- **2026-11-07 - Archive and Trash become one page that follows its board (pages build,
+  page 7).** Archive.dc.html replaces the 2026-07/08 ledgers (heading over a summary of
+  cards, a retention note, a filter toolbar with a separate selection strip).
+  - One page, two routes as before: a big heading and an Archive / Trash switch (sliding
+    thumb, rolling counts that bump when they grow), one filter field and the type chips,
+    then the entries by day. The summary cards and the retention note are gone: the counts
+    are on the switch and the chips' names, the bytes are in Settings › Storage, the
+    30-day rule is on every Trash row and in the page description for assistive tech.
+  - Rows keep the filing line "Restore to Workspace › Space › Group" in full (the
+    2026-08-09 decisions), the board's site and Space are folded into it. Hover shows a
+    Restore pill and Move to Trash / Delete forever; at phone width and on touch screens
+    they are in the row's More (also right-click and Shift+F10). Selection is the row's
+    icon, which turns into a check box; the dark selection bar takes the tools row's place
+    and keeps the filing manifest and the "restore separately" refusals.
+  - **Delete forever asks on the shared Keep / Delete receipt, not a modal.** The ask names
+    the item ("Delete forever?" with its title as the sub-line, or "Delete 3 items
+    forever?"), Keep takes focus, the write still waits for storage, clears Undo history
+    and reports nothing until accepted. This replaces the 2026-07-16 alertdialog and its
+    longer copy (scope, retained data, irreversibility); "forever" carries the
+    irreversibility, the title the scope. The ask holds its entries by key, so an Undo or
+    a Restore that takes one of them out of Trash closes it; leaving Trash closes it too.
+  - Motion lands after storage: a Restore pill turns green and the row arcs out, Move to
+    Trash flies the row toward the Trash tab, Delete forever dissolves it, and Undo drops a
+    row back in. Writes may overlap; the page repaints once the last row has gone.
+  - Empty states are one line and one button (Browse all links, Browse archive, Clear
+    filters); Return home and the local note are gone (the rail and Settings keep them).
+  - Large archives: rows arrive 120 at a time (more as the list scrolls, or Show more), a
+    repaint keeps unchanged rows and the reader's place, and one pass over the stored ids
+    answers every row's Restore review (same answers as the per-row checks, which commit
+    still runs).
+
+  **Implemented: yes. Verified: partial. User-validated: no. Released: no.**

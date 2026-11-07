@@ -83,7 +83,7 @@ const productionSources = [
   extractBetween('function archiveItem(itemId) {', '\nfunction archiveRestoreDestination(entry) {'),
   extractBetween('function archiveRestoreDestination(entry) {', '\n\nfunction captureTabFields(tab) {'),
   extractBetween('function restoreArchiveEntries(entries) {', '\n\nfunction restoreArchive(idx) {'),
-  extractBetween('function moveArchiveEntriesToTrash(entries) {', '\n\nfunction permanentlyDeleteTrashEntries(entries) {'),
+  extractBetween('function moveArchiveEntriesToTrash(entries) {', '\n\n// Delete forever asks first on the shared Keep / Delete receipt'),
   'let selectedItemMutationPending = null;',
   ...[
     'itemDetailValueFingerprint',

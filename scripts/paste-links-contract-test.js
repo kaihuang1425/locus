@@ -331,7 +331,6 @@ function buildHarness({
     'import-overlay',
     'organization-name-overlay',
     'organization-delete-overlay',
-    'trash-delete-overlay',
   ]) {
     makeElement(id, ['hidden'], { bodyChild: true });
   }

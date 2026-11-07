@@ -299,6 +299,28 @@ Slices, in order:
 
 ## Done (newest first)
 
+- **2026-11-07 - Archive & Trash built from its canvas board (pages build, page 7 of 9).** One page
+  for both collections (`Archive.dc.html`): a big heading, an Archive / Trash switch whose thumb slides
+  and whose counts roll (a growing count bumps), one filter field and the type chips, then the entries by
+  day as quiet rows. Each row keeps its filing line ("Restore to Workspace › Space › Group", never cut)
+  and, in Trash, the days left (orange when 3 or fewer); its icon turns into its check box. Restore,
+  Move to Trash and Delete forever are the same receipt-gated transactions; once storage accepts one, the
+  Restore pill turns green and the row arcs out, or the row flies to the Trash tab, or dissolves; the
+  shared receipt keeps Undo and a row brought back drops in. Delete forever now asks on the shared
+  Keep / Delete receipt naming the item (the modal Trash dialog is gone); the ask holds its entries by
+  key, so an Undo or Restore that takes one out of Trash closes it and a late Delete reports nothing
+  (review findings A-1, A-5); focus lands on the neighbour row after every write (A-6); an asked row is
+  struck through at full contrast (A-7). The selection bar replaces the tools row and keeps the filing
+  manifest (one route, or every destination with its count, or why to restore separately). Empty states
+  are one line and one button. Phone: title beside the pick and More, meta under it. Performance at
+  1,024 archived entries (Edge 157): a repaint went from 620–920 ms to about 15 ms (one-pass Restore
+  index, rows 120 at a time, unchanged rows kept). No new stored field. Suites: new
+  `archive-page-contract-test.js` (218 checks, in CI); `trash-recovery` rewritten for the ask;
+  `library-recovery`, `library-page`, `canvas-pages`, `archive-scale`, `core-visual-system`,
+  `organization-creation/move/removal/delete` and `paste-links` ported. Evidence:
+  `locus-redesign-evidence/pages/archive/` (`pages-archive-log.txt`, `mutation-results.txt`,
+  `perf-before-after.txt`).
+
 - **2026-11-07 - Just Today: Today is the only new tab; the calm new tab is gone.** Kai's
   decision ("Just Today"). Removed the calm launch layer (split-flap clock and timer, greeting,
   saved-page search, three recent pages, "Show Today instead", chips, tone), its Settings

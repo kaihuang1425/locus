@@ -337,7 +337,6 @@ function buildHarness({
   const recoveryOverlay = makeElement('state-recovery-overlay', 'div', ['hidden'], { bodyChild: true });
   const recoveryReload = makeElement('state-recovery-reload', 'button', [], { parent: recoveryOverlay });
   const deleteOverlay = makeElement('organization-delete-overlay', 'div', ['hidden'], { bodyChild: true });
-  const trashOverlay = makeElement('trash-delete-overlay', 'div', ['hidden'], { bodyChild: true });
   const legacyModal = makeElement('modal-overlay', 'div', ['hidden'], { bodyChild: true });
   const overlay = makeElement('organization-name-overlay', 'div', ['hidden'], { bodyChild: true });
   const title = makeElement('organization-name-title', 'h2', [], { parent: overlay });
@@ -483,7 +482,6 @@ function buildHarness({
     recoveryOverlay,
     recoveryReload,
     deleteOverlay,
-    trashOverlay,
     legacyModal,
     overlay,
     title,

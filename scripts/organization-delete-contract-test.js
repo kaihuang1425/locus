@@ -384,7 +384,7 @@ function testStaticOrganizationBoundary() {
   assert.match(controllerSource, /document\.querySelectorAll\('\.space-item'\)/, 'Space deletion focus fallback must target the visible sidebar, not the hidden category strip');
   assert.doesNotMatch(extractFunction('focusOrganizationDeleteFallback'), /\.cat-tab\.active/, 'Space deletion must not return focus to the hidden legacy category strip');
   assert.match(extractFunction('focusOrganizationDeleteFallback'), /document\.activeElement === target/, 'Focus fallback must verify that a candidate actually received focus');
-  assert.match(source, /bindTrashDeleteDialog\(\);\s*bindOrganizationDeleteDialog\(\);/, 'The production initializer must bind the organization dialog');
+  assert.match(source, /bindTrashDeleteAsk\(\);\s*bindOrganizationDeleteDialog\(\);/, 'The production initializer must bind the organization dialog');
   assert.match(source, /_escBlockers = \[[^\]]*'organization-delete-overlay'/, 'The organization dialog must remain in the Escape blocker stack');
 }
 

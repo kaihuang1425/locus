@@ -957,12 +957,6 @@ const I18N = {
     'trash.title': 'Trash',
     'trash.subtitle': 'Valid Trash entries are scheduled for deletion after 30 days; uninstalling or deleting this browser profile removes them sooner.',
     'trash.search': 'Search trash',
-    'trash.summary.entries': 'Deleted {count}',
-    'trash.summary.items': 'Recoverable {count}',
-    'trash.summary.space': 'Recoverable space',
-    'trash.summary.retention': 'Auto-delete window',
-    'trash.retention': 'Items in trash are permanently deleted after 30 days.',
-    'trash.localOnly': 'Browser-profile local',
     'trash.all': 'All',
     'trash.links': 'Links',
     'trash.notes': 'Notes',
@@ -970,11 +964,6 @@ const I18N = {
     'trash.groups': 'Groups',
     'trash.selected': '{count} selected',
     'trash.restoreSelected': 'Restore selected',
-    'trash.deleteSelected': 'Delete forever',
-    'trash.empty': 'Your trash is empty',
-    'trash.emptyBody': 'Items deleted from Archive wait here for 30 days.',
-    'trash.noMatch': 'No deleted items match',
-    'trash.noMatchBody': 'Try another search or content type.',
     'trash.restore': 'Restore',
     'trash.restoreToFor': 'Restore {title} to {destination}',
     'trash.restoreGroupToFor': 'Restore group “{title}” from Trash to {destination}',
@@ -984,10 +973,6 @@ const I18N = {
     'trash.dayLeft': '1 day left',
     'trash.expiresToday': 'Deletes today',
     'trash.confirmTitle': 'Delete forever?',
-    'trash.confirmOne': '“{title}” will be removed from this browser profile. Other saved items won’t change, and this cannot be undone.',
-    'trash.confirmMany': '{count} selected items will be removed from this browser profile. Other saved items won’t change, and this cannot be undone.',
-    'trash.cancelDelete': 'Cancel',
-    'trash.deleting': 'Deleting…',
     'trash.restored': 'Restored from Trash',
     'trash.restoredMany': 'Restored {count} items from Trash',
     'trash.restorePagesSeparately': 'Select saved pages separately from other items in Trash.',
@@ -1346,11 +1331,6 @@ const I18N = {
     'archive.movedToTrash': 'Moved to Trash',
     'archive.subtitle': 'Archived content remains in this browser profile until restored or moved to Trash; uninstalling or deleting the profile removes it.',
     'archive.search': 'Search archive',
-    'archive.summary.entries': 'Archived {count}',
-    'archive.summary.items': 'Saved {count}',
-    'archive.summary.groups': '{count} groups',
-    'archive.summary.local': 'Local',
-    'archive.summary.localBody': 'Browser-profile storage; export before uninstalling',
     'archive.selected': '{count} selected',
     'archive.restoreSelected': 'Restore selected',
     'archive.restore': 'Restore',
@@ -1369,6 +1349,12 @@ const I18N = {
     'archive.restoredItemsToMany': 'Restored {count} items to {destinationCount} destinations',
     'archive.restoredGroupsTo': 'Restored {count} groups to {destination}',
     'archive.restoredGroupsToMany': 'Restored {count} groups to {destinationCount} destinations',
+    'archive.restored': 'Restored',
+    'archive.view': 'Show',
+    'archive.types': 'Type',
+    'archive.showMore': 'Show {count} more',
+    'trash.askMany': 'Delete {count} items forever?',
+    'trash.delete': 'Delete',
     'nav.spaces': 'Spaces',
     'nav.storage': 'Local storage',
     'priv.title': 'Privacy boundaries',
@@ -1532,7 +1518,6 @@ const I18N = {
     'empty.clearSearch': 'Clear search',
     'empty.clearFilters': 'Clear filters',
     'empty.searchAllSpaces': 'Search all spaces',
-    'empty.returnHome': 'Return home',
     'empty.showAll': 'Show all',
     'empty.inboxTitle': 'Nothing to triage right now',
     'empty.inboxBody': 'New links from the extension, opened-tabs rail, or imports will appear here.',
@@ -1542,12 +1527,9 @@ const I18N = {
     'empty.readLaterTitle': 'Your reading queue is clear',
     'empty.favoritesTitle': 'Start with the links you use most',
     'empty.trashTitle': 'No deleted items',
-    'empty.trashBody': 'Items moved from Archive wait here for 30 days before permanent deletion.',
     'empty.archiveTitle': 'Nothing archived',
-    'empty.archiveBody': 'Items and groups you archive will wait here until you need them again.',
     'empty.libraryTitle': 'Nothing saved yet',
     'empty.noMatchTitle': 'Nothing matches these filters',
-    'empty.noMatchBody': 'Clear the search or filters to see everything again.',
     'empty.localNote': 'Stored in this browser profile; export before uninstalling or deleting it.',
     'library.linksAcross': '{count} links across this workspace',
     'library.filterLinks': 'Filter links…',
@@ -2686,12 +2668,6 @@ const I18N = {
     'trash.title': '垃圾桶',
     'trash.subtitle': '有效的垃圾桶項目預定於 30 天後刪除；解除安裝或刪除此瀏覽器設定檔會更早移除。',
     'trash.search': '搜尋垃圾桶',
-    'trash.summary.entries': '已刪除 {count} 筆',
-    'trash.summary.items': '可復原 {count} 個項目',
-    'trash.summary.space': '可回收空間',
-    'trash.summary.retention': '自動刪除期限',
-    'trash.retention': '垃圾桶中的項目會在 30 天後永久刪除。',
-    'trash.localOnly': '瀏覽器設定檔本機',
     'trash.all': '全部',
     'trash.links': '連結',
     'trash.notes': '筆記',
@@ -2699,11 +2675,6 @@ const I18N = {
     'trash.groups': '群組',
     'trash.selected': '已選取 {count} 筆',
     'trash.restoreSelected': '復原所選項目',
-    'trash.deleteSelected': '永久刪除',
-    'trash.empty': '垃圾桶是空的',
-    'trash.emptyBody': '從封存中刪除的項目會在此保留 30 天。',
-    'trash.noMatch': '找不到符合的刪除項目',
-    'trash.noMatchBody': '請嘗試其他搜尋字詞或內容類型。',
     'trash.restore': '復原',
     'trash.restoreToFor': '將「{title}」復原到 {destination}',
     'trash.restoreGroupToFor': '將垃圾桶內的群組「{title}」復原到 {destination}',
@@ -2713,10 +2684,6 @@ const I18N = {
     'trash.dayLeft': '剩餘 1 天',
     'trash.expiresToday': '今天刪除',
     'trash.confirmTitle': '永久刪除？',
-    'trash.confirmOne': '「{title}」將從這個瀏覽器設定檔中移除，其他已儲存項目不受影響。刪除後無法復原。',
-    'trash.confirmMany': '所選的 {count} 個項目將從這個瀏覽器設定檔中移除，其他已儲存項目不受影響。刪除後無法復原。',
-    'trash.cancelDelete': '取消',
-    'trash.deleting': '刪除中…',
     'trash.restored': '已從垃圾桶復原',
     'trash.restoredMany': '已從垃圾桶復原 {count} 個項目',
     'trash.restorePagesSeparately': '請分開選取已儲存頁面和垃圾桶內的其他內容',
@@ -3075,11 +3042,6 @@ const I18N = {
     'archive.movedToTrash': '已移至垃圾桶',
     'archive.subtitle': '封存內容會留在此瀏覽器設定檔，直到復原或移至垃圾桶；解除安裝或刪除設定檔會移除資料。',
     'archive.search': '搜尋封存',
-    'archive.summary.entries': '已封存 {count} 筆',
-    'archive.summary.items': '已儲存 {count} 個項目',
-    'archive.summary.groups': '{count} 個群組',
-    'archive.summary.local': '本機',
-    'archive.summary.localBody': '瀏覽器設定檔儲存；解除安裝前請先匯出',
     'archive.selected': '已選取 {count} 筆',
     'archive.restoreSelected': '復原所選項目',
     'archive.restore': '復原',
@@ -3098,6 +3060,12 @@ const I18N = {
     'archive.restoredItemsToMany': '已將 {count} 個項目復原到 {destinationCount} 個位置',
     'archive.restoredGroupsTo': '已將 {count} 個群組復原到 {destination}',
     'archive.restoredGroupsToMany': '已將 {count} 個群組復原到 {destinationCount} 個位置',
+    'archive.restored': '已復原',
+    'archive.view': '顯示',
+    'archive.types': '類型',
+    'archive.showMore': '再顯示 {count} 個項目',
+    'trash.askMany': '永久刪除 {count} 個項目？',
+    'trash.delete': '刪除',
     'nav.spaces': '空間',
     'nav.storage': '本機儲存',
     'priv.title': '隱私界線',
@@ -3261,7 +3229,6 @@ const I18N = {
     'empty.clearSearch': '清除搜尋',
     'empty.clearFilters': '清除篩選條件',
     'empty.searchAllSpaces': '搜尋所有空間',
-    'empty.returnHome': '返回首頁',
     'empty.showAll': '顯示全部',
     'empty.inboxTitle': '目前沒有需要整理的內容',
     'empty.inboxBody': '從擴充功能、開啟分頁側欄或匯入功能加入的新連結會顯示在這裡。',
@@ -3271,12 +3238,9 @@ const I18N = {
     'empty.readLaterTitle': '稍後閱讀清單是空的',
     'empty.favoritesTitle': '先收藏你最常使用的連結',
     'empty.trashTitle': '沒有已刪除的項目',
-    'empty.trashBody': '從封存移除的項目會在這裡保留 30 天，之後永久刪除。',
     'empty.archiveTitle': '尚無封存內容',
-    'empty.archiveBody': '你封存的項目和群組會留在這裡，直到再次需要。',
     'empty.libraryTitle': '尚未儲存任何內容',
     'empty.noMatchTitle': '沒有符合這些篩選條件的內容',
-    'empty.noMatchBody': '清除搜尋或篩選條件，即可重新查看所有內容。',
     'empty.localNote': '資料存在此瀏覽器設定檔；解除安裝或刪除前請先匯出。',
     'library.linksAcross': '此工作區共有 {count} 個連結',
     'library.filterLinks': '篩選連結…',
@@ -11130,17 +11094,19 @@ function resolveArchivedPageRestoreDestination(entry) {
   };
 }
 
-function createArchivedPageRestoreContext(entry, collectionName = 'archive') {
+// `index` (createArchiveRestoreIndex) answers the reference and id checks for
+// a page of rows from one pass; without it each check scans the state.
+function createArchivedPageRestoreContext(entry, collectionName = 'archive', index = null) {
   const collection = collectionName === 'archive' || collectionName === 'trash'
     ? State.get()?.[collectionName]
     : null;
   if (!Array.isArray(collection)
-      || collection.filter(candidate => candidate === entry).length !== 1
+      || (index ? index.refCount(entry, collectionName) : collection.filter(candidate => candidate === entry).length) !== 1
       || entry?.kind !== 'item'
       || !entry.data
       || entry.data.type !== 'tab') return null;
   const itemId = String(entry.data.id || '');
-  if (!itemId || activeArchivedPageItemIdCount(itemId) !== 0) return null;
+  if (!itemId || (index ? index.activeIdCount(itemId) : activeArchivedPageItemIdCount(itemId)) !== 0) return null;
   const destination = resolveArchivedPageRestoreDestination(entry);
   if (!destination) return null;
   return {
@@ -11153,8 +11119,8 @@ function createArchivedPageRestoreContext(entry, collectionName = 'archive') {
   };
 }
 
-function createTrashedPageRestoreContext(entry) {
-  return createArchivedPageRestoreContext(entry, 'trash');
+function createTrashedPageRestoreContext(entry, index = null) {
+  return createArchivedPageRestoreContext(entry, 'trash', index);
 }
 
 function archivedLocalItemEntityIds(item) {
@@ -11179,14 +11145,17 @@ function archivedLocalItemEntityIds(item) {
   return walk(item) ? ids : null;
 }
 
-function archivedLocalItemIdsAvailable(item, entry, expectedIds = null) {
+function archivedLocalItemIdsAvailable(item, entry, expectedIds = null, index = null) {
   const ids = expectedIds || archivedLocalItemEntityIds(item);
   const state = State.get();
   if (!ids || !Array.isArray(state?.workspaces)
       || !Array.isArray(state.archive) || !Array.isArray(state.trash)) return false;
-  const referenceCount = state.archive.filter(candidate => candidate === entry).length
-    + state.trash.filter(candidate => candidate === entry).length;
+  const referenceCount = index
+    ? index.refCount(entry)
+    : state.archive.filter(candidate => candidate === entry).length
+      + state.trash.filter(candidate => candidate === entry).length;
   if (referenceCount !== 1) return false;
+  if (index) return index.idsFree(ids);
   try {
     const usedElsewhere = LocusImportUtils.collectEntityIds({
       workspaces: state.workspaces,
@@ -11199,13 +11168,13 @@ function archivedLocalItemIdsAvailable(item, entry, expectedIds = null) {
   }
 }
 
-function createArchivedLocalItemRestoreContext(entry, collectionName = 'archive') {
+function createArchivedLocalItemRestoreContext(entry, collectionName = 'archive', index = null) {
   const state = State.get();
   const collection = collectionName === 'archive' || collectionName === 'trash'
     ? state?.[collectionName]
     : null;
   if (!Array.isArray(collection)
-      || collection.filter(candidate => candidate === entry).length !== 1
+      || (index ? index.refCount(entry, collectionName) : collection.filter(candidate => candidate === entry).length) !== 1
       || entry?.kind !== 'item'
       || !entry.data
       || typeof entry.data !== 'object'
@@ -11215,7 +11184,7 @@ function createArchivedLocalItemRestoreContext(entry, collectionName = 'archive'
   const itemFingerprint = itemDetailValueFingerprint(entry.data);
   const entityIds = archivedLocalItemEntityIds(entry.data);
   if (!entryFingerprint || !itemFingerprint || !entityIds
-      || !archivedLocalItemIdsAvailable(entry.data, entry, entityIds)) return null;
+      || !archivedLocalItemIdsAvailable(entry.data, entry, entityIds, index)) return null;
   const destination = resolveArchivedPageRestoreDestination(entry);
   if (!destination) return null;
   return {
@@ -11230,8 +11199,8 @@ function createArchivedLocalItemRestoreContext(entry, collectionName = 'archive'
   };
 }
 
-function createTrashedLocalItemRestoreContext(entry) {
-  return createArchivedLocalItemRestoreContext(entry, 'trash');
+function createTrashedLocalItemRestoreContext(entry, index = null) {
+  return createArchivedLocalItemRestoreContext(entry, 'trash', index);
 }
 
 function resolveArchivedLocalItemRestoreTarget(context) {
@@ -11310,14 +11279,17 @@ function archivedGroupEntityIds(group) {
   return ids;
 }
 
-function archivedGroupIdsAvailable(group, entry, expectedIds = null) {
+function archivedGroupIdsAvailable(group, entry, expectedIds = null, index = null) {
   const ids = expectedIds || archivedGroupEntityIds(group);
   const state = State.get();
   if (!ids || !Array.isArray(state?.workspaces)
       || !Array.isArray(state.archive) || !Array.isArray(state.trash)) return false;
-  const referenceCount = state.archive.filter(candidate => candidate === entry).length
-    + state.trash.filter(candidate => candidate === entry).length;
+  const referenceCount = index
+    ? index.refCount(entry)
+    : state.archive.filter(candidate => candidate === entry).length
+      + state.trash.filter(candidate => candidate === entry).length;
   if (referenceCount !== 1) return false;
+  if (index) return index.idsFree(ids);
   try {
     const usedElsewhere = LocusImportUtils.collectEntityIds({
       workspaces: state.workspaces,
@@ -11389,13 +11361,13 @@ function resolveArchivedGroupRestoreDestination(entry) {
   };
 }
 
-function createArchivedGroupRestoreContext(entry, collectionName = 'archive') {
+function createArchivedGroupRestoreContext(entry, collectionName = 'archive', index = null) {
   const state = State.get();
   const collection = collectionName === 'archive' || collectionName === 'trash'
     ? state?.[collectionName]
     : null;
   if (!Array.isArray(collection)
-      || collection.filter(candidate => candidate === entry).length !== 1
+      || (index ? index.refCount(entry, collectionName) : collection.filter(candidate => candidate === entry).length) !== 1
       || entry?.kind !== 'group'
       || !entry.data
       || typeof entry.data !== 'object'
@@ -11404,7 +11376,7 @@ function createArchivedGroupRestoreContext(entry, collectionName = 'archive') {
   const groupFingerprint = itemDetailValueFingerprint(entry.data);
   const entityIds = archivedGroupEntityIds(entry.data);
   if (!entryFingerprint || !groupFingerprint || !entityIds
-      || !archivedGroupIdsAvailable(entry.data, entry, entityIds)) return null;
+      || !archivedGroupIdsAvailable(entry.data, entry, entityIds, index)) return null;
   const destination = resolveArchivedGroupRestoreDestination(entry);
   if (!destination) return null;
   return {
@@ -11419,8 +11391,8 @@ function createArchivedGroupRestoreContext(entry, collectionName = 'archive') {
   };
 }
 
-function createTrashedGroupRestoreContext(entry) {
-  return createArchivedGroupRestoreContext(entry, 'trash');
+function createTrashedGroupRestoreContext(entry, index = null) {
+  return createArchivedGroupRestoreContext(entry, 'trash', index);
 }
 
 function resolveArchivedGroupRestoreTarget(context) {
@@ -11883,7 +11855,7 @@ function setArchivedPageRestoreBusy(context, candidateOpener, busy) {
   const escaped = itemId ? CSS.escape(itemId) : '';
   const fallback = escaped
     ? document.querySelector(
-        `.archive-row[data-archive-item-id="${escaped}"] [data-archived-page-restore="true"]`,
+        `.arv-row[data-archive-item-id="${escaped}"] [data-archived-page-restore="true"]`,
       )
     : null;
   const opener = candidateOpener?.isConnected ? candidateOpener : fallback;
@@ -11896,7 +11868,7 @@ function setArchivedPageRestoreBusy(context, candidateOpener, busy) {
   opener.setAttribute('aria-busy', String(busy));
   opener.setAttribute('aria-disabled', String(busy));
   if (!busy) opener.removeAttribute('aria-disabled');
-  const row = opener.closest('.archive-row');
+  const row = opener.closest('.arv-row');
   row?.classList.toggle('is-archived-page-restore-pending', busy);
   if (row) {
     if (busy) row.setAttribute('aria-busy', 'true');
@@ -11910,7 +11882,7 @@ function setArchivedLocalItemRestoreBusy(context, candidateOpener, busy) {
   const escaped = itemId ? CSS.escape(itemId) : '';
   const fallback = escaped
     ? document.querySelector(
-        `.archive-row[data-archive-item-id="${escaped}"] [data-archived-local-item-restore="true"]`,
+        `.arv-row[data-archive-item-id="${escaped}"] [data-archived-local-item-restore="true"]`,
       )
     : null;
   const opener = candidateOpener?.isConnected ? candidateOpener : fallback;
@@ -11923,7 +11895,7 @@ function setArchivedLocalItemRestoreBusy(context, candidateOpener, busy) {
   opener.setAttribute('aria-busy', String(busy));
   opener.setAttribute('aria-disabled', String(busy));
   if (!busy) opener.removeAttribute('aria-disabled');
-  const row = opener.closest('.archive-row');
+  const row = opener.closest('.arv-row');
   row?.classList.toggle('is-archived-local-item-restore-pending', busy);
   if (row) {
     if (busy) row.setAttribute('aria-busy', 'true');
@@ -11937,7 +11909,7 @@ function setArchivedGroupRestoreBusy(context, candidateOpener, busy) {
   const escaped = groupId ? CSS.escape(groupId) : '';
   const fallback = escaped
     ? document.querySelector(
-        `.archive-row[data-archive-group-id="${escaped}"] [data-archived-group-restore="true"]`,
+        `.arv-row[data-archive-group-id="${escaped}"] [data-archived-group-restore="true"]`,
       )
     : null;
   const opener = candidateOpener?.isConnected ? candidateOpener : fallback;
@@ -11950,7 +11922,7 @@ function setArchivedGroupRestoreBusy(context, candidateOpener, busy) {
   opener.setAttribute('aria-busy', String(busy));
   opener.setAttribute('aria-disabled', String(busy));
   if (!busy) opener.removeAttribute('aria-disabled');
-  const row = opener.closest('.archive-row');
+  const row = opener.closest('.arv-row');
   row?.classList.toggle('is-archived-group-restore-pending', busy);
   if (row) {
     if (busy) row.setAttribute('aria-busy', 'true');
@@ -13131,105 +13103,148 @@ function moveArchiveEntriesToTrash(entries) {
   toast(tr('archive.movedToTrash'), { undo: true });
 }
 
+// Delete forever asks first on the shared Keep / Delete receipt (the same ask
+// as toastAskFirst, with the item's title as its sub-line). The entries it asks
+// about are held by key: an Undo or a Restore that takes one of them out of
+// Trash closes the ask, so a stale question can never report a deletion.
 let trashDeleteEntries = [];
+let trashDeleteKeys = [];
 let trashDeleteBusy = false;
+let trashDeleteAsk = null;
+let trashDeleteRun = null;
+
+function isTrashDeleteAskOpen() {
+  return !!trashDeleteAsk && toastEntries.includes(trashDeleteAsk);
+}
 
 function setTrashDeleteBusy(busy) {
-  const overlay = document.getElementById('trash-delete-overlay');
-  const cancel = document.getElementById('trash-delete-cancel');
-  const confirmButton = document.getElementById('trash-delete-confirm');
   trashDeleteBusy = !!busy;
-  if (overlay) overlay.setAttribute('aria-busy', String(trashDeleteBusy));
-  if (cancel) cancel.disabled = trashDeleteBusy;
-  if (confirmButton) {
-    confirmButton.disabled = trashDeleteBusy;
-    confirmButton.textContent = tr(trashDeleteBusy ? 'trash.deleting' : 'trash.deleteForever');
-  }
+  document.querySelectorAll('.arv-row.is-doomed').forEach(row => {
+    if (trashDeleteBusy) row.setAttribute('aria-busy', 'true');
+    else row.removeAttribute('aria-busy');
+  });
 }
 
-function focusTrashDeleteFallback() {
-  const target = document.querySelector('.trash-shell input[type="search"], .archive-shell input[type="search"]')
-    || document.getElementById('nav-trash');
-  if (target && typeof target.focus === 'function') {
-    try { target.focus({ preventScroll: true }); } catch { try { target.focus(); } catch {} }
-  }
-}
-
-function closeTrashDeleteDialog({ restoreFocus = true } = {}) {
-  const overlay = document.getElementById('trash-delete-overlay');
-  if (!overlay || overlay.classList.contains('hidden') || trashDeleteBusy) return false;
-  overlay.classList.add('hidden');
-  unlockBodyScroll();
+function closeTrashDeleteAsk({ restoreFocus = true } = {}) {
+  if (trashDeleteBusy) return false;
+  const ask = trashDeleteAsk;
+  const keys = trashDeleteKeys;
+  trashDeleteAsk = null;
+  trashDeleteRun = null;
   trashDeleteEntries = [];
-  setTrashDeleteBusy(false);
-  if (restoreFocus && !restoreOpener(overlay)) setTimeout(focusTrashDeleteFallback, 0);
-  else if (!restoreFocus) restoreOpener(overlay);
+  trashDeleteKeys = [];
+  if (ask && toastEntries.includes(ask)) removeToastEntry(ask, { restoreFocus });
+  if (typeof syncArchivePageDoom === 'function') syncArchivePageDoom({ closedKeys: ask ? keys : [] });
+  return !!ask;
+}
+
+// Re-reads the asked entries from Trash by key (an Undo rebuilds every stored
+// object). If one has left Trash, the ask closes.
+function reconcileTrashDeleteAsk() {
+  if (!trashDeleteKeys.length || trashDeleteBusy) return true;
+  const byKey = new Map((State.get()?.trash || []).filter(entry => entry && entry.data).map(entry => [archiveEntryKey(entry), entry]));
+  const entries = trashDeleteKeys.map(key => byKey.get(key));
+  if (entries.some(entry => !entry) || !isTrashDeleteAskOpen()) {
+    closeTrashDeleteAsk();
+    return false;
+  }
+  trashDeleteEntries = entries;
   return true;
 }
 
-function permanentlyDeleteTrashEntries(entries) {
+function focusTrashDeleteKeep(ask) {
+  const keep = document.getElementById('toast-keep');
+  const tryFocus = () => {
+    if (trashDeleteAsk !== ask || !keep || keep.classList.contains('hidden')) return true;
+    if (document.activeElement === keep) return true;
+    try { keep.focus({ preventScroll: true }); } catch { try { keep.focus(); } catch {} }
+    return document.activeElement === keep;
+  };
+  // The receipt becomes visible a frame later; Keep, the safe answer, takes focus.
+  if (!tryFocus()) {
+    requestAnimationFrame(tryFocus);
+    setTimeout(tryFocus, 60);
+  }
+}
+
+function permanentlyDeleteTrashEntries(entries, { run = null } = {}) {
   const s = State.get();
   const valid = [...new Set((entries || []).filter(entry => s.trash.includes(entry)))];
-  if (!valid.length) return false;
-  const overlay = document.getElementById('trash-delete-overlay');
-  if (!overlay || !overlay.classList.contains('hidden')) return false;
+  if (!valid.length || trashDeleteBusy) return false;
+  // A new ask replaces an open one.
+  if (trashDeleteAsk) closeTrashDeleteAsk({ restoreFocus: false });
   trashDeleteEntries = valid;
-  const message = valid.length === 1
-    ? tr('trash.confirmOne', { title: archiveEntryTitle(valid[0]) })
-    : tr('trash.confirmMany', { count: valid.length });
-  document.getElementById('trash-delete-message').textContent = message;
-  rememberOpener(overlay);
-  setTrashDeleteBusy(false);
-  overlay.classList.remove('hidden');
-  lockBodyScroll();
-  setTimeout(() => document.getElementById('trash-delete-cancel')?.focus({ preventScroll: true }), 0);
+  trashDeleteKeys = valid.map(archiveEntryKey);
+  trashDeleteRun = typeof run === 'function' ? run : null;
+  const one = valid.length === 1;
+  toast(one ? tr('trash.confirmTitle') : tr('trash.askMany', { count: valid.length }), {
+    tone: 'warning',
+    sub: one ? archiveEntryTitle(valid[0]) : '',
+    actionLabel: tr('trash.delete'),
+    keepLabel: tr('toast.keep'),
+    action: answerTrashDeleteAsk,
+  });
+  trashDeleteAsk = toastFront();
+  if (typeof syncArchivePageDoom === 'function') syncArchivePageDoom();
+  focusTrashDeleteKeep(trashDeleteAsk);
   return true;
+}
+
+// Delete on the ask: the write runs (with the page's motion when it asked),
+// then the receipt turns into its result. Nothing left to delete closes the
+// ask quietly; a refused write keeps the recovery overlay and claims nothing.
+async function answerTrashDeleteAsk() {
+  const run = trashDeleteRun || (write => write());
+  const deleted = await run(confirmTrashDelete);
+  if (deleted) return { message: tr('trash.deleted'), tone: 'info' };
+  if (State.isRecoveryRequired?.()) throw new Error('Trash deletion was not confirmed');
+  return null;
 }
 
 async function confirmTrashDelete() {
   if (trashDeleteBusy) return false;
-  const s = State.get();
-  const valid = trashDeleteEntries.filter(entry => s.trash.includes(entry));
-  if (!valid.length) {
-    closeTrashDeleteDialog();
+  if (!reconcileTrashDeleteAsk() || !trashDeleteEntries.length) {
+    closeTrashDeleteAsk();
     return false;
   }
+  const s = State.get();
+  const valid = trashDeleteEntries.filter(entry => s.trash.includes(entry));
   setTrashDeleteBusy(true);
   valid.forEach(entry => s.trash.splice(s.trash.indexOf(entry), 1));
   try {
     await State.persistNow();
   } catch {
     // persistNow routes the failure through the fail-closed recovery overlay.
-    // Do not show a durable-success toast for an unconfirmed deletion.
+    // Do not show a durable-success receipt for an unconfirmed deletion.
     setTrashDeleteBusy(false);
     return false;
   }
   // A confirmed permanent deletion must not remain recoverable through an
   // older in-memory Undo or Redo snapshot.
   State.clearUndoHistory();
+  setTrashDeleteBusy(false);
+  // The ask's receipt turns into the result; it is no longer an open question.
+  trashDeleteAsk = null;
+  trashDeleteRun = null;
+  trashDeleteEntries = [];
+  trashDeleteKeys = [];
   renderBoard();
   renderHeader();
   updateNavChrome();
-  setTrashDeleteBusy(false);
-  closeTrashDeleteDialog();
-  toast(tr('trash.deleted'), { danger: true });
   return true;
 }
 
-function bindTrashDeleteDialog() {
-  const overlay = document.getElementById('trash-delete-overlay');
-  if (!overlay) return;
-  document.getElementById('trash-delete-cancel').onclick = () => closeTrashDeleteDialog();
-  document.getElementById('trash-delete-confirm').onclick = confirmTrashDelete;
-  overlay.addEventListener('keydown', event => {
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      event.stopPropagation();
-      closeTrashDeleteDialog();
-      return;
+// The ask lives on the shared receipt, which Keep, Escape, its close button or
+// a newer receipt can take away; the rows it marked follow it.
+function bindTrashDeleteAsk() {
+  const t = document.getElementById('toast');
+  if (!t || typeof MutationObserver !== 'function' || t.dataset.trashAsk === 'bound') return;
+  t.dataset.trashAsk = 'bound';
+  new MutationObserver(() => {
+    if (trashDeleteAsk && !trashDeleteBusy && !toastEntries.includes(trashDeleteAsk)) {
+      closeTrashDeleteAsk({ restoreFocus: false });
     }
-    trapTabKey(event, overlay);
-  });
+  }).observe(t, { attributes: true, childList: true, subtree: true, characterData: true });
 }
 
 let organizationNameCtx = null;
@@ -13702,10 +13717,9 @@ function openOrganizationName(kind, id, opener) {
   const overlay = document.getElementById('organization-name-overlay');
   const recovery = document.getElementById('state-recovery-overlay');
   const deleteOverlay = document.getElementById('organization-delete-overlay');
-  const trashOverlay = document.getElementById('trash-delete-overlay');
   const legacyModal = document.getElementById('modal-overlay');
   if (!overlay || !overlay.classList.contains('hidden')) return false;
-  if ([recovery, deleteOverlay, trashOverlay, legacyModal].some(layer => layer && !layer.classList.contains('hidden'))) return false;
+  if ([recovery, deleteOverlay, legacyModal].some(layer => layer && !layer.classList.contains('hidden'))) return false;
   const target = organizationNameTarget(kind, id);
   if (!target) return false;
   organizationNameCtx = {
@@ -13737,10 +13751,9 @@ function openOrganizationGroupMove(groupId, opener) {
   const overlay = document.getElementById('organization-name-overlay');
   const recovery = document.getElementById('state-recovery-overlay');
   const deleteOverlay = document.getElementById('organization-delete-overlay');
-  const trashOverlay = document.getElementById('trash-delete-overlay');
   const legacyModal = document.getElementById('modal-overlay');
   if (!overlay || !overlay.classList.contains('hidden')) return false;
-  if ([recovery, deleteOverlay, trashOverlay, legacyModal]
+  if ([recovery, deleteOverlay, legacyModal]
     .some(layer => layer && !layer.classList.contains('hidden'))) return false;
 
   const source = identityGroupTarget(String(groupId));
@@ -13806,10 +13819,9 @@ function openOrganizationCreate(kind, options = {}, opener) {
   const overlay = document.getElementById('organization-name-overlay');
   const recovery = document.getElementById('state-recovery-overlay');
   const deleteOverlay = document.getElementById('organization-delete-overlay');
-  const trashOverlay = document.getElementById('trash-delete-overlay');
   const legacyModal = document.getElementById('modal-overlay');
   if (!overlay || !overlay.classList.contains('hidden')) return false;
-  if ([recovery, deleteOverlay, trashOverlay, legacyModal].some(layer => layer && !layer.classList.contains('hidden'))) return false;
+  if ([recovery, deleteOverlay, legacyModal].some(layer => layer && !layer.classList.contains('hidden'))) return false;
 
   let context = null;
   if (kind === 'workspace') {
@@ -17170,6 +17182,10 @@ function renderBoard() {
     document.getElementById('board').classList.remove('spc-mode');
     if (document.body.dataset.page === 'space') delete document.body.dataset.page;
   }
+  if (!isArchivePageActive()) {
+    document.getElementById('board').classList.remove('arv-mode');
+    if (document.body.dataset.page === 'archive') delete document.body.dataset.page;
+  }
   // Reflect the active surface on <body> (diagnostic / styling hook), computed
   // from the flags so it stays correct through every early-returning gate.
   document.body.dataset.surface = activeSearch ? 'search' : activeCalendar ? 'calendar' : activeGroupPage ? 'group' : activeLibraryMode ? 'library' : activeHome ? 'home' : 'board';
@@ -17186,6 +17202,9 @@ function renderBoard() {
     closeInboxSpacePicker();
   }
   if (libraryPageSession && !isLibraryPageActive()) libraryPageSession = null;
+  if (archivePageSession && !isArchivePageActive()) archivePageSession = null;
+  // A Delete forever ask is about rows on Trash; leaving Trash closes it.
+  if (trashDeleteAsk && !(isArchivePageActive() && activeLibraryMode === 'trash')) closeTrashDeleteAsk({ restoreFocus: false });
   if (spacePageSession && !isSpacePageActive()) spacePageSession = null;
   if (searchPageSession && !activeSearch) searchPageSession = null;
   if (calendarPageSession && !(activeCalendar && CAL_VIEWS.includes(activeCalendar.view))) calendarPageSession = null;
@@ -18564,14 +18583,6 @@ function archiveEntryType(entry) {
   return 'links';
 }
 
-function archiveEntryIcon(entry) {
-  if (entry.kind === 'group') return entry.data?.symbol || '📁';
-  if (entry.data?.type === 'note') return '✎';
-  if (entry.data?.type === 'todo') return entry.data.done ? '✓' : '○';
-  if (entry.data?.type === 'stack') return '▱';
-  return '↗';
-}
-
 function archiveEntryCount(entry) {
   if (entry.kind !== 'group') return 1;
   let count = 0;
@@ -18585,109 +18596,37 @@ function archiveEntryTimestamp(entry) {
   return Number.isFinite(value) && value > 0 ? value : 0;
 }
 
-function focusArchivedPageRestoreTarget(itemId) {
-  const escaped = itemId && typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
-    ? CSS.escape(String(itemId))
-    : String(itemId || '').replace(/["\\]/g, '\\$&');
-  const target = escaped
-    ? document.querySelector(
-        `.archive-row[data-archive-item-id="${escaped}"] [data-archived-page-restore="true"]`,
-      )
+// The compact Search and Settings archive lists open the Archive page on the
+// exact entry they reviewed; its row is rendered (and any filter hiding it
+// cleared) before its Restore takes focus. Drift falls back to the page.
+function focusArchivedEntryRestoreReview(entry, property, selector) {
+  if (entry) archivePageReveal(entry);
+  const row = entry
+    ? [...document.querySelectorAll('.arv-row')].find(candidate => candidate[property] === entry)
     : null;
-  const fallback = target
-    || document.querySelector('.archive-shell .library-search input')
-    || document.getElementById('nav-archive')
-    || document.querySelector('.archive-shell h1');
-  if (!fallback || typeof fallback.focus !== 'function') return false;
-  try { fallback.focus({ preventScroll: true }); } catch { try { fallback.focus(); } catch { return false; } }
-  if (typeof fallback.scrollIntoView === 'function') fallback.scrollIntoView({ block: 'nearest' });
+  const exact = row?.querySelector(selector) || null;
+  if (!exact || typeof exact.focus !== 'function') {
+    focusArchivePageTarget('');
+    return false;
+  }
+  try { exact.focus({ preventScroll: true }); } catch { try { exact.focus(); } catch { return false; } }
+  if (typeof exact.scrollIntoView === 'function') exact.scrollIntoView({ block: 'nearest', behavior: 'instant' });
   return true;
 }
 
 function focusArchivedPageRestoreReview(context) {
   const target = resolveArchivedPageRestoreTarget(context);
-  const row = target
-    ? [...document.querySelectorAll('.archive-row')]
-        .find(candidate => candidate.__archivedPageRestoreEntry === target.entry)
-    : null;
-  const exact = row?.querySelector('[data-archived-page-restore="true"]') || null;
-  if (!exact || typeof exact.focus !== 'function') {
-    focusArchivedPageRestoreTarget('');
-    return false;
-  }
-  try { exact.focus({ preventScroll: true }); } catch { try { exact.focus(); } catch { return false; } }
-  if (typeof exact.scrollIntoView === 'function') exact.scrollIntoView({ block: 'nearest' });
-  return true;
-}
-
-function focusArchivedLocalItemRestoreTarget(itemId) {
-  const escaped = itemId && typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
-    ? CSS.escape(String(itemId))
-    : String(itemId || '').replace(/["\\]/g, '\\$&');
-  const target = escaped
-    ? document.querySelector(
-        `.archive-row[data-archive-item-id="${escaped}"] [data-archived-local-item-restore="true"]`,
-      )
-    : null;
-  const fallback = target
-    || document.querySelector('.archive-shell .library-search input')
-    || document.getElementById('nav-archive')
-    || document.querySelector('.archive-shell h1');
-  if (!fallback || typeof fallback.focus !== 'function') return false;
-  try { fallback.focus({ preventScroll: true }); } catch { try { fallback.focus(); } catch { return false; } }
-  if (typeof fallback.scrollIntoView === 'function') fallback.scrollIntoView({ block: 'nearest' });
-  return true;
+  return focusArchivedEntryRestoreReview(target?.entry, '__archivedPageRestoreEntry', '[data-archived-page-restore="true"]');
 }
 
 function focusArchivedLocalItemRestoreReview(context) {
   const target = resolveArchivedLocalItemRestoreTarget(context);
-  const row = target
-    ? [...document.querySelectorAll('.archive-row')]
-        .find(candidate => candidate.__archivedLocalItemRestoreEntry === target.entry)
-    : null;
-  const exact = row?.querySelector('[data-archived-local-item-restore="true"]') || null;
-  if (!exact || typeof exact.focus !== 'function') {
-    focusArchivedLocalItemRestoreTarget('');
-    return false;
-  }
-  try { exact.focus({ preventScroll: true }); } catch { try { exact.focus(); } catch { return false; } }
-  if (typeof exact.scrollIntoView === 'function') exact.scrollIntoView({ block: 'nearest' });
-  return true;
-}
-
-function focusArchivedGroupRestoreTarget(groupId) {
-  const escaped = groupId && typeof CSS !== 'undefined' && typeof CSS.escape === 'function'
-    ? CSS.escape(String(groupId))
-    : String(groupId || '').replace(/["\\]/g, '\\$&');
-  const target = escaped
-    ? document.querySelector(
-        `.archive-row[data-archive-group-id="${escaped}"] [data-archived-group-restore="true"]`,
-      )
-    : null;
-  const fallback = target
-    || document.querySelector('.archive-shell .library-search input')
-    || document.getElementById('nav-archive')
-    || document.querySelector('.archive-shell h1');
-  if (!fallback || typeof fallback.focus !== 'function') return false;
-  try { fallback.focus({ preventScroll: true }); } catch { try { fallback.focus(); } catch { return false; } }
-  if (typeof fallback.scrollIntoView === 'function') fallback.scrollIntoView({ block: 'nearest' });
-  return true;
+  return focusArchivedEntryRestoreReview(target?.entry, '__archivedLocalItemRestoreEntry', '[data-archived-local-item-restore="true"]');
 }
 
 function focusArchivedGroupRestoreReview(context) {
   const target = resolveArchivedGroupRestoreTarget(context);
-  const row = target
-    ? [...document.querySelectorAll('.archive-row')]
-        .find(candidate => candidate.__archivedGroupRestoreEntry === target.entry)
-    : null;
-  const exact = row?.querySelector('[data-archived-group-restore="true"]') || null;
-  if (!exact || typeof exact.focus !== 'function') {
-    focusArchivedGroupRestoreTarget('');
-    return false;
-  }
-  try { exact.focus({ preventScroll: true }); } catch { try { exact.focus(); } catch { return false; } }
-  if (typeof exact.scrollIntoView === 'function') exact.scrollIntoView({ block: 'nearest' });
-  return true;
+  return focusArchivedEntryRestoreReview(target?.entry, '__archivedGroupRestoreEntry', '[data-archived-group-restore="true"]');
 }
 
 function archiveDateBucket(at) {
@@ -18701,809 +18640,1152 @@ function archiveDateBucket(at) {
   return 'Earlier';
 }
 
-// Dedicated desktop archive: the old Settings list remains as a compact
-// secondary view, while this primary surface supports finding and restoring
-// whole archived sessions without changing the legacy archive schema.
-function renderArchiveSurface() {
-  hideBreadcrumb();
-  const board = document.getElementById('board');
-  board.classList.remove('group-page-mode', 'list-mode', 'canvas-mode', 'explorer-mode', 'timeline-mode', 'gallery-mode', 'graph-mode', 'calendar-mode', 'home-mode');
-  board.classList.add('library-mode', 'archive-mode');
-  board.innerHTML = '';
-
-  // Keep malformed legacy/import records in storage for lossless export, but
-  // do not let one incomplete record prevent the rest of the archive loading.
-  const allEntries = (State.get().archive || [])
-    .filter(entry => entry && entry.data)
-    .sort((a, b) => archiveEntryTimestamp(b) - archiveEntryTimestamp(a));
-  const itemTotal = allEntries.reduce((sum, entry) => sum + archiveEntryCount(entry), 0);
-  const groupTotal = allEntries.filter(entry => entry.kind === 'group').length;
-  const selected = new Set();
-  let query = '';
-  let type = 'all';
-
-  const shell = document.createElement('section');
-  shell.className = 'library-shell archive-shell';
-  shell.innerHTML = `
-    <header class="library-head archive-head">
-      <div>
-        <h1>${esc(tr('nav.archive'))}</h1>
-        <p>${esc(tr('archive.subtitle'))}</p>
-      </div>
-      <label class="library-search">
-        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        <input type="search" placeholder="${esc(tr('archive.search'))}" aria-label="${esc(tr('archive.search'))}">
-      </label>
-    </header>
-    <div class="archive-summary" aria-label="${esc(tr('nav.archive'))}">
-      <div><strong>${allEntries.length}</strong><span>${esc(tr('archive.summary.entries', { count: allEntries.length }))}</span></div>
-      <div><strong>${itemTotal}</strong><span>${esc(tr('archive.summary.items', { count: itemTotal }))}</span></div>
-      <div><strong>${groupTotal}</strong><span>${esc(tr('archive.summary.groups', { count: groupTotal }))}</span></div>
-      <div class="archive-local"><strong>${esc(tr('archive.summary.local'))}</strong><span>${esc(tr('archive.summary.localBody'))}</span></div>
-    </div>
-    <div class="archive-toolbar">
-      <div class="archive-filters" role="group" aria-label="${esc(tr('nav.archive'))}">
-        ${[['all','search.all'],['links','search.links'],['notes','search.notes'],['todos','search.todos'],['groups','trash.groups']].map(([value, key]) => `<button type="button" data-type="${value}" aria-pressed="${value === 'all'}" class="${value === 'all' ? 'active' : ''}">${esc(tr(key))}</button>`).join('')}
-      </div>
-      <div class="archive-selection" aria-live="polite">
-        <span class="archive-selection-count">${esc(tr('archive.selected', { count: 0 }))}</span>
-        <span class="archive-selection-route" hidden></span>
-        <details class="archive-selection-destinations" hidden>
-          <summary></summary>
-          <ul></ul>
-        </details>
-        <button type="button" class="btn-primary" data-archived-page-batch-restore="true" data-archived-group-batch-restore="true" data-archived-local-item-batch-restore="true" disabled>${esc(tr('archive.restoreSelected'))}</button>
-        <button type="button" class="btn-secondary archive-trash-selected" disabled>${tr('archive.moveToTrash')}</button>
-      </div>
-    </div>
-    <div class="archive-results" aria-live="polite"></div>`;
-  board.appendChild(shell);
-
-  const results = shell.querySelector('.archive-results');
-  const selectionText = shell.querySelector('.archive-selection-count');
-  const selectionRoute = shell.querySelector('.archive-selection-route');
-  const selectionDestinations = shell.querySelector('.archive-selection-destinations');
-  const selectionDestinationSummary = selectionDestinations.querySelector('summary');
-  const selectionDestinationList = selectionDestinations.querySelector('ul');
-  const restoreSelected = shell.querySelector('[data-archived-page-batch-restore="true"]');
-  const trashSelected = shell.querySelector('.archive-trash-selected');
-  const search = shell.querySelector('.library-search input');
-  let selectedRestoreReview = null;
-  const syncSelection = () => {
-    selectionText.textContent = tr('archive.selected', { count: selected.size });
-    selectionRoute.hidden = true;
-    selectionRoute.textContent = '';
-    selectionDestinations.hidden = true;
-    selectionDestinations.open = false;
-    selectionDestinationSummary.textContent = '';
-    selectionDestinationList.innerHTML = '';
-    selectedRestoreReview = null;
-    const selectedEntries = [...selected];
-    const containsArchivedPage = selectedEntries.some(
-      entry => entry?.kind === 'item' && entry.data?.type === 'tab',
-    );
-    const containsArchivedGroup = selectedEntries.some(entry => entry?.kind === 'group');
-    const containsArchivedLocalItem = selectedEntries.some(
-      entry => entry?.kind === 'item' && ['note', 'todo', 'stack'].includes(entry.data?.type),
-    );
-    const containsLocalItem = selectedEntries.some(
-      entry => entry?.kind !== 'group'
-        && (entry?.kind !== 'item' || entry.data?.type !== 'tab'),
-    );
-    const containsUnsupportedStoredEntry = selectedEntries.some(
-      entry => entry?.kind !== 'group'
-        && !(entry?.kind === 'item'
-          && ['tab', 'note', 'todo', 'stack'].includes(entry.data?.type)),
-    );
-    restoreSelected.disabled = selectedEntries.length === 0;
-    if (containsArchivedPage && (containsArchivedGroup || containsLocalItem)) {
-      selectionRoute.textContent = tr('archive.restorePagesSeparately');
-      selectionRoute.hidden = false;
-      restoreSelected.disabled = true;
-    } else if (containsArchivedPage) {
-      selectedRestoreReview = createArchivedPageBatchRestoreContext([...selected]);
-      if (!selectedRestoreReview) {
-        selectionRoute.textContent = tr('archive.restoreUnavailable');
-        selectionRoute.hidden = false;
-        restoreSelected.disabled = true;
-      } else if (selectedRestoreReview.destinations.length === 1) {
-        selectionRoute.textContent = archivedPageRestoreDestinationText(
-          selectedRestoreReview.reviews[0],
-        );
-        selectionRoute.hidden = false;
-      } else {
-        selectionDestinationSummary.textContent = tr('archive.restoreDestinations', {
-          count: selectedRestoreReview.destinations.length,
-        });
-        selectionDestinationList.innerHTML = selectedRestoreReview.destinations.map(({ destination, count }) => {
-          const path = tr('library.destinationPath', {
-            workspace: destination.workspaceName,
-            space: destination.spaceName,
-            group: destination.groupName,
-          });
-          return `<li><span>${esc(path)}</span><strong>${count}</strong></li>`;
-        }).join('');
-        selectionDestinations.hidden = false;
-      }
-    } else if (containsArchivedGroup && containsLocalItem) {
-      selectionRoute.textContent = tr('archive.restoreGroupsSeparately');
-      selectionRoute.hidden = false;
-      restoreSelected.disabled = true;
-    } else if (containsArchivedGroup) {
-      selectedRestoreReview = createArchivedGroupBatchRestoreContext([...selected], 'archive');
-      if (!selectedRestoreReview) {
-        selectionRoute.textContent = tr('archive.restoreUnavailable');
-        selectionRoute.hidden = false;
-        restoreSelected.disabled = true;
-      } else if (selectedRestoreReview.destinations.length === 1) {
-        selectionRoute.textContent = archivedGroupRestoreDestinationText(
-          selectedRestoreReview.reviews[0],
-        );
-        selectionRoute.hidden = false;
-      } else {
-        selectionDestinationSummary.textContent = tr('archive.restoreDestinations', {
-          count: selectedRestoreReview.destinations.length,
-        });
-        selectionDestinationList.innerHTML = selectedRestoreReview.destinations.map(({ destination, count }) => {
-          const path = tr('library.spaceDestinationPath', {
-            workspace: destination.workspaceName,
-            space: destination.spaceName,
-          });
-          return `<li><span>${esc(path)}</span><strong>${count}</strong></li>`;
-        }).join('');
-        selectionDestinations.hidden = false;
-      }
-    } else if (containsArchivedLocalItem && containsUnsupportedStoredEntry) {
-      selectionRoute.textContent = tr('archive.restoreUnavailable');
-      selectionRoute.hidden = false;
-      restoreSelected.disabled = true;
-    } else if (containsArchivedLocalItem) {
-      selectedRestoreReview = createArchivedLocalItemBatchRestoreContext([...selected], 'archive');
-      if (!selectedRestoreReview) {
-        selectionRoute.textContent = tr('archive.restoreUnavailable');
-        selectionRoute.hidden = false;
-        restoreSelected.disabled = true;
-      } else if (selectedRestoreReview.destinations.length === 1) {
-        selectionRoute.textContent = archivedLocalItemRestoreDestinationText(
-          selectedRestoreReview.reviews[0],
-        );
-        selectionRoute.hidden = false;
-      } else {
-        selectionDestinationSummary.textContent = tr('archive.restoreDestinations', {
-          count: selectedRestoreReview.destinations.length,
-        });
-        selectionDestinationList.innerHTML = selectedRestoreReview.destinations.map(({ destination, count }) => {
-          const path = tr('library.destinationPath', {
-            workspace: destination.workspaceName,
-            space: destination.spaceName,
-            group: destination.groupName,
-          });
-          return `<li><span>${esc(path)}</span><strong>${count}</strong></li>`;
-        }).join('');
-        selectionDestinations.hidden = false;
-      }
-    }
-    restoreSelected.setAttribute('aria-disabled', String(restoreSelected.disabled));
-    trashSelected.disabled = selected.size === 0;
-  };
-  selectionDestinations.onkeydown = event => {
-    if (event.key !== 'Escape' || !selectionDestinations.open) return;
-    event.preventDefault();
-    event.stopPropagation();
-    selectionDestinations.open = false;
-    selectionDestinationSummary.focus();
-  };
-  function resetFilters() {
-    query = '';
-    type = 'all';
-    search.value = '';
-    shell.querySelectorAll('.archive-filters button').forEach(button => {
-      const active = button.dataset.type === 'all';
-      button.classList.toggle('active', active);
-      button.setAttribute('aria-pressed', String(active));
-    });
-    paint();
-    search.focus();
-  }
-
-  const paint = () => {
-    const needle = query.trim().toLowerCase();
-    const visible = allEntries.filter(entry => {
-      if (type !== 'all' && archiveEntryType(entry) !== type) return false;
-      return !needle || archiveEntryText(entry).includes(needle);
-    });
-    results.innerHTML = '';
-    if (!visible.length) {
-      results.appendChild(allEntries.length
-        ? buildSystemEmptyState({
-            kind: 'search', compact: true, title: tr('empty.noMatchTitle'), body: tr('empty.noMatchBody'),
-            actions: [{ label: tr('empty.clearFilters'), icon: '×', run: resetFilters }],
-          })
-        : buildSystemEmptyState({
-            kind: 'archive', title: tr('empty.archiveTitle'), body: tr('empty.archiveBody'),
-            actions: [
-              { label: tr('empty.browseLibrary'), icon: '↗', run: () => openLibrarySurface('all') },
-              { label: tr('empty.returnHome'), icon: '⌂', run: goHome },
-            ],
-            note: tr('empty.localNote'),
-          }));
-      return;
-    }
-
-    const buckets = new Map();
-    visible.forEach(entry => {
-      const bucket = archiveDateBucket(archiveEntryTimestamp(entry));
-      if (!buckets.has(bucket)) buckets.set(bucket, []);
-      buckets.get(bucket).push(entry);
-    });
-    buckets.forEach((entries, label) => {
-      const section = document.createElement('section');
-      section.className = 'archive-group';
-      section.innerHTML = `<h2>${label}<span>${entries.length}</span></h2><div class="archive-list" role="list"></div>`;
-      const list = section.querySelector('.archive-list');
-      entries.forEach(entry => {
-        const row = document.createElement('article');
-        const title = archiveEntryTitle(entry);
-        const origin = [entry.catName, entry.groupName].filter(Boolean).join(' / ') || 'Archive';
-        const isArchivedPage = entry.kind === 'item' && entry.data?.type === 'tab';
-        const isArchivedGroup = entry.kind === 'group';
-        const isArchivedLocalItem = entry.kind === 'item'
-          && ['note', 'todo', 'stack'].includes(entry.data?.type);
-        const restoreContext = isArchivedPage ? createArchivedPageRestoreContext(entry) : null;
-        const restoreDestination = isArchivedPage
-          ? archivedPageRestoreDestinationText(restoreContext)
-          : '';
-        const localRestoreContext = isArchivedLocalItem
-          ? createArchivedLocalItemRestoreContext(entry, 'archive')
-          : null;
-        const localRestoreDestination = isArchivedLocalItem
-          ? archivedLocalItemRestoreDestinationText(localRestoreContext)
-          : '';
-        const localRestorePath = isArchivedLocalItem
-          ? archivedLocalItemRestorePathText(localRestoreContext)
-          : '';
-        const groupRestoreContext = isArchivedGroup
-          ? createArchivedGroupRestoreContext(entry, 'archive')
-          : null;
-        const groupRestoreDestination = isArchivedGroup
-          ? archivedGroupRestoreDestinationText(groupRestoreContext)
-          : '';
-        const groupRestorePath = isArchivedGroup
-          ? archivedGroupRestorePathText(groupRestoreContext)
-          : '';
-        const groupItemCount = isArchivedGroup ? archiveEntryCount(entry) : 0;
-        const groupItemCountText = groupItemCount === 1
-          ? tr('groupAction.oneItem')
-          : tr('groupAction.items', { count: groupItemCount });
-        const visibleIndex = visible.indexOf(entry);
-        const neighbor = visible[visibleIndex + 1] || visible[visibleIndex - 1] || null;
-        const neighborId = neighbor?.kind === 'item' ? String(neighbor.data?.id || '') : '';
-        const neighborGroupId = neighbor?.kind === 'group' ? String(neighbor.data?.id || '') : '';
-        const timestamp = archiveEntryTimestamp(entry);
-        const date = timestamp ? new Intl.DateTimeFormat(undefined, { dateStyle:'medium', timeStyle:'short' }).format(new Date(timestamp)) : 'Date unavailable';
-        row.className = 'archive-row';
-        row.setAttribute('role', 'listitem');
-        if (isArchivedPage || isArchivedLocalItem) row.dataset.archiveItemId = String(entry.data.id || '');
-        if (isArchivedGroup) row.dataset.archiveGroupId = String(entry.data.id || '');
-        const secondary = isArchivedPage
-          ? restoreDestination
-          : (isArchivedGroup
-            ? `${groupRestoreDestination} · ${groupItemCountText}`
-            : (isArchivedLocalItem
-              ? localRestoreDestination
-              : `${origin} · ${archiveEntryType(entry).replace(/s$/, '')}`));
-        const restoreLabel = isArchivedGroup
-          ? tr('archive.restoreGroupToFor', { title, destination: groupRestorePath })
-          : (isArchivedLocalItem
-            ? tr('archive.restoreToFor', { title, destination: localRestorePath })
-            : tr('archive.restoreFor', { title }));
-        row.innerHTML = `
-          <label class="archive-check"><input type="checkbox" aria-label="Select ${esc(title)}"><span aria-hidden="true"></span></label>
-          <span class="archive-icon" aria-hidden="true">${esc(archiveEntryIcon(entry))}</span>
-          <span class="archive-copy"><strong>${esc(title)}</strong><span${isArchivedPage || isArchivedGroup || isArchivedLocalItem ? ' class="archive-restore-destination"' : ''}>${esc(secondary)}</span></span>
-          <time datetime="${timestamp ? new Date(timestamp).toISOString() : ''}" title="${esc(date)}">${timestamp ? esc(fmtTimeRelative(timestamp)) : 'Date unavailable'}</time>
-          <button type="button" class="archive-restore"${isArchivedPage ? ' data-archived-page-restore="true"' : (isArchivedGroup ? ' data-archived-group-restore="true"' : (isArchivedLocalItem ? ' data-archived-local-item-restore="true"' : ''))} aria-label="${esc(restoreLabel)}" title="${esc(isArchivedPage ? restoreDestination : (isArchivedGroup ? groupRestoreDestination : (isArchivedLocalItem ? localRestoreDestination : tr('archive.restore'))))}">${esc(tr('archive.restore'))}</button>
-          <button type="button" class="archive-delete" aria-label="${esc(tr('archive.moveToTrash'))}: ${esc(title)}" title="${esc(tr('archive.moveToTrash'))}">×</button>`;
-        const checkbox = row.querySelector('input');
-        checkbox.checked = selected.has(entry);
-        checkbox.onchange = () => { checkbox.checked ? selected.add(entry) : selected.delete(entry); row.classList.toggle('selected', checkbox.checked); syncSelection(); };
-        row.classList.toggle('selected', checkbox.checked);
-        const restoreButton = row.querySelector('.archive-restore');
-        if (isArchivedPage) {
-          row.__archivedPageRestoreEntry = entry;
-          restoreButton.disabled = !restoreContext;
-          restoreButton.setAttribute('aria-disabled', String(!restoreContext));
-          restoreButton.onclick = async () => {
-            const changed = await restoreArchivedPage(restoreContext, restoreButton);
-            if (!changed) return;
-            requestAnimationFrame(() => focusArchivedPageRestoreTarget(neighborId));
-          };
-        } else if (isArchivedGroup) {
-          row.__archivedGroupRestoreEntry = entry;
-          restoreButton.disabled = !groupRestoreContext;
-          restoreButton.setAttribute('aria-disabled', String(!groupRestoreContext));
-          restoreButton.onclick = async () => {
-            const changed = await commitArchivedGroupRestore(groupRestoreContext, restoreButton);
-            if (!changed) return;
-            requestAnimationFrame(() => focusArchivedGroupRestoreTarget(neighborGroupId));
-          };
-        } else if (isArchivedLocalItem) {
-          row.__archivedLocalItemRestoreEntry = entry;
-          restoreButton.disabled = !localRestoreContext;
-          restoreButton.setAttribute('aria-disabled', String(!localRestoreContext));
-          restoreButton.onclick = async () => {
-            const changed = await commitArchivedLocalItemRestore(localRestoreContext, restoreButton);
-            if (!changed) return;
-            requestAnimationFrame(() => focusArchivedLocalItemRestoreTarget(neighborId));
-          };
-        } else restoreButton.onclick = () => restoreArchiveEntries([entry]);
-        row.querySelector('.archive-delete').onclick = () => moveArchiveEntriesToTrash([entry]);
-        list.appendChild(row);
-      });
-      results.appendChild(section);
-    });
-  };
-
-  search.oninput = e => { query = e.target.value; paint(); };
-  shell.querySelectorAll('.archive-filters button').forEach(button => {
-    button.onclick = () => {
-      type = button.dataset.type;
-      shell.querySelectorAll('.archive-filters button').forEach(b => { const on = b === button; b.classList.toggle('active', on); b.setAttribute('aria-pressed', String(on)); });
-      paint();
-    };
-  });
-  restoreSelected.onclick = async () => {
-    const selectedEntries = [...selected];
-    const containsArchivedPage = selectedEntries.some(
-      entry => entry?.kind === 'item' && entry.data?.type === 'tab',
-    );
-    const containsArchivedGroup = selectedEntries.some(entry => entry?.kind === 'group');
-    const containsArchivedLocalItem = selectedEntries.some(
-      entry => entry?.kind === 'item' && ['note', 'todo', 'stack'].includes(entry.data?.type),
-    );
-    if (!containsArchivedPage && !containsArchivedGroup && !containsArchivedLocalItem) {
-      restoreArchiveEntries(selectedEntries);
-      return;
-    }
-    if (!selectedRestoreReview
-        || selectedEntries.length !== selectedRestoreReview.entryRefs.length
-        || selectedEntries.some((entry, index) => entry !== selectedRestoreReview.entryRefs[index])) {
-      syncSelection();
-      return;
-    }
-    const changed = containsArchivedPage
-      ? await commitArchivedPageBatchRestore(selectedRestoreReview, restoreSelected)
-      : (containsArchivedGroup
-        ? await commitArchivedGroupBatchRestore(selectedRestoreReview, restoreSelected)
-        : await commitArchivedLocalItemBatchRestore(selectedRestoreReview, restoreSelected));
-    if (!changed) return;
-    requestAnimationFrame(() => {
-      if (containsArchivedPage) focusArchivedPageRestoreTarget('');
-      else if (containsArchivedGroup) focusArchivedGroupRestoreTarget('');
-      else focusArchivedLocalItemRestoreTarget('');
-    });
-  };
-  trashSelected.onclick = () => moveArchiveEntriesToTrash([...selected]);
-  paint();
-  syncSelection();
-  updateNavChrome();
-  return true;
-}
-
-function trashDateBucket(at) {
-  const bucket = archiveDateBucket(at);
-  return tr({ Today:'trash.today', Yesterday:'trash.yesterday', 'This week':'trash.thisWeek', Earlier:'trash.earlier' }[bucket] || 'trash.earlier');
+function archiveBucketLabel(bucket) {
+  return tr({ Today: 'trash.today', Yesterday: 'trash.yesterday', 'This week': 'trash.thisWeek', Earlier: 'trash.earlier' }[bucket] || 'trash.earlier');
 }
 
 function trashDaysLeft(entry, now = Date.now()) {
   return Math.max(0, Math.ceil((TRASH_RETENTION_MS - (now - trashTimestamp(entry))) / 86400000));
 }
 
-function renderTrashSurface() {
-  purgeExpiredTrash();
-  hideBreadcrumb();
-  const board = document.getElementById('board');
-  board.classList.remove('group-page-mode', 'list-mode', 'canvas-mode', 'explorer-mode', 'timeline-mode', 'gallery-mode', 'graph-mode', 'calendar-mode', 'home-mode', 'archive-mode');
-  board.classList.add('library-mode', 'trash-mode');
-  board.innerHTML = '';
+// ── Archive & Trash page (2026-11 canvas) ─────────────────────────
+// One page for both collections: a big heading, an Archive / Trash switch whose
+// thumb slides and whose counts roll, one filter field and the type chips (the
+// selection bar takes their place while rows are picked), then the entries by
+// day. Each row reads as a filing instruction (where Restore puts it) and, in
+// Trash, the days left. Restore, Move to Trash and Delete forever are the same
+// receipt-gated transactions as before; once storage accepts a write the row
+// arcs out (Restore), flies to the Trash tab (Move to Trash) or dissolves
+// (Delete forever), and Undo drops it back in. Delete forever asks on the
+// shared Keep / Delete receipt. Rows past the first window arrive as the list
+// scrolls, so a 1,000-entry Archive stays quick.
 
-  const stored = State.get().trash || [];
-  const allEntries = stored
-    .filter(entry => entry && entry.data)
-    .sort((a, b) => trashTimestamp(b) - trashTimestamp(a));
-  const invalidCount = stored.length - allEntries.length;
-  const itemTotal = allEntries.reduce((sum, entry) => sum + archiveEntryCount(entry), 0);
-  const bytes = jsonSize(allEntries);
-  const selected = new Set();
-  let query = '';
-  let type = 'all';
+const ARCHIVE_PAGE_MODES = ['archive', 'trash'];
+const ARCHIVE_PAGE_TYPES = ['all', 'links', 'notes', 'todos', 'groups'];
+const ARCHIVE_PAGE_WINDOW = 120;
+const ARCHIVE_PAGE_ICONS = {
+  restore: 'M5.5 4.5 2.5 7.5l3 3M2.5 7.5h7a3.5 3.5 0 0 1 0 7H8',
+  trash: 'M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.6 8.5h5.8l.6-8.5',
+  kill: 'M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.6 8.5h5.8l.6-8.5M6.8 7.2l2.4 2.8M9.2 7.2 6.8 10',
+  check: 'M3.5 8.5l3 3 6-7',
+  close: 'M4 4l8 8M12 4l-8 8',
+  search: 'M7 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM10.6 10.6 13.5 13.5',
+  archive: 'M2 2.8h12v3.2H2zM3.1 6v6.8a1 1 0 0 0 1 1h7.8a1 1 0 0 0 1-1V6M6.4 8.7h3.2',
+};
+let archivePageSession = null;
 
-  const shell = document.createElement('section');
-  shell.className = 'library-shell archive-shell trash-shell';
-  shell.innerHTML = `
-    <header class="library-head archive-head">
-      <div>
-        <h1>${tr('trash.title')}</h1>
-        <p>${tr('trash.subtitle')}</p>
-      </div>
-      <label class="library-search">
-        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        <input type="search" placeholder="${esc(tr('trash.search'))}" aria-label="${esc(tr('trash.search'))}">
-      </label>
-    </header>
-    <div class="trash-retention" role="note">
-      <span class="trash-retention-icon" aria-hidden="true">⌫</span>
-      <strong>${tr('trash.retention')}</strong>
-      <span>${tr('trash.localOnly')}</span>
-    </div>
-    ${invalidCount ? `<div class="trash-error" role="status">${esc(tr('trash.invalid', { count: invalidCount }))}</div>` : ''}
-    <div class="archive-summary trash-summary" aria-label="${esc(tr('trash.title'))}">
-      <div><strong>${allEntries.length}</strong><span>${tr('trash.summary.entries', { count: allEntries.length })}</span></div>
-      <div><strong>${itemTotal}</strong><span>${tr('trash.summary.items', { count: itemTotal })}</span></div>
-      <div><strong>${_formatBytes(bytes)}</strong><span>${tr('trash.summary.space')}</span></div>
-      <div class="archive-local"><strong>30</strong><span>${tr('trash.summary.retention')}</span></div>
-    </div>
-    <div class="archive-toolbar">
-      <div class="archive-filters" role="group" aria-label="${esc(tr('trash.title'))}">
-        ${[['all','trash.all'],['links','trash.links'],['notes','trash.notes'],['todos','trash.todos'],['groups','trash.groups']].map(([value, key]) => `<button type="button" data-type="${value}" aria-pressed="${value === 'all'}" class="${value === 'all' ? 'active' : ''}">${tr(key)}</button>`).join('')}
-      </div>
-      <div class="archive-selection trash-selection" aria-live="polite">
-        <span class="archive-selection-count">${tr('trash.selected', { count: 0 })}</span>
-        <span class="archive-selection-route" hidden></span>
-        <details class="archive-selection-destinations" hidden>
-          <summary></summary>
-          <ul></ul>
-        </details>
-        <button type="button" class="btn-primary trash-restore-selected" data-archived-page-batch-restore="true" data-archived-group-batch-restore="true" data-archived-local-item-batch-restore="true" disabled>${tr('trash.restoreSelected')}</button>
-        <button type="button" class="btn-secondary trash-delete-selected" disabled>${tr('trash.deleteSelected')}</button>
-      </div>
-    </div>
-    <div class="archive-results" aria-live="polite"></div>`;
-  board.appendChild(shell);
+function archivePageSvg(name, size = 16, stroke = 1.6, cls = '') {
+  return `<svg${cls ? ` class="${cls}"` : ''} width="${size}" height="${size}" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="${stroke}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ARCHIVE_PAGE_ICONS[name] || ''}"/></svg>`;
+}
 
-  const results = shell.querySelector('.archive-results');
-  const selectionText = shell.querySelector('.archive-selection-count');
-  const selectionRoute = shell.querySelector('.archive-selection-route');
-  const selectionDestinations = shell.querySelector('.archive-selection-destinations');
+function isArchivePageActive() {
+  return !activeSearch && !activeCalendar && !activeGroupPage
+    && ARCHIVE_PAGE_MODES.includes(activeLibraryMode) && !!activeWs();
+}
+
+function archivePageRoot() {
+  return document.querySelector('#board > .arv');
+}
+
+// What the last paint showed, so counts roll and rows animate only when
+// something changed. The selection is kept by entry key, so it survives a
+// repaint and an Undo (which rebuilds every stored object).
+function archivePageState(wsId) {
+  if (!archivePageSession || archivePageSession.wsId !== wsId) {
+    archivePageSession = {
+      wsId,
+      mode: null,
+      counts: null,
+      query: '',
+      type: 'all',
+      viewKey: null,
+      seen: null,
+      selected: new Set(),
+      shown: ARCHIVE_PAGE_WINDOW,
+      holdRender: 0,
+      missedRender: false,
+      view: null,
+    };
+  }
+  return archivePageSession;
+}
+
+// An entry's identity across repaints and Undo: its kind, id and filing time.
+function archiveEntryKey(entry) {
+  const time = entry?.trashedAt || entry?.retentionStartedAt || entry?.at || '';
+  return `${entry?.kind === 'group' ? 'g' : 'i'}:${String(entry?.data?.id || '')}:${time}`;
+}
+
+// The stored entries of one collection, newest first. Malformed legacy or
+// imported records stay in storage for lossless export but are not listed.
+function archivePageEntries(mode) {
+  const stored = Array.isArray(State.get()?.[mode]) ? State.get()[mode] : [];
+  const time = mode === 'trash' ? trashTimestamp : archiveEntryTimestamp;
+  const entries = stored.filter(entry => entry && entry.data).sort((a, b) => time(b) - time(a));
+  return { stored, entries };
+}
+
+// One pass over every stored id, so each row's Restore review can check that
+// its ids are free without rescanning the whole graph per row (that scan made
+// a 1,000-entry Archive take most of a second to paint). It counts exactly what
+// collectEntityIds collects; an id is free when this entry is its only owner.
+function createArchiveRestoreIndex() {
+  const state = State.get();
+  const entityCounts = new Map();
+  const count = id => entityCounts.set(id, (entityCounts.get(id) || 0) + 1);
+  const visitItem = item => {
+    if (!item || typeof item !== 'object') return;
+    if (typeof item.id === 'string' && item.id) count(item.id);
+    if (item.type === 'stack' && Array.isArray(item.items)) item.items.forEach(visitItem);
+  };
+  const visitGroup = group => {
+    if (!group || typeof group !== 'object') return;
+    if (typeof group.id === 'string' && group.id) count(group.id);
+    (group.items || []).forEach(visitItem);
+  };
+  let broken = false;
+  try {
+    for (const workspace of (state?.workspaces || [])) {
+      if (workspace?.id) count(workspace.id);
+      for (const category of (workspace?.categories || [])) {
+        if (category?.id) count(category.id);
+        (category?.groups || []).forEach(visitGroup);
+      }
+    }
+    for (const collection of [state?.archive || [], state?.trash || []]) {
+      for (const entry of collection) {
+        if (entry?.kind === 'group') visitGroup(entry.data);
+        else if (entry?.kind === 'item') visitItem(entry.data);
+      }
+    }
+  } catch {
+    broken = true;
+  }
+  const refCounts = new Map();
+  for (const name of ['archive', 'trash']) {
+    for (const entry of (Array.isArray(state?.[name]) ? state[name] : [])) {
+      const counts = refCounts.get(entry) || { archive: 0, trash: 0 };
+      counts[name] += 1;
+      refCounts.set(entry, counts);
+    }
+  }
+  // Active saved-page ids, as activeArchivedPageItemIdCount walks them.
+  let activeCounts = new Map();
+  const walk = items => {
+    if (!Array.isArray(items)) return false;
+    for (const item of items) {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) return false;
+      const id = String(item.id || '');
+      activeCounts.set(id, (activeCounts.get(id) || 0) + 1);
+      if (item.type === 'stack' && !walk(item.items)) return false;
+    }
+    return true;
+  };
+  const activeValid = Array.isArray(state?.workspaces) && state.workspaces.every(workspace => (
+    !!workspace && Array.isArray(workspace.categories) && workspace.categories.every(space => (
+      !!space && Array.isArray(space.groups) && space.groups.every(group => !!group && walk(group.items))
+    ))
+  ));
+  if (!activeValid) activeCounts = null;
+  return {
+    refCount(entry, collectionName = '') {
+      const counts = refCounts.get(entry);
+      if (!counts) return 0;
+      return collectionName ? counts[collectionName] || 0 : counts.archive + counts.trash;
+    },
+    activeIdCount(itemId) {
+      const id = String(itemId || '');
+      if (!id || !activeCounts) return -1;
+      return activeCounts.get(id) || 0;
+    },
+    idsFree(ids) {
+      return !broken && Array.isArray(ids) && ids.every(id => entityCounts.get(id) === 1);
+    },
+  };
+}
+
+// The Restore review behind one row: which transaction it uses, the filing
+// line it shows, and the Restore control's accessible name.
+function archivePageRowReview(entry, mode, index) {
+  const trash = mode === 'trash';
+  const title = archiveEntryTitle(entry);
+  if (entry.kind === 'item' && entry.data?.type === 'tab') {
+    const context = trash
+      ? createTrashedPageRestoreContext(entry, index)
+      : createArchivedPageRestoreContext(entry, 'archive', index);
+    const path = context?.destination
+      ? tr('library.destinationPath', {
+          workspace: context.destination.workspaceName,
+          space: context.destination.spaceName,
+          group: context.destination.groupName,
+        })
+      : tr('archive.restoreUnavailable');
+    return {
+      kind: 'page', title, context,
+      line: archivedPageRestoreDestinationText(context),
+      label: tr(trash ? 'trash.restoreToFor' : 'archive.restoreToFor', { title, destination: path }),
+      color: context?.destination?.groupRef?.color || null,
+    };
+  }
+  if (entry.kind === 'group') {
+    const context = trash
+      ? createTrashedGroupRestoreContext(entry, index)
+      : createArchivedGroupRestoreContext(entry, 'archive', index);
+    return {
+      kind: 'group', title, context,
+      line: archivedGroupRestoreDestinationText(context),
+      label: tr(trash ? 'trash.restoreGroupToFor' : 'archive.restoreGroupToFor', { title, destination: archivedGroupRestorePathText(context) }),
+      color: entry.data?.color || null,
+    };
+  }
+  if (entry.kind === 'item' && ['note', 'todo', 'stack'].includes(entry.data?.type)) {
+    const context = trash
+      ? createTrashedLocalItemRestoreContext(entry, index)
+      : createArchivedLocalItemRestoreContext(entry, 'archive', index);
+    return {
+      kind: 'local', title, context,
+      line: archivedLocalItemRestoreDestinationText(context),
+      label: tr(trash ? 'trash.restoreToFor' : 'archive.restoreToFor', { title, destination: archivedLocalItemRestorePathText(context) }),
+      color: context?.destination?.groupRef?.color || null,
+    };
+  }
+  // Older stored entries keep the original direct writer.
+  return {
+    kind: 'legacy', title, context: null,
+    line: [entry.catName, entry.groupName].filter(Boolean).join(' › ') || tr('nav.archive'),
+    label: tr('archive.restoreFor', { title }),
+    color: null,
+  };
+}
+
+function archivePageSource(entry) {
+  if (entry.kind === 'group') {
+    const count = archiveEntryCount(entry);
+    return count === 1 ? tr('groupAction.oneItem') : tr('groupAction.items', { count });
+  }
+  return inboxItemSource(entry.data);
+}
+
+/// The short date at a row's right edge: the time today, the weekday this
+// week, else the date (as on the Inbox and Library rows), from formatters made
+// once per locale, since a long Archive formats a thousand of them.
+function archivePageWhenLabel(at, now = Date.now()) {
+  const locale = appLocale();
+  const cache = archivePageWhenLabel.cache;
+  if (!cache || cache.locale !== locale) {
+    archivePageWhenLabel.cache = {
+      locale,
+      time: new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }),
+      weekday: new Intl.DateTimeFormat(locale, { weekday: 'short' }),
+      date: new Intl.DateTimeFormat(locale, { month: 'short', day: 'numeric' }),
+      full: new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }),
+    };
+  }
+  const f = archivePageWhenLabel.cache;
+  const day = planDayStart(at);
+  const today = planDayStart(now);
+  const short = day === today ? f.time.format(at) : day > planAddDays(today, -7) ? f.weekday.format(at) : f.date.format(at);
+  return { short, full: f.full.format(at) };
+}
+
+// One stored entry as a quiet row: the pick (its icon turns into a check box),
+// the title with the filing line under it, the date or the days left, and the
+// Restore pill and the Trash icon on hover. More holds the same two actions at
+// phone width and on touch screens. A row from the last paint whose content
+// has not changed is kept as it is (`previous`), so an action repaints a long
+// list without rebuilding every row.
+function buildArchivePageRow(entry, mode, index, paint = {}, previous = null) {
+  const trash = mode === 'trash';
+  const review = archivePageRowReview(entry, mode, index);
+  const key = archiveEntryKey(entry);
+  const title = review.title;
+  const unavailable = review.kind !== 'legacy' && !review.context;
+  let when = '';
+  let shortWhen = '';
+  if (trash) {
+    const days = trashDaysLeft(entry);
+    const label = days === 0 ? tr('trash.expiresToday') : days === 1 ? tr('trash.dayLeft') : tr('trash.daysLeft', { count: days });
+    const at = trashTimestamp(entry);
+    when = `<time class="arv-days${days <= 3 ? ' is-soon' : ''}"${at ? ` datetime="${new Date(at).toISOString()}"` : ''}>${esc(label)}</time>`;
+    shortWhen = `<span class="arv-days${days <= 3 ? ' is-soon' : ''}">${esc(label)}</span>`;
+  } else {
+    const at = archiveEntryTimestamp(entry);
+    if (at) {
+      const label = archivePageWhenLabel(at);
+      when = `<time datetime="${new Date(at).toISOString()}" title="${esc(label.full)}">${esc(label.short)}</time>`;
+      shortWhen = `<span>${esc(label.short)}</span>`;
+    }
+  }
+  const signature = [mode, appLocale(), review.kind, review.line, review.label, unavailable, review.color, paint.query || '', when, title].join('\u0001');
+  let row = previous && previous.dataset.sig === signature ? previous : null;
+  if (!row) {
+    const escKey = esc(key);
+    const restoreAttr = review.kind === 'page'
+      ? ' data-archived-page-restore="true"'
+      : review.kind === 'group'
+        ? ' data-archived-group-restore="true"'
+        : review.kind === 'local' ? ' data-archived-local-item-restore="true"' : '';
+    const fav = entry.kind === 'group'
+      ? `<span class="ibx-fav is-group" aria-hidden="true">${inboxIcon('folder', 15, 1.6)}</span>`
+      : inboxFavMarkup(entry.data);
+    const dot = reminderDotColor(review.color);
+    const killLabel = trash ? tr('trash.deleteForever') : tr('archive.moveToTrash');
+    row = document.createElement('article');
+    row.setAttribute('role', 'listitem');
+    row.dataset.key = key;
+    row.dataset.sig = signature;
+    if (entry.kind === 'group') row.dataset.archiveGroupId = String(entry.data?.id || '');
+    else row.dataset.archiveItemId = String(entry.data?.id || '');
+    row.innerHTML = `
+      <button type="button" class="arv-pick" role="checkbox" aria-checked="false" aria-label="${esc(tr('trash.select', { title }))}" data-arv-focus="pick:${escKey}">${fav}<span class="arv-cb" aria-hidden="true">${archivePageSvg('check', 12, 2.6)}</span></button>
+      <div class="arv-copy">
+        <span class="arv-tt">${libraryTitleMarkup(title, paint.query)}</span>
+        <span class="arv-meta"><span class="arv-dot" style="--dot:${esc(dot)}" aria-hidden="true"></span><span class="archive-restore-destination">${esc(review.line)}</span><span class="arv-src">${esc(archivePageSource(entry))}</span>${shortWhen ? `<span class="arv-meta-when" aria-hidden="true">${shortWhen}</span>` : ''}</span>
+      </div>
+      <span class="arv-when">${when}</span>
+      <div class="arv-acts">
+        <button type="button" class="arv-restore"${restoreAttr} data-arv-focus="restore:${escKey}" aria-label="${esc(review.label)}" title="${esc(review.line)}"${unavailable ? ' disabled aria-disabled="true"' : ''}>${archivePageSvg('restore', 15, 1.7, 'arv-ri')}${archivePageSvg('check', 15, 2.4, 'arv-rc')}<span class="arv-rl">${esc(tr('archive.restore'))}</span><span class="arv-rl2" aria-hidden="true">${esc(tr('archive.restored'))}</span></button>
+        <button type="button" class="arv-ai arv-kill" data-arv-focus="kill:${escKey}" aria-label="${esc(`${killLabel}: ${title}`)}" title="${esc(killLabel)}">${archivePageSvg(trash ? 'kill' : 'trash', 17, 1.5)}</button>
+      </div>
+      <button type="button" class="arv-ai arv-more" data-arv-focus="more:${escKey}" aria-haspopup="menu" aria-label="${esc(tr('library.moreActions', { title }))}" title="${esc(tr('library.moreActions', { title }))}">${inboxDotsIcon(17)}</button>`;
+    bindInboxFavicons(row);
+    const more = row.querySelector('.arv-more');
+    // The menu reads the row's current review (an Undo rebuilds the entry).
+    bindBoardItemContextMenu(row, opener => {
+      const owner = opener?.isConnected ? opener : more;
+      const current = archivePageViewEntry(key)?.review || review;
+      const restoreButton = row.querySelector('.arv-restore');
+      return [
+        ...(restoreButton.disabled ? [] : [{ text: current.line, icon: cmIcons.archive, action: () => archivePageRestoreRow(key, owner) }]),
+        { text: killLabel, icon: cmIcons.delete, action: () => archivePageKillRow(key, owner) },
+      ];
+    }, { menuButton: more });
+  }
+  row.className = 'arv-row'
+    + (paint.selected ? ' is-selected' : '')
+    + (paint.doomed ? ' is-doomed' : '')
+    + (paint.motion ? ` ${paint.motion}` : '');
+  row.style.removeProperty('height');
+  if (paint.delay) row.style.setProperty('--arv-d', `${paint.delay}ms`);
+  else row.style.removeProperty('--arv-d');
+  row.querySelector('.arv-pick').setAttribute('aria-checked', String(!!paint.selected));
+  // The compact Search and Settings reviews find their exact row by reference.
+  row.__archivedPageRestoreEntry = review.kind === 'page' ? entry : undefined;
+  row.__archivedGroupRestoreEntry = review.kind === 'group' ? entry : undefined;
+  row.__archivedLocalItemRestoreEntry = review.kind === 'local' ? entry : undefined;
+  return { row, review };
+}
+
+function archivePageRowFor(key) {
+  const root = archivePageRoot();
+  return root && key ? root.querySelector(`.arv-row[data-key="${CSS.escape(key)}"]`) : null;
+}
+
+function archivePageFocus(target) {
+  if (!target || !target.isConnected) return false;
+  if (!inboxFocus(target)) return false;
+  target.scrollIntoView?.({ block: 'nearest', behavior: 'instant' });
+  return true;
+}
+
+// Where focus goes after a write or a repaint: the same control on the named
+// row, else that row's pick, else the filter field.
+function focusArchivePageTarget(key = '', control = 'restore') {
+  const root = archivePageRoot();
+  if (!root) return false;
+  const row = archivePageRowFor(key);
+  const target = (row && (row.querySelector(`[data-arv-focus^="${control}:"]:not(:disabled)`) || row.querySelector('.arv-pick')))
+    || root.querySelector('.arv-find:not([hidden]) .arv-field input')
+    || root.querySelector('.lib-empty .lib-ebtn')
+    || root.querySelector('.arv-title');
+  return archivePageFocus(target);
+}
+
+// The row after (or before) the ones leaving, for focus to land on.
+function archivePageNeighbourKey(keys) {
+  const view = archivePageSession?.view;
+  if (!view) return '';
+  const leaving = new Set(keys);
+  const order = view.visible.map(archiveEntryKey);
+  const last = Math.max(...keys.map(key => order.indexOf(key)));
+  const first = Math.min(...keys.map(key => order.indexOf(key)).filter(i => i >= 0));
+  return order.slice(last + 1).find(key => !leaving.has(key))
+    || order.slice(0, Math.max(0, first)).reverse().find(key => !leaving.has(key))
+    || '';
+}
+
+// Rows that leave after an accepted write: Restore turns its pill green and the
+// row arcs out, Move to Trash flies toward the Trash tab, Delete forever
+// dissolves; then the rows fold shut.
+function archivePageLeave(keys, motion) {
+  const rows = keys.map(archivePageRowFor).filter(Boolean);
+  if (!rows.length || planReducedMotion()) return Promise.resolve(false);
+  const cls = motion === 'restore' ? 'is-restored' : motion === 'trash' ? 'is-tossed' : 'is-deleted';
+  rows.forEach((row, i) => {
+    row.style.setProperty('--arv-d', `${Math.min(i, 8) * 40}ms`);
+    row.classList.add(cls);
+  });
+  const lead = (motion === 'restore' ? 460 : 300) + Math.min(rows.length - 1, 8) * 40;
+  return new Promise(resolve => {
+    setTimeout(() => {
+      rows.forEach(row => {
+        if (!row.isConnected) return;
+        row.style.height = `${row.offsetHeight}px`;
+        void row.offsetWidth;
+        row.classList.add('is-gone');
+      });
+      setTimeout(() => resolve(true), 260);
+    }, lead);
+  });
+}
+
+// Runs one write from a row or the selection bar. The rows stay on screen
+// while storage accepts it (the control shows the receipt pulse); once
+// accepted they leave with their motion, then the page repaints and focus
+// moves on. `write` resolves true when the write landed. Writes may overlap
+// (a second Restore while the first row is still leaving); the page repaints
+// once the last of them has finished its motion.
+async function runArchivePageWrite(keys, motion, write, { focusKey = null, control = 'restore' } = {}) {
+  const session = archivePageSession;
+  const nextKey = focusKey ?? archivePageNeighbourKey(keys);
+  if (session) session.holdRender += 1;
+  let changed = false;
+  try {
+    changed = !!(await write());
+  } finally {
+    if (session) {
+      if (changed) {
+        // The tools row comes back as soon as the picked rows are on their way.
+        keys.forEach(key => session.selected.delete(key));
+        if (archivePageSession === session) syncArchivePageSelection();
+        await archivePageLeave(keys, motion);
+      }
+      session.holdRender = Math.max(0, session.holdRender - 1);
+      if (changed) session.missedRender = true;
+      if (!session.holdRender && session.missedRender) {
+        session.missedRender = false;
+        if (archivePageSession === session) renderBoard();
+      }
+    }
+  }
+  if (changed) requestAnimationFrame(() => focusArchivePageTarget(nextKey, control));
+  return changed;
+}
+
+function archivePageViewEntry(key) {
+  return archivePageSession?.view?.byKey.get(key) || null;
+}
+
+function archivePageRestoreRow(key, opener = null) {
+  const data = archivePageViewEntry(key);
+  if (!data) return false;
+  const { entry, review } = data;
+  const mode = archivePageSession.view.mode;
+  const trash = mode === 'trash';
+  // The row's Restore carries the receipt pulse; from the row menu at phone
+  // width (where the pill is folded away) the menu's opener does.
+  const pill = archivePageRowFor(key)?.querySelector('.arv-restore');
+  const button = pill && pill.getClientRects().length ? pill : (opener?.isConnected ? opener : pill);
+  return runArchivePageWrite([key], 'restore', async () => {
+    if (review.kind === 'page') {
+      return trash ? commitTrashedPageRestore(review.context, button) : restoreArchivedPage(review.context, button);
+    }
+    if (review.kind === 'group') {
+      return trash ? commitTrashedGroupRestore(review.context, button) : commitArchivedGroupRestore(review.context, button);
+    }
+    if (review.kind === 'local') {
+      return trash ? commitTrashedLocalItemRestore(review.context, button) : commitArchivedLocalItemRestore(review.context, button);
+    }
+    (trash ? restoreTrashEntries : restoreArchiveEntries)([entry]);
+    return !(State.get()[mode] || []).includes(entry);
+  });
+}
+
+function archivePageDeleteRun(keys, control = 'kill') {
+  return write => new Promise(resolve => {
+    void runArchivePageWrite(keys, 'delete', async () => {
+      const deleted = await write();
+      resolve(deleted);
+      return deleted;
+    }, { control });
+  });
+}
+
+function archivePageKillRow(key, opener = null) {
+  const data = archivePageViewEntry(key);
+  if (!data) return false;
+  if (archivePageSession.view.mode === 'trash') {
+    return permanentlyDeleteTrashEntries([data.entry], { run: archivePageDeleteRun([key]) });
+  }
+  return runArchivePageWrite([key], 'trash', () => {
+    moveArchiveEntriesToTrash([data.entry]);
+    return !State.get().archive.includes(data.entry);
+  }, { control: 'kill' });
+}
+
+function archivePageSelectedEntries() {
+  const session = archivePageSession;
+  const view = session?.view;
+  if (!view) return [];
+  return view.visible.filter(entry => session.selected.has(archiveEntryKey(entry)));
+}
+
+function archivePageClearSelection({ focus = true } = {}) {
+  const session = archivePageSession;
+  const root = archivePageRoot();
+  if (!session || !root || !session.selected.size) return false;
+  session.selected.clear();
+  root.querySelectorAll('.arv-row.is-selected').forEach(row => {
+    row.classList.remove('is-selected');
+    row.querySelector('.arv-pick')?.setAttribute('aria-checked', 'false');
+  });
+  const focusWasInBar = root.querySelector('.arv-sel')?.contains(document.activeElement);
+  syncArchivePageSelection();
+  if (focus && (focusWasInBar || document.activeElement === document.body)) {
+    archivePageFocus(root.querySelector('.arv-field input'));
+  }
+  return true;
+}
+
+// Escape on the page closes the route list, then clears the selection, before
+// the global handler leaves the page.
+function archivePageEscape() {
+  if (!isArchivePageActive()) return false;
+  const root = archivePageRoot();
+  const routes = root?.querySelector('.arv-dests[open]');
+  if (routes) {
+    routes.open = false;
+    archivePageFocus(routes.querySelector('summary'));
+    return true;
+  }
+  return archivePageClearSelection();
+}
+
+// The selection bar: the count, then where Restore will file the picked rows
+// (one route written out, or a list of every destination with its count), or
+// why they must be restored separately. Same reviews as before.
+function syncArchivePageSelection() {
+  const root = archivePageRoot();
+  const session = archivePageSession;
+  const view = session?.view;
+  if (!root || !view) return;
+  const trash = view.mode === 'trash';
+  const bar = root.querySelector('.arv-sel');
+  const find = root.querySelector('.arv-find');
+  const selectionText = bar.querySelector('.arv-sel-count');
+  const selectionRoute = bar.querySelector('.archive-selection-route');
+  const selectionDestinations = bar.querySelector('.archive-selection-destinations');
   const selectionDestinationSummary = selectionDestinations.querySelector('summary');
   const selectionDestinationList = selectionDestinations.querySelector('ul');
-  const restoreSelected = shell.querySelector('.trash-restore-selected');
-  const deleteSelected = shell.querySelector('.trash-delete-selected');
-  const search = shell.querySelector('.library-search input');
-  let selectedRestoreReview = null;
-  const syncSelection = () => {
-    selectionText.textContent = tr('trash.selected', { count: selected.size });
-    selectionRoute.hidden = true;
-    selectionRoute.textContent = '';
-    selectionDestinations.hidden = true;
-    selectionDestinations.open = false;
-    selectionDestinationSummary.textContent = '';
-    selectionDestinationList.innerHTML = '';
-    selectedRestoreReview = null;
-    const selectedEntries = [...selected];
-    const containsTrashedPage = selectedEntries.some(
-      entry => entry?.kind === 'item' && entry.data?.type === 'tab',
-    );
-    const containsTrashedGroup = selectedEntries.some(entry => entry?.kind === 'group');
-    const containsTrashedLocalItem = selectedEntries.some(
-      entry => entry?.kind === 'item' && ['note', 'todo', 'stack'].includes(entry.data?.type),
-    );
-    const containsLocalItem = selectedEntries.some(
-      entry => entry?.kind !== 'group'
-        && (entry?.kind !== 'item' || entry.data?.type !== 'tab'),
-    );
-    const containsUnsupportedStoredEntry = selectedEntries.some(
-      entry => entry?.kind !== 'group'
-        && !(entry?.kind === 'item'
-          && ['tab', 'note', 'todo', 'stack'].includes(entry.data?.type)),
-    );
-    restoreSelected.disabled = selectedEntries.length === 0;
-    if (containsTrashedPage && (containsTrashedGroup || containsLocalItem)) {
-      selectionRoute.textContent = tr('trash.restorePagesSeparately');
+  const restoreSelected = bar.querySelector('[data-archived-page-batch-restore="true"]');
+  const killSelected = bar.querySelector('.arv-sel-kill');
+  const selectedEntries = archivePageSelectedEntries();
+  const any = selectedEntries.length > 0;
+  if (bar.hidden === any) {
+    const focusWasInBar = bar.contains(document.activeElement);
+    bar.hidden = !any;
+    find.hidden = any;
+    if (any) restartLibraryMotion(bar, 'is-in');
+    else if (focusWasInBar) archivePageFocus(find.querySelector('.arv-field input'));
+  }
+  root.classList.toggle('has-sel', any);
+  selectionText.textContent = tr(trash ? 'trash.selected' : 'archive.selected', { count: selectedEntries.length });
+  selectionRoute.hidden = true;
+  selectionRoute.textContent = '';
+  selectionDestinations.hidden = true;
+  selectionDestinations.open = false;
+  selectionDestinationSummary.textContent = '';
+  selectionDestinationList.innerHTML = '';
+  view.selectedReview = null;
+  view.selectedEntries = selectedEntries;
+  const containsArchivedPage = selectedEntries.some(
+    entry => entry?.kind === 'item' && entry.data?.type === 'tab',
+  );
+  const containsArchivedGroup = selectedEntries.some(entry => entry?.kind === 'group');
+  const containsArchivedLocalItem = selectedEntries.some(
+    entry => entry?.kind === 'item' && ['note', 'todo', 'stack'].includes(entry.data?.type),
+  );
+  const containsLocalItem = selectedEntries.some(
+    entry => entry?.kind !== 'group'
+      && (entry?.kind !== 'item' || entry.data?.type !== 'tab'),
+  );
+  const containsUnsupportedStoredEntry = selectedEntries.some(
+    entry => entry?.kind !== 'group'
+      && !(entry?.kind === 'item'
+        && ['tab', 'note', 'todo', 'stack'].includes(entry.data?.type)),
+  );
+  const showRoutes = (review, pathKey, routeText) => {
+    if (review.destinations.length === 1) {
+      selectionRoute.textContent = routeText(review.reviews[0]);
       selectionRoute.hidden = false;
-      restoreSelected.disabled = true;
-    } else if (containsTrashedPage) {
-      selectedRestoreReview = createTrashedPageBatchRestoreContext([...selected]);
-      if (!selectedRestoreReview) {
-        selectionRoute.textContent = tr('archive.restoreUnavailable');
-        selectionRoute.hidden = false;
-        restoreSelected.disabled = true;
-      } else if (selectedRestoreReview.destinations.length === 1) {
-        selectionRoute.textContent = archivedPageRestoreDestinationText(
-          selectedRestoreReview.reviews[0],
-        );
-        selectionRoute.hidden = false;
-      } else {
-        selectionDestinationSummary.textContent = tr('archive.restoreDestinations', {
-          count: selectedRestoreReview.destinations.length,
-        });
-        selectionDestinationList.innerHTML = selectedRestoreReview.destinations.map(({ destination, count }) => {
-          const path = tr('library.destinationPath', {
-            workspace: destination.workspaceName,
-            space: destination.spaceName,
-            group: destination.groupName,
-          });
-          return `<li><span>${esc(path)}</span><strong>${count}</strong></li>`;
-        }).join('');
-        selectionDestinations.hidden = false;
-      }
-    } else if (containsTrashedGroup && containsLocalItem) {
-      selectionRoute.textContent = tr('trash.restoreGroupsSeparately');
-      selectionRoute.hidden = false;
-      restoreSelected.disabled = true;
-    } else if (containsTrashedGroup) {
-      selectedRestoreReview = createTrashedGroupBatchRestoreContext([...selected]);
-      if (!selectedRestoreReview) {
-        selectionRoute.textContent = tr('archive.restoreUnavailable');
-        selectionRoute.hidden = false;
-        restoreSelected.disabled = true;
-      } else if (selectedRestoreReview.destinations.length === 1) {
-        selectionRoute.textContent = archivedGroupRestoreDestinationText(
-          selectedRestoreReview.reviews[0],
-        );
-        selectionRoute.hidden = false;
-      } else {
-        selectionDestinationSummary.textContent = tr('archive.restoreDestinations', {
-          count: selectedRestoreReview.destinations.length,
-        });
-        selectionDestinationList.innerHTML = selectedRestoreReview.destinations.map(({ destination, count }) => {
-          const path = tr('library.spaceDestinationPath', {
-            workspace: destination.workspaceName,
-            space: destination.spaceName,
-          });
-          return `<li><span>${esc(path)}</span><strong>${count}</strong></li>`;
-        }).join('');
-        selectionDestinations.hidden = false;
-      }
-    } else if (containsTrashedLocalItem && containsUnsupportedStoredEntry) {
-      selectionRoute.textContent = tr('archive.restoreUnavailable');
-      selectionRoute.hidden = false;
-      restoreSelected.disabled = true;
-    } else if (containsTrashedLocalItem) {
-      selectedRestoreReview = createTrashedLocalItemBatchRestoreContext([...selected]);
-      if (!selectedRestoreReview) {
-        selectionRoute.textContent = tr('archive.restoreUnavailable');
-        selectionRoute.hidden = false;
-        restoreSelected.disabled = true;
-      } else if (selectedRestoreReview.destinations.length === 1) {
-        selectionRoute.textContent = archivedLocalItemRestoreDestinationText(
-          selectedRestoreReview.reviews[0],
-        );
-        selectionRoute.hidden = false;
-      } else {
-        selectionDestinationSummary.textContent = tr('archive.restoreDestinations', {
-          count: selectedRestoreReview.destinations.length,
-        });
-        selectionDestinationList.innerHTML = selectedRestoreReview.destinations.map(({ destination, count }) => {
-          const path = tr('library.destinationPath', {
-            workspace: destination.workspaceName,
-            space: destination.spaceName,
-            group: destination.groupName,
-          });
-          return `<li><span>${esc(path)}</span><strong>${count}</strong></li>`;
-        }).join('');
-        selectionDestinations.hidden = false;
-      }
+      return;
     }
-    restoreSelected.setAttribute('aria-disabled', String(restoreSelected.disabled));
-    deleteSelected.disabled = selected.size === 0;
+    selectionDestinationSummary.textContent = tr('archive.restoreDestinations', {
+      count: review.destinations.length,
+    });
+    selectionDestinationList.innerHTML = review.destinations.map(({ destination, count }) => {
+      const path = tr(pathKey, {
+        workspace: destination.workspaceName,
+        space: destination.spaceName,
+        group: destination.groupName,
+      });
+      return `<li><span>${esc(path)}</span><strong>${count}</strong></li>`;
+    }).join('');
+    selectionDestinations.hidden = false;
   };
-  selectionDestinations.onkeydown = event => {
-    if (event.key !== 'Escape' || !selectionDestinations.open) return;
+  const refuse = key => {
+    selectionRoute.textContent = tr(key);
+    selectionRoute.hidden = false;
+    restoreSelected.disabled = true;
+  };
+  restoreSelected.disabled = selectedEntries.length === 0;
+  if (containsArchivedPage && (containsArchivedGroup || containsLocalItem)) {
+    refuse(trash ? 'trash.restorePagesSeparately' : 'archive.restorePagesSeparately');
+  } else if (containsArchivedPage) {
+    view.selectedReview = trash
+      ? createTrashedPageBatchRestoreContext(selectedEntries)
+      : createArchivedPageBatchRestoreContext(selectedEntries);
+    if (!view.selectedReview) refuse('archive.restoreUnavailable');
+    else showRoutes(view.selectedReview, 'library.destinationPath', archivedPageRestoreDestinationText);
+  } else if (containsArchivedGroup && containsLocalItem) {
+    refuse(trash ? 'trash.restoreGroupsSeparately' : 'archive.restoreGroupsSeparately');
+  } else if (containsArchivedGroup) {
+    view.selectedReview = trash
+      ? createTrashedGroupBatchRestoreContext(selectedEntries)
+      : createArchivedGroupBatchRestoreContext(selectedEntries, 'archive');
+    if (!view.selectedReview) refuse('archive.restoreUnavailable');
+    else showRoutes(view.selectedReview, 'library.spaceDestinationPath', archivedGroupRestoreDestinationText);
+  } else if (containsArchivedLocalItem && containsUnsupportedStoredEntry) {
+    refuse('archive.restoreUnavailable');
+  } else if (containsArchivedLocalItem) {
+    view.selectedReview = trash
+      ? createTrashedLocalItemBatchRestoreContext(selectedEntries)
+      : createArchivedLocalItemBatchRestoreContext(selectedEntries, 'archive');
+    if (!view.selectedReview) refuse('archive.restoreUnavailable');
+    else showRoutes(view.selectedReview, 'library.destinationPath', archivedLocalItemRestoreDestinationText);
+  }
+  bar.setAttribute('aria-label', selectionText.textContent);
+  restoreSelected.setAttribute('aria-disabled', String(restoreSelected.disabled));
+  restoreSelected.setAttribute('aria-label', tr(trash ? 'trash.restoreSelected' : 'archive.restoreSelected'));
+  restoreSelected.querySelector('.arv-sb-label').textContent = tr('archive.restore');
+  const killLabel = trash ? tr('trash.deleteForever') : tr('archive.moveToTrash');
+  killSelected.setAttribute('aria-label', killLabel);
+  killSelected.querySelector('.arv-sb-label').textContent = killLabel;
+  killSelected.querySelector('svg').outerHTML = archivePageSvg(trash ? 'kill' : 'trash', 15, 1.6);
+  killSelected.disabled = selectedEntries.length === 0;
+}
+
+async function archivePageRestoreSelected(restoreSelected) {
+  const session = archivePageSession;
+  const view = session?.view;
+  if (!view) return false;
+  const trash = view.mode === 'trash';
+  const selectedEntries = archivePageSelectedEntries();
+  if (!selectedEntries.length) return false;
+  const keys = selectedEntries.map(archiveEntryKey);
+  const containsArchivedPage = selectedEntries.some(
+    entry => entry?.kind === 'item' && entry.data?.type === 'tab',
+  );
+  const containsArchivedGroup = selectedEntries.some(entry => entry?.kind === 'group');
+  const containsArchivedLocalItem = selectedEntries.some(
+    entry => entry?.kind === 'item' && ['note', 'todo', 'stack'].includes(entry.data?.type),
+  );
+  if (!containsArchivedPage && !containsArchivedGroup && !containsArchivedLocalItem) {
+    return runArchivePageWrite(keys, 'restore', () => {
+      (trash ? restoreTrashEntries : restoreArchiveEntries)(selectedEntries);
+      return selectedEntries.every(entry => !(State.get()[view.mode] || []).includes(entry));
+    }, { control: 'pick' });
+  }
+  const selectedRestoreReview = view.selectedReview;
+  if (!selectedRestoreReview
+      || selectedEntries.length !== selectedRestoreReview.entryRefs.length
+      || selectedEntries.some((entry, index) => entry !== selectedRestoreReview.entryRefs[index])) {
+    syncArchivePageSelection();
+    return false;
+  }
+  return runArchivePageWrite(keys, 'restore', () => {
+    if (containsArchivedPage) {
+      return trash
+        ? commitTrashedPageBatchRestore(selectedRestoreReview, restoreSelected)
+        : commitArchivedPageBatchRestore(selectedRestoreReview, restoreSelected);
+    }
+    if (containsArchivedGroup) {
+      return trash
+        ? commitTrashedGroupBatchRestore(selectedRestoreReview, restoreSelected)
+        : commitArchivedGroupBatchRestore(selectedRestoreReview, restoreSelected);
+    }
+    return trash
+      ? commitTrashedLocalItemBatchRestore(selectedRestoreReview, restoreSelected)
+      : commitArchivedLocalItemBatchRestore(selectedRestoreReview, restoreSelected);
+  }, { control: 'pick' });
+}
+
+function archivePageKillSelected() {
+  const session = archivePageSession;
+  const view = session?.view;
+  if (!view) return false;
+  const selectedEntries = archivePageSelectedEntries();
+  if (!selectedEntries.length) return false;
+  const keys = selectedEntries.map(archiveEntryKey);
+  if (view.mode === 'trash') {
+    return permanentlyDeleteTrashEntries(selectedEntries, { run: archivePageDeleteRun(keys, 'pick') });
+  }
+  return runArchivePageWrite(keys, 'trash', () => {
+    moveArchiveEntriesToTrash(selectedEntries);
+    return selectedEntries.every(entry => !State.get().archive.includes(entry));
+  }, { control: 'pick' });
+}
+
+function archivePageTogglePick(key) {
+  const session = archivePageSession;
+  const row = archivePageRowFor(key);
+  if (!session || !row) return;
+  const on = !session.selected.has(key);
+  if (on) session.selected.add(key);
+  else session.selected.delete(key);
+  row.classList.toggle('is-selected', on);
+  row.querySelector('.arv-pick')?.setAttribute('aria-checked', String(on));
+  syncArchivePageSelection();
+}
+
+// The rows a Delete forever ask is about show struck through (at full contrast)
+// until the ask is answered or closed.
+function syncArchivePageDoom({ closedKeys = null } = {}) {
+  const root = archivePageRoot();
+  if (!root) return;
+  const doomed = new Set(root.dataset.mode === 'trash' && isTrashDeleteAskOpen() ? trashDeleteKeys : []);
+  root.querySelectorAll('.arv-row').forEach(row => row.classList.toggle('is-doomed', doomed.has(row.dataset.key)));
+  if (!closedKeys) return;
+  // Keep or Escape on the ask: the shared receipt returns focus to the row's
+  // Delete forever; if that row was rebuilt meanwhile, focus stays on the page.
+  const active = document.activeElement;
+  const t = document.getElementById('toast');
+  const lost = !active || active === document.body || (!!t && t.contains(active) && t.classList.contains('hidden'));
+  if (lost) focusArchivePageTarget(closedKeys[0] || '', 'kill');
+}
+
+// Adds the next rows of the current view (the rest arrive as the list scrolls,
+// or with Show more).
+function appendArchivePageRows(upto) {
+  const root = archivePageRoot();
+  const session = archivePageSession;
+  const view = session?.view;
+  if (!root || !view) return 0;
+  const list = root.querySelector('.arv-list');
+  const time = view.mode === 'trash' ? trashTimestamp : archiveEntryTimestamp;
+  let section = list.lastElementChild?.classList.contains('arv-grp') ? list.lastElementChild : null;
+  const start = view.rendered;
+  const end = Math.min(upto, view.visible.length);
+  for (let i = start; i < end; i += 1) {
+    const entry = view.visible[i];
+    const bucket = archiveDateBucket(time(entry));
+    if (!section || section.dataset.bucket !== bucket) {
+      section = document.createElement('section');
+      section.className = 'arv-grp';
+      section.dataset.bucket = bucket;
+      const label = archiveBucketLabel(bucket);
+      section.innerHTML = `<h2 class="arv-gh">${esc(label)}<span class="arv-gn">${view.bucketCounts.get(bucket) || 0}</span></h2><div class="arv-rows" role="list" aria-label="${esc(label)}"></div>`;
+      list.appendChild(section);
+    }
+    const key = archiveEntryKey(entry);
+    const motion = view.motion || (view.seen && !view.seen.has(key) ? 'is-back' : '');
+    const { row, review } = buildArchivePageRow(entry, view.mode, view.index, {
+      query: view.query,
+      selected: session.selected.has(key),
+      doomed: view.doomed.has(key),
+      motion,
+      delay: view.motion ? Math.min(i, 10) * 24 : 0,
+    }, view.reuse.get(key) || null);
+    view.byKey.set(key, { entry, review });
+    section.lastElementChild.appendChild(row);
+  }
+  view.rendered = Math.max(view.rendered, end);
+  session.shown = Math.max(session.shown, view.rendered);
+  const more = root.querySelector('.arv-morebtn');
+  const remaining = view.visible.length - view.rendered;
+  more.hidden = remaining <= 0;
+  if (remaining > 0) more.textContent = tr('archive.showMore', { count: Math.min(ARCHIVE_PAGE_WINDOW, remaining) });
+  return end - start;
+}
+
+function showMoreArchivePageRows({ focus = false } = {}) {
+  const session = archivePageSession;
+  const view = session?.view;
+  if (!view || session.holdRender || view.rendered >= view.visible.length) return false;
+  const first = view.rendered;
+  appendArchivePageRows(view.rendered + ARCHIVE_PAGE_WINDOW);
+  if (focus) focusArchivePageTarget(archiveEntryKey(view.visible[first]), 'pick');
+  return true;
+}
+
+// Makes sure an entry's row is on screen (rendering further rows, or clearing a
+// filter that hides it) before a review focuses it.
+function archivePageReveal(entry) {
+  const session = archivePageSession;
+  const root = archivePageRoot();
+  if (!session?.view || !root || !entry) return false;
+  const key = archiveEntryKey(entry);
+  let at = session.view.visible.findIndex(candidate => candidate === entry);
+  if (at < 0 && (session.query || session.type !== 'all')) {
+    session.query = '';
+    session.type = 'all';
+    const input = root.querySelector('.arv-field input');
+    if (input) input.value = '';
+    paintArchivePage();
+    at = session.view.visible.findIndex(candidate => candidate === entry);
+  }
+  if (at < 0) return false;
+  if (at >= session.view.rendered) appendArchivePageRows(at + 20);
+  return !!archivePageRowFor(key);
+}
+
+// The heading, the switch with its rolling counts, the field and the chips'
+// names, from the current mode.
+function syncArchivePage() {
+  const root = archivePageRoot();
+  const session = archivePageSession;
+  if (!root || !session) return;
+  const mode = activeLibraryMode;
+  const trash = mode === 'trash';
+  root.dataset.mode = mode;
+  const title = root.querySelector('.arv-title');
+  title.textContent = tr(trash ? 'trash.title' : 'nav.archive');
+  if (session.mode != null && session.mode !== mode) restartLibraryMotion(title, 'is-swap');
+  root.querySelector('#archive-sub').textContent = tr(trash ? 'trash.subtitle' : 'archive.subtitle');
+  const listed = name => (Array.isArray(State.get()?.[name]) ? State.get()[name] : []).filter(entry => entry && entry.data).length;
+  const counts = { archive: listed('archive'), trash: listed('trash') };
+  const previous = session.counts;
+  const seg = root.querySelector('.arv-seg');
+  seg.setAttribute('aria-label', tr('archive.view'));
+  seg.style.setProperty('--arv-i', String(ARCHIVE_PAGE_MODES.indexOf(mode)));
+  seg.querySelectorAll('[data-arv-mode]').forEach(button => {
+    const id = button.dataset.arvMode;
+    const label = tr(id === 'trash' ? 'trash.title' : 'nav.archive');
+    button.setAttribute('aria-pressed', String(id === mode));
+    button.setAttribute('aria-label', tr('library.modeCount', { label, count: counts[id] }));
+    button.querySelector('.arv-seg-label').textContent = label;
+    const count = button.querySelector('.arv-cnt');
+    if (!previous || previous[id] !== counts[id] || !count.firstChild) {
+      count.innerHTML = libraryRollMarkup(counts[id], previous ? previous[id] : null);
+    }
+    // A count that grows (Move to Trash, or an Undo that brings rows back) bumps.
+    if (previous && counts[id] > previous[id]) restartLibraryMotion(count, 'is-bump');
+  });
+  const input = root.querySelector('.arv-field input');
+  const placeholder = tr(trash ? 'trash.search' : 'archive.search');
+  input.placeholder = placeholder;
+  input.setAttribute('aria-label', placeholder);
+  if (document.activeElement !== input && input.value !== session.query) input.value = session.query;
+  const clear = root.querySelector('.arv-clear');
+  clear.setAttribute('aria-label', tr('empty.clearSearch'));
+  clear.title = tr('empty.clearSearch');
+  root.querySelector('.arv-types').setAttribute('aria-label', tr('archive.types'));
+  root.querySelector('.arv-sel-clear').setAttribute('aria-label', tr('selection.clearTitle'));
+  root.querySelector('.arv-sel-clear').title = tr('selection.clearTitle');
+  session.mode = mode;
+  session.counts = counts;
+}
+
+// The rows, the live count and the empty states. Typing in the filter or
+// picking a type repaints only this.
+function paintArchivePage() {
+  const root = archivePageRoot();
+  const session = archivePageSession;
+  if (!root || !session) return;
+  const mode = activeLibraryMode;
+  const trash = mode === 'trash';
+  const { stored, entries } = archivePageEntries(mode);
+  const query = session.query.trim().toLowerCase();
+  const typeCounts = Object.fromEntries(ARCHIVE_PAGE_TYPES.map(type => [type, 0]));
+  const visible = [];
+  for (const entry of entries) {
+    if (query && !archiveEntryText(entry).includes(query)) continue;
+    const type = archiveEntryType(entry);
+    typeCounts.all += 1;
+    typeCounts[type] += 1;
+    if (session.type !== 'all' && type !== session.type) continue;
+    visible.push(entry);
+  }
+  root.querySelector('.arv-clear').hidden = !root.querySelector('.arv-field input').value;
+  root.querySelectorAll('.arv-types [data-type]').forEach(button => {
+    const type = button.dataset.type;
+    const label = tr(`trash.${type}`);
+    button.textContent = label;
+    button.setAttribute('aria-pressed', String(type === session.type));
+    button.setAttribute('aria-label', tr('library.modeCount', { label, count: typeCounts[type] }));
+  });
+  const error = root.querySelector('.arv-error');
+  const invalid = trash ? stored.length - entries.length : 0;
+  error.hidden = !invalid;
+  error.textContent = invalid ? tr('trash.invalid', { count: invalid }) : '';
+  root.querySelector('.arv-live').textContent = tr(visible.length === 1 ? 'groupAction.oneItem' : 'groupAction.items', { count: visible.length });
+
+  const viewKey = `${mode}|${session.type}|${query}`;
+  const changedView = session.viewKey != null && session.viewKey !== viewKey;
+  const sameView = session.viewKey === viewKey && !!session.seen;
+  if (changedView) {
+    session.shown = ARCHIVE_PAGE_WINDOW;
+    document.getElementById('board')?.scrollTo({ top: 0, behavior: 'instant' });
+  }
+  const present = new Set(entries.map(archiveEntryKey));
+  [...session.selected].forEach(key => { if (!present.has(key)) session.selected.delete(key); });
+  const time = trash ? trashTimestamp : archiveEntryTimestamp;
+  const bucketCounts = new Map();
+  visible.forEach(entry => {
+    const bucket = archiveDateBucket(time(entry));
+    bucketCounts.set(bucket, (bucketCounts.get(bucket) || 0) + 1);
+  });
+  session.view = {
+    mode,
+    query,
+    visible,
+    bucketCounts,
+    index: createArchiveRestoreIndex(),
+    byKey: new Map(),
+    reuse: new Map(),
+    rendered: 0,
+    doomed: new Set(trash && isTrashDeleteAskOpen() ? trashDeleteKeys : []),
+    motion: changedView ? 'is-rise' : '',
+    seen: sameView ? session.seen : null,
+    selectedEntries: [],
+    selectedReview: null,
+  };
+  const list = root.querySelector('.arv-list');
+  // Rows of the last paint are kept by key and reused where nothing changed.
+  list.querySelectorAll('.arv-row').forEach(row => {
+    if (!row.classList.contains('is-gone')) session.view.reuse.set(row.dataset.key, row);
+  });
+  list.innerHTML = '';
+  if (visible.length) {
+    appendArchivePageRows(Math.max(ARCHIVE_PAGE_WINDOW, session.shown));
+  } else {
+    root.querySelector('.arv-morebtn').hidden = true;
+    let empty;
+    if (entries.length) {
+      empty = buildLibraryEmpty({
+        icon: archivePageSvg('search', 26, 1.5),
+        title: tr('empty.noMatchTitle'),
+        actions: [{ label: tr('empty.clearFilters'), run: () => resetArchivePageFilters() }],
+      });
+    } else if (trash) {
+      empty = buildLibraryEmpty({
+        icon: archivePageSvg('trash', 28, 1.3),
+        title: tr('empty.trashTitle'),
+        actions: [{ label: tr('empty.browseArchive'), run: () => openLibrarySurface('archive') }],
+      });
+    } else {
+      empty = buildLibraryEmpty({
+        icon: archivePageSvg('archive', 28, 1.3),
+        title: tr('empty.archiveTitle'),
+        actions: [{ label: tr('empty.browseLibrary'), run: () => openLibrarySurface('all') }],
+      });
+    }
+    list.appendChild(empty);
+  }
+  session.viewKey = viewKey;
+  session.seen = new Set(visible.map(archiveEntryKey));
+  syncArchivePageSelection();
+}
+
+function resetArchivePageFilters() {
+  const session = archivePageSession;
+  const root = archivePageRoot();
+  if (!session || !root) return;
+  session.query = '';
+  session.type = 'all';
+  const input = root.querySelector('.arv-field input');
+  input.value = '';
+  paintArchivePage();
+  archivePageFocus(input);
+}
+
+// The page's own controls, bound once when the page root is built.
+function bindArchivePage(page) {
+  const input = page.querySelector('.arv-field input');
+  bindLibraryQueryControl(input, query => {
+    if (!archivePageSession) return;
+    archivePageSession.query = query;
+    paintArchivePage();
+  });
+  // Down (or Enter) from the filter goes to the first row. An Escape that just
+  // cleared the filter stops here, so it does not also leave the page.
+  input.addEventListener('keydown', event => {
+    if (event.isComposing || event.keyCode === 229) return;
+    if (event.key === 'Escape' && event.defaultPrevented) {
+      event.stopPropagation();
+      return;
+    }
+    if (event.key !== 'ArrowDown' && event.key !== 'Enter') return;
+    const first = page.querySelector('.arv-row .arv-pick');
+    if (!first) return;
+    event.preventDefault();
+    archivePageFocus(first);
+  });
+  page.querySelector('.arv-clear').addEventListener('click', () => {
+    input.value = '';
+    input.dispatchEvent(new Event('input'));
+    archivePageFocus(input);
+  });
+  page.querySelectorAll('[data-arv-mode]').forEach(button => {
+    button.addEventListener('click', () => {
+      if (activeLibraryMode !== button.dataset.arvMode) openLibrarySurface(button.dataset.arvMode);
+    });
+  });
+  page.querySelectorAll('.arv-types [data-type]').forEach(button => {
+    button.addEventListener('click', () => {
+      const session = archivePageSession;
+      if (!session || session.type === button.dataset.type) return;
+      session.type = button.dataset.type;
+      paintArchivePage();
+    });
+  });
+  const bar = page.querySelector('.arv-sel');
+  const restoreSelected = bar.querySelector('[data-archived-page-batch-restore="true"]');
+  restoreSelected.addEventListener('click', () => archivePageRestoreSelected(restoreSelected));
+  bar.querySelector('.arv-sel-kill').addEventListener('click', () => archivePageKillSelected());
+  bar.querySelector('.arv-sel-clear').addEventListener('click', () => archivePageClearSelection());
+  const routes = bar.querySelector('.archive-selection-destinations');
+  routes.addEventListener('keydown', event => {
+    if (event.key !== 'Escape' || !routes.open) return;
     event.preventDefault();
     event.stopPropagation();
-    selectionDestinations.open = false;
-    selectionDestinationSummary.focus();
-  };
-  function resetFilters() {
-    query = '';
-    type = 'all';
-    search.value = '';
-    shell.querySelectorAll('.archive-filters button').forEach(button => {
-      const active = button.dataset.type === 'all';
-      button.classList.toggle('active', active);
-      button.setAttribute('aria-pressed', String(active));
-    });
-    paint();
-    search.focus();
-  }
-
-  const paint = () => {
-    const needle = query.trim().toLowerCase();
-    const visible = allEntries.filter(entry => {
-      if (type !== 'all' && archiveEntryType(entry) !== type) return false;
-      return !needle || archiveEntryText(entry).includes(needle);
-    });
-    results.innerHTML = '';
-    if (!visible.length) {
-      const noMatch = allEntries.length > 0;
-      results.appendChild(noMatch
-        ? buildSystemEmptyState({
-            kind: 'search', compact: true, title: tr('empty.noMatchTitle'), body: tr('empty.noMatchBody'),
-            actions: [{ label: tr('empty.clearFilters'), icon: '×', run: resetFilters }],
-          })
-        : buildSystemEmptyState({
-            kind: 'trash', title: tr('empty.trashTitle'), body: tr('empty.trashBody'),
-            actions: [
-              { label: tr('empty.browseArchive'), icon: '↗', run: () => openLibrarySurface('archive') },
-              { label: tr('empty.returnHome'), icon: '⌂', run: goHome },
-            ],
-          }));
-      return;
-    }
-
-    const buckets = new Map();
-    visible.forEach(entry => {
-      const bucket = trashDateBucket(trashTimestamp(entry));
-      if (!buckets.has(bucket)) buckets.set(bucket, []);
-      buckets.get(bucket).push(entry);
-    });
-    buckets.forEach((entries, label) => {
-      const section = document.createElement('section');
-      section.className = 'archive-group';
-      section.innerHTML = `<h2>${esc(label)}<span>${entries.length}</span></h2><div class="archive-list" role="list"></div>`;
-      const list = section.querySelector('.archive-list');
-      entries.forEach(entry => {
-        const row = document.createElement('article');
-        const title = archiveEntryTitle(entry);
-        const origin = [entry.catName, entry.groupName].filter(Boolean).join(' / ') || tr('nav.archive');
-        const isTrashedPage = entry.kind === 'item' && entry.data?.type === 'tab';
-        const isTrashedGroup = entry.kind === 'group';
-        const isTrashedLocalItem = entry.kind === 'item'
-          && ['note', 'todo', 'stack'].includes(entry.data?.type);
-        const restoreContext = isTrashedPage ? createTrashedPageRestoreContext(entry) : null;
-        const restoreDestination = isTrashedPage
-          ? archivedPageRestoreDestinationText(restoreContext)
-          : '';
-        const restorePath = isTrashedPage
-          ? (restoreContext?.destination
-            ? tr('library.destinationPath', {
-                workspace: restoreContext.destination.workspaceName,
-                space: restoreContext.destination.spaceName,
-                group: restoreContext.destination.groupName,
-              })
-            : tr('archive.restoreUnavailable'))
-          : '';
-        const localRestoreContext = isTrashedLocalItem
-          ? createTrashedLocalItemRestoreContext(entry)
-          : null;
-        const localRestoreDestination = isTrashedLocalItem
-          ? archivedLocalItemRestoreDestinationText(localRestoreContext)
-          : '';
-        const localRestorePath = isTrashedLocalItem
-          ? archivedLocalItemRestorePathText(localRestoreContext)
-          : '';
-        const groupRestoreContext = isTrashedGroup ? createTrashedGroupRestoreContext(entry) : null;
-        const groupRestoreDestination = isTrashedGroup
-          ? archivedGroupRestoreDestinationText(groupRestoreContext)
-          : '';
-        const groupRestorePath = isTrashedGroup
-          ? archivedGroupRestorePathText(groupRestoreContext)
-          : '';
-        const groupItemCount = isTrashedGroup ? archiveEntryCount(entry) : 0;
-        const groupItemCountText = groupItemCount === 1
-          ? tr('groupAction.oneItem')
-          : tr('groupAction.items', { count: groupItemCount });
-        const visibleIndex = visible.indexOf(entry);
-        const neighbor = visible[visibleIndex + 1] || visible[visibleIndex - 1] || null;
-        const neighborId = neighbor?.kind === 'item' ? String(neighbor.data?.id || '') : '';
-        const neighborGroupId = neighbor?.kind === 'group' ? String(neighbor.data?.id || '') : '';
-        const timestamp = trashTimestamp(entry);
-        const days = trashDaysLeft(entry);
-        const daysLabel = days === 0 ? tr('trash.expiresToday') : days === 1 ? tr('trash.dayLeft') : tr('trash.daysLeft', { count: days });
-        row.className = 'archive-row trash-row';
-        row.setAttribute('role', 'listitem');
-        if (isTrashedPage || isTrashedLocalItem) row.dataset.archiveItemId = String(entry.data.id || '');
-        if (isTrashedGroup) row.dataset.archiveGroupId = String(entry.data.id || '');
-        const secondary = isTrashedPage
-          ? restoreDestination
-          : (isTrashedGroup
-            ? `${groupRestoreDestination} · ${groupItemCountText}`
-            : (isTrashedLocalItem ? localRestoreDestination : origin));
-        const restoreLabel = isTrashedPage
-          ? tr('trash.restoreToFor', { title, destination: restorePath })
-          : (isTrashedGroup
-            ? tr('trash.restoreGroupToFor', { title, destination: groupRestorePath })
-            : (isTrashedLocalItem
-              ? tr('trash.restoreToFor', { title, destination: localRestorePath })
-              : `${tr('trash.restore')}: ${title}`));
-        row.innerHTML = `
-          <label class="archive-check"><input type="checkbox" aria-label="${esc(tr('trash.select', { title }))}"><span aria-hidden="true"></span></label>
-          <span class="archive-icon" aria-hidden="true">${esc(archiveEntryIcon(entry))}</span>
-          <span class="archive-copy"><strong>${esc(title)}</strong><span${isTrashedPage || isTrashedGroup || isTrashedLocalItem ? ' class="archive-restore-destination"' : ''}>${esc(secondary)}</span></span>
-          <time class="trash-expiry" datetime="${new Date(timestamp).toISOString()}" title="${esc(new Intl.DateTimeFormat(undefined, { dateStyle:'medium', timeStyle:'short' }).format(new Date(timestamp)))}">${esc(daysLabel)}</time>
-          <button type="button" class="archive-restore"${isTrashedPage ? ' data-archived-page-restore="true"' : (isTrashedGroup ? ' data-archived-group-restore="true"' : (isTrashedLocalItem ? ' data-archived-local-item-restore="true"' : ''))} aria-label="${esc(restoreLabel)}" title="${esc(isTrashedPage ? restoreDestination : (isTrashedGroup ? groupRestoreDestination : (isTrashedLocalItem ? localRestoreDestination : tr('trash.restore'))))}">${tr('trash.restore')}</button>
-          <button type="button" class="archive-delete" aria-label="${esc(tr('trash.deleteForever'))}: ${esc(title)}" title="${esc(tr('trash.deleteForever'))}">×</button>`;
-        const checkbox = row.querySelector('input');
-        checkbox.checked = selected.has(entry);
-        checkbox.onchange = () => { checkbox.checked ? selected.add(entry) : selected.delete(entry); row.classList.toggle('selected', checkbox.checked); syncSelection(); };
-        row.classList.toggle('selected', checkbox.checked);
-        const restoreButton = row.querySelector('.archive-restore');
-        if (isTrashedPage) {
-          row.__archivedPageRestoreEntry = entry;
-          restoreButton.disabled = !restoreContext;
-          restoreButton.setAttribute('aria-disabled', String(!restoreContext));
-          restoreButton.onclick = async () => {
-            const changed = await commitTrashedPageRestore(restoreContext, restoreButton);
-            if (!changed) return;
-            requestAnimationFrame(() => focusArchivedPageRestoreTarget(neighborId));
-          };
-        } else if (isTrashedGroup) {
-          row.__archivedGroupRestoreEntry = entry;
-          restoreButton.disabled = !groupRestoreContext;
-          restoreButton.setAttribute('aria-disabled', String(!groupRestoreContext));
-          restoreButton.onclick = async () => {
-            const changed = await commitTrashedGroupRestore(groupRestoreContext, restoreButton);
-            if (!changed) return;
-            requestAnimationFrame(() => focusArchivedGroupRestoreTarget(neighborGroupId));
-          };
-        } else if (isTrashedLocalItem) {
-          row.__archivedLocalItemRestoreEntry = entry;
-          restoreButton.disabled = !localRestoreContext;
-          restoreButton.setAttribute('aria-disabled', String(!localRestoreContext));
-          restoreButton.onclick = async () => {
-            const changed = await commitTrashedLocalItemRestore(localRestoreContext, restoreButton);
-            if (!changed) return;
-            requestAnimationFrame(() => focusArchivedLocalItemRestoreTarget(neighborId));
-          };
-        } else restoreButton.onclick = () => restoreTrashEntries([entry]);
-        row.querySelector('.archive-delete').onclick = () => permanentlyDeleteTrashEntries([entry]);
-        list.appendChild(row);
-      });
-      results.appendChild(section);
-    });
-  };
-
-  search.oninput = e => { query = e.target.value; paint(); };
-  search.onkeydown = e => {
-    if (e.key !== 'Escape') return;
-    e.stopPropagation();
-    if (search.value) { search.value = ''; query = ''; paint(); }
-    else search.blur();
-  };
-  shell.querySelectorAll('.archive-filters button').forEach(button => {
-    button.onclick = () => {
-      type = button.dataset.type;
-      shell.querySelectorAll('.archive-filters button').forEach(b => { const on = b === button; b.classList.toggle('active', on); b.setAttribute('aria-pressed', String(on)); });
-      paint();
-    };
+    routes.open = false;
+    routes.querySelector('summary').focus();
   });
-  restoreSelected.onclick = async () => {
-    const selectedEntries = [...selected];
-    const containsTrashedPage = selectedEntries.some(
-      entry => entry?.kind === 'item' && entry.data?.type === 'tab',
-    );
-    const containsTrashedGroup = selectedEntries.some(entry => entry?.kind === 'group');
-    const containsTrashedLocalItem = selectedEntries.some(
-      entry => entry?.kind === 'item' && ['note', 'todo', 'stack'].includes(entry.data?.type),
-    );
-    if (!containsTrashedPage && !containsTrashedGroup && !containsTrashedLocalItem) {
-      restoreTrashEntries(selectedEntries);
-      return;
-    }
-    if (!selectedRestoreReview
-        || selectedEntries.length !== selectedRestoreReview.entryRefs.length
-        || selectedEntries.some((entry, index) => entry !== selectedRestoreReview.entryRefs[index])) {
-      syncSelection();
-      return;
-    }
-    const changed = containsTrashedPage
-      ? await commitTrashedPageBatchRestore(selectedRestoreReview, restoreSelected)
-      : (containsTrashedGroup
-        ? await commitTrashedGroupBatchRestore(selectedRestoreReview, restoreSelected)
-        : await commitTrashedLocalItemBatchRestore(selectedRestoreReview, restoreSelected));
-    if (!changed) return;
-    requestAnimationFrame(() => {
-      if (containsTrashedPage) focusArchivedPageRestoreTarget('');
-      else if (containsTrashedGroup) focusArchivedGroupRestoreTarget('');
-      else focusArchivedLocalItemRestoreTarget('');
-    });
-  };
-  deleteSelected.onclick = () => permanentlyDeleteTrashEntries([...selected]);
-  paint();
-  syncSelection();
+  const list = page.querySelector('.arv-list');
+  list.addEventListener('click', event => {
+    const control = event.target.closest?.('[data-arv-focus]');
+    if (!control || !list.contains(control) || control.disabled) return;
+    const [kind] = String(control.dataset.arvFocus).split(':');
+    const key = control.closest('.arv-row')?.dataset.key || '';
+    if (kind === 'pick') archivePageTogglePick(key);
+    else if (kind === 'restore') archivePageRestoreRow(key, control);
+    else if (kind === 'kill') archivePageKillRow(key, control);
+  });
+  // Up and Down move between rows, to the same control in the next row.
+  list.addEventListener('keydown', event => {
+    if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+    const row = event.target.closest?.('.arv-row');
+    if (!row) return;
+    event.preventDefault();
+    const rows = [...list.querySelectorAll('.arv-row:not(.is-gone)')];
+    const index = rows.indexOf(row) + (event.key === 'ArrowDown' ? 1 : -1);
+    if (index < 0) { archivePageFocus(page.querySelector('.arv-find:not([hidden]) .arv-field input') || page.querySelector('.arv-sel-clear')); return; }
+    const next = rows[index];
+    if (!next) return;
+    const kind = String(event.target.dataset?.arvFocus || '').split(':')[0];
+    archivePageFocus((kind && next.querySelector(`[data-arv-focus^="${kind}:"]:not(:disabled)`)) || next.querySelector('.arv-pick'));
+  });
+  const more = page.querySelector('.arv-morebtn');
+  more.addEventListener('click', () => showMoreArchivePageRows({ focus: true }));
+  // Further rows arrive before the reader reaches the end of the list.
+  if (typeof IntersectionObserver === 'function') {
+    new IntersectionObserver(found => {
+      if (!found.some(item => item.isIntersecting)) return;
+      if (showMoreArchivePageRows()) {
+        requestAnimationFrame(() => {
+          const board = document.getElementById('board');
+          if (!more.hidden && board && more.getBoundingClientRect().top < board.getBoundingClientRect().bottom + 600) showMoreArchivePageRows();
+        });
+      }
+    }, { root: document.getElementById('board'), rootMargin: '0px 0px 600px 0px' }).observe(more);
+  }
+}
+
+// Renders Archive or Trash into #board. The page root stays across repaints
+// and across the switch, so the thumb slides, the heading swaps, the filter
+// keeps its caret and a repaint keeps the scroll position.
+function renderArchivePage(mode) {
+  const ws = activeWs();
+  if (!ws || !ARCHIVE_PAGE_MODES.includes(mode)) return false;
+  const session = archivePageState(ws.id);
+  hideBreadcrumb();
+  const board = document.getElementById('board');
+  document.body.dataset.page = 'archive';
+  board.classList.remove('group-page-mode', 'list-mode', 'canvas-mode', 'explorer-mode', 'timeline-mode', 'gallery-mode', 'graph-mode', 'calendar-mode', 'home-mode');
+  board.classList.add('arv-mode');
+  let page = archivePageRoot();
+  if (page && page.dataset.ws !== String(ws.id)) page = null;
+  // Rows that are leaving hold the repaint until they have gone.
+  if (session.holdRender && page) {
+    session.missedRender = true;
+    return true;
+  }
+  if (mode === 'trash') purgeExpiredTrash();
+  reconcileTrashDeleteAsk();
+  const firstShow = !page;
+  const keepScroll = firstShow ? 0 : board.scrollTop;
+  const active = document.activeElement;
+  const focusKey = page && active && page.contains(active)
+    ? active.closest('[data-arv-focus]')?.dataset.arvFocus || null
+    : null;
+  const modeChanged = session.mode != null && session.mode !== mode;
+  if (modeChanged) {
+    session.query = '';
+    session.type = 'all';
+    session.selected.clear();
+    session.shown = ARCHIVE_PAGE_WINDOW;
+  }
+  if (!page) {
+    board.innerHTML = '';
+    page = document.createElement('div');
+    page.className = 'arv';
+    page.dataset.ws = String(ws.id);
+    page.innerHTML = `
+      <p class="sr-only arv-live" aria-live="polite"></p>
+      <header class="arv-hd">
+        <h1 class="arv-title" id="archive-title" tabindex="-1"></h1>
+        <p class="sr-only" id="archive-sub"></p>
+        <div class="arv-seg" role="group">
+          <span class="arv-thumb" aria-hidden="true"></span>
+          ${ARCHIVE_PAGE_MODES.map(id => `<button type="button" class="arv-seg-btn" data-arv-mode="${id}" data-arv-focus="mode:${id}"><span class="arv-seg-label"></span><span class="arv-cnt" aria-hidden="true"></span></button>`).join('')}
+        </div>
+      </header>
+      <div class="arv-tools">
+        <div class="arv-find">
+          <label class="arv-field">${archivePageSvg('search', 16, 1.6)}<input type="search" autocomplete="off" spellcheck="false" data-arv-focus="filter"><button type="button" class="arv-clear" data-arv-focus="clear" hidden>${archivePageSvg('close', 14, 1.8)}</button></label>
+          <div class="arv-types" role="group">${ARCHIVE_PAGE_TYPES.map(type => `<button type="button" class="arv-chip" data-type="${type}" data-arv-focus="type:${type}"></button>`).join('')}</div>
+        </div>
+        <div class="arv-sel archive-selection" role="toolbar" hidden>
+          <span class="arv-sel-count" aria-live="polite"></span>
+          <span class="archive-selection-route arv-route" hidden></span>
+          <details class="archive-selection-destinations arv-dests" hidden><summary data-arv-focus="routes"></summary><ul></ul></details>
+          <span class="arv-sel-gap" aria-hidden="true"></span>
+          <button type="button" class="arv-sb is-pri" data-archived-page-batch-restore="true" data-archived-group-batch-restore="true" data-archived-local-item-batch-restore="true" data-arv-focus="sel:restore">${archivePageSvg('restore', 15, 1.7)}<span class="arv-sb-label"></span></button>
+          <button type="button" class="arv-sb arv-sel-kill" data-arv-focus="sel:kill">${archivePageSvg('trash', 15, 1.6)}<span class="arv-sb-label"></span></button>
+          <button type="button" class="arv-sb arv-sel-clear" data-arv-focus="sel:clear">${archivePageSvg('close', 14, 1.8)}</button>
+        </div>
+      </div>
+      <p class="arv-error" role="status" hidden></p>
+      <div class="arv-list"></div>
+      <button type="button" class="arv-morebtn" data-arv-focus="more-rows" hidden></button>`;
+    board.appendChild(page);
+    bindArchivePage(page);
+  }
+  syncArchivePage();
+  paintArchivePage();
+  // A repaint keeps the reader where they were in a long list (a new view
+  // starts at the top, see paintArchivePage).
+  if (!firstShow && !session.view?.motion && board.scrollTop !== keepScroll) {
+    board.scrollTo({ top: keepScroll, behavior: 'instant' });
+  }
+  if (focusKey && !page.contains(document.activeElement)) {
+    const exact = page.querySelector(`[data-arv-focus="${CSS.escape(focusKey)}"]`);
+    const [kind, ...rest] = focusKey.split(':');
+    if (exact) archivePageFocus(exact);
+    else focusArchivePageTarget(rest.join(':'), kind);
+  }
   updateNavChrome();
   return true;
+}
+
+function renderArchiveSurface() {
+  return renderArchivePage('archive');
+}
+
+function renderTrashSurface() {
+  return renderArchivePage('trash');
 }
 
 // Save the currently dragged tab / multi-selection into a category's Inbox group.
@@ -23763,7 +24045,6 @@ const RICH_TEXT_LINK_CONFLICTING_IDS = [
   'ws-grid-overlay',
   'organization-name-overlay',
   'organization-delete-overlay',
-  'trash-delete-overlay',
   'settings-drawer',
   'cmd-palette',
   'emoji-picker',
@@ -26379,8 +26660,7 @@ function openImportPreview() {
     'calendar-task-overlay',
     'organization-name-overlay',
     'organization-delete-overlay',
-    'trash-delete-overlay',
-  ];
+    ];
   if (conflictingIds.some(id => {
     const element = document.getElementById(id);
     return element && !element.classList.contains('hidden');
@@ -26902,8 +27182,7 @@ function openPasteOverlay(opener) {
     'import-overlay',
     'organization-name-overlay',
     'organization-delete-overlay',
-    'trash-delete-overlay',
-  ];
+    ];
   if (conflictingIds.some(id => {
     const element = document.getElementById(id);
     return element && !element.classList.contains('hidden');
@@ -32991,8 +33270,7 @@ function openCalendarTaskDialog(dayStart, opener = null) {
     'reminder-overlay',
     'modal-overlay',
     'import-overlay',
-    'trash-delete-overlay',
-    'organization-name-overlay',
+      'organization-name-overlay',
     'organization-delete-overlay',
   ];
   if (conflictingIds.some(id => {
@@ -37168,21 +37446,12 @@ function bindStatic() {
         closeOrganizationDeleteDialog();
         return;
       }
-      // The Trash confirmation owns Escape even if focus was moved
-      // programmatically outside it. Its own key handler stops normal bubbling;
-      // this guard preserves last-opened-first-closed semantics as a fallback.
-      const trashDeleteOverlay = document.getElementById('trash-delete-overlay');
-      if (trashDeleteOverlay && !trashDeleteOverlay.classList.contains('hidden')) {
-        e.preventDefault();
-        closeTrashDeleteDialog();
-        return;
-      }
-      const higherLayerIds = ['state-recovery-overlay','paste-overlay','rich-text-link-overlay','reminder-overlay','calendar-task-overlay','planner-overlay','cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','trash-delete-overlay','organization-name-overlay','organization-delete-overlay','welcome','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub','about-overlay','context-menu'];
+      const higherLayerIds = ['state-recovery-overlay','paste-overlay','rich-text-link-overlay','reminder-overlay','calendar-task-overlay','planner-overlay','cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','organization-name-overlay','organization-delete-overlay','welcome','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub','about-overlay','context-menu'];
       const higherLayerOpen = higherLayerIds.some(id => { const el = document.getElementById(id); return el && !el.classList.contains('hidden'); });
       // Snapshot which layered overlays were open *before* we start closing
       // them, so a single Escape only pops the topmost one — not the group page
       // sitting beneath a modal/menu/tool overlay.
-      const _escBlockers = ['state-recovery-overlay','paste-overlay','rich-text-link-overlay','reminder-overlay','calendar-task-overlay','planner-overlay','cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','trash-delete-overlay','organization-name-overlay','organization-delete-overlay','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub'];
+      const _escBlockers = ['state-recovery-overlay','paste-overlay','rich-text-link-overlay','reminder-overlay','calendar-task-overlay','planner-overlay','cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','organization-name-overlay','organization-delete-overlay','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub'];
       const _overlayWasOpen = _escBlockers.some(id => { const el = document.getElementById(id); return el && !el.classList.contains('hidden'); });
       // The newest notification takes Escape only when nothing else would: no
       // dialog, sheet, or menu, no focused field, no item detail pane, no open
@@ -37245,7 +37514,8 @@ function bindStatic() {
       } else if (activeCalendar && !inField && !_overlayWasOpen) {
         closeCalendar();
       } else if (activeLibraryMode && !inField && !_overlayWasOpen) {
-        goHome();
+        // Archive and Trash close their route list and clear the selection first.
+        if (!archivePageEscape()) goHome();
       }
       if (selectedTabIds.size) { selectedTabIds.clear(); lastClickedTabId = null; updateSelectedBadge(); renderOpenTabs(); }
       // clearItemSelection() resets the selection, the sticky mode, the body
@@ -37266,7 +37536,7 @@ function bindStatic() {
   bindImportUI();
   bindPasteImportUI();
   bindQuotaOverlay();
-  bindTrashDeleteDialog();
+  bindTrashDeleteAsk();
   bindOrganizationDeleteDialog();
   bindCheatsheetOverlay();
   bindBoardArrowNav();

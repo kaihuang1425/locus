@@ -844,7 +844,7 @@ assert.match(newtabHtml, /id="quota-export"[\s\S]*id="quota-archive"[\s\S]*id="q
   'safe backup must lead reload and cleanup continuations in DOM and keyboard order');
 const quotaHtml = newtabHtml.slice(
   newtabHtml.indexOf('<!-- Storage-quota recovery'),
-  newtabHtml.indexOf('<!-- Irreversible deletion', newtabHtml.indexOf('<!-- Storage-quota recovery')),
+  newtabHtml.indexOf('<!-- Workspace/Space names and Group moves', newtabHtml.indexOf('<!-- Storage-quota recovery')),
 );
 assert.doesNotMatch(quotaHtml,
   /<h2 id="quota-title">Storage full<|Your latest change couldn't be saved|Export now<|Open archive<|>Dismiss</,

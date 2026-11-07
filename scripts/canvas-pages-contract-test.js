@@ -115,7 +115,9 @@ function testRemainingSurfaces() {
   ok(!/(?:linear|radial|conic)-gradient\s*\(/.test(layer), 'no CSS gradients');
   const canvasLayers = css.slice(css.indexOf('PLAN (2026-11 canvas)'));
   ok(!/#sidebar\b/.test(canvasLayers), 'the canvas layers leave the original rail alone');
-  ok(/body\[data-theme\] \.library-head > div > p,\nbody\[data-theme\] \.library-local-note,/.test(layer), 'page sub-lines are trimmed in CSS only');
+  ok(/body\[data-theme\] \.library-local-note,\nbody\[data-theme\] \.rail-sub \{ display: none; \}/.test(layer), 'page sub-lines are trimmed in CSS only');
+  ok(/<p class="sr-only" id="archive-sub"><\/p>/.test(newtab) && /root\.querySelector\('#archive-sub'\)\.textContent = tr\(trash \? 'trash\.subtitle' : 'archive\.subtitle'\);/.test(newtab),
+    'the Archive and Trash sub-lines are still in the page, hidden');
   ok(/<p class="sr-only" id="search-sub"><\/p>/.test(newtab) && /aria-describedby="search-sub"/.test(newtab) && /querySelector\('#search-sub'\)\.textContent = tr\('search\.subtitle'\)/.test(newtab),
     'the Find again sub-line is still in the page, hidden, as the field’s description');
   ok(/<p class="sr-only" id="library-sub"><\/p>/.test(newtab) && /aria-describedby="library-sub"/.test(newtab)
@@ -124,7 +126,8 @@ function testRemainingSurfaces() {
   ok(/#settings-drawer \.toggle-row small\[id\$="-hint"\] \{\n\s*position: absolute;\n\s*width: 1px;/.test(layer), 'Settings hints are hidden visually, not removed');
   ok(/aria-describedby="[^"]*general-hibernate-hint/.test(html) || /general-hibernate-hint/.test(newtab), 'Settings hints stay referenced for assistive technology');
   ok(/body\[data-theme\] \.gcol \.item \{\n\s*\/\*[^*]*\*\/\n\s*flex-shrink: 0;/.test(layer), 'a full board column scrolls instead of shrinking its cards');
-  ok(/@media \(prefers-reduced-motion: reduce\) \{\n\s*body\[data-theme\] :is\(\.archive-row, \.gcol \.item\) \{ transition: none; \}/.test(layer), 'card hover motion stops under reduced motion');
+  ok(/@media \(prefers-reduced-motion: reduce\) \{\n\s*body\[data-theme\] \.gcol \.item \{ transition: none; \}/.test(layer), 'card hover motion stops under reduced motion');
+  ok(/@media \(prefers-reduced-motion: reduce\) \{\n\s*\.arv, \.arv \*, \.arv \*::before, \.arv \*::after \{ animation: none !important; transition: none !important; \}/.test(layer), 'the Archive and Trash page (its own rows, not cards) stops all motion under reduced motion');
   ok(/@media \(prefers-reduced-motion: reduce\) \{\n\s*\.fnd, \.fnd \*, \.fnd \*::before, \.fnd \*::after,\n\s*#cmd-palette, #cmd-palette \*, #cmd-palette \*::before, #cmd-palette \*::after \{ animation: none !important; transition: none !important; \}/.test(layer), 'Find again and the palette (their own rows, not cards) stop all motion under reduced motion');
   ok(/@media \(prefers-reduced-motion: reduce\) \{\n\s*\.lib, \.lib \*, \.lib \*::before, \.lib \*::after \{ animation: none !important; transition: none !important; \}/.test(layer), 'the Library page (its own rows, not cards) stops all motion under reduced motion');
 }
@@ -365,7 +368,7 @@ function testSelectorsMatchMarkup() {
   }));
   eq([...missing].sort(), [], 'every class in the canvas layers exists in the markup or the scripts that build it');
   ok(!/\.cal-month \.cal-cell|\.cal-week \.cal-col/.test(css), 'the calendar layer targets .cal-grid .cal-cell and .cal-week-col');
-  ok(/body\[data-theme\] \.archive-row\.selected \{[^}]*box-shadow: inset 4px 0 0 var\(--accent\);/.test(css), 'selected Archive rows keep their marker in the card layer (R2)');
+  ok(/\.arv-row\.is-selected \{[^}]*box-shadow: inset 3px 0 0 var\(--index-locator, var\(--accent\)\);/.test(css), 'selected Archive and Trash rows keep their marker (R2)');
   ok(/\.fnd-gi \{[^}]*background: var\(--fnd-hl\);[^}]*box-shadow: inset 0 0 0 1\.5px var\(--fnd-hl-ring\)/.test(css), 'Find again marks its selected row with the gliding highlight (R2)');
 }
 

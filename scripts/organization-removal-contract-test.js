@@ -57,7 +57,7 @@ assert.match(controllerSource, /confirmButton\.hidden = blocked/, 'A populated o
 assert.match(controllerSource, /for \(const child of document\.body\.children\)[\s\S]*child === overlay \|\| child === recovery[\s\S]*setElementInertOwner\(child, 'organization', enabled\)/, 'The dialog must inert every background root while leaving itself and fail-closed recovery operable');
 assert.match(source, /const organizationDeleteOverlay = document\.getElementById\('organization-delete-overlay'\);[\s\S]{0,260}closeOrganizationDeleteDialog\(\);[\s\S]{0,40}return;/, 'Global Escape must retain a top-layer organization-dialog fallback');
 assert.match(source, /_escBlockers = \[[^\]]*'organization-delete-overlay'/, 'The dialog must join the last-opened-first-closed blocker stack');
-assert.match(source, /bindTrashDeleteDialog\(\);\s*bindOrganizationDeleteDialog\(\);/, 'The production initializer must bind the dialog');
+assert.match(source, /bindTrashDeleteAsk\(\);\s*bindOrganizationDeleteDialog\(\);/, 'The production initializer must bind the dialog');
 for (const key of [
   'organization.cancel',
   'organization.close',
