@@ -19,70 +19,6 @@
 </head>
 <body>
   <script src="prepaint.js"></script>
-  <!-- Calm launch layer. It sits above (rather than replaces) the real Home
-       surface, so dismissing it reveals the existing workspace immediately. -->
-  <section id="landing-layer" class="hidden" aria-label="New tab welcome" data-i18n-aria-label="landing.ariaLabel">
-    <img id="landing-scene" class="landing-scene" src="media/png/morning_transparent_corners.png" alt="" aria-hidden="true" decoding="async">
-    <div class="landing-wash" aria-hidden="true"></div>
-    <header class="landing-topbar">
-      <div class="landing-brand" aria-label="Locus">
-        <img src="icons/icon128.png" alt="" aria-hidden="true" decoding="async">
-        <span>Locus</span>
-      </div>
-      <div class="landing-actions">
-        <button id="landing-tone" class="landing-icon-btn landing-tone" type="button" aria-pressed="false" aria-label="Light" data-i18n-aria-label="landing.light">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="9" r="3.4"/><path d="M9 1.8v1.8M9 14.4v1.8M1.8 9h1.8M14.4 9h1.8M3.9 3.9l1.3 1.3M12.8 12.8l1.3 1.3M14.1 3.9l-1.3 1.3M5.2 12.8l-1.3 1.3"/></svg>
-        </button>
-        <button id="landing-tools" class="landing-icon-btn" type="button" hidden data-i18n-title="action.plugins" aria-label="Plugins" data-i18n-aria-label="action.plugins">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><circle cx="4" cy="4" r="1.6"/><circle cx="10" cy="4" r="1.6"/><circle cx="16" cy="4" r="1.6"/><circle cx="4" cy="10" r="1.6"/><circle cx="10" cy="10" r="1.6"/><circle cx="16" cy="10" r="1.6"/><circle cx="4" cy="16" r="1.6"/><circle cx="10" cy="16" r="1.6"/><circle cx="16" cy="16" r="1.6"/></svg>
-        </button>
-        <button id="landing-menu" class="landing-avatar" type="button" aria-label="Menu" data-i18n-aria-label="action.menu" aria-haspopup="menu" aria-expanded="false">
-          <span id="landing-avatar-face">L</span>
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M3 4.5L6 7.5l3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-      </div>
-    </header>
-
-    <div class="landing-center">
-      <div id="landing-flip" class="landing-flip" role="img" aria-label=""></div>
-      <p id="landing-flip-date" class="landing-flip-date"></p>
-      <h1 id="landing-greeting"></h1>
-      <p data-i18n="landing.subtitle">Find what you saved and pick up where you left off.</p>
-      <form id="landing-search-form" class="landing-search" role="search">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.8"/><path d="M15.5 15.5L20 20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        <input id="landing-search-input" type="search" role="combobox" autocomplete="off" aria-label="Search saved work" data-i18n-aria-label="landing.searchSaved" aria-autocomplete="list" aria-haspopup="listbox" aria-expanded="false" aria-controls="landing-search-results" data-i18n-placeholder="landing.searchPlaceholder" placeholder="Search saved work…">
-        <button id="landing-search-submit" type="submit" data-i18n-aria-label="landing.searchSaved" aria-label="Search saved work">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true"><path d="M4 11h13M12 5l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-        <div id="landing-search-results" class="landing-search-results hidden" role="listbox" aria-live="polite"></div>
-      </form>
-      <div id="landing-recent" class="landing-recent" role="group" aria-label="Recent pages" data-i18n-aria-label="landing.recent"></div>
-      <button id="landing-today" class="landing-today" type="button" data-i18n="landing.showToday">Show Today instead</button>
-    </div>
-
-    <div class="landing-footer">
-      <div class="landing-time-block">
-        <time id="landing-time"></time>
-        <span id="landing-date"></span>
-      </div>
-      <blockquote id="landing-quote" data-i18n="landing.quote">“The quieter you become, the more you can hear.”</blockquote>
-      <button id="landing-enter" class="landing-enter" type="button" data-i18n-aria-label="landing.enter" aria-label="Open Locus home">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 6l4.5 4.5L12.5 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
-      <div class="landing-chips">
-        <button id="landing-reminders" class="landing-chip landing-reminder-chip" type="button" hidden>
-          <svg width="17" height="17" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 1.7l1.1 3.2L13.3 6l-3.2 1.1L9 10.3 7.9 7.1 4.7 6l3.2-1.1L9 1.7zM14.2 10.4l.6 1.8 1.8.6-1.8.6-.6 1.8-.6-1.8-1.8-.6 1.8-.6.6-1.8z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
-          <span id="landing-reminder-count">0</span>
-          <span class="sr-only" data-i18n="landing.reminders">Reminders</span>
-        </button>
-        <button id="landing-unsorted" class="landing-chip landing-unsorted-chip" type="button">
-          <span data-i18n="nav.inbox">Inbox</span>
-          <b id="landing-unsorted-count" hidden>0</b>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 9.5L8 5l4.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-      </div>
-    </div>
-  </section>
   <div id="app">
 
     <!-- ══════ SIDEBAR ══════ -->
@@ -963,7 +899,7 @@
               <summary aria-describedby="general-plugin-hint">
                 <span class="appearance-pack-copy">
                   <strong data-i18n="settings.workspacePlugin">Workspace extras plugin</strong>
-                  <small id="general-plugin-hint" data-i18n="settings.workspacePluginHint">Optional Welcome screen and browser-window switching. Available locally and off by default.</small>
+                  <small id="general-plugin-hint" data-i18n="settings.workspacePluginHint">Optional browser-window switching. Available locally and off by default.</small>
                 </span>
                 <span id="general-plugin-state" class="appearance-pack-state" data-state="available" data-i18n="settings.workspacePluginAvailable">Available</span>
               </summary>
@@ -979,30 +915,6 @@
                       <input type="checkbox" id="tog-autoswitch" data-settings-preference-control aria-describedby="general-autoswitch-hint">
                       <span class="tog"></span>
                     </label>
-                  </div>
-                </section>
-
-                <section class="appearance-pack-section" aria-labelledby="general-welcome-heading" aria-describedby="general-welcome-hint">
-                  <div class="appearance-pack-heading">
-                    <h3 id="general-welcome-heading" data-i18n="settings.welcomeScreen">Welcome screen</h3>
-                    <p id="general-welcome-hint" data-i18n="settings.welcomeScreenHint">Optional clock and search before Home on returning new tabs.</p>
-                  </div>
-                  <div class="general-plugin-controls">
-                    <label class="toggle-row">
-                      <span><span data-i18n="settings.showLanding">Show Welcome screen before Home</span><br><small id="general-landing-hint" data-i18n="settings.showLandingHint">Off by default. Shows a clock and saved-work search before Home.</small></span>
-                      <input type="checkbox" id="tog-landing" data-settings-preference-control aria-describedby="general-landing-hint">
-                      <span class="tog"></span>
-                    </label>
-                    <div class="general-name-field">
-                      <div class="general-name-copy">
-                        <label for="profile-name-input" data-i18n="settings.yourName">Name on Welcome screen</label>
-                        <small id="general-name-hint" data-i18n="settings.yourNameHint">Optional. Used only in the Welcome greeting.</small>
-                      </div>
-                      <div class="general-name-entry">
-                        <input type="text" id="profile-name-input" maxlength="40" autocomplete="off" data-settings-preference-control data-i18n-placeholder="settings.welcomeNamePlaceholder" placeholder="Optional" aria-describedby="general-name-hint">
-                        <button id="profile-name-save" class="btn-secondary" type="button" data-settings-preference-control data-settings-preference-disabled="true" data-i18n="settings.saveWelcomeName" disabled>Save name</button>
-                      </div>
-                    </div>
                   </div>
                 </section>
               </div>

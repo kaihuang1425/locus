@@ -518,8 +518,10 @@ assert.equal(pickerCalls[3].options.opener, calendarOpener);
 assert.equal(pickerCalls[3].options.initialFocus, 'remove', 'Calendar Remove must reopen the reviewed destructive control');
 assert.doesNotMatch(calendarMenuSource, /entry\.index/, 'Calendar menu actions must never use a stale array index');
 
+// The calm new tab's Reminders chip went with the layer (Just Today, 2026-11-07).
+assert.doesNotMatch(newtabSource, /landing-reminder|const reminders = collectPendingReminders\(\{ scope: ws\.id \}\)\.length;/,
+  'the retired landing layer must leave no reminder count behind');
 const wiringChecks = [
-  [/const reminders = collectPendingReminders\(\{ scope: ws\.id \}\)\.length;/, 'landing pending count'],
   [/pending = collectPendingReminders\(\{ scope: ws \? ws\.id : undefined \}\)\.length;/, 'app-menu pending count'],
   [/reminderCount = collectPendingReminders\(\{ scope: ws\.id \}\)\.length;/, 'Calendar default-view count'],
   [/return collectPendingReminders\(\{ scope: ws\.id \}\)\.map/, 'Calendar entry source'],
@@ -527,4 +529,4 @@ const wiringChecks = [
 ];
 for (const [pattern, label] of wiringChecks) assert.match(newtabSource, pattern, `${label} must use the shared pending policy`);
 
-console.log(`Reminder overdue contracts passed: pending=6, projectedRecurrences=3, pastDue=2, resolvedHidden=2, wiredSurfaces=5, relativeCases=${relativeCases.length * 2}, calendarCopyKeys=${Object.keys(calendarCopy.en).length}`);
+console.log(`Reminder overdue contracts passed: pending=6, projectedRecurrences=3, pastDue=2, resolvedHidden=2, wiredSurfaces=4, relativeCases=${relativeCases.length * 2}, calendarCopyKeys=${Object.keys(calendarCopy.en).length}`);

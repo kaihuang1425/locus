@@ -43,12 +43,22 @@ for (const id of [
   'general-plugin-state',
   'general-window-heading',
   'tog-autoswitch',
-  'general-welcome-heading',
-  'tog-landing',
-  'profile-name-input',
-  'profile-name-save',
 ]) {
   assert.equal(countId(id), 1, 'General must preserve exactly one #' + id);
+}
+// Just Today (2026-11-07): the calm new tab is gone, and with it the Welcome
+// screen toggle and the name it greeted.
+for (const id of [
+  'general-welcome-heading',
+  'general-welcome-hint',
+  'tog-landing',
+  'general-landing-hint',
+  'profile-name-input',
+  'profile-name-save',
+  'general-name-hint',
+  'landing-layer',
+]) {
+  assert.equal(countId(id), 0, 'General must no longer render #' + id);
 }
 
 assert.match(generalHtml,
@@ -60,7 +70,6 @@ assert.match(generalHtml,
 for (const [controlId, hintId] of [
   ['tog-hibernate', 'general-hibernate-hint'],
   ['tog-autoswitch', 'general-autoswitch-hint'],
-  ['tog-landing', 'general-landing-hint'],
 ]) {
   assert.match(generalHtml,
     new RegExp('id="' + controlId + '"[^>]*data-settings-preference-control[^>]*aria-describedby="' + hintId + '"'),
@@ -73,17 +82,14 @@ assert.match(generalHtml,
   /id="general-status"[^>]*role="status"[^>]*aria-live="polite"[^>]*aria-atomic="true"[^>]*data-state="idle"/,
   'General must expose one atomic persistence receipt');
 assert.match(generalHtml,
-  /<details id="general-workspace-plugin"[\s\S]*settings\.workspacePlugin[\s\S]*id="general-plugin-state"[^>]*data-state="available"[\s\S]*id="tog-autoswitch"[\s\S]*id="tog-landing"[\s\S]*id="profile-name-input"/,
-  'window switching and the Welcome screen must stay inside one available local plugin');
+  /<details id="general-workspace-plugin"[\s\S]*settings\.workspacePlugin[\s\S]*id="general-plugin-state"[^>]*data-state="available"[\s\S]*id="tog-autoswitch"[\s\S]*<\/details>/,
+  'window switching must stay inside one available local plugin');
 assert.match(generalHtml,
-  /id="general-plugin-hint"[^>]*data-i18n="settings\.workspacePluginHint">Optional Welcome screen and browser-window switching\. Available locally and off by default\.<\/small>/,
+  /id="general-plugin-hint"[^>]*data-i18n="settings\.workspacePluginHint">Optional browser-window switching\. Available locally and off by default\.<\/small>/,
   'the static plugin fallback must disclose local availability and the inactive default');
-assert.match(generalHtml,
-  /id="general-landing-hint"[^>]*data-i18n="settings\.showLandingHint">Off by default\. Shows a clock and saved-work search before Home\.<\/small>/,
-  'the static Welcome fallback must disclose the inactive default before locale projection');
-assert.match(generalHtml,
-  /id="profile-name-input"[^>]*maxlength="40"[^>]*data-settings-preference-control[^>]*data-i18n-placeholder="settings\.welcomeNamePlaceholder"[^>]*aria-describedby="general-name-hint"[\s\S]*id="profile-name-save"[^>]*data-settings-preference-disabled="true"[^>]*disabled/,
-  'the retained greeting name must use an explicit named Save action and no implicit blur write');
+assert.doesNotMatch(generalHtml,
+  /Welcome screen|settings\.(?:welcomeScreen|showLanding|yourName|welcomeNamePlaceholder|saveWelcomeName)|general-plugin-controls|general-name-/,
+  'the Workspace plugin must no longer offer a Welcome screen or a name for it');
 assert.doesNotMatch(generalHtml,
   />Profile<|>Your name<|Used for the home greeting|Open saved tabs hibernated|Show calm new-tab welcome|style="|<svg/,
   'General must remove account-like Profile copy, hibernation jargon, inline style, and ornamental icon residue');
@@ -115,6 +121,14 @@ for (const key of [
   'settings.windowSwitchingHint',
   'settings.autoSwitch',
   'settings.autoSwitchHint',
+  'settings.tipsOnboarding',
+  'settings.firstSaveGuideHint',
+  'settings.showTour',
+]) {
+  const count = source.split("    '" + key + "':").length - 1;
+  assert.equal(count, 2, key + ' must exist once in English and once in native zh-TW');
+}
+for (const key of [
   'settings.welcomeScreen',
   'settings.welcomeScreenHint',
   'settings.showLanding',
@@ -123,52 +137,39 @@ for (const key of [
   'settings.yourNameHint',
   'settings.welcomeNamePlaceholder',
   'settings.saveWelcomeName',
-  'settings.tipsOnboarding',
-  'settings.firstSaveGuideHint',
-  'settings.showTour',
 ]) {
-  const count = source.split("    '" + key + "':").length - 1;
-  assert.equal(count, 2, key + ' must exist once in English and once in native zh-TW');
+  assert.equal(source.split("    '" + key + "':").length - 1, 0, key + ' must be gone from English and zh-TW');
 }
 assert.ok(source.includes("'settings.workspacePlugin': '工作區外掛'"),
   'zh-TW must use the native interface term 工作區外掛');
-assert.ok(source.includes("'settings.yourName': '歡迎畫面顯示名稱'"),
-  'zh-TW must name the greeting field by its actual Welcome-screen effect');
 assert.ok(source.includes("'settings.generalSub': '設定介面語言、已儲存網頁的開啟方式，以及選用的工作區功能。'"),
   'zh-TW General scope must read naturally and preserve the core/plugin hierarchy');
-assert.ok(source.includes("'settings.workspacePluginHint': 'Optional Welcome screen and browser-window switching. Available locally and off by default.'"),
+assert.ok(source.includes("'settings.workspacePluginHint': 'Optional browser-window switching. Available locally and off by default.'"),
   'English plugin copy must state local availability and the inactive default');
-assert.ok(source.includes("'settings.showLandingHint': 'Off by default. Shows a clock and saved-work search before Home.'"),
-  'English Welcome copy must state the default and exact effect');
-assert.ok(source.includes("'settings.workspacePluginHint': '選用的歡迎畫面與瀏覽器視窗切換功能；已內建，預設關閉。'"),
+assert.ok(source.includes("'settings.workspacePluginHint': '選用的瀏覽器視窗切換功能；已內建，預設關閉。'"),
   'zh-TW plugin copy must state local availability and the inactive default naturally');
-assert.ok(source.includes("'settings.showLandingHint': '預設關閉。開啟後，會在首頁前顯示時鐘與已儲存內容搜尋。'"),
-  'zh-TW Welcome copy must state the default and exact effect naturally');
-assert.match(source,
-  /blurPrivacy:false, windowSync:false, showLanding:false/,
-  'fresh state must keep the optional Welcome layer inactive');
-assert.match(source,
-  /if \(State\.get\(\)\.settings\.showLanding === true[\s\S]*ensureOnboarding\(State\.get\(\)\.settings\)\.welcomeSeen[\s\S]*showLandingLayer\(\);/,
-  'boot may invoke the optional Welcome layer only after explicit opt-in');
-assert.match(source,
-  /function showLandingLayer\(\) \{[\s\S]*State\.get\(\)\.settings\.showLanding !== true\) return false;[\s\S]*return true;\n\}/,
-  'the Welcome layer itself must fail closed unless its stored choice is exactly true');
+const initialStateSource = extractBetween('const createInitialState = () => ({', '\n  });');
+assert.match(initialStateSource, /blurPrivacy:false, windowSync:false,/,
+  'fresh state keeps its privacy and window defaults');
+assert.doesNotMatch(initialStateSource, /showLanding|profile/,
+  'fresh state must not write the retired Welcome-layer choice or a Welcome name');
+assert.doesNotMatch(source.replace(/^\s*\/\/.*$/gm, ''), /showLanding|\.settings\??\.profile\b|profile\.name/,
+  'no code reads a stored Welcome-layer choice or Welcome name, so old values stay harmless');
 
 assert.match(generalSource,
-  /const GENERAL_SETTING_KEYS = new Set\([\s\S]*'language'[\s\S]*'hibernate'[\s\S]*'autoSwitchWorkspace'[\s\S]*'showLanding'[\s\S]*'profile'/,
-  'General must explicitly allowlist only the five existing stored preferences');
+  /const GENERAL_SETTING_KEYS = new Set\(\[\n  'language',\n  'hibernate',\n  'autoSwitchWorkspace',\n\]\);/,
+  'General must explicitly allowlist only its three stored preferences');
+assert.doesNotMatch(generalSource, /showLanding|'profile'|profile-name|NameDraft|generalProfileName|resetNameDraft/,
+  'General must not keep the retired Welcome toggle, the Welcome name, or its draft handling');
 assert.match(generalSource,
-  /function generalSettingsPatchIsValid[\s\S]*entries\.length !== 1[\s\S]*SUPPORTED_LOCALES\.includes[\s\S]*typeof value !== 'boolean'[\s\S]*value\.name !== value\.name\.trim\(\)[\s\S]*value\.name\.length > 40/,
-  'General must validate one exact language, boolean, or bounded profile-name patch');
+  /function generalSettingsPatchIsValid[\s\S]*entries\.length !== 1[\s\S]*SUPPORTED_LOCALES\.includes[\s\S]*typeof value !== 'boolean'/,
+  'General must validate one exact language or boolean patch');
 assert.match(generalSource,
-  /function generalWorkspacePluginIsActive[\s\S]*autoSwitchWorkspace[\s\S]*showLanding/,
-  'Workspace plugin Active state must derive from its two real settings');
+  /function generalWorkspacePluginIsActive\(settings\) \{\n  return generalSettingValue\(settings, 'autoSwitchWorkspace'\) === true;\n\}/,
+  'Workspace plugin Active state must derive from window switching, its one real setting');
 assert.match(generalSource,
-  /const GENERAL_SETTING_DEFAULTS = Object\.freeze\(\{[\s\S]*hibernate:\s*true[\s\S]*autoSwitchWorkspace:\s*false[\s\S]*showLanding:\s*false/,
-  'missing compatible bytes must retain Hibernate while optional Workspace extras stay inactive');
-assert.match(generalSource,
-  /if \(nameInput && \(resetNameDraft \|\| nameInput\.dataset\.dirty !== 'true'\)\)/,
-  'another General preference must not erase an unsaved greeting-name draft');
+  /const GENERAL_SETTING_DEFAULTS = Object\.freeze\(\{\n  hibernate: true,\n  autoSwitchWorkspace: false,\n\}\);/,
+  'missing compatible bytes must retain Hibernate while window switching stays inactive');
 assert.match(generalSource,
   /async function commitGeneralSettingsChange[\s\S]*State\.isRecoveryRequired[\s\S]*generalSettingsPending = transaction[\s\S]*projectGeneralSettingsChange\(keys\)[\s\S]*await State\.persistNow\(\)[\s\S]*State\.get\(\) !== state[\s\S]*generalSettingsPatchFingerprint\(settings, keys\) !== expected[\s\S]*generalSaved/,
   'one controller must project, await one receipt, and reject graph or touched-value drift before success');
@@ -181,19 +182,16 @@ assert.match(source,
   'General, Capture, Appearance, and Privacy must share one Settings-level pending owner');
 assert.match(source,
   /function paintSettingsPreferenceBusy\(\)[\s\S]*general-preferences[\s\S]*data-settings-preference-control[\s\S]*control\.disabled = busy && control\.id !== ownerId[\s\S]*dataset\.settingsPreferenceDisabled/,
-  'pending persistence must include General and preserve the explicit name-save disabled state');
+  'pending persistence must include General and honour a control\'s own disabled state');
 assert.match(source,
-  /const languageSelect = document\.getElementById\('seg-language'\)[\s\S]*commitGeneralSettingsChange\(e\.target\.id, \{ language: e\.target\.value \}\)[\s\S]*bindGeneralToggle\('tog-hibernate', 'hibernate'\)[\s\S]*bindGeneralToggle\('tog-autoswitch', 'autoSwitchWorkspace'\)[\s\S]*bindGeneralToggle\('tog-landing', 'showLanding'\)/,
+  /const languageSelect = document\.getElementById\('seg-language'\)[\s\S]*commitGeneralSettingsChange\(e\.target\.id, \{ language: e\.target\.value \}\)[\s\S]*bindGeneralToggle\('tog-hibernate', 'hibernate'\)[\s\S]*bindGeneralToggle\('tog-autoswitch', 'autoSwitchWorkspace'\)/,
   'every General select or toggle must converge on the same acknowledged controller');
+assert.doesNotMatch(source,
+  /bindGeneralToggle\('tog-landing'|saveGeneralName|profile-name-|handleGeneralNameDraftEscape|discardGeneralNameDraft/,
+  'the Welcome toggle binding, the name Save, and its draft-first Escape must be gone');
 assert.match(source,
-  /const saveGeneralName = \(\) => \{[\s\S]*profile\.name = nameInput\.value\.trim\(\)[\s\S]*commitGeneralSettingsChange\(nameSave\.id, \{ profile \}\)[\s\S]*nameInput\.onkeydown = e => \{[\s\S]*handleGeneralNameDraftEscape\(e\)[\s\S]*e\.key === 'Enter'[\s\S]*nameSave\.focus\(\)/,
-  'the greeting name must have explicit Save, Enter, and field-level draft-first Escape behavior');
-assert.match(generalSource,
-  /function handleGeneralNameDraftEscape\(event\)[\s\S]*event\?\.key !== 'Escape'[\s\S]*higherLayerIds[\s\S]*higherLayerOpen[\s\S]*stopImmediatePropagation\(\)[\s\S]*discardGeneralNameDraft\(\)/,
-  'Escape must discard a General name draft only when no newer overlay owns the key');
-assert.match(source,
-  /if \(handleOrganizationNameGlobalKey\(e\)\) return;\s+if \(handleGeneralNameDraftEscape\(e\)\) return;/,
-  'the global Escape stack must offer the visible General draft one close before Settings');
+  /if \(handleOrganizationNameGlobalKey\(e\)\) return;\s+const tag = document\.activeElement\?\.tagName;/,
+  'the global Escape stack goes from the organization dialogs straight to the shared field checks');
 assert.doesNotMatch(source,
   /nameInput\.onchange[\s\S]{0,220}State\.persist|#seg-language button|tog-hibernate'\)\.onchange[\s\S]{0,180}State\.persist|tog-autoswitch'\)\.onchange[\s\S]{0,180}State\.persist|landingToggle\.onchange/,
   'legacy blur and fire-and-forget General bindings must be gone');
@@ -203,7 +201,6 @@ for (const contract of [
   /#dp-general\.sp-enter\s*\{[^}]*animation:\s*none/,
   /\.general-language-select\s*\{[^}]*width:\s*min\(100%,\s*340px\)[^}]*min-height:\s*44px[^}]*border-radius:\s*3px/,
   /\.general-toggle-list \.toggle-row\s*\{[^}]*min-height:\s*54px[^}]*border-bottom:\s*1px solid var\(--border\)/,
-  /\.general-name-field\s*\{[^}]*grid-template-columns:\s*minmax\(130px,\s*1fr\) minmax\(220px,\s*1\.2fr\)/,
   /\.general-workspace-plugin\[data-locked="true"\] > summary\s*\{[^}]*cursor:\s*wait/,
 ]) {
   assert.match(generalCss, contract, 'General must use the compact Locus Index contract: ' + contract);
@@ -211,8 +208,10 @@ for (const contract of [
 assert.doesNotMatch(generalCss, /(?:linear|radial|conic)-gradient\s*\(|backdrop-filter|translateY\(|scale\(/,
   'General must not use decorative gradients, blur, lift, or scale motion');
 assert.match(generalCss,
-  /@media \(max-width:\s*620px\)[\s\S]*\.general-name-field,[\s\S]*\.general-name-entry\s*\{[^}]*grid-template-columns:\s*1fr[\s\S]*\.general-name-entry \.btn-secondary\s*\{[^}]*width:\s*100%/,
-  'the name field and action must remain readable at 620/520 px');
+  /@media \(max-width:\s*620px\) \{\n  \.general-language-select \{ width: 100%; \}\n\}/,
+  'the language select must take the full row at 620/520 px');
+assert.doesNotMatch(css, /\.general-name-|\.general-plugin-controls/,
+  'the Welcome name field and its plugin controls must leave no styles behind');
 assert.match(css,
   /@media \(max-width:\s*800px\)[\s\S]*\.appearance-setting,[\s\S]*\.appearance-pack-section\s*\{[^}]*grid-template-columns:\s*1fr/,
   'General must inherit the deliberate 800 px stack from the shared preference ledger');
@@ -223,24 +222,27 @@ assert.match(css,
   /body\[data-anim="off"\] \.appearance-profile,[\s\S]*transition:\s*none !important/,
   'the product Motion preference must suppress General transitions');
 assert.match(css,
-  /@media \(forced-colors:\s*active\)[\s\S]*\.general-language-select,[\s\S]*\.general-name-entry input,[\s\S]*border-color:\s*CanvasText[\s\S]*\.general-preferences\s*\{[^}]*border-top-color:\s*Highlight/,
+  /@media \(forced-colors:\s*active\)[\s\S]*\.general-language-select \{[^}]*border-color:\s*CanvasText[\s\S]*\.general-preferences\s*\{[^}]*border-top-color:\s*Highlight/,
   'forced colors must preserve General control boundaries and its one locator');
 
 const CONTROL_IDS = [
   'seg-language',
   'tog-hibernate',
   'tog-autoswitch',
+  // Retired controls stay in the harness DOM so a commit naming them is refused
+  // by the allowlist, not by a missing element.
   'tog-landing',
   'profile-name-save',
 ];
 
+// Kai's own profile still stores the retired Welcome choice and name.
 function initialSettings(overrides) {
   return {
     language: 'en',
     hibernate: true,
     autoSwitchWorkspace: false,
-    showLanding: false,
-    profile: { marker: 'preserve', name: '' },
+    showLanding: true,
+    profile: { marker: 'preserve', name: 'Kai' },
     ...(overrides || {}),
   };
 }
@@ -281,7 +283,6 @@ function buildHarness(overrides) {
     applySettings: () => { calls.applies += 1; },
     renderAll: () => { calls.renderAll += 1; },
     renderHeader: () => {},
-    renderLandingLayer: () => {},
     showStateRecoveryRequired: () => { calls.recoveries += 1; },
     State: {
       get: () => currentState,
@@ -357,18 +358,27 @@ async function run() {
     'an unknown setting key must not cross the General boundary');
   assert.equal(await noOp.api.commit('seg-language', { language: 'fr' }), false,
     'an unsupported locale must stop before mutation');
-  assert.equal(await noOp.api.commit('profile-name-save', { profile: { name: ' Kai ' } }), false,
-    'an unnormalized greeting name must stop before mutation');
+  assert.equal(await noOp.api.commit('profile-name-save', { profile: { name: 'Kai' } }), false,
+    'the retired Welcome-name Save must not cross the General boundary');
+  assert.equal(await noOp.api.commit('tog-landing', { showLanding: false }), false,
+    'the retired Welcome toggle must not cross the General boundary');
+  assert.equal(await noOp.api.commit('tog-autoswitch', { showLanding: false }), false,
+    'a live control must not carry a write to the retired Welcome choice');
+  assert.equal(await noOp.api.commit('tog-autoswitch', { profile: { name: '' } }), false,
+    'a live control must not carry a write to the retired Welcome name');
   assert.equal(noOp.calls.persists, 0,
     'invalid General input must stop before persistence');
+  assert.deepEqual([noOp.state().settings.showLanding, { ...noOp.state().settings.profile }],
+    [true, { marker: 'preserve', name: 'Kai' }],
+    'refused writes leave the retired keys exactly as stored');
 
-  const profile = buildHarness();
-  assert.equal(await profile.api.commit('profile-name-save', {
-    profile: { marker: 'preserve', name: 'Kai' },
-  }), true, 'a bounded greeting name must save through the same receipt boundary');
-  assert.equal(profile.calls.persists, 1);
-  assert.deepEqual({ ...profile.state().settings.profile }, { marker: 'preserve', name: 'Kai' },
-    'saving the greeting name must preserve compatible profile fields');
+  const legacy = buildHarness();
+  assert.equal(await legacy.api.commit('tog-hibernate', { hibernate: false }), true,
+    'a profile that stored the retired keys still saves General preferences');
+  assert.equal(legacy.calls.persists, 1);
+  assert.deepEqual([legacy.state().settings.showLanding, { ...legacy.state().settings.profile }],
+    [true, { marker: 'preserve', name: 'Kai' }],
+    'saving another preference carries the retired Welcome choice and name untouched');
 
   const rejected = buildHarness();
   rejected.setPersistNow(async () => {
@@ -401,8 +411,8 @@ async function run() {
   let releaseAdoption;
   const adopted = buildHarness();
   adopted.setPersistNow(() => new Promise(resolve => { releaseAdoption = resolve; }));
-  const adoptedRun = adopted.api.commit('tog-landing', { showLanding: true });
-  adopted.setState({ settings: initialSettings({ showLanding: true }) });
+  const adoptedRun = adopted.api.commit('tog-autoswitch', { autoSwitchWorkspace: true });
+  adopted.setState({ settings: initialSettings({ autoSwitchWorkspace: true }) });
   releaseAdoption({ ok: true });
   assert.equal(await adoptedRun, false,
     'graph adoption before acknowledgement must not complete an old General transaction');
@@ -420,18 +430,14 @@ async function run() {
   assert.equal(blocked.calls.recoveries, 1,
     'recovery preflight must return to the existing recovery layer');
 
-  const plugin = buildHarness({ profile: { name: 'Kai' } });
+  const plugin = buildHarness();
   assert.equal(plugin.api.pluginActive(plugin.state().settings), false,
-    'a greeting name alone must not invent an active Workspace plugin');
-  plugin.state().settings.showLanding = true;
-  assert.equal(plugin.api.pluginActive(plugin.state().settings), true,
-    'the real Welcome setting must mark the Workspace plugin active');
-  plugin.state().settings.showLanding = false;
+    'a stored showLanding: true and a Welcome name must not mark the Workspace plugin active');
   plugin.state().settings.autoSwitchWorkspace = true;
   assert.equal(plugin.api.pluginActive(plugin.state().settings), true,
     'the real window-switch setting must mark the Workspace plugin active');
   assert.equal(plugin.api.pluginActive({}), false,
-    'a missing Welcome byte must keep the optional Workspace plugin available rather than active');
+    'missing bytes must keep the optional Workspace plugin available rather than active');
 
   console.log('General settings contract tests passed');
 }

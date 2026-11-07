@@ -50,8 +50,9 @@ blurPrivacy autoSwitchWorkspace hibernate closeTabOnSave sidebarCollapsed
 railCollapsed`, capture prefs (`captureAskEveryTime captureDefaultCategoryId
 captureRememberLast captureLastTarget captureDeduplicate captureIncludeTitle
 captureIncludeFavicon`), legacy `profile {name purpose workflow}` fields
-(`profile.name` remains import-compatible but Home no longer renders a personal
-greeting; the visible one-task welcome no longer asks the questionnaire),
+(`profile.name` remains import-compatible but nothing renders or edits it since
+the launch layer and its Settings name field were removed on 2026-11-07; the
+visible one-task welcome no longer asks the questionnaire),
 optional research-tool fields (`pomo`, `fin`, `subs`, `habits`, `habitsCfg`,
 `water`, `books`, `booksCfg`, `goals`, `goalsCfg`, `workouts`, `workoutCfg`) are
 lazily initialized by their existing tool interiors; the Plugins registry has no
@@ -63,11 +64,11 @@ controls no longer have runtime UI paths.
 `confirmDelete` likewise remains accepted for schema/import continuity, but its
 toggle and runtime branch are gone: groups expose the single recoverable Archive
 action instead of duplicate Archive/Delete labels.
-`showLanding` controls the optional calm new-tab launch layer. Schema 7 introduced
-the byte; schema 13 makes it an explicit opt-in. Migration preserves valid stored
-booleans and resolves only absent or malformed schema-0–12 values to `false`.
-Missing current-schema values also project as inactive; only exact `true` may show
-the layer.
+`showLanding` once chose the calm new-tab launch layer (schema 7, explicit opt-in
+since schema 13). The layer was removed on 2026-11-07 ("Just Today": Today is the
+only new tab). Like `confirmDelete`, the key stays accepted for schema/import
+continuity: nothing reads or writes it, migration no longer defaults it, and fresh
+profiles do not get it. `profile.name` likewise has no reader or setter now.
 Popup hibernate preferences (`popupHibernateScope`,
 `popupHibernateKeepPinned`, `popupHibernateKeepAudio`) are schema 8 settings;
 absent values retain the original current-window / keep-pinned / keep-audio
@@ -480,7 +481,7 @@ in sync via `applySettings()` — never write it by hand.
 | Rich-text Link review | `captureRichTextLinkSelection`, `richTextLinkContextStillMatches`, `normalizeRichTextLinkUrl`, `openRichTextLinkDialog`, `applyRichTextLink`, `handleRichTextLinkGlobalKey`; `#rt-toolbar`, `#rich-text-link-overlay` |
 | Today board (Home since 2026-11) | `renderHome`, `buildTodayBoard`, `todayTaskModel`, `parseTodayCapture`, `buildTodayClock`, `paintTodayClock`, `startTodayClock`, `buildTodayNow`, `buildTodayCard`, `commitTodayTodoToggle`, `checkTodayNow`, `laterTodayNow`, `toggleTodayCard`, `deferTodayTask`, `readTodayLaterIds`, `createTodayCaptureContext`, `resolveTodayCaptureTarget`, `commitTodayCapture`, `paintTodayCaptureMirror`, `setTodayTabsDrawer`, `syncTodayTabsEar`, `bindTodayBoard`; `#today-tabs-ear`, `#today-tabs-scrim` |
 | Former Home builders (not rendered since 2026-11; kept with their tests until a cleanup slice) | `buildHomeTrail`, `newestHomeRows`, `newestHomeItems`, `recentSaveCandidate`, `homeTrailSaveCandidate`, `homeTrailBlockedDestinationActionPlan`, `resolveHomeTrailSpaceReviewTarget`, `openHomeTrailSpaceReview`, `homeProgressiveZonePlan`, `buildHomeInboxZone`, `createLandingInboxContext`, `openInboxView`, `createSavedItemRecoveryContext`, `resolveSavedItemRecoveryTarget`, `saveHomeTrailCandidate`, `buildHomePreviewRow`, `resolveUniqueHomePreviewItem`, `openHomePreviewItem` |
-| Zen launch layer | `showLandingLayer`, `renderLandingLayer`, `paintLandingResults`, `bindLandingLayer` |
+| Inbox and saved-link helpers (named for the removed launch layer) | `createLandingInboxContext`, `resolveLandingInboxTarget` (rail, `openInboxView`, Plan, palette), `landingLinkMatches`, `landingResultDestinationText`, `createLandingRecoveryContext`, `resolveLandingRecoveryTarget` (palette saved links) |
 | Library recovery ledger | `activeLibraryState`, `libraryStateFromRoute`, `libraryRouteQuery`, `collectWorkspaceTabs`, `libraryRowsForState`, `libraryDetailItemIdForRoute`, `libraryDestinationText`, `libraryLedgerRowModel`, `createLibraryRecoveryContext`, `resolveLibraryRecoveryTarget`, `activateLibraryRecovery`, `buildLibraryLedgerRow`, `bindLibraryQueryControl`, `renderLibraryLedgerSurface`, `focusLibraryLedgerTarget`, `openLibrarySurface`, `renderLibrarySurface`, `renderReadLaterSurface`; Archive/Trash remain `renderArchiveSurface` / `renderTrashSurface` |
 | Archive + Trash lifecycle | `archiveItem`, `archiveGroup`, `moveArchiveEntriesToTrash`, `restoreStoredEntries`, `createArchivedLocalItemRestoreContext`, `commitArchivedLocalItemRestore`, `createArchivedLocalItemBatchRestoreContext`, `commitArchivedLocalItemBatchRestore`, `openArchivedLocalItemRestoreReview`, `createArchivedGroupRestoreContext`, `commitArchivedGroupRestore`, `createArchivedGroupBatchRestoreContext`, `commitArchivedGroupBatchRestore`, `openArchivedGroupRestoreReview`, `permanentlyDeleteTrashEntries`, `confirmTrashDelete`, `bindTrashDeleteDialog`, `normalizeExpiredTrash`, `purgeExpiredTrash` |
 | Workspace/Space rename | `organizationNameTarget`, `openOrganizationName`, `confirmOrganizationName`, `bindOrganizationNameDialog`, `handleOrganizationNameGlobalKey`; `#organization-name-overlay` |
@@ -760,9 +761,8 @@ authority over the earlier Field Desk layer: dark registry navigation/header/rai
 warm saved-material sheets, a single blue location/action rule, green accepted-
 receipt signals, the user-selected face for readable headings/controls, and Geist
 Mono filing metadata. It converges Home/Inbox, saved records, Search/Library, Settings, Welcome,
-dialogs, item detail, and the optional launch layer without a parallel router, state
-model, or copy source. The launch layer suppresses the decorative scene, clock, and
-quote so it cannot outrank the save → locate → recover loop. The final `LOCUS INDEX
+dialogs, and item detail without a parallel router, state model, or copy source.
+The final `LOCUS INDEX
 POPUP` block in `popup.css` applies the same grammar to the 420 px popup: registry
 header/footer, paper body, flat records, receipt boundaries, and Save above
 Hibernate at normal height with a compact two-column fallback at 420×520. Earlier
@@ -835,23 +835,13 @@ the popup bounds its tab list at 520 px height or less. Reduced-motion and force
 color overrides remain last so the foundation cannot restore ornamental motion or
 color-only state.
 
-`#landing-layer` is an optional established-user new-tab launch view only when
-`settings.showLanding === true` and onboarding has already been completed. Both
-boot and the layer entry point enforce that exact opt-in. It is
-a fixed layer above Home, not a router surface: Escape, the chevron, or downward
-wheel motion dismiss it for the current
-page and reveal the already-rendered Home. The focused Store scope keeps the
-active Space's Inbox shortcut visible while the retained Tools and Reminders
-controls are natively hidden; Calendar and Tools remain reachable through
-`secondaryNavigationItems()` under More. Reminder counts are still projected from
-`collectPendingReminders()` without changing stored data. Saved-link typeahead reads
-`collectWorkspaceTabs()` and the shared `parseSearchQuery()` operator parser;
-its result stays mounted until `openSavedTabItem()` confirms the browser handoff,
-so a failed tab check preserves the query and initiating focus. Web submission is
-intentionally absent: `submitLandingSearch()` dismisses the launch layer and passes
-the trimmed query to `openSearchSurface()`, whose existing URL-backed Search route
-covers all saved content in the active Workspace. The manifest therefore has no
-`search` permission; the browser omnibox remains the user's web-search surface.
+A new tab always opens Today (Home). The optional `#landing-layer` launch view
+(clock, saved-link typeahead, recent pages, Inbox and Reminders chips) was removed
+on 2026-11-07, together with its `settings.showLanding` toggle and the Welcome-name
+field; a stored `showLanding: true` has no effect. Saved-work search is Find again
+(`openSearchSurface()`, URL-backed, all saved content in the active Workspace) and
+the command palette; the manifest has no `search` permission and the browser
+omnibox remains the user's web-search surface.
 
 `#welcome` is the only onboarding surface. Its existing content is grouped inside
 `.wc-task` as `.wc-intro` plus `.wc-operation`; the two-column registry sheet stacks
@@ -2089,17 +2079,15 @@ plugin disclosures do not add another Settings route or stored plugin state.
   choice, and `#show-tour-btn` first-save guide. Language is a native select and the
   two other controls retain their existing browser/recovery effects. The obsolete
   visible Profile card and implicit name-on-blur writer are not part of the core.
-- `<details id="general-workspace-plugin">` contains the existing
-  `#tog-autoswitch`, `#tog-landing`, and `#profile-name-input` controls. It is a
-  locally packaged Workspace-extras plugin, not an install service.
-  `generalWorkspacePluginIsActive()` derives Active from the two effectful booleans;
-  a greeting name or missing Welcome byte does not invent an enabled plugin.
-  `GENERAL_SETTING_DEFAULTS.showLanding` is false and the layer itself requires an
-  exact stored true. `#profile-name-save`
-  explicitly commits the trimmed name while preserving other compatible profile
-  fields. Enter activates Save and Escape first discards an unsaved draft.
-- `commitGeneralSettingsChange()` admits only `language`, `hibernate`,
-  `autoSwitchWorkspace`, `showLanding`, or `profile`, validates one exact value,
+- `<details id="general-workspace-plugin">` contains `#tog-autoswitch` only. It is
+  a locally packaged Workspace-extras plugin, not an install service.
+  `generalWorkspacePluginIsActive()` derives Active from `autoSwitchWorkspace`.
+  The Welcome-screen toggle (`#tog-landing`) and the Welcome name
+  (`#profile-name-input`/`#profile-name-save`, with its draft and Escape handling)
+  were removed on 2026-11-07; stored `showLanding` and `profile` bytes are carried
+  untouched and General refuses patches to them.
+- `commitGeneralSettingsChange()` admits only `language`, `hibernate`, or
+  `autoSwitchWorkspace`, validates one exact value,
   applies the real setting, and awaits exactly one `State.persistNow()` receipt.
   Language projects immediately through `applySettings()` plus `renderAll()` so
   static and dynamic copy agree. Invalid/no-op input writes nothing; success still
@@ -2114,12 +2102,12 @@ plugin disclosures do not add another Settings route or stored plugin state.
   retains opener return.
 - General reuses the established Appearance preference-row/plugin visual grammar:
   sheet/paper surfaces, cobalt locator/focus, green accepted receipt, 3–6 px radii,
-  800 px row stacking, 620/520 px name/action stacking, product Motion-off, reduced
-  motion, and forced colors. English and native zh-TW name real effects rather than
-  an account/Profile. Schema 13 changes only the absent/malformed Welcome fallback;
-  explicit choices and every other settings byte/default remain compatible through
-  imports. Welcome/profile/window behavior, stable IDs, routes, permissions, zero
-  host permissions, and local-only storage otherwise remain unchanged.
+  800 px row stacking, a full-width language select at 620/520 px, product
+  Motion-off, reduced motion, and forced colors. English and native zh-TW name real
+  effects rather than an account/Profile. Every settings byte, including the retired
+  `showLanding` and `profile`, stays compatible through imports. Window behavior,
+  stable IDs, routes, permissions, zero host permissions, and local-only storage
+  otherwise remain unchanged.
 
 ## Settings Appearance core and Style-plugin boundary (2026-08-13)
 

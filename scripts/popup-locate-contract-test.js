@@ -4910,9 +4910,12 @@ function testSemanticAndLocaleContracts() {
 }
 
 function testDeepLinkOverlaySuppression() {
-  assert.match(newtabSource,
-    /State\.get\(\)\.settings\.showLanding\s*===\s*true\s*&&\s*ensureOnboarding\(State\.get\(\)\.settings\)\.welcomeSeen\s*&&\s*activeHome\s*&&\s*!currentDetailItemId\(\)\)\s*showLandingLayer\(\)/,
-    'valid Home detail deep links and profiles without an explicit opt-in must not be covered by the calm landing');
+  // Just Today (2026-11-07): no landing layer exists to cover a deep link, even
+  // for a profile that stored showLanding: true.
+  const bootSource = sourceSlice(newtabSource, 'function initAfterLoad() {', '\nlet _stateStorageSyncStarted', 'Boot');
+  assert.doesNotMatch(`${bootSource}\n${newtabSource.replace(/^\s*\/\/.*$/gm, '')}`,
+    /showLanding|showLandingLayer|landing-layer/,
+    'Home detail deep links must never be covered by a landing layer, whatever showLanding was stored');
   const bindStaticSource = sourceSlice(newtabSource, 'function bindStatic() {', '\n// BOOT', 'Static binding');
   assert.match(bindStaticSource,
     /if \(!ensureOnboarding\(State\.get\(\)\.settings\)\.welcomeSeen\)[\s\S]*setTimeout\(\(\) => \{[\s\S]*if \(!currentDetailItemId\(\) && !activeGroupPage\) openWelcome\(\)/,

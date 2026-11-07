@@ -27,11 +27,6 @@ function appLocale() {
 
 const I18N = {
   en: {
-    'landing.recent': 'Recent pages',
-    'landing.showToday': 'Show Today instead',
-    'landing.light': 'Light',
-    'landing.dark': 'Dark',
-    'landing.timeLabel': 'Time {time}',
     'welcome.sloganLead': 'Never',
     'welcome.sloganRest': ' lose a tab again.',
     'welcome.stampSlot': 'STAMP',
@@ -515,15 +510,11 @@ const I18N = {
     'settings.generalSaved': 'General preferences saved in this browser profile.',
     'settings.generalFailed': 'Locus could not confirm this preference change. Reload the latest saved data before continuing.',
     'settings.workspacePlugin': 'Workspace extras plugin',
-    'settings.workspacePluginHint': 'Optional Welcome screen and browser-window switching. Available locally and off by default.',
+    'settings.workspacePluginHint': 'Optional browser-window switching. Available locally and off by default.',
     'settings.workspacePluginAvailable': 'Available',
     'settings.workspacePluginActive': 'Active',
     'settings.windowSwitching': 'Window switching',
     'settings.windowSwitchingHint': 'Follow the Workspace linked to the browser window you focus.',
-    'settings.welcomeScreen': 'Welcome screen',
-    'settings.welcomeScreenHint': 'Optional clock and search before Home on returning new tabs.',
-    'settings.welcomeNamePlaceholder': 'Optional',
-    'settings.saveWelcomeName': 'Save name',
     'settings.firstSaveGuideHint': 'Review one open tab and its exact Workspace › Space › Inbox destination.',
     'settings.appearanceSub': 'Color mode, density, and card details. Optional styles stay out of the way.',
     'settings.capture': 'Capture',
@@ -608,8 +599,6 @@ const I18N = {
     'settings.about': 'About Locus',
     'settings.aboutSub': 'Built with focus. Designed for your privacy.',
     'settings.profile': 'Local preferences',
-    'settings.yourName': 'Name on Welcome screen',
-    'settings.yourNameHint': 'Optional. Used only in the Welcome greeting.',
     'settings.tipsOnboarding': 'First-save guide',
     'settings.privacyFirst': 'Privacy first',
     'settings.privacyFirstBody': 'Workspace data is stored in this browser profile; export before uninstalling or deleting it. Locus has no account, backend, or host permissions.',
@@ -753,20 +742,8 @@ const I18N = {
     'settings.proof.server': 'No Locus server',
     'settings.proof.host': 'No host permissions',
     'settings.proof.export': 'User-managed JSON export',
-    'settings.showLanding': 'Show Welcome screen before Home',
-    'settings.showLandingHint': 'Off by default. Shows a clock and saved-work search before Home.',
-    'landing.ariaLabel': 'New tab welcome',
-    'landing.greeting': '{greeting}, {name}.',
-    'landing.greetingNoName': '{greeting}.',
-    'landing.subtitle': 'Find what you saved and pick up where you left off.',
     'landing.searchPlaceholder': 'Search saved work…',
     'landing.searchSaved': 'Search saved work',
-    'landing.enter': 'Open Locus home',
-    'landing.inboxUnavailable': 'Locus couldn’t open this Inbox. This page is still here so you can try again.',
-    'landing.reminders': 'Reminders',
-    'landing.quote': '“The quieter you become, the more you can hear.”',
-    'landing.savedResults': 'Saved links',
-    'landing.noResults': 'No saved pages match. Press Enter to search all saved content.',
     'palette.ariaLabel': 'Command palette',
     'palette.placeholder': 'Type a command or search…',
     'palette.quickActions': 'Quick actions',
@@ -1426,9 +1403,6 @@ const I18N = {
     'rail.saveToInbox': 'Save “{title}” to Inbox',
     'rail.closeSelectedTabs': 'Close selected tabs ({count})',
     'rail.tabsCount': '{count} tabs',
-    'home.greeting.morning': 'Good morning',
-    'home.greeting.afternoon': 'Good afternoon',
-    'home.greeting.evening': 'Good evening',
     'home.subtitle': 'Focus on what matters.',
     'home.viewAll': 'View all',
     'home.items': '{n} items',
@@ -1782,11 +1756,6 @@ const I18N = {
     'detail.history.updateFields': 'Update custom fields'
   },
   'zh-TW': {
-    'landing.recent': '最近儲存的頁面',
-    'landing.showToday': '改為顯示今天',
-    'landing.light': '淺色',
-    'landing.dark': '深色',
-    'landing.timeLabel': '時間 {time}',
     'welcome.sloganLead': '再也不會',
     'welcome.sloganRest': '弄丟分頁。',
     'welcome.stampSlot': '郵票',
@@ -2270,15 +2239,11 @@ const I18N = {
     'settings.generalSaved': '一般設定已儲存',
     'settings.generalFailed': '無法確認這項設定是否已儲存。請重新載入最新資料後再繼續。',
     'settings.workspacePlugin': '工作區外掛',
-    'settings.workspacePluginHint': '選用的歡迎畫面與瀏覽器視窗切換功能；已內建，預設關閉。',
+    'settings.workspacePluginHint': '選用的瀏覽器視窗切換功能；已內建，預設關閉。',
     'settings.workspacePluginAvailable': '可使用',
     'settings.workspacePluginActive': '使用中',
     'settings.windowSwitching': '視窗切換',
     'settings.windowSwitchingHint': '跟隨目前使用的瀏覽器視窗，開啟與該視窗連結的工作區。',
-    'settings.welcomeScreen': '歡迎畫面',
-    'settings.welcomeScreenHint': '回到新分頁時，先顯示選用的時鐘與搜尋畫面，再進入首頁。',
-    'settings.welcomeNamePlaceholder': '選填',
-    'settings.saveWelcomeName': '儲存名稱',
     'settings.firstSaveGuideHint': '檢查一個開啟中的分頁，以及確切的「工作區 › 空間 › 收件匣」儲存位置。',
     'settings.appearanceSub': '調整顯示模式、項目大小與卡片資訊；其他樣式收在選用外掛中。',
     'settings.capture': '擷取',
@@ -2363,8 +2328,6 @@ const I18N = {
     'settings.about': '關於 Locus',
     'settings.aboutSub': '為專注而生，為隱私而設計。',
     'settings.profile': '本機偏好設定',
-    'settings.yourName': '歡迎畫面顯示名稱',
-    'settings.yourNameHint': '選填，只會用在歡迎問候語。',
     'settings.tipsOnboarding': '首次儲存引導',
     'settings.privacyFirst': '隱私優先',
     'settings.privacyFirstBody': '工作區資料存在此瀏覽器設定檔；解除安裝或刪除前請先匯出。Locus 沒有帳號、後端或主機權限。',
@@ -2508,20 +2471,8 @@ const I18N = {
     'settings.proof.server': '無 Locus 伺服器',
     'settings.proof.host': '免主機權限',
     'settings.proof.export': '使用者保管的 JSON 匯出',
-    'settings.showLanding': '進入首頁前先顯示歡迎畫面',
-    'settings.showLandingHint': '預設關閉。開啟後，會在首頁前顯示時鐘與已儲存內容搜尋。',
-    'landing.ariaLabel': '新分頁歡迎畫面',
-    'landing.greeting': '{greeting}，{name}。',
-    'landing.greetingNoName': '{greeting}。',
-    'landing.subtitle': '找到之前儲存的內容，繼續上次的進度。',
     'landing.searchPlaceholder': '搜尋已儲存內容…',
     'landing.searchSaved': '搜尋已儲存內容',
-    'landing.enter': '開啟 Locus 首頁',
-    'landing.inboxUnavailable': 'Locus 無法開啟這個收件匣。這個畫面仍會保留，請再試一次。',
-    'landing.reminders': '提醒',
-    'landing.quote': '「越安靜，就越能聽見真正重要的聲音。」',
-    'landing.savedResults': '已儲存的連結',
-    'landing.noResults': '沒有符合的已儲存頁面。按 Enter 搜尋所有已儲存內容。',
     'palette.ariaLabel': '指令面板',
     'palette.placeholder': '輸入指令或搜尋…',
     'palette.quickActions': '快速動作',
@@ -3181,9 +3132,6 @@ const I18N = {
     'rail.saveToInbox': '將「{title}」儲存至收件匣',
     'rail.closeSelectedTabs': '關閉所選分頁（{count} 個）',
     'rail.tabsCount': '{count} 個分頁',
-    'home.greeting.morning': '早安',
-    'home.greeting.afternoon': '午安',
-    'home.greeting.evening': '晚安',
     'home.subtitle': '專注在真正重要的事。',
     'home.viewAll': '查看全部',
     'home.items': '{n} 個項目',
@@ -3690,7 +3638,7 @@ const State = (() => {
       language: browserLanguage(),
       closeTabOnSave:true, hibernate:true, showUrls:true,
       animate:true, confirmDelete:true, sidebarCollapsed:false,
-      blurPrivacy:false, windowSync:false, showLanding:false,
+      blurPrivacy:false, windowSync:false,
       captureDefaultCategoryId:'', captureAskEveryTime:false,
       captureRememberLast:true, captureDeduplicate:true,
       captureIncludeTitle:true, captureIncludeFavicon:true,
@@ -5141,12 +5089,6 @@ function initAfterLoad() {
   }
   // A to-do that comes due while this page is open gets a card that waits for an answer.
   if (typeof startPlanDueWatch === 'function') startPlanDueWatch();
-  // Returning users may explicitly opt into the calm landing. First run owns
-  // one task and never hands off into a second full-screen layer.
-  if (State.get().settings.showLanding === true
-      && ensureOnboarding(State.get().settings).welcomeSeen
-      && activeHome
-      && !currentDetailItemId()) showLandingLayer();
 
   // Reveal the app once the first frame paints (avoids any layout flash).
   requestAnimationFrame(() => {
@@ -5514,10 +5456,9 @@ function migrate() {
   }
 
   if (from < 7) {
-    // Schema 7 adds the calm launch-layer preference. Profiles that never
-    // expressed a choice keep the optional surface inactive.
-    s.settings = s.settings || {};
-    if (s.settings.showLanding == null) s.settings.showLanding = false;
+    // Schema 7 added `settings.showLanding` for the calm launch layer. That layer
+    // was removed on 2026-11-07 (Today is the only new tab), so nothing reads
+    // the key: stored and imported values are carried untouched, never written.
   }
 
   if (from < 8) {
@@ -5574,11 +5515,8 @@ function migrate() {
   }
 
   if (from < 13) {
-    // Schema 13 makes the optional Welcome layer an explicit opt-in. Preserve
-    // every valid stored choice; only absent or malformed legacy bytes fall
-    // back to the clean Home surface.
-    s.settings = s.settings || {};
-    if (typeof s.settings.showLanding !== 'boolean') s.settings.showLanding = false;
+    // Schema 13 made `settings.showLanding` an explicit opt-in. The layer it
+    // controlled is gone (see schema 7), so this step no longer writes it.
   }
 
   if (from < 14) {
@@ -6114,7 +6052,6 @@ function ensureDefault() {
   if (!s.workspaces.length) {
     const allocateId = createOrganizationIdAllocator();
     s.settings.railCollapsed = true;
-    s.settings.showLanding = false;
     // Auto-plan roll-over starts on only for a brand-new profile. It is not a
     // hydration default: a profile without the key keeps today's behaviour.
     s.settings.planRollOver = true;
@@ -6170,13 +6107,6 @@ function isDarkTheme(id) {
   if (hex.length < 6) return false;
   const r = parseInt(hex.slice(0, 2), 16), g = parseInt(hex.slice(2, 4), 16), b = parseInt(hex.slice(4, 6), 16);
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5; // Rec.601 luma
-}
-// The concrete light/dark mode of the active theme ('auto' resolves to the OS
-// preference). Read by renderers that pick a themed asset (banner, card icons).
-function activeThemeMode() {
-  let theme = normalizeThemeId(State.get().settings.theme || 'folio');
-  if (theme === 'auto') theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'folio-dark' : 'folio';
-  return isDarkTheme(theme) ? 'dark' : 'light';
 }
 
 const CORE_APPEARANCE_THEMES = Object.freeze([
@@ -6274,20 +6204,15 @@ const GENERAL_SETTING_KEYS = new Set([
   'language',
   'hibernate',
   'autoSwitchWorkspace',
-  'showLanding',
-  'profile',
 ]);
 const GENERAL_SETTING_CONTROL_IDS = new Set([
   'seg-language',
   'tog-hibernate',
   'tog-autoswitch',
-  'tog-landing',
-  'profile-name-save',
 ]);
 const GENERAL_SETTING_DEFAULTS = Object.freeze({
   hibernate: true,
   autoSwitchWorkspace: false,
-  showLanding: false,
 });
 let generalSettingsPending = null;
 let generalSettingsStatus = { key: 'settings.generalIdle', state: 'idle' };
@@ -6295,28 +6220,14 @@ let generalSettingsStatus = { key: 'settings.generalIdle', state: 'idle' };
 function generalSettingValue(settings, key) {
   if (Object.prototype.hasOwnProperty.call(settings, key)) return settings[key];
   if (key === 'language') return browserLanguage();
-  if (key === 'profile') return null;
   return GENERAL_SETTING_DEFAULTS[key];
-}
-
-function generalProfileName(settings) {
-  const profile = generalSettingValue(settings, 'profile');
-  return profile && typeof profile === 'object' && !Array.isArray(profile)
-    && typeof profile.name === 'string'
-    ? profile.name
-    : '';
-}
-
-function generalSettingsFingerprintValue(settings, key) {
-  const value = generalSettingValue(settings, key);
-  return key === 'profile' ? JSON.stringify(value ?? null) : value;
 }
 
 function generalSettingsPatchFingerprint(settings, keys) {
   return JSON.stringify(keys.map(key => [
     key,
     Object.prototype.hasOwnProperty.call(settings, key),
-    generalSettingsFingerprintValue(settings, key),
+    generalSettingValue(settings, key),
   ]));
 }
 
@@ -6326,21 +6237,14 @@ function generalSettingsPatchIsValid(patch) {
   for (const [key, value] of entries) {
     if (!GENERAL_SETTING_KEYS.has(key)) return false;
     if (key === 'language' && !SUPPORTED_LOCALES.includes(value)) return false;
-    if (['hibernate', 'autoSwitchWorkspace', 'showLanding'].includes(key)
+    if (['hibernate', 'autoSwitchWorkspace'].includes(key)
         && typeof value !== 'boolean') return false;
-    if (key === 'profile') {
-      if (!value || typeof value !== 'object' || Array.isArray(value)
-          || typeof value.name !== 'string'
-          || value.name !== value.name.trim()
-          || value.name.length > 40) return false;
-    }
   }
   return true;
 }
 
 function generalWorkspacePluginIsActive(settings) {
-  return generalSettingValue(settings, 'autoSwitchWorkspace') === true
-    || generalSettingValue(settings, 'showLanding') === true;
+  return generalSettingValue(settings, 'autoSwitchWorkspace') === true;
 }
 
 function isGeneralSettingsPending() {
@@ -6359,67 +6263,7 @@ function generalSettingsBlocksDismissal() {
   return !!generalSettingsPending && !!drawer && !drawer.classList.contains('hidden');
 }
 
-function generalNameDraftIsDirty() {
-  const input = document.getElementById('profile-name-input');
-  const settings = State.get()?.settings;
-  if (!input || !settings || typeof settings !== 'object') return false;
-  return input.value.trim() !== generalProfileName(settings);
-}
-
-function syncGeneralNameDraftControls() {
-  const input = document.getElementById('profile-name-input');
-  const save = document.getElementById('profile-name-save');
-  if (!input || !save) return false;
-  const dirty = generalNameDraftIsDirty();
-  if (dirty) input.dataset.dirty = 'true';
-  else delete input.dataset.dirty;
-  save.dataset.settingsPreferenceDisabled = String(!dirty);
-  if (!settingsPreferencePendingTransaction()) save.disabled = !dirty;
-  return dirty;
-}
-
-function discardGeneralNameDraft({ focus = true } = {}) {
-  const input = document.getElementById('profile-name-input');
-  const settings = State.get()?.settings;
-  if (!input || !settings || !generalNameDraftIsDirty()) return false;
-  input.value = generalProfileName(settings);
-  syncGeneralNameDraftControls();
-  if (focus && typeof input.focus === 'function') {
-    try { input.focus({ preventScroll: true }); } catch { try { input.focus(); } catch {} }
-  }
-  return true;
-}
-
-function handleGeneralNameDraftEscape(event) {
-  if (event?.key !== 'Escape') return false;
-  const drawer = document.getElementById('settings-drawer');
-  const pane = document.getElementById('dp-general');
-  if (!drawer || drawer.classList.contains('hidden')
-      || !pane || pane.classList.contains('hidden')
-      || !generalNameDraftIsDirty()) return false;
-  const higherLayerIds = [
-    'state-recovery-overlay', 'quota-overlay', 'paste-overlay',
-    'rich-text-link-overlay', 'reminder-overlay', 'calendar-task-overlay',
-    'cmd-palette', 'modal-overlay', 'ws-grid-overlay', 'ws-list',
-    'emoji-picker', 'import-overlay', 'cheatsheet-overlay',
-    'trash-delete-overlay', 'organization-name-overlay',
-    'organization-delete-overlay', 'welcome', 'pomo-overlay', 'fin-overlay',
-    'habit-overlay', 'water-overlay', 'books-overlay', 'goals-overlay',
-    'workout-overlay', 'subs-overlay', 'tools-hub', 'about-overlay',
-    'context-menu',
-  ];
-  const higherLayerOpen = higherLayerIds.some(id => {
-    const layer = document.getElementById(id);
-    return layer && !layer.classList.contains('hidden');
-  });
-  if (higherLayerOpen) return false;
-  event.preventDefault();
-  event.stopImmediatePropagation();
-  discardGeneralNameDraft();
-  return true;
-}
-
-function renderGeneralSettings({ resetNameDraft = false } = {}) {
+function renderGeneralSettings() {
   const state = State.get();
   const settings = state?.settings;
   if (!settings || typeof settings !== 'object' || Array.isArray(settings)) return null;
@@ -6433,16 +6277,9 @@ function renderGeneralSettings({ resetNameDraft = false } = {}) {
   for (const [id, key] of [
     ['tog-hibernate', 'hibernate'],
     ['tog-autoswitch', 'autoSwitchWorkspace'],
-    ['tog-landing', 'showLanding'],
   ]) {
     const control = document.getElementById(id);
     if (control) control.checked = generalSettingValue(settings, key) === true;
-  }
-
-  const nameInput = document.getElementById('profile-name-input');
-  if (nameInput && (resetNameDraft || nameInput.dataset.dirty !== 'true')) {
-    nameInput.value = generalProfileName(settings);
-    delete nameInput.dataset.dirty;
   }
 
   const plugin = document.getElementById('general-workspace-plugin');
@@ -6468,9 +6305,8 @@ function renderGeneralSettings({ resetNameDraft = false } = {}) {
     status.dataset.state = generalSettingsStatus.state;
     status.textContent = tr(generalSettingsStatus.key);
   }
-  syncGeneralNameDraftControls();
   paintSettingsPreferenceBusy();
-  return { language, pluginActive, name: generalProfileName(settings) };
+  return { language, pluginActive };
 }
 
 function projectGeneralSettingsChange(keys) {
@@ -6479,12 +6315,8 @@ function projectGeneralSettingsChange(keys) {
     renderAll();
     return;
   }
-  renderGeneralSettings({ resetNameDraft: keys.includes('profile') });
+  renderGeneralSettings();
   if (keys.includes('autoSwitchWorkspace')) renderHeader();
-  if (keys.includes('showLanding') || keys.includes('profile')) {
-    const landing = document.getElementById('landing-layer');
-    if (landing && !landing.classList.contains('hidden')) renderLandingLayer();
-  }
 }
 
 async function commitGeneralSettingsChange(controlId, patch) {
@@ -6509,14 +6341,14 @@ async function commitGeneralSettingsChange(controlId, patch) {
   const keys = Object.keys(patch);
   const before = new Map(keys.map(key => [key, {
     present: Object.prototype.hasOwnProperty.call(settings, key),
-    value: generalSettingsFingerprintValue(settings, key),
+    value: generalSettingValue(settings, key),
   }]));
   for (const key of keys) settings[key] = patch[key];
   const expected = generalSettingsPatchFingerprint(settings, keys);
   const previous = JSON.stringify([...before].map(([key, value]) => [key, value.present, value.value]));
   if (expected === previous) {
     generalSettingsStatus = { key: 'settings.generalIdle', state: 'idle' };
-    renderGeneralSettings({ resetNameDraft: keys.includes('profile') });
+    renderGeneralSettings();
     return true;
   }
 
@@ -6529,7 +6361,7 @@ async function commitGeneralSettingsChange(controlId, patch) {
   } catch (error) {
     if (generalSettingsPending === transaction) generalSettingsPending = null;
     generalSettingsStatus = { key: 'settings.generalFailed', state: 'error' };
-    renderGeneralSettings({ resetNameDraft: keys.includes('profile') });
+    renderGeneralSettings();
     if (State.isRecoveryRequired?.() && typeof showStateRecoveryRequired === 'function') {
       showStateRecoveryRequired(error);
     }
@@ -6542,7 +6374,7 @@ async function commitGeneralSettingsChange(controlId, patch) {
     if (generalSettingsPending === transaction) generalSettingsPending = null;
     generalSettingsStatus = { key: 'settings.generalFailed', state: 'error' };
     State.requireRecovery?.();
-    renderGeneralSettings({ resetNameDraft: keys.includes('profile') });
+    renderGeneralSettings();
     if (typeof showStateRecoveryRequired === 'function') {
       showStateRecoveryRequired(new Error('General preferences changed before confirmation.'));
     }
@@ -6550,7 +6382,7 @@ async function commitGeneralSettingsChange(controlId, patch) {
   }
   generalSettingsPending = null;
   generalSettingsStatus = { key: 'settings.generalSaved', state: 'success' };
-  renderGeneralSettings({ resetNameDraft: keys.includes('profile') });
+  renderGeneralSettings();
   return true;
 }
 
@@ -7777,8 +7609,6 @@ function applySettings() {
   renderPrivacySettings();
   renderCaptureSettings();
   applyLocale();
-  const landing = document.getElementById('landing-layer');
-  if (landing && !landing.classList.contains('hidden')) renderLandingLayer();
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -17617,69 +17447,9 @@ function collectWorkspaceItems(ws = activeWs()) {
   return rows;
 }
 
-// ── Zen launch layer ──────────────────────────────────────────────────────
-let _landingClockTimer = null;
-let _landingResultIndex = -1;
-let _landingInboxContext = null;
-
-function syncLandingComboboxState(input, results, expanded) {
-  if (!results) return;
-  const options = [...results.querySelectorAll('.landing-result')];
-  const popupOpen = !!expanded && !results.classList.contains('hidden');
-  const selected = popupOpen && _landingResultIndex >= 0
-    ? options[_landingResultIndex] || null
-    : null;
-  input?.setAttribute('aria-expanded', String(popupOpen));
-  options.forEach(option => {
-    const active = option === selected;
-    option.classList.toggle('active', active);
-    option.setAttribute('aria-selected', String(active));
-  });
-  if (selected?.id) input?.setAttribute('aria-activedescendant', selected.id);
-  else input?.removeAttribute('aria-activedescendant');
-}
-
-function handleLandingSearchInput(input, results, queuePaint) {
-  if (!input || !results) return false;
-  _landingResultIndex = -1;
-  results.classList.add('hidden');
-  syncLandingComboboxState(input, results, false);
-  if (typeof queuePaint === 'function') queuePaint();
-  return true;
-}
-
-function handleLandingSearchKeydown(event, input, results) {
-  if (!event || !input || !results || event.isComposing || event.keyCode === 229) return false;
-  const options = [...results.querySelectorAll('.landing-result')];
-  const popupOpen = !results.classList.contains('hidden');
-  if ((event.key === 'ArrowDown' || event.key === 'ArrowUp') && popupOpen && options.length) {
-    event.preventDefault();
-    _landingResultIndex = (_landingResultIndex + (event.key === 'ArrowDown' ? 1 : options.length - 1)) % options.length;
-    syncLandingComboboxState(input, results, true);
-    options[_landingResultIndex].scrollIntoView({ block: 'nearest' });
-    return true;
-  }
-  if (event.key === 'Enter' && popupOpen && _landingResultIndex >= 0 && options[_landingResultIndex]) {
-    event.preventDefault();
-    options[_landingResultIndex].click();
-    return true;
-  }
-  if (event.key === 'Enter') {
-    event.preventDefault();
-    submitLandingSearch();
-    return true;
-  }
-  if (event.key === 'Escape' && popupOpen) {
-    event.preventDefault();
-    event.stopPropagation();
-    results.classList.add('hidden');
-    _landingResultIndex = -1;
-    syncLandingComboboxState(input, results, false);
-    return true;
-  }
-  return false;
-}
-
+// ── Inbox and saved-link helpers ──────────────────────────────────────────
+// These started with the calm launch layer (removed 2026-11-07) and keep
+// their names: the rail, openInboxView, Plan and the command palette call them.
 function createLandingInboxContext(ws = activeWs()) {
   if (!ws || activeWs() !== ws || !Array.isArray(ws.categories)) return null;
   const cat = ws.categories.find(candidate => candidate?.id === ws.activeCatId) || ws.categories[0] || null;
@@ -17705,56 +17475,8 @@ function resolveLandingInboxTarget(context) {
   }
 }
 
-function reportLandingInboxUnavailable(opener = null) {
-  renderLandingLayer();
-  toast(tr('landing.inboxUnavailable'), { danger: true, duration: 5000 });
-  const button = document.getElementById('landing-unsorted');
-  const input = document.getElementById('landing-search-input');
-  const focusTarget = opener?.isConnected && !opener.hidden
-    ? opener
-    : button && !button.hidden ? button : input;
-  requestAnimationFrame(() => {
-    if (!focusTarget?.isConnected) return;
-    try { focusTarget.focus({ preventScroll: true }); } catch { focusTarget.focus(); }
-  });
-  return false;
-}
-
-function activateLandingInbox(context, opener = null) {
-  const target = resolveLandingInboxTarget(context);
-  if (!target) return reportLandingInboxUnavailable(opener);
-  const navigated = Router.navigate({
-    type: 'group',
-    wsId: target.workspace.id,
-    groupId: target.group.id,
-    itemId: null,
-    query: {},
-  }, { persist: false });
-  if (!navigated) return reportLandingInboxUnavailable(opener);
-  closeLandingLayer({ immediate: true });
-  return true;
-}
-
 function landingLinkMatches(row, query) {
   return !!String(query || '').trim() && searchItemMatches({ ...row, parents: row.parents || [] }, query);
-}
-
-function landingResults(query) {
-  return collectWorkspaceTabs(activeWs())
-    .filter(row => landingLinkMatches(row, query))
-    .map((row, index) => ({
-      row,
-      index,
-      score: _searchScore(row, query),
-      createdAt: Number(row.item.createdAt || 0),
-      itemId: String(row.item.id || ''),
-    }))
-    .sort((a, b) => b.score - a.score
-      || b.createdAt - a.createdAt
-      || a.itemId.localeCompare(b.itemId)
-      || a.index - b.index)
-    .slice(0, 6)
-    .map(entry => entry.row);
 }
 
 function landingResultDestinationText(row) {
@@ -17777,294 +17499,6 @@ function createLandingRecoveryContext(row, ws = activeWs()) {
 function resolveLandingRecoveryTarget(context) {
   if (!context || activeWs() !== context.workspaceRef) return null;
   return resolveSavedItemRecoveryTarget(context);
-}
-
-function activateLandingRecovery(context, opener = null) {
-  const target = resolveLandingRecoveryTarget(context);
-  if (!target || target.item?.type !== 'tab' || !isOpenableSavedTabUrl(target.item.url)) {
-    return reportSearchRecoveryUnavailable(opener);
-  }
-  if (!openSavedTabItem(target.item, {
-    focus: true,
-    opener,
-    reportUnavailable: false,
-    onConfirmed: () => closeLandingLayer({ immediate: true }),
-  })) return reportSearchRecoveryUnavailable(opener);
-  return true;
-}
-
-function paintLandingResults(query) {
-  const host = document.getElementById('landing-search-results');
-  if (!host) return;
-  const input = document.getElementById('landing-search-input');
-  const raw = String(query || '').trim();
-  _landingResultIndex = -1;
-  if (!raw) {
-    host.innerHTML = '';
-    host.classList.add('hidden');
-    syncLandingComboboxState(input, host, false);
-    return;
-  }
-  const rows = landingResults(raw);
-  const ws = activeWs();
-  const recoveryContexts = rows.map(row => createLandingRecoveryContext(row, ws));
-  host.classList.remove('hidden');
-  if (!rows.length) {
-    host.innerHTML = `<div class="landing-result-empty">${esc(tr('landing.noResults'))}</div>`;
-    syncLandingComboboxState(input, host, true);
-    return;
-  }
-  host.innerHTML = rows.map((row, index) => {
-    const { item } = row;
-    const destination = landingResultDestinationText(row);
-    return `
-      <button id="landing-result-${index}" class="landing-result" type="button" role="option" aria-selected="false" data-index="${index}" data-id="${esc(item.id)}">
-        <img src="${esc(favUrl(item.url) || BLANK_FAV)}" alt="" loading="lazy" decoding="async">
-        <span class="landing-result-copy">
-          <span class="landing-result-title">${esc(item.title || item.url || 'Untitled')}</span>
-          <span class="landing-result-url">${esc(dispUrl(item.url))}</span>
-        </span>
-        <span class="landing-result-space" title="${esc(destination)}">${esc(destination)}</span>
-      </button>`;
-  }).join('');
-  syncLandingComboboxState(input, host, true);
-  host.querySelectorAll('.landing-result').forEach((button, index) => {
-    button.onclick = () => {
-      activateLandingRecovery(recoveryContexts[index], button);
-    };
-  });
-}
-
-function updateLandingClock() {
-  const time = document.getElementById('landing-time');
-  const date = document.getElementById('landing-date');
-  if (!time || !date) return;
-  const now = new Date();
-  const locale = appLocale() === 'zh-TW' ? 'zh-TW' : 'en-US';
-  // The zen clock reads "9:41" — 12-hour time with no meridiem (the scene art
-  // already says morning/evening), matching the landing preview.
-  time.textContent = new Intl.DateTimeFormat(locale, { hour: 'numeric', minute: '2-digit', hour12: appLocale() !== 'zh-TW' })
-    .formatToParts(now).filter(part => part.type !== 'dayPeriod').map(part => part.value).join('').trim();
-  date.textContent = appLocale() === 'zh-TW'
-    ? new Intl.DateTimeFormat(locale, { weekday: 'short', month: 'short', day: 'numeric' }).format(now)
-    : now.toLocaleDateString('en-GB', { weekday: 'short' }) + ', ' + now.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
-  paintLandingFlip(now);
-}
-
-// Calm new tab (2026-11 canvas): a split-flap clock. Each digit card keeps the
-// previous digit on its lower half and folds the new one down over it.
-function paintLandingFlip(now = new Date()) {
-  const flip = document.getElementById('landing-flip');
-  const dateLine = document.getElementById('landing-flip-date');
-  if (!flip) return;
-  const pad = value => String(value).padStart(2, '0');
-  const digits = `${pad(now.getHours())}${pad(now.getMinutes())}`;
-  if (!flip.children.length) {
-    flip.innerHTML = [0, 1, 'sep', 2, 3].map(slot => (slot === 'sep'
-      ? '<span class="fl-sep" aria-hidden="true"><i></i><i></i></span>'
-      : `<span class="fl-card" aria-hidden="true" data-slot="${slot}"><span class="fl-half fl-top"><b></b></span><span class="fl-half fl-bot"><b></b></span><span class="fl-flap fl-ftop"><b></b></span><span class="fl-flap fl-fbot"><b></b></span><i class="fl-hinge"></i></span>`)).join('');
-  }
-  flip.querySelectorAll('.fl-card').forEach(card => {
-    const next = digits[Number(card.dataset.slot)];
-    const previous = card.dataset.digit;
-    if (previous === next) return;
-    const [top, bottom, flapTop, flapBottom] = card.querySelectorAll('b');
-    top.textContent = next;
-    bottom.textContent = previous ?? next;
-    flapTop.textContent = previous ?? next;
-    flapBottom.textContent = next;
-    card.dataset.digit = next;
-    card.classList.remove('is-flipping');
-    if (previous != null) {
-      void card.offsetWidth;
-      card.classList.add('is-flipping');
-      setTimeout(() => { bottom.textContent = next; card.classList.remove('is-flipping'); }, 800);
-    }
-  });
-  flip.setAttribute('aria-label', tr('landing.timeLabel', { time: `${digits.slice(0, 2)}:${digits.slice(2)}` }));
-  if (dateLine) {
-    dateLine.textContent = appLocale() === 'zh-TW'
-      ? new Intl.DateTimeFormat('zh-TW', { month: 'long', day: 'numeric', weekday: 'long' }).format(now)
-      : now.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
-  }
-}
-
-// Three most recently saved pages, opened through the shared Reopen path.
-function renderLandingRecent(ws) {
-  const host = document.getElementById('landing-recent');
-  if (!host) return;
-  const rows = ws ? collectWorkspaceTabs(ws)
-    .filter(row => isOpenableSavedTabUrl(row.item.url))
-    .sort((a, b) => (Number(b.item.createdAt) || 0) - (Number(a.item.createdAt) || 0))
-    .slice(0, 3) : [];
-  host.innerHTML = rows.map((row, index) => {
-    let domain = '';
-    try { domain = new URL(row.item.url).hostname.replace(/^www\./, ''); } catch {}
-    const title = String(row.item.title || domain || row.item.url || '').trim();
-    const initial = (domain || title || '•').charAt(0).toUpperCase();
-    return `<button type="button" class="landing-recent-page" data-index="${index}"><span class="landing-recent-icon" aria-hidden="true">${esc(initial)}</span><span class="landing-recent-title">${esc(title)}</span></button>`;
-  }).join('');
-  host.hidden = rows.length === 0;
-  host.querySelectorAll('.landing-recent-page').forEach(button => {
-    button.onclick = () => {
-      const row = rows[Number(button.dataset.index)];
-      if (!row) return;
-      closeLandingLayer({ immediate: true });
-      openSavedTabItem(row.item, { opener: button });
-    };
-  });
-}
-
-// Dark by default, with a light option remembered on this device.
-function landingTone() {
-  try { return localStorage.getItem('locus.landing.tone') === 'light' ? 'light' : 'dark'; } catch { return 'dark'; }
-}
-function applyLandingTone(tone = landingTone()) {
-  const layer = document.getElementById('landing-layer');
-  const button = document.getElementById('landing-tone');
-  if (layer) layer.dataset.tone = tone;
-  if (button) {
-    // One fixed label; the pressed state says whether the light tone is on.
-    button.setAttribute('aria-pressed', String(tone === 'light'));
-    button.setAttribute('aria-label', tr('landing.light'));
-    button.title = tr('landing.light');
-  }
-}
-
-function renderLandingLayer() {
-  const layer = document.getElementById('landing-layer');
-  const ws = activeWs();
-  if (!layer || !ws) return;
-  const now = new Date();
-  const hour = now.getHours();
-  const tod = hour < 12 ? 'morning' : hour < 18 ? 'noon' : 'night';
-  const greetingKey = hour < 12 ? 'home.greeting.morning' : hour < 18 ? 'home.greeting.afternoon' : 'home.greeting.evening';
-  // Greet with the profile name only — the workspace name is an organizational
-  // label ("My Workspace"), not something to address the user by.
-  const name = ((State.get().settings.profile && State.get().settings.profile.name) || '').trim().split(/\s+/)[0];
-  document.getElementById('landing-greeting').textContent = name
-    ? tr('landing.greeting', { greeting: tr(greetingKey), name })
-    : tr('landing.greetingNoName', { greeting: tr(greetingKey) });
-  const scene = document.getElementById('landing-scene');
-  if (scene) scene.src = `media/png/${activeThemeMode() === 'dark' ? 'night' : tod}_transparent_corners.png`;
-  const face = document.getElementById('landing-avatar-face');
-  if (face) face.textContent = (name || ws.name || 'L').charAt(0).toUpperCase();
-  _landingInboxContext = createLandingInboxContext(ws);
-  const inboxButton = document.getElementById('landing-unsorted');
-  const inboxCount = document.getElementById('landing-unsorted-count');
-  const count = Array.isArray(_landingInboxContext?.inboxRef?.items)
-    ? _landingInboxContext.inboxRef.items.length
-    : 0;
-  const reminders = collectPendingReminders({ scope: ws.id }).length;
-  inboxButton.hidden = !_landingInboxContext;
-  inboxCount.hidden = count === 0;
-  inboxCount.textContent = String(count);
-  document.getElementById('landing-reminder-count').textContent = String(reminders);
-  inboxButton.setAttribute('aria-label', count > 0 ? `${tr('nav.inbox')}: ${count}` : tr('nav.inbox'));
-  document.getElementById('landing-reminders').setAttribute('aria-label', `${tr('landing.reminders')}: ${reminders}`);
-  // A "0 Reminders" pill is noise on a calm surface — the segment only earns
-  // its place when something is actually pending.
-  document.getElementById('landing-reminders').classList.toggle('hidden', reminders === 0);
-  renderLandingRecent(ws);
-  applyLandingTone();
-  updateLandingClock();
-}
-
-function showLandingLayer() {
-  const layer = document.getElementById('landing-layer');
-  if (!layer || State.get().settings.showLanding !== true) return false;
-  rememberOpener(layer);
-  renderLandingLayer();
-  layer.classList.remove('hidden', 'landing-exit');
-  // Staggered entrance (greeting → search → footer). Re-trigger per show; the
-  // global data-anim/reduced-motion gates neutralize it when motion is off.
-  layer.classList.remove('landing-in');
-  void layer.offsetWidth;
-  layer.classList.add('landing-in');
-  scheduleLandingClock();
-  setTimeout(() => document.getElementById('landing-search-input')?.focus({ preventScroll: true }), 50);
-  return true;
-}
-
-// The flip clock turns on the minute: each tick schedules the next at the next
-// minute boundary (plus a small margin), instead of polling every 30 s (S6).
-// closeLandingLayer's clearInterval also clears it: timer IDs share one pool.
-function scheduleLandingClock(now = Date.now()) {
-  clearTimeout(_landingClockTimer);
-  _landingClockTimer = setTimeout(() => {
-    updateLandingClock();
-    scheduleLandingClock();
-  }, 60000 - (now % 60000) + 50);
-  return _landingClockTimer;
-}
-
-function closeLandingLayer({ immediate = false } = {}) {
-  const layer = document.getElementById('landing-layer');
-  if (!layer || layer.classList.contains('hidden')) return;
-  clearInterval(_landingClockTimer);
-  const noMotion = immediate || prefersReducedMotion() || !State.get().settings.animate;
-  const finish = () => {
-    layer.classList.add('hidden');
-    layer.classList.remove('landing-exit', 'landing-in');
-    // Reset the search so a later reopen starts fresh instead of resurfacing
-    // a stale query.
-    const input = document.getElementById('landing-search-input');
-    if (input) input.value = '';
-    const results = document.getElementById('landing-search-results');
-    _landingResultIndex = -1;
-    if (results) {
-      results.innerHTML = '';
-      results.classList.add('hidden');
-      syncLandingComboboxState(input, results, false);
-    }
-    restoreOpener(layer);
-  };
-  if (noMotion) finish();
-  else { layer.classList.add('landing-exit'); setTimeout(finish, 430); }
-}
-
-function submitLandingSearch() {
-  const input = document.getElementById('landing-search-input');
-  const query = input ? input.value.trim() : '';
-  if (!query) { input?.focus(); return; }
-  const active = document.querySelector('.landing-result.active');
-  if (active) { active.click(); return; }
-  closeLandingLayer({ immediate: true });
-  openSearchSurface(query);
-}
-
-function bindLandingLayer() {
-  const layer = document.getElementById('landing-layer');
-  const input = document.getElementById('landing-search-input');
-  const results = document.getElementById('landing-search-results');
-  if (!layer || !input || !results) return;
-  layer.addEventListener('keydown', e => trapTabKey(e, layer));
-  document.getElementById('landing-search-form').onsubmit = e => { e.preventDefault(); submitLandingSearch(); };
-  const queueLandingResults = debounce(() => paintLandingResults(input.value), 70);
-  input.oninput = () => handleLandingSearchInput(input, results, queueLandingResults);
-  input.onkeydown = e => handleLandingSearchKeydown(e, input, results);
-  document.getElementById('landing-enter').onclick = () => closeLandingLayer();
-  const inboxButton = document.getElementById('landing-unsorted');
-  inboxButton.onclick = () => activateLandingInbox(_landingInboxContext, inboxButton);
-  document.getElementById('landing-reminders').onclick = () => { closeLandingLayer({ immediate: true }); openCalendar(); };
-  const landingToday = document.getElementById('landing-today');
-  if (landingToday) landingToday.onclick = () => closeLandingLayer();
-  const landingToneButton = document.getElementById('landing-tone');
-  if (landingToneButton) landingToneButton.onclick = () => {
-    const next = landingTone() === 'light' ? 'dark' : 'light';
-    try { localStorage.setItem('locus.landing.tone', next); } catch {}
-    applyLandingTone(next);
-  };
-  document.getElementById('landing-tools').onclick = () => {
-    closeLandingLayer({ immediate: true });
-    openToolsHub();
-  };
-  document.getElementById('landing-menu').onclick = e => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    closeLandingLayer({ immediate: true });
-    openAppMenu({ getBoundingClientRect: () => rect });
-  };
-  layer.addEventListener('wheel', e => { if (e.deltaY > 28) closeLandingLayer(); }, { passive: true });
 }
 
 let savedTabReturnMutationPending = null;
@@ -24685,9 +24119,9 @@ function itemNodeType(el) {
   return '';
 }
 
-// Shared parser for board filtering and the launch layer's saved-link search.
-// Keeping the vocabulary in one place prevents the two search entry points
-// from drifting as operators are added.
+// Shared parser for board filtering and saved-link search (Find again and the
+// command palette). Keeping the vocabulary in one place prevents the search
+// entry points from drifting as operators are added.
 function parseSearchQuery(rawValue) {
   const raw = String(rawValue || '').toLowerCase().trim();
   const makeBucket = () => ({ color: [], type: [], state: [], domain: [], url: [], in: [], tag: [], text: [] });
@@ -25075,8 +24509,8 @@ function _searchItemBlob(row) {
   ].filter(Boolean).join(' ').toLowerCase();
 }
 
-// Data-level counterpart to applySearchFilter's DOM matcher. The launch layer,
-// command palette, and search page now share this exact operator behavior.
+// Data-level counterpart to applySearchFilter's DOM matcher. The command
+// palette and the search page share this exact operator behavior.
 // `parsed` lets a caller that tests many rows parse the query once.
 function searchItemMatches(row, query, parsed = null) {
   const { item, cat, group, parents = [] } = row;
@@ -29834,10 +29268,7 @@ function prepareItemDetailOpen(id, returnFocusKey = '', initialFocusKey = '') {
 }
 
 function setItemDetailBackgroundInert(enabled) {
-  ['app', 'landing-layer'].forEach(id => {
-    const el = document.getElementById(id);
-    setElementInertOwner(el, 'detail', enabled);
-  });
+  setElementInertOwner(document.getElementById('app'), 'detail', enabled);
 }
 
 function focusItemDetailTarget(el, scroll = false) {
@@ -37491,35 +36922,6 @@ function bindStatic() {
   });
 
   // Settings-page controls that are new with the full-page surface.
-  const nameInput = document.getElementById('profile-name-input');
-  const nameSave = document.getElementById('profile-name-save');
-  const saveGeneralName = () => {
-    if (!nameInput || !nameSave) return false;
-    if (settingsPreferencePendingTransaction()) {
-      renderGeneralSettings();
-      focusSettingsPreferencePendingControl();
-      return false;
-    }
-    const current = State.get().settings?.profile;
-    const profile = current && typeof current === 'object' && !Array.isArray(current)
-      ? { ...current }
-      : {};
-    profile.name = nameInput.value.trim();
-    void commitGeneralSettingsChange(nameSave.id, { profile });
-    return true;
-  };
-  if (nameInput && nameSave) {
-    nameInput.oninput = syncGeneralNameDraftControls;
-    nameInput.onkeydown = e => {
-      if (handleGeneralNameDraftEscape(e)) return;
-      if (e.key === 'Enter' && generalNameDraftIsDirty()) {
-        e.preventDefault();
-        nameSave.focus();
-        saveGeneralName();
-      }
-    };
-    nameSave.onclick = saveGeneralName;
-  }
   const shortcutsFilter = document.getElementById('shortcuts-filter');
   if (shortcutsFilter) {
     shortcutsFilter.oninput = filterAppShortcuts;
@@ -37586,7 +36988,6 @@ function bindStatic() {
     void commitPrivacySettingsChange(e.target.id, { blurPrivacy: !!e.target.checked });
   };
   bindGeneralToggle('tog-autoswitch', 'autoSwitchWorkspace');
-  bindGeneralToggle('tog-landing', 'showLanding');
   const workspacePlugin = document.getElementById('general-workspace-plugin');
   const workspacePluginSummary = workspacePlugin?.querySelector('summary');
   if (workspacePluginSummary) workspacePluginSummary.onclick = e => {
@@ -37739,7 +37140,6 @@ function bindStatic() {
     if (handleIdentityEditorGlobalKey(e)) return;
     if (handleOrganizationDeleteGlobalKey(e)) return;
     if (handleOrganizationNameGlobalKey(e)) return;
-    if (handleGeneralNameDraftEscape(e)) return;
     const tag = document.activeElement?.tagName;
     const editable = document.activeElement?.isContentEditable;
     const inField = tag === 'INPUT' || tag === 'TEXTAREA' || editable;
@@ -37777,18 +37177,12 @@ function bindStatic() {
         closeTrashDeleteDialog();
         return;
       }
-      // The launch layer is the base overlay. Dismiss it only when nothing is
-      // open above it, so Escape from Welcome/Settings never pops two layers.
-      const landingLayer = document.getElementById('landing-layer');
       const higherLayerIds = ['state-recovery-overlay','paste-overlay','rich-text-link-overlay','reminder-overlay','calendar-task-overlay','planner-overlay','cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','trash-delete-overlay','organization-name-overlay','organization-delete-overlay','welcome','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub','about-overlay','context-menu'];
       const higherLayerOpen = higherLayerIds.some(id => { const el = document.getElementById(id); return el && !el.classList.contains('hidden'); });
-      if (landingLayer && !landingLayer.classList.contains('hidden') && !higherLayerOpen) {
-        e.preventDefault(); closeLandingLayer(); return;
-      }
       // Snapshot which layered overlays were open *before* we start closing
       // them, so a single Escape only pops the topmost one — not the group page
       // sitting beneath a modal/menu/tool overlay.
-      const _escBlockers = ['state-recovery-overlay','paste-overlay','rich-text-link-overlay','reminder-overlay','calendar-task-overlay','planner-overlay','landing-layer','cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','trash-delete-overlay','organization-name-overlay','organization-delete-overlay','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub'];
+      const _escBlockers = ['state-recovery-overlay','paste-overlay','rich-text-link-overlay','reminder-overlay','calendar-task-overlay','planner-overlay','cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','trash-delete-overlay','organization-name-overlay','organization-delete-overlay','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub'];
       const _overlayWasOpen = _escBlockers.some(id => { const el = document.getElementById(id); return el && !el.classList.contains('hidden'); });
       // The newest notification takes Escape only when nothing else would: no
       // dialog, sheet, or menu, no focused field, no item detail pane, no open
@@ -37875,7 +37269,6 @@ function bindStatic() {
   bindTrashDeleteDialog();
   bindOrganizationDeleteDialog();
   bindCheatsheetOverlay();
-  bindLandingLayer();
   bindBoardArrowNav();
   bindCatScroll();
   bindSubs();

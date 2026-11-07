@@ -212,9 +212,9 @@ function buildHarness({ persistNow = async () => undefined } = {}) {
   const recoveryOverlay = makeElement('state-recovery-overlay', ['hidden']);
   const gridOverlay = makeElement('ws-grid-overlay', ['hidden']);
   const app = makeElement('app');
-  const landing = makeElement('landing-layer');
+  const welcomeLayer = makeElement('welcome');
   const workspaceList = makeElement('ws-list');
-  document.body.children = [app, landing, gridOverlay, workspaceList, overlay, recoveryOverlay];
+  document.body.children = [app, welcomeLayer, gridOverlay, workspaceList, overlay, recoveryOverlay];
   makeElement('organization-delete-title');
   makeElement('organization-delete-message');
   makeElement('organization-delete-cancel');

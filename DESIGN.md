@@ -5030,6 +5030,7 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   results), the three most recently saved pages (opened through the shared Reopen
   coordinator), and "Show Today instead". It is dark by default with a light option
   remembered on this device; the Inbox chip with its red count sits top right.
+  (Removed on 2026-11-07, "Just Today": see that entry below.)
 
   The **resting page** (a saved page opened as a placeholder) is one dark card: "Not
   loaded yet", the title, "Load page" with an Enter hint, "Loaded" as it hands off,
@@ -5313,5 +5314,32 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
     view, and the relative times ("in 3h") gave way to the clock time.
   - Phone: one dot per reminder in the month (it runs nearly edge to edge so days stay 44 px), the week
     as a list of days, the panel under the view with titles across the row.
+
+  **Implemented: yes. Verified: partial. User-validated: no. Released: no.**
+
+- **2026-11-07 - Just Today: the calm new tab is gone.** Kai chose Today as the only new
+  tab ("Just Today", 2026-11-07); he had said the calm page "seems to duplicate the existing
+  clock new home page". A new tab always opens Today, including on profiles that stored
+  `showLanding: true` (his own does).
+  - Removed: the calm launch layer (`#landing-layer`: split-flap clock and its minute timer,
+    greeting, saved-page search with suggestions, the three recent pages, "Show Today
+    instead", the Inbox and Reminders chips, the light/dark tone), its Settings toggle
+    (Workspace extras › Welcome screen), and "Name on Welcome screen" with its draft, Save and
+    Escape handling. The name was shown only in that layer's greeting; Today does not greet.
+    Workspace extras now holds window switching only.
+  - Kept: the first-run Welcome (one-task save, envelope and stamp) and Today's rolling clock,
+    unchanged. Six helpers the layer introduced keep their `landing` names because the rail,
+    `openInboxView`, Plan and the command palette call them; `landing.searchSaved` and
+    `landing.searchPlaceholder` stay as the top-bar Search copy.
+  - Stored data: `settings.showLanding` and `settings.profile` are carried as stored and never
+    read, as `confirmDelete` already is. No schema bump: the schema 7 and 13 steps no longer
+    write the key, fresh profiles do not get it, and old exports holding both still import.
+
+  Evidence: `canvas-pages`, `general-settings`, `export-import-scale`, `state-sync`,
+  `search-recovery`, `saved-page-reopen`, `popup-locate`, `item-detail`, `onboarding`,
+  `reminder-overdue` and the five organization suites ported, 19 mutations caught; throwaway Edge 157: first-run Welcome on a fresh profile, an old
+  export with `showLanding: true` and a name imported through Settings, then Today at 1440 and
+  390 px in Light and Dark with no landing layer, Settings in EN and zh-TW, no console errors
+  (`locus-redesign-evidence/pages/just-today/`).
 
   **Implemented: yes. Verified: partial. User-validated: no. Released: no.**

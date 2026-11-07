@@ -1304,7 +1304,8 @@ function testModalAndHierarchyContracts() {
 
 function testBackgroundInertContract() {
   const app = { inert: false, dataset: {} };
-  const alreadyInertLanding = { inert: true, dataset: {} };
+  // Another body surface that was inert before detail opened.
+  const alreadyInertWelcome = { inert: true, dataset: {} };
   const detailRoot = { inert: false, dataset: {} };
   const overlay = () => ({
     inert: false,
@@ -1316,8 +1317,8 @@ function testBackgroundInertContract() {
   const recoveryOverlay = overlay();
   reminderOverlay.classList.owner = reminderOverlay;
   recoveryOverlay.classList.owner = recoveryOverlay;
-  const elements = { app, 'landing-layer': alreadyInertLanding, 'item-detail': detailRoot, 'reminder-overlay': reminderOverlay, 'state-recovery-overlay': recoveryOverlay };
-  const bodyChildren = [app, alreadyInertLanding, detailRoot, reminderOverlay, recoveryOverlay];
+  const elements = { app, welcome: alreadyInertWelcome, 'item-detail': detailRoot, 'reminder-overlay': reminderOverlay, 'state-recovery-overlay': recoveryOverlay };
+  const bodyChildren = [app, alreadyInertWelcome, detailRoot, reminderOverlay, recoveryOverlay];
   const context = loadFunctions(['setElementInertOwner', 'inheritActiveBodyInterlocks', 'setStateRecoveryInterlock', 'setReminderInterlock', 'setItemDetailBackgroundInert'], {
     document: {
       getElementById: id => elements[id] || null,
@@ -1325,11 +1326,21 @@ function testBackgroundInertContract() {
     },
   });
 
+  // Detail owns only #app since the calm launch layer was removed (2026-11-07).
+  // Inertness #app already had is remembered and survives closing detail.
+  app.inert = true;
+  context.setItemDetailBackgroundInert(true);
+  assert.equal(app.dataset.locusInertBase, '1', 'detail must remember pre-existing inertness');
+  context.setItemDetailBackgroundInert(false);
+  assert.equal(app.inert, true, 'closing detail must keep inertness it did not set');
+  assert.equal(app.dataset.locusInertOwners, undefined);
+  app.inert = false;
+
   context.setItemDetailBackgroundInert(true);
   assert.equal(app.inert, true);
   assert.equal(app.dataset.locusInertOwners, 'detail', 'detail must mark inertness it owns');
-  assert.equal(alreadyInertLanding.inert, true);
-  assert.equal(alreadyInertLanding.dataset.locusInertBase, '1', 'detail must remember pre-existing inertness');
+  assert.equal(alreadyInertWelcome.inert, true);
+  assert.equal(alreadyInertWelcome.dataset.locusInertOwners, undefined, 'detail must not take ownership of other body layers');
 
   reminderOverlay.hidden = false;
   context.setReminderInterlock(true);
@@ -1364,7 +1375,7 @@ function testBackgroundInertContract() {
   assert.equal(app.inert, false);
   assert.equal(app.dataset.locusInertOwners, undefined);
   assert.equal(lateMountedSurface.inert, false, 'closing both overlays must release the late surface');
-  assert.equal(alreadyInertLanding.inert, true, 'closing detail must preserve another layer\'s inertness');
+  assert.equal(alreadyInertWelcome.inert, true, 'closing detail and dialogs must preserve another layer\'s inertness');
 }
 
 function testTabTrapFromContainerFocus() {

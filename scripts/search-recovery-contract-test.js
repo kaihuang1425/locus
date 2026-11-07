@@ -71,7 +71,8 @@ const searchScoreSource = extractFunction('_searchScore');
 const rowsForStateSource = extractFunction('_searchRowsForState');
 const collectTabsSource = extractFunction('collectWorkspaceTabs');
 const landingLinkMatchesSource = extractFunction('landingLinkMatches');
-const landingResultsSource = extractFunction('landingResults');
+const paletteMatchingLinksSource = extractFunction('_palMatchingLinks');
+const paletteSavedLinkSource = extractFunction('_palSavedLinkCommand');
 const homeTrailGroupNameSource = extractFunction('homeTrailGroupName');
 const homeTrailPathPartsSource = extractFunction('homeTrailPathParts');
 const homeTrailPathTextSource = extractFunction('homeTrailPathText');
@@ -82,7 +83,7 @@ const identitySpaceTargetSource = extractFunction('identitySpaceTarget');
 const identityGroupTargetSource = extractFunction('identityGroupTarget');
 const createLandingInboxContextSource = extractFunction('createLandingInboxContext');
 const resolveLandingInboxTargetSource = extractFunction('resolveLandingInboxTarget');
-const activateLandingInboxSource = extractFunction('activateLandingInbox');
+const openInboxViewSource = extractFunction('openInboxView');
 const landingDestinationSource = extractFunction('landingResultDestinationText');
 const valueFingerprintSource = extractFunction('itemDetailValueFingerprint');
 const locationFingerprintSource = extractFunction('itemDetailLocationFingerprint');
@@ -137,16 +138,8 @@ const searchResultLimitSource = extractFunction('searchResultLimit');
 const searchVisibleRowsSource = extractFunction('searchVisibleRows');
 const showNextBatchSource = extractFunction('showNextSearchResultBatch');
 const searchSetSource = extractFunction('_searchSet');
-const closeLandingSource = extractFunction('closeLandingLayer');
 const openSearchSurfaceSource = extractFunction('openSearchSurface');
 const closeSearchSurfaceSource = extractFunction('closeSearchSurface');
-const submitLandingSearchSource = extractFunction('submitLandingSearch');
-const syncLandingComboboxSource = extractFunction('syncLandingComboboxState');
-const landingInputHandlerSource = extractFunction('handleLandingSearchInput');
-const landingKeydownHandlerSource = extractFunction('handleLandingSearchKeydown');
-const paintLandingResultsSource = extractFunction('paintLandingResults');
-const renderLandingSource = extractFunction('renderLandingLayer');
-const bindLandingSource = extractFunction('bindLandingLayer');
 const bindStaticSource = extractFunction('bindStatic');
 
 assert.doesNotMatch(openPrimarySource, /chrome\.tabs\.create/, 'Search recovery must not bypass the shared opener');
@@ -255,39 +248,48 @@ assert.match(css, /\.search-filter-count \{[^}]*border-radius: 999px[^}]*font-va
 assert.match(css, /\.fnd-reset:disabled \{[^}]*color: var\(--text3\)[^}]*cursor: default/, 'the unavailable filter reset must have a quiet non-actionable state');
 assert.match(css, /@media \(forced-colors: active\)[\s\S]*\.search-filter-count \{[^}]*forced-color-adjust: none[^}]*background: Highlight[^}]*color: HighlightText/, 'the active count must remain distinct in forced colors');
 
-const landingDestinationLocale = { value: 'en' };
-const landingDestinationContext = vm.createContext({
+// Just Today (2026-11-07): the calm new tab and its saved-work field are gone.
+// The helpers it introduced keep their names and are tested where they are
+// used now: the palette's saved links, the Inbox door, and the Search route.
+assert.doesNotMatch(html, /id="landing-(?:layer|search-form|search-input|search-submit|search-results|unsorted|unsorted-count|reminders)"/,
+  'the retired launch layer must leave no field, suggestion list, or chip behind');
+assert.doesNotMatch(source,
+  /function (?:landingResults|syncLandingComboboxState|handleLandingSearchInput|handleLandingSearchKeydown|paintLandingResults|submitLandingSearch|activateLandingInbox|reportLandingInboxUnavailable|renderLandingLayer|bindLandingLayer|closeLandingLayer)\(|_landingResultIndex|_landingInboxContext/,
+  'the retired launch field must leave no handlers, ranking, or Inbox chip state behind');
+assert.doesNotMatch(css, /\.landing-(?:result|unsorted|search)/,
+  'the retired suggestion rows and chips must leave no styles behind');
+
+const destinationLocale = { value: 'en' };
+const destinationContext = vm.createContext({
   tr(key) {
-    if (key === 'nav.inbox') return landingDestinationLocale.value === 'zh-TW' ? '收件匣' : 'Inbox';
+    if (key === 'nav.inbox') return destinationLocale.value === 'zh-TW' ? '收件匣' : 'Inbox';
     return key;
   },
 });
 vm.runInContext(
-  `${homeTrailGroupNameSource}\n${homeTrailPathTextSource}\n${landingDestinationSource}\nglobalThis.__landingDestination = { landingResultDestinationText };`,
-  landingDestinationContext,
-  { filename: 'landing-destination-contract.js' },
+  `${homeTrailGroupNameSource}\n${homeTrailPathTextSource}\n${landingDestinationSource}\nglobalThis.__destination = { landingResultDestinationText };`,
+  destinationContext,
+  { filename: 'saved-link-destination-contract.js' },
 );
-const nestedLandingRow = {
+const nestedSavedLinkRow = {
   ws: { id: 'workspace-path', name: 'Desk' },
   cat: { id: 'space-path', name: 'Research' },
   group: { id: 'group-path', name: 'Inbox' },
   parents: [{ id: 'stack-outer', name: 'Sprint' }, { id: 'stack-inner', name: 'Sources' }],
 };
 assert.equal(
-  landingDestinationContext.__landingDestination.landingResultDestinationText(nestedLandingRow),
+  destinationContext.__destination.landingResultDestinationText(nestedSavedLinkRow),
   'Desk › Research › Inbox › Sprint › Sources',
-  'Landing must project the complete visible Workspace-to-nested-Stack destination',
+  'a saved-link destination must project the complete visible Workspace-to-nested-Stack trail',
 );
-landingDestinationLocale.value = 'zh-TW';
+destinationLocale.value = 'zh-TW';
 assert.equal(
-  landingDestinationContext.__landingDestination.landingResultDestinationText(nestedLandingRow),
+  destinationContext.__destination.landingResultDestinationText(nestedSavedLinkRow),
   'Desk › Research › 收件匣 › Sprint › Sources',
-  'Landing must reuse the canonical native zh-TW Inbox label at the presentation boundary',
+  'a saved-link destination must reuse the canonical native zh-TW Inbox label at the presentation boundary',
 );
-assert.match(paintLandingResultsSource, /const destination = landingResultDestinationText\(row\)[\s\S]*title="\$\{esc\(destination\)\}"[\s\S]*>\$\{esc\(destination\)\}<\/span>/,
-  'the full escaped destination must own both visible row text and its hover title');
-assert.match(css, /\.landing-result-space \{[^}]*min-width:\s*0[^}]*max-width:[^;}]+[^}]*overflow:\s*hidden[^}]*text-overflow:\s*ellipsis[^}]*font-size:\s*11px/,
-  'long destination trails must stay legible and constrained without crushing the result title');
+assert.match(paletteSavedLinkSource, /const destination = landingResultDestinationText\(row\)[\s\S]*tr\('palette\.savedLinkDesc', \{ host: [^}]*destination \}\)/,
+  'a palette saved link must describe itself with its full destination trail');
 
 const exactInbox = { id: 'inbox-exact', name: 'Inbox', items: [] };
 const exactSpace = { id: 'space-exact', name: 'Research', groups: [exactInbox] };
@@ -297,109 +299,99 @@ const exactWorkspace = {
   activeCatId: exactSpace.id,
   categories: [exactSpace],
 };
-const landingInboxControl = {
+const inboxDoorControl = {
   state: { activeWsId: exactWorkspace.id, workspaces: [exactWorkspace] },
   routes: [],
   effects: [],
   unavailable: 0,
 };
-const landingInboxContext = vm.createContext({
-  State: { get: () => landingInboxControl.state },
+const inboxDoorContext = vm.createContext({
+  State: { get: () => inboxDoorControl.state },
   tr: key => key === 'nav.inbox' ? 'Inbox' : key,
-  activeWs: () => landingInboxControl.state.workspaces
-    .find(workspace => workspace.id === landingInboxControl.state.activeWsId) || null,
+  activeWs: () => inboxDoorControl.state.workspaces
+    .find(workspace => workspace.id === inboxDoorControl.state.activeWsId) || null,
   activeCat: () => {
-    const workspace = landingInboxControl.state.workspaces
-      .find(candidate => candidate.id === landingInboxControl.state.activeWsId);
+    const workspace = inboxDoorControl.state.workspaces
+      .find(candidate => candidate.id === inboxDoorControl.state.activeWsId);
     return workspace
       ? workspace.categories.find(space => space.id === workspace.activeCatId) || workspace.categories[0] || null
       : null;
   },
   Router: {
     navigate(route, options) {
-      landingInboxControl.routes.push(JSON.parse(JSON.stringify({ route, options })));
-      landingInboxControl.effects.push('route');
+      inboxDoorControl.routes.push(JSON.parse(JSON.stringify({ route, options })));
+      inboxDoorControl.effects.push('route');
       return true;
     },
   },
-  closeLandingLayer() { landingInboxControl.effects.push('close'); },
-  reportLandingInboxUnavailable() {
-    landingInboxControl.unavailable += 1;
-    landingInboxControl.effects.push('unavailable');
+  reportInboxNavigationUnavailable() {
+    inboxDoorControl.unavailable += 1;
+    inboxDoorControl.effects.push('unavailable');
     return false;
   },
 });
 vm.runInContext(
-  `${homeTrailPathPartsSource}\n${homeTrailPathTextSource}\n${homeTrailDestinationContextSource}\n${homeTrailDestinationStillMatchesSource}\n${organizationGroupTargetSource}\n${identitySpaceTargetSource}\n${identityGroupTargetSource}\n${createLandingInboxContextSource}\n${resolveLandingInboxTargetSource}\n${activateLandingInboxSource}\nglobalThis.__landingInbox = { createLandingInboxContext, resolveLandingInboxTarget, activateLandingInbox };`,
-  landingInboxContext,
-  { filename: 'landing-inbox-contract.js' },
+  `${homeTrailPathPartsSource}\n${homeTrailPathTextSource}\n${homeTrailDestinationContextSource}\n${homeTrailDestinationStillMatchesSource}\n${organizationGroupTargetSource}\n${identitySpaceTargetSource}\n${identityGroupTargetSource}\n${createLandingInboxContextSource}\n${resolveLandingInboxTargetSource}\n${openInboxViewSource}\nglobalThis.__inboxDoor = { createLandingInboxContext, resolveLandingInboxTarget, openInboxView };`,
+  inboxDoorContext,
+  { filename: 'inbox-door-contract.js' },
 );
-const exactInboxContext = landingInboxContext.__landingInbox.createLandingInboxContext(exactWorkspace);
+const exactInboxContext = inboxDoorContext.__inboxDoor.createLandingInboxContext(exactWorkspace);
 assert.equal(exactInboxContext?.inboxRef, exactInbox, 'one exact active-Space Inbox must be actionable');
-assert.equal(landingInboxContext.__landingInbox.activateLandingInbox(exactInboxContext, {}), true);
-assert.deepEqual(landingInboxControl.routes, [{
+assert.equal(inboxDoorContext.__inboxDoor.openInboxView(exactInboxContext, {}), true);
+assert.deepEqual(inboxDoorControl.routes, [{
   route: { type: 'group', wsId: exactWorkspace.id, groupId: exactInbox.id, itemId: null, query: {} },
   options: { persist: false },
-}], 'Landing must route to the exact re-resolved Inbox without a whole-state navigation write');
-assert.deepEqual(landingInboxControl.effects, ['route', 'close'], 'Landing must close only after route acceptance');
+}], 'the Inbox door must route to the exact re-resolved Inbox without a whole-state navigation write');
+assert.deepEqual(inboxDoorControl.effects, ['route'], 'the Inbox door must take only the accepted route');
 
 exactSpace.groups = [];
-assert.equal(landingInboxContext.__landingInbox.createLandingInboxContext(exactWorkspace), null,
+assert.equal(inboxDoorContext.__inboxDoor.createLandingInboxContext(exactWorkspace), null,
   'a missing Inbox must not become a navigation action or implicit create');
 exactSpace.groups = [exactInbox, { id: 'inbox-second', name: 'Inbox', items: [] }];
-assert.equal(landingInboxContext.__landingInbox.createLandingInboxContext(exactWorkspace), null,
+assert.equal(inboxDoorContext.__inboxDoor.createLandingInboxContext(exactWorkspace), null,
   'duplicate Inboxes must not borrow first-match routing authority');
 
 exactSpace.groups = [exactInbox];
-const staleInboxContext = landingInboxContext.__landingInbox.createLandingInboxContext(exactWorkspace);
+const staleInboxContext = inboxDoorContext.__inboxDoor.createLandingInboxContext(exactWorkspace);
 exactSpace.groups = [{ id: exactInbox.id, name: 'Inbox', items: [] }];
-landingInboxControl.routes = [];
-landingInboxControl.effects = [];
-assert.equal(landingInboxContext.__landingInbox.activateLandingInbox(staleInboxContext, {}), false);
-assert.equal(landingInboxControl.unavailable, 1, 'same-ID replacement must report one recovery result');
-assert.deepEqual(landingInboxControl.routes, [], 'same-ID replacement must open no route');
-assert.deepEqual(landingInboxControl.effects, ['unavailable'], 'same-ID replacement must keep Landing open');
+inboxDoorControl.routes = [];
+inboxDoorControl.effects = [];
+assert.equal(inboxDoorContext.__inboxDoor.openInboxView(staleInboxContext, {}), false);
+assert.equal(inboxDoorControl.unavailable, 1, 'same-ID replacement must report one recovery result');
+assert.deepEqual(inboxDoorControl.routes, [], 'same-ID replacement must open no route');
+assert.deepEqual(inboxDoorControl.effects, ['unavailable'], 'same-ID replacement must only report');
 
 exactSpace.groups = [exactInbox];
-const duplicatedIdContext = landingInboxContext.__landingInbox.createLandingInboxContext(exactWorkspace);
-landingInboxControl.state.workspaces.push({
+const duplicatedIdContext = inboxDoorContext.__inboxDoor.createLandingInboxContext(exactWorkspace);
+inboxDoorControl.state.workspaces.push({
   id: 'workspace-other',
   name: 'Other',
   activeCatId: 'space-other',
   categories: [{ id: 'space-other', name: 'Other', groups: [{ id: exactInbox.id, name: 'Reference', items: [] }] }],
 });
-landingInboxControl.effects = [];
-assert.equal(landingInboxContext.__landingInbox.activateLandingInbox(duplicatedIdContext, {}), false);
-assert.equal(landingInboxControl.unavailable, 2, 'a globally duplicated Group ID must report recovery once');
-assert.deepEqual(landingInboxControl.effects, ['unavailable'], 'ambiguous identity must not close Landing');
+inboxDoorControl.effects = [];
+assert.equal(inboxDoorContext.__inboxDoor.openInboxView(duplicatedIdContext, {}), false);
+assert.equal(inboxDoorControl.unavailable, 2, 'a globally duplicated Group ID must report recovery once');
+assert.deepEqual(inboxDoorControl.effects, ['unavailable'], 'ambiguous identity must open nothing');
+assert.doesNotMatch(html, /data-i18n="landing\.unsorted"/, 'no surface may expose a second name for Inbox');
+assert.doesNotMatch(`${createLandingInboxContextSource}\n${resolveLandingInboxTargetSource}\n${openInboxViewSource}`, /State\.(?:snapshot|persist)/,
+  'Inbox navigation must not create or write saved content');
 
-assert.match(html, /id="landing-unsorted"[\s\S]*data-i18n="nav\.inbox">Inbox<[\s\S]*id="landing-unsorted-count"[^>]*hidden/,
-  'the stable Landing shortcut must present the canonical Inbox label without an initial zero badge');
-assert.doesNotMatch(html, /data-i18n="landing\.unsorted"/, 'Landing must not expose a second name for Inbox');
-assert.match(renderLandingSource, /createLandingInboxContext\(ws\)[\s\S]*inboxButton\.hidden = !_landingInboxContext[\s\S]*inboxCount\.hidden = count === 0[\s\S]*tr\('nav\.inbox'\)/,
-  'rendering must expose only one exact Inbox and only a nonzero actionable count');
-assert.match(css, /\.landing-unsorted-chip\[hidden\], \.landing-unsorted-chip b\[hidden\] \{ display: none; \}/,
-  'the shortcut and zero badge must stay visually hidden despite their flex and grid styles');
-assert.match(bindLandingSource, /activateLandingInbox\(_landingInboxContext, inboxButton\)/,
-  'the mounted shortcut must use its frozen exact Inbox context');
-assert.doesNotMatch(`${createLandingInboxContextSource}\n${resolveLandingInboxTargetSource}\n${activateLandingInboxSource}`, /State\.(?:snapshot|persist)|openInboxView/,
-  'Landing Inbox navigation must not create or write saved content');
-
-const exactLandingMatch = {
+const exactTitleLink = {
   id: 'exact-title',
   type: 'tab',
   title: 'Report',
   url: 'https://exact.example/',
   createdAt: 1,
 };
-const newerLandingMatches = Array.from({ length: 6 }, (_, index) => ({
+const addressOnlyLinks = Array.from({ length: 6 }, (_, index) => ({
   id: `newer-address-${index}`,
   type: 'tab',
   title: `Weekly notes ${index}`,
   url: `https://report-${index}.example/`,
   createdAt: 100 + index,
 }));
-const landingRankingWorkspace = {
+const linkMatchWorkspace = {
   id: 'workspace-ranking',
   name: 'Desk',
   categories: [{
@@ -408,13 +400,13 @@ const landingRankingWorkspace = {
     groups: [{
       id: 'group-ranking',
       name: 'Inbox',
-      items: [exactLandingMatch, ...newerLandingMatches],
+      items: [exactTitleLink, ...addressOnlyLinks],
     }],
   }],
 };
-const landingRankingContext = vm.createContext({
+const linkMatchContext = vm.createContext({
   URL,
-  activeWs: () => landingRankingWorkspace,
+  activeWs: () => linkMatchWorkspace,
   dispUrl: value => String(value || ''),
   tr: key => key,
 });
@@ -427,242 +419,79 @@ vm.runInContext(
     itemTitleSource,
     itemBlobSource,
     itemMatchesSource,
-    searchScoreSource,
     collectTabsSource,
     landingLinkMatchesSource,
-    landingResultsSource,
-    'globalThis.__landingRanking = { landingResults };',
+    'globalThis.__links = query => collectWorkspaceTabs(activeWs()).filter(row => landingLinkMatches(row, query)).map(row => row.item.id);',
   ].join('\n'),
-  landingRankingContext,
-  { filename: 'landing-ranking-contract.js' },
+  linkMatchContext,
+  { filename: 'saved-link-match-contract.js' },
 );
-const rankedLandingIds = Array.from(
-  landingRankingContext.__landingRanking.landingResults('report'),
-  row => row.item.id,
-);
-assert.equal(rankedLandingIds.length, 6, 'Landing must retain its quiet six-result limit');
-assert.equal(rankedLandingIds[0], 'exact-title', 'an exact-title match must outrank newer address-only matches');
-assert.equal(rankedLandingIds.includes('exact-title'), true, 'the best match must remain inside the visible suggestion window');
-assert.equal(
-  landingRankingContext.__landingRanking.landingResults('domain:report')[0].item.id,
-  'newer-address-5',
-  'an operator-only query must retain useful newest-first ordering',
-);
+assert.deepEqual(JSON.parse(JSON.stringify(linkMatchContext.__links('report'))),
+  ['exact-title', ...addressOnlyLinks.map(link => link.id)],
+  'the shared saved-link matcher must find title and address matches');
+assert.deepEqual(JSON.parse(JSON.stringify(linkMatchContext.__links('domain:report'))),
+  addressOnlyLinks.map(link => link.id),
+  'the shared saved-link matcher must honour search operators');
+assert.deepEqual(JSON.parse(JSON.stringify(linkMatchContext.__links('   '))), [],
+  'an empty query must match no saved link');
+assert.match(paletteMatchingLinksSource, /\.filter\(row => landingLinkMatches\(row, query\)\)[\s\S]*isOpenableSavedTabUrl/,
+  'the command palette must keep using the shared saved-link matcher and only offer pages Reopen accepts');
 
-const landingInputMarkup = html.match(/<input id="landing-search-input"[^>]*>/)?.[0] || '';
-assert.match(landingInputMarkup, /role="combobox"/, 'the launch field must expose its suggestion-picker role');
-assert.match(landingInputMarkup, /aria-label="Search saved work"/, 'the launch field must have a pre-i18n accessible name');
-assert.match(landingInputMarkup, /data-i18n-aria-label="landing\.searchSaved"/, 'the launch field name must follow the active locale');
-assert.match(landingInputMarkup, /aria-haspopup="listbox"/, 'the launch field must name its popup type');
-assert.match(landingInputMarkup, /aria-expanded="false"/, 'the launch field must begin truthfully collapsed');
-assert.match(paintLandingResultsSource, /id="landing-result-\$\{index\}"[\s\S]*aria-selected="false"/,
-  'each painted suggestion must expose stable DOM-local selection semantics');
-assert.match(paintLandingResultsSource, /syncLandingComboboxState\(input, host, true\)/,
-  'painting the suggestion popup must expose its expanded state');
-assert.match(bindLandingSource, /handleLandingSearchInput\(input, results,[\s\S]*handleLandingSearchKeydown\(e, input, results\)/,
-  'the mounted field must use the shared input and keyboard interaction seam');
-
-function landingClassList(initial = []) {
-  const values = new Set(initial);
-  return {
-    add(...tokens) { tokens.forEach(token => values.add(token)); },
-    remove(...tokens) { tokens.forEach(token => values.delete(token)); },
-    contains(token) { return values.has(token); },
-    toggle(token, force) {
-      const next = force === undefined ? !values.has(token) : !!force;
-      if (next) values.add(token);
-      else values.delete(token);
-      return next;
-    },
-  };
-}
-
-function landingAttributeNode(initial = {}) {
-  const attributes = new Map(Object.entries(initial).map(([key, value]) => [key, String(value)]));
-  return {
-    setAttribute(name, value) { attributes.set(name, String(value)); },
-    getAttribute(name) { return attributes.has(name) ? attributes.get(name) : null; },
-    removeAttribute(name) { attributes.delete(name); },
-  };
-}
-
-function landingOption(id) {
-  const attrs = landingAttributeNode({ id, 'aria-selected': 'false' });
-  return {
-    id,
-    ...attrs,
-    classList: landingClassList(),
-    clicks: 0,
-    scrolls: 0,
-    click() { this.clicks += 1; },
-    scrollIntoView() { this.scrolls += 1; },
-  };
-}
-
-function landingKeyEvent(key, extras = {}) {
-  return {
-    key,
-    keyCode: 0,
-    isComposing: false,
-    prevented: 0,
-    stopped: 0,
-    preventDefault() { this.prevented += 1; },
-    stopPropagation() { this.stopped += 1; },
-    ...extras,
-  };
-}
-
-const comboboxOptions = [landingOption('landing-result-0'), landingOption('landing-result-1')];
-comboboxOptions[0].classList.add('active');
-comboboxOptions[0].setAttribute('aria-selected', 'true');
-const comboboxInput = {
-  value: 'new query',
-  ...landingAttributeNode({
-    'aria-expanded': 'true',
-    'aria-activedescendant': 'landing-result-0',
-  }),
-};
-const comboboxResults = {
-  classList: landingClassList(),
-  querySelectorAll(selector) { return selector === '.landing-result' ? comboboxOptions : []; },
-};
-const comboboxHarness = { queued: 0, submissions: 0 };
-const comboboxContext = vm.createContext({
-  submitLandingSearch() { comboboxHarness.submissions += 1; },
-});
-vm.runInContext(
-  `let _landingResultIndex = 0;\n${syncLandingComboboxSource}\n${landingInputHandlerSource}\n${landingKeydownHandlerSource}\nglobalThis.__combobox = { handleLandingSearchInput, handleLandingSearchKeydown, index: () => _landingResultIndex };`,
-  comboboxContext,
-  { filename: 'landing-combobox-contract.js' },
-);
-
-comboboxContext.__combobox.handleLandingSearchInput(
-  comboboxInput,
-  comboboxResults,
-  () => { comboboxHarness.queued += 1; },
-);
-assert.equal(comboboxContext.__combobox.index(), -1, 'a changed query must immediately revoke old selection authority');
-assert.equal(comboboxResults.classList.contains('hidden'), true, 'old suggestions must hide before deferred repaint');
-assert.equal(comboboxInput.getAttribute('aria-expanded'), 'false', 'the hidden stale popup must be announced as collapsed');
-assert.equal(comboboxInput.getAttribute('aria-activedescendant'), null, 'the stale active option must be cleared');
-assert.equal(comboboxOptions[0].getAttribute('aria-selected'), 'false', 'visual and semantic selection must clear together');
-assert.equal(comboboxOptions[0].classList.contains('active'), false);
-assert.equal(comboboxHarness.queued, 1, 'the latest query must still queue one deferred repaint');
-
-const enterBeforePaint = landingKeyEvent('Enter');
-assert.equal(comboboxContext.__combobox.handleLandingSearchKeydown(enterBeforePaint, comboboxInput, comboboxResults), true);
-assert.equal(comboboxHarness.submissions, 1, 'Enter during debounce must continue to ordinary local Search');
-assert.equal(comboboxOptions[0].clicks, 0, 'Enter during debounce must never open the older suggestion');
-
-comboboxResults.classList.remove('hidden');
-const arrowDown = landingKeyEvent('ArrowDown');
-assert.equal(comboboxContext.__combobox.handleLandingSearchKeydown(arrowDown, comboboxInput, comboboxResults), true);
-assert.equal(comboboxInput.getAttribute('aria-expanded'), 'true');
-assert.equal(comboboxInput.getAttribute('aria-activedescendant'), 'landing-result-0');
-assert.equal(comboboxOptions[0].getAttribute('aria-selected'), 'true');
-assert.equal(comboboxOptions[0].classList.contains('active'), true);
-assert.equal(comboboxOptions[0].scrolls, 1, 'keyboard selection must remain visibly in view');
-
-const composingEnter = landingKeyEvent('Enter', { isComposing: true, keyCode: 229 });
-assert.equal(comboboxContext.__combobox.handleLandingSearchKeydown(composingEnter, comboboxInput, comboboxResults), false);
-assert.equal(comboboxHarness.submissions, 1, 'IME confirmation must not submit Search');
-assert.equal(comboboxOptions[0].clicks, 0, 'IME confirmation must not activate a suggestion');
-assert.equal(composingEnter.prevented, 0, 'the IME must retain ownership of its confirmation key');
-
-const selectedEnter = landingKeyEvent('Enter');
-assert.equal(comboboxContext.__combobox.handleLandingSearchKeydown(selectedEnter, comboboxInput, comboboxResults), true);
-assert.equal(comboboxOptions[0].clicks, 1, 'settled Enter must still activate the announced exact suggestion');
-assert.equal(comboboxHarness.submissions, 1, 'selected-result activation must not also submit the whole Search');
-
-const escapeSuggestions = landingKeyEvent('Escape');
-assert.equal(comboboxContext.__combobox.handleLandingSearchKeydown(escapeSuggestions, comboboxInput, comboboxResults), true);
-assert.equal(comboboxResults.classList.contains('hidden'), true);
-assert.equal(comboboxInput.getAttribute('aria-expanded'), 'false');
-assert.equal(comboboxInput.getAttribute('aria-activedescendant'), null);
-assert.equal(comboboxOptions[0].getAttribute('aria-selected'), 'false');
-assert.equal(escapeSuggestions.prevented, 1);
-assert.equal(escapeSuggestions.stopped, 1);
-
-const landingHarness = {
+const searchHandoff = {
   routes: [],
   webSearches: [],
-  restored: 0,
   searchFocus: 0,
+  menusClosed: 0,
 };
-const landingInput = { value: '  sprint notes  ', focus() {}, ...landingAttributeNode() };
-const landingResultsHost = {
-  innerHTML: 'stale suggestions',
-  classList: landingClassList(),
-  querySelectorAll() { return []; },
-};
-const landingLayer = { classList: landingClassList() };
-const landingSubmit = {
-  disabled: false,
-  setAttribute() {},
-  removeAttribute() {},
-};
-const landingSearchInput = { focus() { landingHarness.searchFocus += 1; } };
-const landingElements = new Map([
-  ['landing-layer', landingLayer],
-  ['landing-search-input', landingInput],
-  ['landing-search-submit', landingSubmit],
-  ['landing-search-results', landingResultsHost],
-  ['search-surface-input', landingSearchInput],
+const searchHandoffElements = new Map([
+  ['search-surface-input', { focus() { searchHandoff.searchFocus += 1; } }],
 ]);
-const landingContext = vm.createContext({
+const searchHandoffContext = vm.createContext({
   document: {
-    getElementById(id) { return landingElements.get(id) || null; },
-    querySelector(selector) { return selector === '.landing-result.active' ? null : null; },
+    getElementById(id) { return searchHandoffElements.get(id) || null; },
   },
   activeWs() { return { id: 'workspace/local?' }; },
   Router: {
-    navigate(route, options) { landingHarness.routes.push({ route, options }); return true; },
+    navigate(route, options) { searchHandoff.routes.push({ route, options }); return true; },
   },
   chrome: {
     search: {
-      query(intent) { landingHarness.webSearches.push(intent); },
+      query(intent) { searchHandoff.webSearches.push(intent); },
     },
   },
-  clearInterval() {},
-  restoreOpener() { landingHarness.restored += 1; },
+  hideContextMenu() { searchHandoff.menusClosed += 1; },
   setTimeout(callback) { callback(); return 1; },
-  prefersReducedMotion() { return false; },
-  State: { get() { return { settings: { animate: true } }; } },
-  toast() {},
 });
 vm.runInContext(
-  `let _landingClockTimer = null; let _landingResultIndex = 4;\n${syncLandingComboboxSource}\n${closeLandingSource}\n${openSearchSurfaceSource}\n${closeSearchSurfaceSource}\n${submitLandingSearchSource}\nglobalThis.__landing = { submitLandingSearch, closeSearchSurface };`,
-  landingContext,
-  { filename: 'landing-local-search-contract.js' },
+  `${openSearchSurfaceSource}\n${closeSearchSurfaceSource}\nglobalThis.__search = { openSearchSurface, closeSearchSurface };`,
+  searchHandoffContext,
+  { filename: 'local-search-route-contract.js' },
 );
-landingContext.__landing.submitLandingSearch();
+searchHandoffContext.__search.openSearchSurface('sprint notes');
 assert.deepEqual(
-  JSON.parse(JSON.stringify(landingHarness.routes)),
+  JSON.parse(JSON.stringify(searchHandoff.routes)),
   [{
     route: { type: 'search', wsId: 'workspace/local?', query: { q: 'sprint notes' } },
     options: { persist: false },
   }],
-  'submitting the launch field must preserve the trimmed query in the existing local Search route',
+  'a saved-work query must open the existing local Search route without a durable write',
 );
-assert.deepEqual(landingHarness.webSearches, [], 'launch submission must not dispatch a browser web search');
-assert.equal(landingLayer.classList.contains('hidden'), true, 'local Search handoff must dismiss the launch layer immediately');
-assert.equal(landingInput.value, '', 'local Search handoff must reset the launch query after routing');
-assert.equal(landingResultsHost.innerHTML, '', 'local Search handoff must clear stale suggestions');
-assert.equal(landingResultsHost.classList.contains('hidden'), true);
-assert.equal(landingHarness.searchFocus, 1, 'the existing Search route must retain its input-focus handoff');
-assert.equal(landingHarness.restored, 1, 'launch dismissal must retain its opener cleanup');
-landingContext.__landing.closeSearchSurface();
+assert.deepEqual(searchHandoff.webSearches, [], 'saved-work search must not dispatch a browser web search');
+assert.equal(searchHandoff.menusClosed, 1, 'opening Search must close a menu first (one floating layer)');
+assert.equal(searchHandoff.searchFocus, 1, 'the existing Search route must retain its input-focus handoff');
+searchHandoffContext.__search.closeSearchSurface();
 assert.deepEqual(
-  JSON.parse(JSON.stringify(landingHarness.routes.at(-1))),
+  JSON.parse(JSON.stringify(searchHandoff.routes.at(-1))),
   {
     route: { type: 'home', wsId: 'workspace/local?', query: {} },
     options: { persist: false },
   },
   'leaving URL-backed Search must return Home without writing durable state',
 );
-assert.equal(manifest.permissions.includes('search'), false, 'local launch search must not retain the single-use browser search permission');
-assert.doesNotMatch(submitLandingSearchSource, /chrome\.search/, 'launch submission must not retain a hidden web-search fallback');
-assert.match(html, /placeholder="Search saved work…"/, 'pre-i18n launch markup must describe the local saved-work action');
+assert.equal(manifest.permissions.includes('search'), false, 'local saved-work search must not retain the single-use browser search permission');
+assert.doesNotMatch(openSearchSurfaceSource, /chrome\.search/, 'opening Search must not retain a hidden web-search fallback');
+assert.match(html, /<span class="topbar-search-ph" data-i18n="landing\.searchPlaceholder">Search saved work…<\/span>/,
+  'pre-i18n Search markup must describe the local saved-work action');
 const topbarSearchMarkup = html.match(/<button id="topbar-search"[\s\S]*?<\/button>/)?.[0] || '';
 assert.match(topbarSearchMarkup, /data-i18n-aria-label="landing\.searchSaved"/,
   'the primary Search entry must name the established local saved-work action');
@@ -1524,14 +1353,14 @@ assert.equal(i18nContext.__I18N['zh-TW']['search.showingResults'], '已顯示 {s
 assert.equal(i18nContext.__I18N['zh-TW']['search.showMore'], '再顯示 {count} 個結果');
 assert.equal(i18nContext.__I18N['zh-TW']['search.activeFilterCount'], '已套用 {count} 項');
 assert.equal(i18nContext.__I18N['zh-TW']['search.clearFilters'], '清除篩選條件');
-assert.equal(i18nContext.__I18N.en['landing.subtitle'], 'Find what you saved and pick up where you left off.');
 assert.equal(i18nContext.__I18N.en['landing.searchPlaceholder'], 'Search saved work…');
 assert.equal(i18nContext.__I18N.en['landing.searchSaved'], 'Search saved work');
-assert.equal(i18nContext.__I18N.en['landing.noResults'], 'No saved pages match. Press Enter to search all saved content.');
-assert.equal(i18nContext.__I18N['zh-TW']['landing.subtitle'], '找到之前儲存的內容，繼續上次的進度。');
 assert.equal(i18nContext.__I18N['zh-TW']['landing.searchPlaceholder'], '搜尋已儲存內容…');
 assert.equal(i18nContext.__I18N['zh-TW']['landing.searchSaved'], '搜尋已儲存內容');
-assert.equal(i18nContext.__I18N['zh-TW']['landing.noResults'], '沒有符合的已儲存頁面。按 Enter 搜尋所有已儲存內容。');
+for (const key of ['landing.subtitle', 'landing.noResults', 'landing.savedResults', 'landing.inboxUnavailable']) {
+  assert.equal(key in i18nContext.__I18N.en || key in i18nContext.__I18N['zh-TW'], false,
+    `${key} must be gone with the retired launch field`);
+}
 
 const stateContext = vm.createContext({});
 vm.runInContext(

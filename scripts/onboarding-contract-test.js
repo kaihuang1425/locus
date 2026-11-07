@@ -699,15 +699,12 @@ assert.match(renderHeaderSource, /renderTopbarContext\(\)/,
   'full header repaints must refresh the visible context');
 assert.match(renderBoardShellSource, /dataset\.surface[\s\S]{0,240}renderTopbarContext\(\)/,
   'surface-only repaints must refresh context after establishing current surface truth');
-assert.match(
+// Just Today (2026-11-07): the calm landing surface is gone, so its Tools and
+// Reminders shortcuts cannot reach any focus order; More keeps both reachable.
+assert.doesNotMatch(
   html,
-  /id="landing-tools"[^>]*\bhidden\b/,
-  'the focused landing surface must keep Tools out of its primary focus order',
-);
-assert.match(
-  html,
-  /id="landing-reminders"[^>]*\bhidden\b/,
-  'the focused landing surface must keep Reminders out of its primary focus order',
+  /id="landing-(?:layer|tools|reminders)"/,
+  'the retired landing surface must leave no Tools or Reminders shortcut behind',
 );
 assert.match(
   secondaryNavigationSource,

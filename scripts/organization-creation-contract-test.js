@@ -289,7 +289,7 @@ function buildHarness({
   }
 
   const app = makeElement('app', [], { bodyChild: true });
-  const landing = makeElement('landing-layer', ['hidden'], { bodyChild: true });
+  const welcomeLayer = makeElement('welcome', ['hidden'], { bodyChild: true });
   const workspaceGrid = makeElement('ws-grid-overlay', workspaceGridOpen ? [] : ['hidden'], { bodyChild: true });
   const workspaceList = makeElement('ws-list', ['hidden'], { bodyChild: true });
   const recoveryOverlay = makeElement('state-recovery-overlay', ['hidden'], { bodyChild: true });
@@ -456,7 +456,7 @@ function buildHarness({
     elements,
     state,
     app,
-    landing,
+    welcomeLayer,
     workspaceGrid,
     workspaceList,
     recoveryOverlay,
@@ -1001,7 +1001,7 @@ async function testLocaleRepaintFocusKeyboardAndLayering() {
   let globalStopped = false;
   const globallyConsumed = keyboard.api.handleOrganizationNameGlobalKey({
     key: 'Escape',
-    target: keyboard.landing,
+    target: keyboard.welcomeLayer,
     preventDefault() { globalPrevented = true; },
     stopImmediatePropagation() { globalStopped = true; },
   });

@@ -267,7 +267,7 @@ function buildHarness({
   }
 
   const app = makeElement('app', [], { bodyChild: true });
-  const landing = makeElement('landing-layer', ['hidden'], { bodyChild: true });
+  const welcomeLayer = makeElement('welcome', ['hidden'], { bodyChild: true });
   const workspaceGrid = makeElement('ws-grid-overlay', ['hidden'], { bodyChild: true });
   const workspaceList = makeElement('ws-list', ['hidden'], { bodyChild: true });
   const recoveryOverlay = makeElement('state-recovery-overlay', ['hidden'], { bodyChild: true });
@@ -419,7 +419,7 @@ function buildHarness({
     elements,
     state,
     app,
-    landing,
+    welcomeLayer,
     workspaceGrid,
     workspaceList,
     recoveryOverlay,
@@ -877,7 +877,7 @@ function testFocusKeyboardAndInterlock() {
   let globalStopped = false;
   const consumed = harness.api.handleOrganizationNameGlobalKey({
     key: 'Escape',
-    target: harness.landing,
+    target: harness.welcomeLayer,
     preventDefault() { globalPrevented = true; },
     stopImmediatePropagation() { globalStopped = true; },
   });

@@ -155,9 +155,9 @@ Slices, in order:
    wall, hardcoded English, and fictional enablement language are gone; no marketplace,
    download, account, permission, or plugin-state model was added. The tool interiors
    remain contextual and unpromoted. Settings General now keeps language,
-   saved-page opening, and the first-save guide in its core ledger; window switching,
-   Welcome visibility, and the retained greeting name sit inside one locally
-   available Workspace-extras plugin. Its five real preferences share one exact
+   saved-page opening, and the first-save guide in its core ledger; window switching
+   sits inside one locally available Workspace-extras plugin (the Welcome-screen toggle
+   and greeting name were removed 2026-11-07). Its real preferences share one exact
    acknowledged transaction with Capture, Appearance, and Privacy, while Profile framing,
    implicit name-on-blur saving, and inline prototype residue are gone. Installed
    persistence, pixels, window-focus/Welcome behavior, and native assistive-
@@ -298,6 +298,22 @@ Slices, in order:
    Advanced views grouping; the Switch layout button and both menus are gone.
 
 ## Done (newest first)
+
+- **2026-11-07 - Just Today: Today is the only new tab; the calm new tab is gone.** Kai's
+  decision ("Just Today"). Removed the calm launch layer (split-flap clock and timer, greeting,
+  saved-page search, three recent pages, "Show Today instead", chips, tone), its Settings
+  toggle and "Name on Welcome screen" with its draft/Save handling: 19 layer functions, 6
+  settings/name helpers and the now-unused `activeThemeMode`; 26 strings in EN and zh-TW; the
+  landing and name markup; 13 CSS edits (the calm layer, three older landing layers and their
+  media/forced-colour lines, the name field). Workspace extras keeps window
+  switching. First-run Welcome and Today's rolling clock are unchanged. Stored `showLanding`
+  and `profile.name` are carried untouched and never read (no schema bump); old exports with
+  both still import. Suites: `canvas-pages` (no landing layer even with `showLanding: true`
+  stored, booted in a VM; Today's clock rolled in a VM), `general-settings`,
+  `export-import-scale` (new retired-key import cases), `state-sync`, `search-recovery`,
+  `saved-page-reopen`, `popup-locate`, `item-detail`, `onboarding`, `reminder-overdue` and the
+  five organization suites ported; 19 mutations caught. Evidence:
+  `locus-redesign-evidence/pages/just-today/` (Edge 157, 24/24 checks, `just-today-log.txt`).
 
 - **2026-11-06 - Calendar built from its canvas board, inside Plan (pages build, page 6 of 9).** The
   Calendar view (`Calendar.dc.html`) keeps Plan's header and adds one toolbar row (Month / Week / Agenda
@@ -5744,7 +5760,7 @@ Slices, in order:
 | Preview (design/previews/) | State |
 |---|---|
 | settings_* (9 files, Jul 8–11) | ✅ Done 2026-07-12 (local/no-account subset) |
-| new_tab_landing_page.png (Jul 11) | ✅ Done 2026-07-12 |
+| new_tab_landing_page.png (Jul 11) | Built 2026-07-12; removed 2026-11-07 (Just Today: Today is the only new tab) |
 | dashboard.png | ✅ Home surface |
 | favorites / read_later / all_links / archive / inbox prototypes | ✅ Library surfaces |
 | search_prototype.png | ✅ Done 2026-07-13 (local/no-account fidelity pass) |

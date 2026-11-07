@@ -3,6 +3,15 @@
 Run the static checks after every change; run the runtime pass before calling a
 slice done. Never claim visual verification that didn't happen.
 
+> **2026-11-07, "Just Today":** the calm launch layer (`#landing-layer`,
+> `showLandingLayer()`, `closeLandingLayer()`, `submitLandingSearch()`), its
+> Settings toggle (`#tog-landing`, `settings.showLanding`) and the Welcome name
+> field (`#profile-name-input`, `#profile-name-save`) were removed; a new tab
+> always opens Today. Older entries below that check those ids or functions
+> describe the code before that date. The stored `showLanding` and
+> `profile.name` keys are ignored but still import (see
+> `export-import-scale-contract-test.js`, `retiredWelcomeCases`).
+
 ## Static checks (fast, always)
 
 ```bash

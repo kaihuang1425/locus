@@ -1,9 +1,10 @@
 'use strict';
 
 // Contract test for the 2026-11 canvas pages built on existing surfaces:
-// Welcome (envelope and stamp), the calm new tab (split-flap clock, three recent
-// pages, light option), and the resting page. It checks that the redesign kept
-// each surface's behaviour and IDs, and that every new string is bilingual.
+// Welcome (envelope and stamp) and the resting page. It checks that the
+// redesign kept each surface's behaviour and IDs, and that every new string is
+// bilingual. Since 2026-11-07 ("Just Today") it also checks that the calm new
+// tab is gone for good and that Today's rolling clock is untouched.
 
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -46,23 +47,49 @@ function testWelcome() {
   eq([strings.en['welcome.save'], strings['zh-TW']['welcome.save']], ['Stamp, save & close tab', '蓋章儲存並關閉分頁'], 'Save still names that the tab closes');
 }
 
-function testCalmNewTab() {
-  ok(/<div id="landing-flip" class="landing-flip" role="img" aria-label=""><\/div>/.test(html), 'the flip clock is one labelled image');
-  ok(/flip\.setAttribute\('aria-label', tr\('landing\.timeLabel'/.test(newtab), 'the clock label carries the time');
-  ok(/function paintLandingFlip\(now = new Date\(\)\) \{/.test(newtab) && /\n  paintLandingFlip\(now\);\n\}/.test(newtab), 'the existing clock updater paints the flip');
-  ok(/openSavedTabItem\(row\.item, \{ opener: button \}\);/.test(newtab), 'recent pages open through the shared Reopen coordinator');
-  ok(/\.filter\(row => isOpenableSavedTabUrl\(row\.item\.url\)\)[\s\S]*\.slice\(0, 3\)/.test(newtab), 'three recent pages, only ones Reopen accepts');
-  ok(/localStorage\.getItem\('locus\.landing\.tone'\) === 'light' \? 'light' : 'dark'/.test(newtab), 'dark by default; the light option is per device');
-  ok(/if \(landingToday\) landingToday\.onclick = \(\) => closeLandingLayer\(\);/.test(newtab), 'Show Today instead reveals Today');
-  ok(/button\.setAttribute\('aria-pressed', String\(tone === 'light'\)\);\n\s*button\.setAttribute\('aria-label', tr\('landing\.light'\)\);/.test(newtab), 'the tone toggle keeps one label and reports its state with aria-pressed');
-  for (const id of ['landing-search-input', 'landing-search-results', 'landing-unsorted', 'landing-unsorted-count', 'landing-reminders', 'landing-enter', 'landing-time', 'landing-date']) {
-    eq((html.match(new RegExp(`id="${id}"`, 'g')) || []).length, 1, `#${id} is kept`);
-  }
-  ok(/@media \(prefers-reduced-motion: reduce\) \{\n\s*\.fl-card\.is-flipping \.fl-ftop,/.test(css), 'the flip stops under reduced motion');
+// Just Today (Kai, 2026-11-07): a new tab always opens Today. The calm launch
+// layer, its split-flap clock, recent pages and "Show Today instead" are gone,
+// and a profile that stored showLanding: true must not bring any of it back.
+function testNoLandingLayer() {
+  ok(!/\bid="landing-|class="landing-/.test(html), 'newtab.html has no landing layer markup');
+  ok(!/#landing-|\.landing-|\.fl-card|@keyframes fl-/.test(css), 'no landing layer or split-flap styles remain');
+  ok(!/landing-layer|showLandingLayer|renderLandingLayer|closeLandingLayer|bindLandingLayer|paintLandingFlip|_landingClockTimer|locus\.landing\.tone/.test(newtab),
+    'no landing layer functions, clock timer or tone memory remain');
+  const code = newtab.replace(/^\s*\/\/.*$/gm, '');
+  ok(!/showLanding/.test(code), 'no code reads the stored showLanding choice, so a stored true has nothing to switch on');
   const strings = i18n();
-  for (const key of ['landing.recent', 'landing.showToday', 'landing.light', 'landing.dark', 'landing.timeLabel']) {
-    ok(strings.en[key] && strings['zh-TW'][key], `${key} exists in English and zh-TW`);
+  for (const key of ['landing.recent', 'landing.showToday', 'landing.light', 'landing.dark', 'landing.timeLabel', 'landing.greeting', 'landing.quote', 'settings.showLanding']) {
+    ok(!(key in strings.en) && !(key in strings['zh-TW']), `${key} is gone in English and zh-TW`);
   }
+
+  // Boot a returning profile that stored the old opt-in and a Welcome name.
+  // Every call boot makes is recorded; none may reach a landing layer.
+  const boot = extract('initAfterLoad');
+  const calls = [];
+  const lookedUp = [];
+  const settings = { showLanding: true, profile: { name: 'Kai' }, onboarding: { welcomeSeen: true }, animate: true };
+  const context = {
+    loadedSchema: 14,
+    activeHome: true,
+    console,
+    State: { get: () => ({ settings }), isRecoveryRequired: () => false },
+    document: {
+      getElementById: id => { lookedUp.push(id); return null; },
+      body: { classList: { add() {}, remove() {} } },
+    },
+    window: { requestIdleCallback() {} },
+    requestAnimationFrame: fn => fn(),
+    setTimeout: () => 0,
+  };
+  const builtIns = new Set(['function', 'if', 'catch', 'typeof', 'Error', 'initAfterLoad']);
+  for (const [, name] of boot.matchAll(/\b([A-Za-z_$][\w$]*)\s*\(/g)) {
+    if (name in context || builtIns.has(name)) continue;
+    context[name] = () => { calls.push(name); };
+  }
+  vm.runInContext(`${boot}\ninitAfterLoad();`, vm.createContext(context));
+  ok(calls.includes('renderAll') && calls.includes('bindStatic'), 'boot still binds and renders the app, which opens on Today');
+  eq([calls.filter(name => /landing/i.test(name)), lookedUp.filter(id => /landing/.test(id))], [[], []],
+    'a profile that stored showLanding: true boots straight to Today with no landing layer');
 }
 
 function testRestingPage() {
@@ -105,7 +132,14 @@ function testRemainingSurfaces() {
 function extract(name) {
   const start = newtab.indexOf(`function ${name}(`);
   assert.ok(start >= 0, `${name} is extractable`);
-  const open = newtab.indexOf('{', newtab.indexOf(')', start));
+  // Skip the whole parameter list: defaults such as `{ now = Date.now() } = {}`
+  // hold their own parentheses and braces.
+  let close = newtab.indexOf('(', start);
+  for (let depth = 0; close < newtab.length; close += 1) {
+    if (newtab[close] === '(') depth += 1;
+    else if (newtab[close] === ')' && --depth === 0) break;
+  }
+  const open = newtab.indexOf('{', close);
   let depth = 0;
   for (let index = open; index < newtab.length; index += 1) {
     if (newtab[index] === '{') depth += 1;
@@ -114,22 +148,65 @@ function extract(name) {
   throw new Error(name);
 }
 
-// S6: the flip clock turns on the minute, not up to 30 s late.
-function testClockOnTheMinute() {
+// Today's clock stays as it was: digits that change roll up, a wrapping digit
+// rolls on to the repeated 0 and snaps back, unchanged digits do not move, and
+// there is no flip.
+function testTodayClockUnchanged() {
+  const build = extract('buildTodayClock');
+  ok(/const stack = Array\.from\(\{ length: 12 \}, \(_, index\) => `<span>\$\{index % 10\}<\/span>`\)\.join\(''\);/.test(build)
+    && /clock\.innerHTML = `\$\{digit\}\$\{digit\}<span class="today-colon" aria-hidden="true">:<\/span>\$\{digit\}\$\{digit\}`;/.test(build),
+  'Today still builds four rolling digit stacks (0–9 then 0, 1) around one colon');
+  ok(!/fl-|flip/i.test(build + extract('paintTodayClock')), 'Today has no flip cards');
+  ok(/\.today-digit-stack \{\n\s*display: block;\n\s*transition: transform \.8s cubic-bezier\(\.34, 1\.25, \.64, 1\);/.test(css)
+    && /\.today-digit-stack\.is-snap \{ transition: none; \}/.test(css), 'the digit stacks still roll with the same .8 s spring and snap without a transition');
+  ok(/todayClockTimer = setTimeout\(tick, 1000 - \(Date\.now\(\) % 1000\) \+ 20\);/.test(extract('startTodayClock')), 'Today still ticks once a second, aligned to the second');
+
   const timers = [];
-  let ticks = 0;
+  let reduced = false;
+  const stacks = Array.from({ length: 4 }, () => {
+    const classes = new Set();
+    return {
+      dataset: {},
+      style: {},
+      classList: {
+        add: name => classes.add(name),
+        toggle: (name, force) => (force ? classes.add(name) : classes.delete(name)),
+        contains: name => classes.has(name),
+      },
+    };
+  });
+  const attributes = {};
+  const clock = { querySelectorAll: () => stacks, setAttribute: (name, value) => { attributes[name] = value; } };
+  const block = { querySelector: selector => (selector === '.today-clock' ? clock : null) };
   const context = vm.createContext({
-    Date: { now: () => 1_700_000_012_345 },
     setTimeout: (fn, ms) => { timers.push({ fn, ms }); return timers.length; },
     clearTimeout() {},
-    updateLandingClock: () => { ticks += 1; },
+    todayReducedMotion: () => reduced,
+    todayDateLine: () => '',
   });
-  vm.runInContext(`let _landingClockTimer = null;\n${extract('scheduleLandingClock')}\nglobalThis.__schedule = scheduleLandingClock;`, context);
-  context.__schedule(1_700_000_012_345);
-  eq(timers[0].ms, 60000 - (1_700_000_012_345 % 60000) + 50, 'the next tick is scheduled just after the next minute boundary');
-  timers[0].fn();
-  eq([ticks, timers.length], [1, 2], 'each tick paints the clock and schedules the next one');
-  ok(/layer\.classList\.add\('landing-in'\);\n\s*scheduleLandingClock\(\);/.test(newtab) && !/setInterval\(updateLandingClock, 30000\)/.test(newtab), 'opening the calm new tab starts the minute clock, with no 30 s poll');
+  vm.runInContext(`${extract('todayPad2')}\n${extract('paintTodayClock')}\nglobalThis.__paint = paintTodayClock;`, context);
+  const at = (h, m) => new Date(2026, 10, 7, h, m, 0).getTime();
+  const state = () => stacks.map(stack => [stack.style.transform, stack.classList.contains('is-snap')]);
+
+  context.__paint(block, { now: at(9, 59), animate: false });
+  eq(state(), [['translateY(0em)', true], ['translateY(-9em)', true], ['translateY(-5em)', true], ['translateY(-9em)', true]],
+    'the first paint places each digit without motion');
+  eq(attributes['aria-label'], '09:59', 'the clock reads its time to assistive technology');
+
+  context.__paint(block, { now: at(10, 0), animate: true });
+  eq(state(), [['translateY(-1em)', false], ['translateY(-10em)', false], ['translateY(-10em)', false], ['translateY(-10em)', false]],
+    'at 10:00 the hour rolls up to 1 and each wrapping digit rolls on to the repeated 0');
+  eq(timers.map(timer => timer.ms), [900, 900, 900], 'each wrapped digit snaps back once its roll ends');
+  timers.forEach(timer => timer.fn());
+  eq(state().slice(1), [['translateY(0em)', true], ['translateY(0em)', true], ['translateY(0em)', true]], 'the snap back is instant');
+
+  context.__paint(block, { now: at(10, 1), animate: true });
+  eq(state(), [['translateY(-1em)', false], ['translateY(0em)', true], ['translateY(0em)', true], ['translateY(-1em)', false]],
+    'at 10:01 only the last digit rolls; the digits that did not change stay put');
+
+  reduced = true;
+  context.__paint(block, { now: at(10, 2), animate: true });
+  eq(state()[3], ['translateY(-2em)', true], 'with reduced motion the digit changes without rolling');
 }
 
 // S7: the Welcome postmark follows the app language.
@@ -278,7 +355,7 @@ function testSelectorsMatchMarkup() {
     'is-leaving-skip': leaving,
   };
   const layer = cssRules(css.slice(css.lastIndexOf('/*', css.indexOf('TODAY BOARD (2026-11 canvas)'))))
-    .filter(rule => /body\[data-theme\]|#toast|\.plan|\.today|\.wc-|\.landing|\.fl-/.test(rule.selector));
+    .filter(rule => /body\[data-theme\]|#toast|\.plan|\.today|\.wc-/.test(rule.selector));
   ok(layer.length > 200, 'the canvas layers were read');
   const missing = new Set();
   layer.forEach(rule => classesIn(rule.selector).forEach(name => {
@@ -293,11 +370,11 @@ function testSelectorsMatchMarkup() {
 }
 
 testWelcome();
-testCalmNewTab();
+testNoLandingLayer();
 testRestingPage();
 testRemainingSurfaces();
 testRestingPageRuns();
-testClockOnTheMinute();
+testTodayClockUnchanged();
 testPostmarkLanguage();
 testSelectorsMatchMarkup();
-console.log(`Canvas page contracts passed: ${checks} checks (Welcome envelope, stamp and localized postmark, calm new tab clock on the minute, recent pages and tone, resting page run in a VM, selectors checked against markup)`);
+console.log(`Canvas page contracts passed: ${checks} checks (Welcome envelope, stamp and localized postmark, no landing layer even with showLanding stored, Today's rolling clock run in a VM, resting page run in a VM, selectors checked against markup)`);

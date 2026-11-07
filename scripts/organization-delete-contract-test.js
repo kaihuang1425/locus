@@ -190,7 +190,7 @@ function buildHarness({
   }
 
   const app = makeElement('app', [], { bodyChild: true });
-  const landing = makeElement('landing-layer', ['hidden'], { bodyChild: true });
+  const welcomeLayer = makeElement('welcome', ['hidden'], { bodyChild: true });
   const workspaceGrid = makeElement('ws-grid-overlay', ['hidden'], { bodyChild: true });
   const workspaceList = makeElement('ws-list', ['hidden'], { bodyChild: true });
   const recoveryOverlay = makeElement('state-recovery-overlay', ['hidden'], { bodyChild: true });
@@ -298,7 +298,7 @@ function buildHarness({
     elements,
     state,
     app,
-    landing,
+    welcomeLayer,
     workspaceGrid,
     workspaceList,
     recoveryOverlay,
@@ -663,8 +663,8 @@ function testFocusEscapeAndIndependentInertOwners() {
   assert.equal(harness.api.openOrganizationDelete('space', 'cat-a', harness.opener), true, 'An empty Space must open the dialog');
   assert.equal(harness.document.activeElement, harness.cancel, 'Cancel must receive initial focus before the destructive action');
   assert.deepEqual([...ownerSet(harness.app)].sort(), ['organization', 'recovery'], 'Opening must add an independent organization inert owner');
-  assert.equal(harness.landing.inert, true, 'Opening must make the remaining background inert');
-  assert.deepEqual([...ownerSet(harness.landing)], ['organization'], 'Ordinary background surfaces need only the organization owner');
+  assert.equal(harness.welcomeLayer.inert, true, 'Opening must make the remaining background inert');
+  assert.deepEqual([...ownerSet(harness.welcomeLayer)], ['organization'], 'Ordinary background surfaces need only the organization owner');
 
   const keydown = harness.listeners.get('organization-delete-overlay:keydown');
   let tabPrevented = false;
@@ -695,8 +695,8 @@ function testFocusEscapeAndIndependentInertOwners() {
   assert.equal(harness.document.activeElement, harness.opener, 'Cancellation must return focus to the explicit opener');
   assert.deepEqual([...ownerSet(harness.app)], ['recovery'], 'Closing organization must preserve an older recovery owner');
   assert.equal(harness.app.inert, true, 'Closing organization must not unlock recovery-owned background');
-  assert.equal(ownerSet(harness.landing).size, 0, 'Closing organization must release only its own owner');
-  assert.equal(harness.landing.inert, false, 'A surface with no remaining owner must become interactive');
+  assert.equal(ownerSet(harness.welcomeLayer).size, 0, 'Closing organization must release only its own owner');
+  assert.equal(harness.welcomeLayer.inert, false, 'A surface with no remaining owner must become interactive');
   assert.equal(harness.calls.locks, 1, 'Opening must lock background scroll once');
   assert.equal(harness.calls.unlocks, 1, 'Escape must release the organization scroll lock once');
 
@@ -705,7 +705,7 @@ function testFocusEscapeAndIndependentInertOwners() {
   let globalStopped = false;
   const consumed = harness.api.handleOrganizationDeleteGlobalKey({
     key: 'Escape',
-    target: harness.landing,
+    target: harness.welcomeLayer,
     preventDefault() { globalPrevented = true; },
     stopImmediatePropagation() { globalStopped = true; },
   });

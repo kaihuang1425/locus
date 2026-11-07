@@ -69,7 +69,7 @@ const productionSource = [
   extractFunction('createLandingRecoveryContext'),
   extractFunction('resolveLandingRecoveryTarget'),
   extractFunction('reportSearchRecoveryUnavailable'),
-  extractFunction('activateLandingRecovery'),
+  extractFunction('_palOpenSavedLink'),
   extractFunction('organizationGroupTarget'),
   extractFunction('identitySpaceTarget'),
   extractFunction('identityGroupTarget'),
@@ -95,17 +95,19 @@ function testIndividualSurfaceConvergence() {
     assert.match(functionSource, /openSavedTabItem\(/, `${name} must use the shared exact saved-page coordinator`);
     assert.doesNotMatch(functionSource, /openTabMaybeHibernated\(|window\.open\(/, `${name} must not bypass Reopen safety`);
   }
-  const landingSurface = extractFunction('paintLandingResults');
-  const landingActivation = extractFunction('activateLandingRecovery');
-  assert.match(landingSurface, /createLandingRecoveryContext\(/,
-    'Landing must capture the exact visible saved-page result');
-  assert.match(landingSurface, /activateLandingRecovery\(/,
-    'Landing must activate through exact visible-result recovery');
-  assert.match(landingActivation, /resolveLandingRecoveryTarget\(context\)[\s\S]*openSavedTabItem\(/,
-    'Landing recovery must re-resolve the visible save before using the shared coordinator');
-  assert.doesNotMatch(`${landingSurface}\n${landingActivation}`,
+  // The calm new tab's suggestions went with it (Just Today, 2026-11-07). The
+  // command palette's saved links use the same exact visible-result recovery.
+  assert.doesNotMatch(source, /function (?:paintLandingResults|activateLandingRecovery)\(/,
+    'the retired landing suggestions must leave no second recovery path behind');
+  const paletteLink = extractFunction('_palSavedLinkCommand');
+  const paletteOpen = extractFunction('_palOpenSavedLink');
+  assert.match(paletteLink, /createLandingRecoveryContext\(row,[\s\S]*run: \(\) => _palOpenSavedLink\(recoveryContext\)/,
+    'a palette saved link must capture its exact visible result and activate through it');
+  assert.match(paletteOpen, /resolveLandingRecoveryTarget\(context\)[\s\S]*openSavedTabItem\(/,
+    'palette recovery must re-resolve the visible save before using the shared coordinator');
+  assert.doesNotMatch(`${paletteLink}\n${paletteOpen}`,
     /openTabMaybeHibernated\(|window\.open\(/,
-    'Landing must not bypass Reopen safety');
+    'the palette must not bypass Reopen safety');
   const librarySurface = extractFunction('renderLibrarySurface');
   const readLaterSurface = extractFunction('renderReadLaterSurface');
   const libraryLedger = extractFunction('renderLibraryLedgerSurface');
@@ -257,7 +259,6 @@ function loadApi(fixture, chromeBrowser = undefined, hooks = { toasts: [] }, loc
     toast: (message, options) => hooks.toasts.push({ message, options }),
     tr: key => key,
     requestAnimationFrame: callback => callback(),
-    closeLandingLayer: options => hooks.landingClosures?.push(options),
     document: hooks.document,
   });
   vm.runInContext(
@@ -266,7 +267,7 @@ function loadApi(fixture, chromeBrowser = undefined, hooks = { toasts: [] }, loc
       openSavedTabItem,
       createLandingRecoveryContext,
       resolveLandingRecoveryTarget,
-      activateLandingRecovery,
+      _palOpenSavedLink,
       requestBulkSavedTabReopen: typeof requestBulkSavedTabReopen === 'function'
         ? requestBulkSavedTabReopen
         : null,
@@ -316,7 +317,7 @@ async function testGroupOpenAvailabilityTracksReopenablePages() {
     'Group Open all must create only the one reopenable nested page');
 }
 
-function testLandingSuggestionFailsClosedAfterVisibleMove() {
+function testPaletteSavedLinkFailsClosedAfterVisibleMove() {
   const fixture = makeFixture();
   const workspace = fixture.state.workspaces[0];
   const space = workspace.categories[0];
@@ -332,7 +333,7 @@ function testLandingSuggestionFailsClosedAfterVisibleMove() {
     },
     windows: { async update(windowId, updateInfo) { browserCalls.push(['window', windowId, updateInfo]); return null; } },
   };
-  const hooks = { toasts: [], landingClosures: [] };
+  const hooks = { toasts: [] };
   const api = loadApi(fixture, browser, hooks);
   const visibleContext = api.createLandingRecoveryContext({
     item: fixture.item,
@@ -340,24 +341,20 @@ function testLandingSuggestionFailsClosedAfterVisibleMove() {
     group: originalGroup,
     parents: [],
   });
-  assert.ok(visibleContext, 'a visible Landing suggestion must capture an exact recovery context');
+  assert.ok(visibleContext, 'a visible palette saved link must capture an exact recovery context');
   assert.equal(api.resolveLandingRecoveryTarget(visibleContext)?.item, fixture.item,
-    'an unchanged visible Landing suggestion must still resolve to its exact saved page');
+    'an unchanged visible palette saved link must still resolve to its exact saved page');
 
   originalGroup.items.splice(0, 1);
   const movedGroup = { id: 'group-2', name: 'Later', items: [fixture.item] };
   space.groups.push(movedGroup);
-  let focusCount = 0;
-  const opener = { isConnected: true, focus() { focusCount += 1; } };
 
-  assert.equal(api.activateLandingRecovery(visibleContext, opener), false,
-    'a moved visible Landing suggestion must fail closed');
-  assert.deepEqual(browserCalls, [], 'a stale visible suggestion must cause zero browser effects');
-  assert.equal(hooks.landingClosures.length, 0, 'failed recovery must preserve the Landing layer and query');
+  assert.equal(api._palOpenSavedLink(visibleContext), false,
+    'a moved visible palette saved link must fail closed (the palette stays open on false)');
+  assert.deepEqual(browserCalls, [], 'a stale visible saved link must cause zero browser effects');
   assert.equal(hooks.toasts.length, 1, 'failed recovery must report one useful message');
   assert.equal(hooks.toasts[0].message, 'search.recoveryUnavailable',
-    'Landing must reuse the existing localized changed-or-moved recovery message');
-  assert.equal(focusCount, 1, 'failed recovery must restore focus to the triggering suggestion');
+    'the palette must reuse the existing localized changed-or-moved recovery message');
   assert.equal(originalGroup.items.length, 0, 'recovery must not repair or copy the changed graph');
   assert.equal(movedGroup.items[0], fixture.item, 'recovery must preserve the externally moved item');
 }
@@ -1408,7 +1405,7 @@ async function testCreatedTabFinalReceiptMatrix() {
 
 testIndividualSurfaceConvergence();
 testSelectionOpenEligibility();
-testLandingSuggestionFailsClosedAfterVisibleMove();
+testPaletteSavedLinkFailsClosedAfterVisibleMove();
 
 testCreateAndRejectUnsafeTargets()
   .then(testCreatedTabMustConfirmExactDestination)

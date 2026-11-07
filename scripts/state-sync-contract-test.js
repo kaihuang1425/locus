@@ -302,6 +302,26 @@ function assertDefaultGraphUsesRetainedSafeIdentity() {
   assert.equal(writeCalls, writesAtCleanBoot, 'a clean boot must not send a write or advance revision');
   assert.equal(State.get()._revision, cleanRevision);
 
+  // Just Today (2026-11-07): Kai's profile still stores the retired calm new
+  // tab choice and its Welcome name. Boot reads neither and writes nothing.
+  stored = { te: {
+    ...currentState(8),
+    settings: {
+      language: 'en',
+      theme: 'folio',
+      onboarding: { welcomeSeen: true, hintsSeen: {}, disabled: false },
+      showLanding: true,
+      profile: { name: 'Kai' },
+    },
+  } };
+  await State.load();
+  const writesAtRetiredWelcomeBoot = writeCalls;
+  assert.equal(normalizeLoadedState(), false, 'a stored showLanding: true and Welcome name must not make boot schedule a write');
+  assert.deepEqual([State.get().settings.showLanding, clone(State.get().settings.profile)], [true, { name: 'Kai' }],
+    'boot must leave the retired Welcome keys exactly as stored');
+  await new Promise(resolve => setTimeout(resolve, 220));
+  assert.equal(writeCalls, writesAtRetiredWelcomeBoot, 'the retired Welcome keys must not cause a write');
+
   stored = { te: {
     ...currentState(6),
     settings: { language: 'en', theme: 'stow', onboarding: { welcomeSeen: true } },
@@ -339,8 +359,8 @@ function assertDefaultGraphUsesRetainedSafeIdentity() {
   await State.load();
   const writesBeforeMigration = writeCalls;
   assert.equal(normalizeLoadedState(), true, 'legacy schema normalization must schedule persistence');
-  assert.equal(State.get().settings.showLanding, false,
-    'schema 13 migration must keep an absent optional Welcome preference inactive');
+  assert.equal('showLanding' in State.get().settings, false,
+    'migration must no longer write the retired Welcome-layer choice');
   assertStableReminderIds(State.get().workspaces[0].categories[0], 'active category');
   assertStableReminderIds(State.get().workspaces[0].categories[0].groups[0], 'active group');
   assertStableReminderIds(State.get().archive[0].data, 'archived group');

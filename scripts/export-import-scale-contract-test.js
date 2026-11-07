@@ -603,8 +603,11 @@ function makeCompatibilitySettings(schema, label) {
   };
   if (schema < 6) settings.tourCompleted = true;
   else settings.onboarding = { welcomeSeen: false, hintsSeen: { imported: true }, disabled: true };
+  // showLanding (schemas 7-14) and profile.name belonged to the calm new tab,
+  // removed on 2026-11-07. Exports still carry them; import must too.
   if (schema === 6 || schema === 12) settings.showLanding = true;
   else if (schema >= 7 && schema !== 11) settings.showLanding = false;
+  if (schema % 2 === 0) settings.profile = { name: `Kai ${label}`, purpose: 'research' };
   if (schema >= 8) {
     settings.popupHibernateScope = schema >= 11 ? 'selected' : 'all';
     settings.popupHibernateKeepPinned = false;
@@ -827,8 +830,11 @@ function assertCompatibilitySettings(state, schema, label) {
   assert.equal(settings.onboarding.welcomeSeen, schema < 6);
   assert.deepEqual(clone(settings.onboarding.hintsSeen), schema < 6 ? {} : { imported: true });
   assert.equal(settings.onboarding.disabled, schema >= 6);
-  assert.equal(settings.showLanding, schema === 6 || schema === 12,
-    `${label} must preserve an explicit Welcome choice and default an absent one off`);
+  const stored = makeCompatibilitySettings(schema, label);
+  assert.deepEqual(['showLanding' in settings, settings.showLanding], ['showLanding' in stored, stored.showLanding],
+    `${label} must carry the retired Welcome-layer choice exactly as exported, never defaulting an absent one`);
+  assert.deepEqual(settings.profile === undefined ? undefined : clone(settings.profile), stored.profile,
+    `${label} must carry the retired Welcome name exactly as exported`);
   assert.equal(settings.popupHibernateScope, schema < 8 ? 'window' : (schema >= 11 ? 'selected' : 'all'));
   assert.equal(settings.popupHibernateKeepPinned, schema < 8 ? true : false);
   assert.equal(settings.popupHibernateKeepAudio, schema < 8 ? true : false);
@@ -891,6 +897,68 @@ async function testCompatibilityCase({ label, mode, reportedSchema, serialized, 
   assert.equal(harness.metrics.previews, 1);
   assert.equal(harness.metrics.writeAttempts, 1);
   assert.equal(harness.metrics.reminderRequests, 1);
+}
+
+// Just Today (2026-11-07): Kai's own profile stored showLanding: true and a
+// Welcome name. Exports made before and after the calm new tab was removed
+// must import cleanly, keep both bytes as they were, and never fail on them.
+async function testRetiredWelcomeSettingsImport() {
+  const cases = [];
+  for (const schema of [7, 13, currentSchema]) {
+    const label = `retired-welcome-${schema}`;
+    const data = makeCompatibilityFixture(schema, label);
+    data.settings.showLanding = true;
+    data.settings.profile = { name: 'Kai Huang', purpose: 'research', workflow: 'kanban' };
+    const serialized = JSON.stringify({ app: 'locus', schema, exportedAt: new FixedDate().toISOString(), data });
+    for (const mode of ['replace', 'merge']) {
+      const harness = createHarness(makeBaseState(`${label}-${mode}-target`, 300 + schema));
+      await harness.State.load();
+      const importContext = await harness.importSerialized(serialized, `${label}.json`);
+      assert.equal(importContext.schema, schema, `${label} must report its source schema`);
+      assert.equal(importContext.data.settings.showLanding, true, `${label} preview must keep the stored Welcome-layer choice`);
+      const applied = mode === 'replace'
+        ? await harness.contract.applyImportReplace(importContext.data)
+        : await harness.contract.applyImportMerge(importContext.data);
+      await Promise.resolve();
+      assert.equal(applied, true, `${label} ${mode} must import an export that holds the retired Welcome keys`);
+      assert.deepEqual(
+        [harness.metrics.storageErrors, harness.metrics.recoveryMessages],
+        [[], []],
+        `${label} ${mode} must raise no storage error or recovery for the retired keys`,
+      );
+      const state = harness.State.get();
+      assert.equal(state.schema, currentSchema, `${label} ${mode} must land on CURRENT_SCHEMA`);
+      if (mode === 'replace') {
+        assert.equal(state.settings.showLanding, true,
+          `${label} replace must carry showLanding: true untouched (nothing reads it)`);
+        assert.deepEqual(clone(state.settings.profile), { name: 'Kai Huang', purpose: 'research', workflow: 'kanban' },
+          `${label} replace must carry the Welcome name untouched`);
+      } else {
+        assert.equal('showLanding' in state.settings, false, `${label} merge must not import profile settings`);
+        assert.equal('profile' in state.settings, false, `${label} merge must not import the Welcome name`);
+      }
+      assert.deepEqual(harness.storedState(), clone(state), `${label} ${mode} must be authoritative`);
+      cases.push(`${schema}-${mode}`);
+    }
+  }
+
+  // A profile exported today still holds both keys; the round trip keeps them.
+  const base = makeBaseState('retired-welcome-roundtrip', 400);
+  base.settings.showLanding = true;
+  base.settings.profile = { name: 'Kai Huang' };
+  const source = createHarness(base);
+  await source.State.load();
+  const exported = await source.exportCurrent();
+  assert.equal(JSON.parse(exported.text).data.settings.showLanding, true, 'export must keep the stored Welcome-layer choice');
+  const target = createHarness(makeBaseState('retired-welcome-roundtrip-target', 401));
+  await target.State.load();
+  const importContext = await target.importSerialized(exported.text, 'retired-welcome-roundtrip.json');
+  assert.equal(await target.contract.applyImportReplace(importContext.data), true,
+    'a current export holding the retired Welcome keys must replace-import');
+  assert.deepEqual([target.State.get().settings.showLanding, clone(target.State.get().settings.profile)], [true, { name: 'Kai Huang' }],
+    'the round trip keeps the retired Welcome keys as they were');
+  cases.push('roundtrip');
+  return cases.length;
 }
 
 async function testCompatibilityMatrix() {
@@ -1950,6 +2018,7 @@ async function testBookmarkImportReceiptBoundary() {
   await testReplaceRoundTrip(scaleExport);
   await testMergeRoundTrip(scaleExport);
   const compatibility = await testCompatibilityMatrix();
+  const retiredWelcomeCases = await testRetiredWelcomeSettingsImport();
   const semanticFuzz = await testSemanticFuzzMatrix();
   await testRejectedImportRollback(scaleExport, 'replace');
   await testRejectedImportRollback(scaleExport, 'merge');
@@ -1960,7 +2029,7 @@ async function testBookmarkImportReceiptBoundary() {
   const largeFiles = await testLargeFileBoundaries();
   await testImportReviewController();
   await testBookmarkImportReceiptBoundary();
-  console.log(`Export/import contracts passed: activeTopLevel=${scale}, activeItems=${expectedCounts.items}, archive=${scale}, trash=${scale}, bytes=${scaleExport.serializedBytes}, schemas=0-${currentSchema}, envelopes=${compatibilityApps.length}+raw, compatibilityCases=${compatibility.cases}, semanticRuns=${semanticFuzzRuns}, semanticCases=${semanticFuzz.cases}, semanticSeed=0x${semanticFuzzSeed.toString(16)}, semanticEntities=${semanticFuzz.coverage.totalEntities}, modes=replace+merge, importLimitBytes=${largeFiles.importLimitBytes}, quotaFileBytes=${largeFiles.quotaFileBytes}, largeFileCases=${largeFiles.cases}, quotaRollbacks=${largeFiles.quotaRollbacks}, rejectedWrites=8`);
+  console.log(`Export/import contracts passed: activeTopLevel=${scale}, activeItems=${expectedCounts.items}, archive=${scale}, trash=${scale}, bytes=${scaleExport.serializedBytes}, schemas=0-${currentSchema}, envelopes=${compatibilityApps.length}+raw, compatibilityCases=${compatibility.cases}, retiredWelcomeCases=${retiredWelcomeCases}, semanticRuns=${semanticFuzzRuns}, semanticCases=${semanticFuzz.cases}, semanticSeed=0x${semanticFuzzSeed.toString(16)}, semanticEntities=${semanticFuzz.coverage.totalEntities}, modes=replace+merge, importLimitBytes=${largeFiles.importLimitBytes}, quotaFileBytes=${largeFiles.quotaFileBytes}, largeFileCases=${largeFiles.cases}, quotaRollbacks=${largeFiles.quotaRollbacks}, rejectedWrites=8`);
 })().catch(error => {
   console.error(error);
   process.exitCode = 1;

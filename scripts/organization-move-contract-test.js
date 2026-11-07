@@ -332,7 +332,7 @@ function buildHarness({
   }
 
   const app = makeElement('app', 'main', [], { bodyChild: true });
-  const landing = makeElement('landing-layer', 'div', ['hidden'], { bodyChild: true });
+  const welcomeLayer = makeElement('welcome', 'div', ['hidden'], { bodyChild: true });
   const workspaceGrid = makeElement('ws-grid-overlay', 'div', ['hidden'], { bodyChild: true });
   const recoveryOverlay = makeElement('state-recovery-overlay', 'div', ['hidden'], { bodyChild: true });
   const recoveryReload = makeElement('state-recovery-reload', 'button', [], { parent: recoveryOverlay });
@@ -478,7 +478,7 @@ function buildHarness({
       return document.querySelectorAll('#organization-move-options .organization-move-option');
     },
     app,
-    landing,
+    welcomeLayer,
     workspaceGrid,
     recoveryOverlay,
     recoveryReload,
