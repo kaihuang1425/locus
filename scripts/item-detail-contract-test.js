@@ -3886,8 +3886,8 @@ async function testBoardDetailsContracts() {
     'Archive uses the same archive paths as the card menus');
   assert.match(render, /root\.classList\.toggle\('is-entering', !wasOpen\);/,
     'the panel slides in when it opens, not on every repaint');
-  assert.match(render, /if \(!wasOpen\) \{\s*hideContextMenu\(\);\s*if \(typeof isTodayTabsDrawerOpen === 'function' && isTodayTabsDrawerOpen\(\)\) \{\s*setTodayTabsDrawer\(false, \{ restoreFocus: false \}\);/,
-    'opening Details closes an open menu and the Today drawer: one floating layer');
+  assert.match(render, /if \(!wasOpen\) \{\s*hideContextMenu\(\);\s*closeCommandPalette\(\);\s*if \(typeof isTodayTabsDrawerOpen === 'function' && isTodayTabsDrawerOpen\(\)\) \{\s*setTodayTabsDrawer\(false, \{ restoreFocus: false \}\);/,
+    'opening Details closes an open menu, the command palette and the Today drawer: one floating layer');
   const drawerCalls = [];
   let detailOpen = true;
   const railFocus = loadFunctions(['focusOpenTabFilter'], {

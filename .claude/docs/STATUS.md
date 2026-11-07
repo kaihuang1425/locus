@@ -299,6 +299,37 @@ Slices, in order:
 
 ## Done (newest first)
 
+- **2026-11-06 - Find again and the command palette built from their canvas boards (pages build, page 5 of 9)**
+  - **What:** Find again is one page: the heading, one search field whose
+    operators are marked as the shared parser understands them (blue for
+    where, green for is:, grey for type: and colour:, struck through for a
+    minus) with the result count rolling inside it, the content-type switch
+    with a sliding pill and rolling counts, Filters (a chip panel; a blue
+    bubble counts hidden filters) and the sort, then the results in one card.
+    Matched words are marked in titles, sources and a note's matching line; a
+    highlight glides to the selected row (arrow keys, focus) or the row under
+    the pointer, and the selected row shows Details and what Enter does (Open
+    for a page, Details otherwise). The preview pane is gone: each row is the
+    Open action, Details sits on openable rows, the exact saved path stays
+    under every title. One empty state with one next step (Search all spaces
+    when scoped, else Clear filters, else Clear search). Escape clears a typed
+    query first, then leaves. The palette opens with a 220 ms scale-in, is one
+    column (Quick actions, Go to, Recently saved, Shortcuts), a highlight
+    slides between rows, the typed text (or the words it used) is marked, the
+    selected row shows Run or Open, only a moving pointer changes the
+    selection, and no footer or helper lines remain. Opening the palette
+    closes Details, a menu and the Today drawer (and Details opening closes
+    the palette); opening Find again closes a menu. Large libraries: the
+    query is parsed and every row scored once per search, note text is
+    remembered, rows off screen are not laid out, and the rows past the first
+    screen arrive on the next frame (1,500 items in Edge: 22 to 29 ms median
+    settled repaint per keystroke, was about 70 ms).
+  - **Evidence:** new `search-page-contract-test.js` (149 checks, in CI);
+    `search-recovery`, `core-visual-system`, `canvas-pages` and
+    `item-detail` ported; 22 mutations caught; every `scripts/*.js` suite
+    passes; Edge 157 proof (69 checks) with screenshots in the shared notes
+    `locus-redesign-evidence/pages/search/`.
+
 - **2026-11-06 - Item details built from its canvas board (pages build, page 4 of 9)**
   - **What:** the details panel is the board's 480 px layer: a colour band,
     the kind pill, the full location as the Move control (the Inbox page's

@@ -117,7 +117,8 @@ const selectResultSource = extractFunction('_searchSelectResult');
 const moveSelectionSource = extractFunction('_searchMoveSelection');
 const bindResultSource = extractFunction('bindSearchResultActivation');
 const resultRowSource = extractFunction('_searchResultRow');
-const detailSource = extractFunction('_searchDetail');
+const placeRowGlideSource = extractFunction('placeRowGlide');
+const placeSearchGlideSource = extractFunction('placeSearchGlide');
 const searchStateSource = extractFunction('searchStateFromQuery');
 const searchRouteSource = extractFunction('searchRouteQuery');
 const hiddenFilterCountSource = extractFunction('searchHiddenFilterCount');
@@ -158,11 +159,15 @@ assert.doesNotMatch(selectResultSource, /renderBoard|_searchSet/, 'selection mus
 assert.match(selectResultSource, /scrollIntoView\(\{ block: 'nearest' \}\)/, 'keyboard selection must keep its focused row visible');
 assert.doesNotMatch(moveSelectionSource, /renderBoard|setTimeout/, 'arrow selection must update the mounted result list in place');
 assert.match(moveSelectionSource, /_searchSelectResult/, 'arrow selection must share the in-place roving controller');
-assert.match(bindResultSource, /dblclick[\s\S]*_searchOpenPrimary[\s\S]*event\.key === 'Enter'[\s\S]*_searchOpenPrimary/, 'result keyboard and double-click activation must use the recovery controller');
-assert.match(detailSource, /searchRecoveryCanOpen[\s\S]*_searchOpenPrimary/, 'the visible Open action must use the same controller and hide for unsupported addresses');
-assert.match(detailSource, /searchRecoveryPathHtml/, 'the selected result must show a real saved destination path');
-assert.match(detailSource, /_searchSelectResult/, 'related-result activation must reuse mounted roving selection and visible scrolling');
-assert.doesNotMatch(detailSource, /_searchSet\(/, 'related-result activation must not rebuild and reset the result scroller');
+// 2026-11-06 (page board): the preview pane gave way to one card of rows. The
+// title covers its row, so a click opens the result (the old click selected and
+// a double click opened); Details sits on each openable row.
+assert.match(bindResultSource, /addEventListener\('click'[\s\S]*_searchOpenPrimary[\s\S]*event\.key === 'Enter'[\s\S]*_searchOpenPrimary/, 'result click and keyboard activation must use the recovery controller');
+assert.doesNotMatch(bindResultSource, /dblclick/, 'a single click opens a result now that its title covers the row');
+assert.match(bindResultSource, /addEventListener\('focus'[\s\S]*_searchSelectResult/, 'focus (pointer or keyboard) must select a result in place');
+assert.match(resultRowSource, /const canOpen = searchRecoveryCanOpen\(recoveryContext\)[\s\S]*canOpen \? `<button type="button" class="fnd-details">[\s\S]*_searchOpenDetails\(recoveryContext/, 'Details must sit beside Open only for pages that open, through the same recovery controller; anything else opens Details from its title');
+assert.match(resultRowSource, /searchRecoveryPathHtml\(recoveryContext\)/, 'each result must show its real saved destination path');
+assert.doesNotMatch(`${source}\n${css}`, /search-detail-related|search\.related|function _searchDetail\(/, 'the preview pane and its related-results list were replaced by the rows (the same results are in the list)');
 assert.match(openDetailsSource, /searchDetailRoute\(activeSearch[\s\S]*persist: false[\s\S]*if \(!navigated\)/, 'View details must stay on Search and report refused navigation');
 assert.match(routerApplySource, /route\.type === 'search'[\s\S]*searchVisibleRows\(next\)[\s\S]*resolveUniqueHomePreviewItem\(route\.wsId, next\.selectedId\)[\s\S]*detailTarget && detailTarget\.item === selectedRow\?\.item/, 'Search Details must require current visible-result membership and exact route identity before opening');
 assert.match(routerApplySource, /searchVisibleRows\(next\)/, 'Search detail routing must share the rendered progressive result window');
@@ -192,12 +197,14 @@ assert.match(renderSearchSource, /const clearQueryButton = page\.querySelector\(
 assert.match(queryKeydownSource, /isComposing[\s\S]*keyCode === 229[\s\S]*_searchMoveSelection\([\s\S]*true[\s\S]*searchRecoveryContextForActivation/, 'query keys must ignore IME composition, move focus into results, and resolve current results');
 assert.match(bindResultSource, /event\.key === 'Home'[\s\S]*event\.key === 'End'[\s\S]*'first' : 'last'/, 'long result lists must support Home and End roving navigation');
 assert.match(queueQuerySource, /activeSearch !== scheduledState[\s\S]*scheduledState\.query !== scheduledQuery/, 'a stale debounce must not mutate a newer Search session');
-assert.match(queueQuerySource, /removeAttribute\('role'\)[\s\S]*class="search-state"/, 'loading state must not remain inside a stale listbox');
+assert.match(queueQuerySource, /setAttribute\('aria-busy', 'true'\)[\s\S]*removeAttribute\('role'\)[\s\S]*removeAttribute\('aria-labelledby'\)/, 'loading state must not remain inside a stale list');
+assert.doesNotMatch(queueQuerySource, /innerHTML|replaceChildren/, 'typing keeps the old rows on screen (inert, outside the list semantics) until the settled rows replace them, so the page does not jump on each keystroke');
+assert.doesNotMatch(queueQuerySource, /setSelectionRange/, 'the settled repaint must never move the caret');
 assert.doesNotMatch(queueQuerySource, /role="status"/, 'the inline loading state must not duplicate the persistent live announcement');
 assert.match(`${ensureLiveRegionSource}\n${announceStatusSource}`, /document\.body\.appendChild[\s\S]*searchAnnouncement === nextSignature[\s\S]*requestAnimationFrame/, 'Search announcements must deduplicate a persistent mounted live region by result-state signature');
 assert.match(resetAnnouncementSource, /delete region\.dataset\.searchAnnouncement/, 'leaving Search must reset its live-announcement session');
-assert.match(suspendRecoverySource, /activeSearch\.loading = true[\s\S]*list\.inert = true[\s\S]*search-detail-slot[\s\S]*replaceChildren/, 'query and composition changes must synchronously disable old results and remove stale detail actions');
-assert.match(renderSearchSource, /aria-hidden="true">\$\{esc\(resultCount\)\}[\s\S]*announceSearchStatus/, 'the visible result count must use the persistent live region for announcements');
+assert.match(suspendRecoverySource, /activeSearch\.loading = true[\s\S]*activeSearch\.detailOpen = false[\s\S]*list\.inert = true/, 'query and composition changes must synchronously disable old results and their row actions (Details lives on each row inside the inert list)');
+assert.match(renderSearchSource, /class="fnd-count" aria-hidden="true"[\s\S]*announceSearchStatus/, 'the visible (rolling) result count must use the persistent live region for announcements');
 assert.match(renderSearchSource, /state\.spaceId !== 'all'[\s\S]*state\.spaceId = 'all'[\s\S]*reconcileSearchSelection\(state, failure \? \[\] : visibleRows\)/, 'production Search rendering must normalize only missing Spaces before running exact selection/detail reconciliation');
 assert.match(renderSearchSource, /searchVisibleRows\(state, rows\)/, 'Search rendering must use the shared progressive result window');
 assert.match(renderSearchSource, /<div id="search-result-list"><\/div><footer class="search-result-continuation" hidden>/, 'the continuation must remain outside the listbox');
@@ -208,39 +215,44 @@ assert.doesNotMatch(renderSearchSource, /search-steps|search-page-footer/, 'Find
 assert.doesNotMatch(renderSearchSource, /search-title-icon/, 'Find again must not spend its heading hierarchy on a generic decorative icon');
 assert.match(resultRowSource, /search-result-location[\s\S]*search-result-snippet[\s\S]*search-result-time/, 'each result must lead with its exact saved location and keep saved age independently scannable');
 assert.doesNotMatch(resultRowSource, /search-result-meta/, 'the exact saved path must not be buried in a generic low-priority metadata line');
-assert.match(detailSource, /search-recovery-map[\s\S]*<footer class="search-detail-actions"><\/footer>[\s\S]*<dl>/, 'the selected record must put recovery actions immediately after its exact saved path');
+assert.match(resultRowSource, /search-result-location[\s\S]*searchRecoveryPathHtml[\s\S]*class="fnd-acts"/, 'each result must put its recovery actions after its exact saved path');
 assert.doesNotMatch(renderSearchSource, /role="combobox"|role="tablist"|<main class="search-results"/, 'Search must avoid mixed combobox/tab semantics and nested main landmarks');
-assert.match(renderSearchSource, /role="group"[\s\S]*aria-pressed[\s\S]*list\.setAttribute\('role', 'listbox'\)/, 'type filters and populated results must expose truthful conditional semantics');
+// Rows hold two actions (Open, Details), so populated results are a list of
+// rows with buttons, not a listbox of options.
+assert.match(renderSearchSource, /role="group"[\s\S]*aria-pressed[\s\S]*list\.setAttribute\('role', 'list'\)/, 'type filters and populated results must expose truthful conditional semantics');
+assert.match(resultRowSource, /setAttribute\('role', 'listitem'\)/, 'each populated result must be a list item');
 assert.match(renderSearchSource, /search-filter-space-[\s\S]*search-filter-time-[\s\S]*search-filter-tag-/, 'rerendering filters must retain stable focus targets');
 assert.match(renderSearchSource, /searchHiddenFilterCount\(state\)[\s\S]*search\.activeFilterCount/, 'the collapsed filter control must project its count through localized copy');
 assert.match(renderSearchSource, /has-active-filters[\s\S]*class="search-filter-count" aria-hidden="true"/, 'the collapsed filter control must expose the visual count without making its badge a duplicate announcement');
-assert.match(renderSearchSource, /aria-label="\$\{esc\(filterToggleLabel\)\}"/, 'the active hidden-filter count must be included in the filter control accessible name');
+assert.match(renderSearchSource, /toggle\.setAttribute\('aria-label', filterToggleLabel\)/, 'the active hidden-filter count must be included in the filter control accessible name');
 assert.match(renderSearchSource, /id="search-clear-filters"[\s\S]*clearFiltersButton\.disabled = !filtersActive[\s\S]*_searchSet\(searchFilterResetPatch\(\), 'search-surface-input'\)/, 'the panel reset must be disabled at default state and use the shared filter-only patch');
 assert.match(renderSearchSource, /const filtersActive = searchFiltersActive\(state\)[\s\S]*label: tr\(filtersActive \? 'empty\.clearFilters' : 'empty\.clearSearch'\)[\s\S]*run: filtersActive \? clearFilters : clearSearch/, 'the no-result recovery action must share the same definition of active filters');
 assert.doesNotMatch(source, /search\.clearAll/, 'Search must not label a filter-only reset as clearing everything');
 assert.doesNotMatch(css, /\.search-steps|\.search-page-footer/, 'obsolete Search decoration styles must be removed');
 assert.doesNotMatch(`${source}\n${css}`, /search-result-fav|search\.(?:favorite|unfavorite|stats|tips|tipOperators|tipQuotes|tipExclude)/, 'Find again must remove orphaned dashboard and quick-mutation residue');
-assert.match(css, /\.search-query-box \{[^}]*min-height: 56px[^}]*box-shadow: inset 4px 0 0 var\(--accent\)/, 'the primary find control must dominate the locator surface with the shared accent edge');
-assert.match(css, /\.search-type-tabs \{[^}]*border-bottom: 1px solid var\(--border\)[\s\S]*\.search-type-tabs button \{[^}]*min-height: 40px[^}]*border-radius: 0/, 'content types must use one flat filing rail instead of a row of dashboard pills');
-assert.match(css, /@media \(min-width: 1101px\) \{[\s\S]*\.search-page\.filters-open \.search-filters \{[^}]*grid-column: 1 \/ -1[^}]*border-bottom: 1px solid var\(--border\)[\s\S]*\.search-page\.filters-open \.search-filter-sections \{[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/, 'wide filters must open as a tray above the two-column locator ledger');
-assert.match(css, /\.search-result-location \{[^}]*overflow-wrap: anywhere[^}]*var\(--font-mono/, 'exact result paths must wrap and use the locator type system');
-assert.match(css, /\.search-detail-actions \{[^}]*display: flex[^}]*margin: 12px 0 0[\s\S]*\.search-detail-actions \.btn-primary,[\s\S]*min-height: 40px/, 'selected-record recovery actions must be prominent and reachable directly below the path');
-assert.match(css, /\.search-filters > header button \{[^}]*min-height: 40px[\s\S]*\.search-sort \{[^}]*min-height: 40px/, 'filter reset and result sorting must retain complete keyboard targets');
+// 2026-11-06 (page board): the look decisions of the 2026-08 locator ledger are
+// ported to the board's equivalents; the decisions about content stay.
+assert.match(css, /\.search-query-box\.fnd-q \{[^}]*height: 66px[^}]*border-radius: 20px[\s\S]*\.search-query-box\.fnd-q:focus-within \{[^}]*border-color: var\(--index-locator/, 'the find field must lead the page: the board\'s 66 px field with the locator focus ring (it replaced the 2026-08 accent edge)');
+assert.match(css, /\.fnd-thumb \{[^}]*transform: translateX\(calc\(var\(--fnd-i, 0\) \* 100%\)\)[^}]*transition: transform \.32s[\s\S]*\.fnd-seg-btn \{[^}]*height: 44px/, 'content types must be one segmented switch whose pill slides (it replaced the flat filing rail), with 44 px targets');
+assert.match(css, /\.fnd-panel \{[^}]*display: flex[^}]*flex-wrap: wrap[\s\S]*\.fnd-panel \.search-filter-sections \{ display: contents; \}[\s\S]*\.fnd-chip \{[^}]*height: 44px/, 'filters must open as one panel of chip groups above the results (it replaced the tray over the two-column ledger)');
+assert.match(css, /\.search-result-location\.fnd-meta \{[^}]*font-family: var\(--today-mono\)[^}]*overflow-wrap: anywhere/, 'exact result paths must wrap and use the locator (mono) type');
+assert.match(css, /\.fnd-details \{[^}]*height: 44px[\s\S]*\.fnd-cap,\n\.pal-cap \{[^}]*height: 36px/, 'each row\'s recovery actions (Details and the Open key) must be reachable 44 px targets beside the path');
+assert.match(css, /\.search-sort \{[^}]*min-height: 44px[\s\S]*\.fnd-reset \{[^}]*min-height: 44px/, 'filter reset and result sorting must retain complete keyboard targets');
 assert.match(css, /\.search-recovery-path/, 'the exact recovery path must have production styling');
 assert.match(css, /\.search-result-continuation \{[^}]*display: flex[\s\S]*\.search-result-continuation button:focus-visible/, 'the quiet continuation footer and keyboard focus must have production styling');
-assert.match(css, /\.search-result-row:focus-visible/, 'Search results must retain a visible keyboard focus state');
-assert.match(css, /@media \(max-width: 620px\)[\s\S]*\.search-detail footer \{ flex-direction: column; \}/, 'narrow Search actions must stack instead of clipping');
-assert.match(css, /@media \(max-width: 620px\)[\s\S]*\.search-result-continuation button \{[^}]*min-height: 40px[^}]*font-size: 11\.5px/, 'the sole narrow continuation action must retain a reachable target and legible label');
-assert.match(css, /@media \(max-width: 900px\)[\s\S]*#search-result-list\[role="listbox"\] \{[^}]*max-height: min\(48vh, 420px\)/, 'narrow populated results must stay bounded so recovery actions remain reachable');
-assert.match(css, /#search-result-list > \.system-empty \{ min-height: inherit; \}/, 'narrow empty states must follow the responsive result height instead of forcing a nested scroller');
-assert.match(css, /\.search-result-tags \{[^}]*flex-wrap: wrap[\s\S]*\.search-result-tags span, \.search-detail-tags span \{[^}]*overflow-wrap: anywhere/, 'long user tags must wrap inside narrow Search results and Details');
-assert.match(css, /@media \(prefers-reduced-motion: reduce\)[\s\S]*\.search-query-box, \.search-result-row \{ transition: none; \}/, 'Search must honor reduced motion');
-assert.match(css, /@media \(forced-colors: active\)[\s\S]*\.search-recovery-map/, 'Search destination context must survive forced colors');
-assert.match(css, /@media \(forced-colors: active\)[\s\S]*\.search-type-tabs button\[aria-pressed="true"\][\s\S]*border: 2px solid Highlight[\s\S]*\.search-result-row\[aria-selected="true"\][\s\S]*border-left: 3px solid Highlight[\s\S]*:focus-visible[\s\S]*outline: 2px solid CanvasText/, 'forced colors must distinguish selected or pressed state from the outer keyboard focus ring');
-assert.match(css, /@media \(forced-colors: active\)[\s\S]*\.search-detail-related button:focus-visible \{ outline-color: Highlight; \}/, 'related-result focus must survive forced colors');
+assert.match(css, /\.fnd-open:focus-visible::after \{ box-shadow: inset 0 0 0 2px var\(--index-locator/, 'Search results must retain a visible keyboard focus state');
+assert.match(css, /@container \(max-width: 640px\) \{[\s\S]*?\.fnd-row \.fnd-acts \{ grid-area: acts;/, 'at phone width Details must stay on the row instead of clipping');
+assert.match(css, /\.search-result-continuation button \{[^}]*min-height: 44px[\s\S]*@container \(max-width: 640px\) \{[\s\S]*?\.search-result-continuation \{ flex-direction: column;/, 'the narrow continuation action must retain a reachable target and stack under its count');
+assert.doesNotMatch(css, /#search-result-list[^{]*\{[^}]*max-height/, 'with actions on every row the results are no nested scroller; the page scrolls (the bounded list served the old preview pane)');
+assert.match(renderSearchSource, /buildLibraryEmpty\(\{/, 'empty states must use the shared board empty state inside the results card');
+assert.match(css, /\.fnd-tt \{[^}]*text-overflow: ellipsis[\s\S]*\.fnd-src \{[^}]*text-overflow: ellipsis/, 'long titles and sources must stay inside the row (tags moved to Details)');
+assert.match(css, /@media \(prefers-reduced-motion: reduce\) \{\n  \.fnd, \.fnd \*, \.fnd \*::before, \.fnd \*::after,\n  #cmd-palette, #cmd-palette \*/, 'Search and the palette must honor reduced motion');
+assert.match(css, /@media \(forced-colors: active\) \{[\s\S]*?\.search-result-location \{ color: CanvasText; \}/, 'Search destination context must survive forced colors');
+assert.match(css, /@media \(forced-colors: active\)[\s\S]*\.search-type-tabs button\[aria-pressed="true"\][\s\S]*border: 2px solid Highlight[\s\S]*\.search-result-row\.selected \{ border-left: 3px solid Highlight; \}[\s\S]*:focus-visible[\s\S]*outline: 2px solid CanvasText/, 'forced colors must distinguish selected or pressed state from the outer keyboard focus ring');
+assert.match(css, /@media \(forced-colors: active\)[\s\S]*\.fnd-cap,\n  \.pal-cap \{ forced-color-adjust: none; background: Highlight;/, 'the Open key on the selected row must survive forced colors');
 assert.match(css, /\.search-filter-toggle\.has-active-filters[^{]*\{[^}]*border-color:[^}]*accent/, 'active hidden filters must remain visible when the panel is collapsed');
 assert.match(css, /\.search-filter-count \{[^}]*border-radius: 999px[^}]*font-variant-numeric: tabular-nums/, 'the exact hidden-filter count must use a compact stable badge');
-assert.match(css, /\.search-filters > header button:disabled \{[^}]*color: var\(--text3\)[^}]*cursor: default/, 'the unavailable filter reset must have a quiet non-actionable state');
+assert.match(css, /\.fnd-reset:disabled \{[^}]*color: var\(--text3\)[^}]*cursor: default/, 'the unavailable filter reset must have a quiet non-actionable state');
 assert.match(css, /@media \(forced-colors: active\)[\s\S]*\.search-filter-count \{[^}]*forced-color-adjust: none[^}]*background: Highlight[^}]*color: HighlightText/, 'the active count must remain distinct in forced colors');
 
 const landingDestinationLocale = { value: 'en' };
@@ -1160,21 +1172,11 @@ live.resetSearchAnnouncement();
 
 const debounceHarness = {
   callbacks: [], syncs: [], announcements: [], renders: 0, focuses: 0, selections: 0,
-  detailClears: 0, noDetailAdds: 0,
-};
-const debouncePage = {
-  classList: { add(name) { if (name === 'no-detail') debounceHarness.noDetailAdds += 1; } },
-  querySelector(selector) {
-    return selector === '.search-detail-slot'
-      ? { replaceChildren() { debounceHarness.detailClears += 1; } }
-      : null;
-  },
 };
 const debounceList = {
-  attributes: new Map(), innerHTML: '', inert: false,
+  attributes: new Map([['role', 'list'], ['aria-labelledby', 'search-results-title']]), innerHTML: 'old rows', inert: false,
   setAttribute(name, value) { this.attributes.set(name, value); },
   removeAttribute(name) { this.attributes.delete(name); },
-  closest(selector) { return selector === '.search-page' ? debouncePage : null; },
 };
 const debounceInput = {
   value: 'gamma',
@@ -1211,8 +1213,9 @@ assert.equal(searchSessionA.loading, true);
 assert.equal(searchSessionA.detailOpen, false, 'typing must close a detail route before results change');
 assert.equal(searchSessionA.resultLimit, 100, 'typing a new query must return to the first result batch');
 assert.equal(debounceList.inert, true, 'typing must synchronously disable the old result controls');
-assert.equal(debounceHarness.detailClears, 1, 'typing must synchronously remove the old detail actions');
-assert.equal(debounceHarness.noDetailAdds, 1);
+assert.equal(debounceList.innerHTML, 'old rows', 'typing must keep the old rows on screen until the settled rows replace them (no layout jump per keystroke)');
+assert.equal(debounceList.attributes.get('aria-busy'), 'true', 'the old rows must be marked busy while the query settles');
+assert.equal(debounceList.attributes.has('role') || debounceList.attributes.has('aria-labelledby'), false, 'the old rows must leave the list semantics while the query settles');
 debounce.setActive(searchSessionB);
 debounceHarness.callbacks[0]();
 assert.deepEqual(searchSessionB, { query: 'new session', selectedId: 'new', detailOpen: false, loading: false }, 'a stale callback must not mutate the replacement Search session');
@@ -1226,8 +1229,13 @@ debounceHarness.callbacks[1]();
 assert.equal(searchSessionC.loading, false, 'the current debounce must settle its own Search state');
 assert.equal(debounceHarness.renders, 1);
 assert.equal(debounceHarness.syncs.length, 3, 'the current query must sync once while loading and once when settled');
-assert.equal(debounceHarness.focuses, 1);
-assert.equal(debounceHarness.selections, 1);
+assert.equal(debounceHarness.focuses, 1, 'a settle whose repaint dropped focus must return it to the field');
+assert.equal(debounceHarness.selections, 0, 'the settled repaint must never move the caret');
+debounceContext.document.activeElement = debounceInput;
+debounce.queue('gamma ray');
+debounceHarness.callbacks[2]();
+assert.equal(debounceHarness.renders, 2);
+assert.equal(debounceHarness.focuses, 1, 'a settle must not refocus a field that kept focus through the repaint');
 
 const batchHarness = { rows: [], renders: 0, syncs: [], callbacks: [], nodes: new Map() };
 function batchNode(id) {
@@ -1315,12 +1323,13 @@ for (const [field, value] of [
   assert.equal(resultWindowState.resultLimit, 100, `${field} changes must return to the first batch`);
 }
 
-const bindingCalls = { selections: 0, opens: 0, moves: [], closes: 0 };
+const bindingCalls = { selections: 0, opens: 0, presses: 0, moves: [], closes: 0 };
 const bindingContext = vm.createContext({
   _searchSelectResult() { bindingCalls.selections += 1; return true; },
   _searchOpenPrimary() { bindingCalls.opens += 1; return true; },
   _searchMoveSelection(delta, focus, edge) { bindingCalls.moves.push({ delta, focus, edge }); },
   closeSearchSurface() { bindingCalls.closes += 1; },
+  pressSearchGlide() { bindingCalls.presses += 1; },
 });
 vm.runInContext(`${bindResultSource}\nglobalThis.__bind = bindSearchResultActivation;`, bindingContext, { filename: 'search-result-binding.js' });
 const boundResult = {
@@ -1329,14 +1338,16 @@ const boundResult = {
 };
 bindingContext.__bind(boundResult, { item: { id: 'bound-item' } }, 0, { itemId: 'bound-item' });
 const pointerEvent = { currentTarget: boundResult };
+boundResult.listeners.focus(pointerEvent);
+assert.equal(bindingCalls.selections, 1, 'focus on a result (pointer press or keyboard) must select it in place');
+assert.equal(bindingCalls.opens, 0, 'focus alone must not open a result');
 boundResult.listeners.click(pointerEvent);
-boundResult.listeners.click(pointerEvent);
-boundResult.listeners.dblclick(pointerEvent);
-assert.equal(bindingCalls.selections, 2, 'a real click-click sequence must keep selection available');
-assert.equal(bindingCalls.opens, 1, 'the following dblclick must activate exactly once');
+assert.equal(bindingCalls.opens, 1, 'a click on a result (its title covers the row) must open it exactly once');
+assert.equal(bindingCalls.presses, 1, 'opening must press the gliding highlight');
+assert.equal(boundResult.listeners.dblclick, undefined, 'a double click is no longer the open gesture');
 const resultEnter = { key: 'Enter', currentTarget: boundResult, preventCalls: 0, preventDefault() { this.preventCalls += 1; }, stopPropagation() {} };
 boundResult.listeners.keydown(resultEnter);
-assert.equal(resultEnter.preventCalls, 1);
+assert.equal(resultEnter.preventCalls, 1, 'Enter must not also fire the button\'s own click');
 assert.equal(bindingCalls.opens, 2, 'result Enter must add exactly one activation');
 const resultArrow = { key: 'ArrowDown', currentTarget: boundResult, preventCalls: 0, preventDefault() { this.preventCalls += 1; }, stopPropagation() {} };
 boundResult.listeners.keydown(resultArrow);
@@ -1357,59 +1368,74 @@ assert.deepEqual(bindingCalls.moves.slice(2), [
   { delta: 0, focus: true, edge: 'first' },
 ], 'result Home and End must reach both edges of a long list');
 
+// Roving selection over the mounted rows: each row's title button carries the
+// id `search-result-<index>`; the row (`.search-result-row`) owns the selected
+// class and both of its buttons (Open, Details) follow the roving tab index.
+// The gliding highlight moves to the selected row.
 const selectionRows = ['a', 'b', 'c'].map(id => ({ item: { id } }));
-const selectionHarness = { syncs: [], detailIds: [], removedClasses: [], nodes: new Map() };
-const selectionDetailSlot = {
-  children: [],
-  replaceChildren(child) { this.children = [child]; },
-};
-const selectionPage = {
-  classList: { remove(name) { selectionHarness.removedClasses.push(name); } },
-  querySelector(selector) { return selector === '.search-detail-slot' ? selectionDetailSlot : null; },
-};
-const selectionList = {
-  querySelectorAll(selector) {
-    return selector === '.search-result-row' ? [...selectionHarness.nodes.values()] : [];
-  },
-};
-function selectionNode(id) {
-  const attributes = new Map([['aria-selected', id === 'b' ? 'true' : 'false']]);
+const selectionHarness = { syncs: [], nodes: new Map(), rows: [] };
+function selectionClassList(initial = []) {
+  const values = new Set(initial);
   return {
-    id: `search-result-${selectionRows.findIndex(row => row.item.id === id)}`,
+    add(...names) { names.forEach(name => values.add(name)); },
+    remove(...names) { names.forEach(name => values.delete(name)); },
+    contains(name) { return values.has(name); },
+    toggle(name, force) { const next = force === undefined ? !values.has(name) : !!force; if (next) values.add(name); else values.delete(name); return next; },
+  };
+}
+const selectionGlide = {
+  classList: selectionClassList(),
+  offsetWidth: 1,
+  props: {},
+  style: { setProperty(name, value) { selectionGlide.props[name] = value; } },
+};
+const selectionPage = { querySelector(selector) { return selector === '.fnd-glide' ? selectionGlide : null; } };
+const selectionList = {
+  querySelectorAll(selector) { return selector === '.search-result-row' ? selectionHarness.rows : []; },
+};
+function selectionRowNodes(id, index) {
+  const selected = id === 'b';
+  const row = {
+    itemId: id,
     isConnected: true,
-    tabIndex: id === 'b' ? 0 : -1,
-    attributes,
-    selected: id === 'b',
+    offsetTop: 6 + index * 64,
+    offsetHeight: 64,
+    classList: selectionClassList(selected ? ['selected'] : []),
+    buttons: [],
+    querySelectorAll(selector) { return selector === 'button' ? this.buttons : []; },
+  };
+  const open = {
+    id: `search-result-${index}`,
+    isConnected: true,
+    tabIndex: selected ? 0 : -1,
     focusCalls: 0,
     scrollCalls: [],
-    classList: { toggle(name, value) { if (name === 'selected') this.owner.selected = value; }, owner: null },
-    setAttribute(name, value) { attributes.set(name, value); },
     closest(selector) {
-      if (selector === '.search-page') return selectionPage;
+      if (selector === '.search-result-row') return row;
       if (selector === '#search-result-list') return selectionList;
+      if (selector === '.search-page') return selectionPage;
       return null;
     },
     focus() { this.focusCalls += 1; },
     scrollIntoView(options) { this.scrollCalls.push(options); },
   };
+  const details = { tabIndex: selected ? 0 : -1 };
+  row.buttons = [open, details];
+  return { row, open, details };
 }
-for (const row of selectionRows) {
-  const node = selectionNode(row.item.id);
-  node.classList.owner = node;
-  selectionHarness.nodes.set(node.id, node);
-}
+selectionRows.forEach((entry, index) => {
+  const nodes = selectionRowNodes(entry.item.id, index);
+  selectionHarness.rows.push(nodes.row);
+  selectionHarness.nodes.set(nodes.open.id, nodes);
+});
 const originalSelectionNodes = [...selectionHarness.nodes.values()];
 const selectionContext = vm.createContext({
   Router: { sync(options) { selectionHarness.syncs.push(options); } },
-  document: { getElementById(id) { return selectionHarness.nodes.get(id) || null; } },
+  document: { getElementById(id) { return selectionHarness.nodes.get(id)?.open || null; } },
   _searchRowsForState() { return selectionRows; },
-  _searchDetail(row) {
-    selectionHarness.detailIds.push(row.item.id);
-    return { detailFor: row.item.id };
-  },
 });
 vm.runInContext(
-  `${searchPagingConstantsSource}\nlet activeSearch = { selectedId: 'b' };\n${searchResultLimitSource}\n${searchVisibleRowsSource}\n${selectResultSource}\n${moveSelectionSource}\nglobalThis.__selection = { move: _searchMoveSelection, select: _searchSelectResult, state() { return activeSearch; }, setSelected(value) { activeSearch.selectedId = value; } };`,
+  `${searchPagingConstantsSource}\nlet activeSearch = { selectedId: 'b' };\n${searchResultLimitSource}\n${searchVisibleRowsSource}\n${placeRowGlideSource}\n${placeSearchGlideSource}\n${selectResultSource}\n${moveSelectionSource}\nglobalThis.__selection = { move: _searchMoveSelection, select: _searchSelectResult, state() { return activeSearch; }, setSelected(value) { activeSearch.selectedId = value; } };`,
   selectionContext,
   { filename: 'search-selection-model.js' },
 );
@@ -1417,25 +1443,27 @@ const selection = selectionContext.__selection;
 assert.equal(selection.move(1, true), true, 'production ArrowDown must select the next mounted result');
 assert.equal(selection.state().selectedId, 'c');
 assert.deepEqual([...selectionHarness.nodes.values()], originalSelectionNodes, 'roving selection must keep every result node mounted');
-for (const [id, node] of [['a', originalSelectionNodes[0]], ['b', originalSelectionNodes[1]], ['c', originalSelectionNodes[2]]]) {
+for (const [id, nodes] of [['a', originalSelectionNodes[0]], ['b', originalSelectionNodes[1]], ['c', originalSelectionNodes[2]]]) {
   const selected = id === 'c';
-  assert.equal(node.selected, selected, `${id} must expose the correct selected class`);
-  assert.equal(node.attributes.get('aria-selected'), selected ? 'true' : 'false', `${id} must expose the correct aria-selected state`);
-  assert.equal(node.tabIndex, selected ? 0 : -1, `${id} must expose the correct roving tab index`);
+  assert.equal(nodes.row.classList.contains('selected'), selected, `${id} must expose the correct selected class`);
+  assert.equal(nodes.open.tabIndex, selected ? 0 : -1, `${id} must expose the correct roving tab index on its title`);
+  assert.equal(nodes.details.tabIndex, selected ? 0 : -1, `${id} must give its Details action the same roving tab index`);
 }
-assert.deepEqual(selectionHarness.detailIds, ['c']);
-assert.deepEqual(selectionDetailSlot.children, [{ detailFor: 'c' }]);
+assert.equal(selectionGlide.classList.contains('is-on'), true, 'the highlight must show on the selected row');
+assert.equal(selectionGlide.props['--glide-y'], `${originalSelectionNodes[2].row.offsetTop}px`, 'the highlight must glide to the selected row');
+assert.equal(selectionGlide.props['--glide-h'], '64px', 'the highlight must take the selected row\'s height');
 assert.deepEqual(JSON.parse(JSON.stringify(selectionHarness.syncs)), [{ replace: true }], 'selection must replace the current URL instead of pushing history');
-assert.equal(originalSelectionNodes[2].focusCalls, 1);
-assert.deepEqual(JSON.parse(JSON.stringify(originalSelectionNodes[2].scrollCalls)), [{ block: 'nearest' }]);
+assert.equal(originalSelectionNodes[2].open.focusCalls, 1);
+assert.deepEqual(JSON.parse(JSON.stringify(originalSelectionNodes[2].open.scrollCalls)), [{ block: 'nearest' }]);
 assert.equal(selection.move(1, true), true, 'production selection must wrap from the final result to the first');
 assert.equal(selection.state().selectedId, 'a');
-assert.equal(originalSelectionNodes[0].focusCalls, 1);
-assert.deepEqual(JSON.parse(JSON.stringify(originalSelectionNodes[0].scrollCalls)), [{ block: 'nearest' }]);
+assert.equal(selectionGlide.props['--glide-y'], `${originalSelectionNodes[0].row.offsetTop}px`);
+assert.equal(originalSelectionNodes[0].open.focusCalls, 1);
+assert.deepEqual(JSON.parse(JSON.stringify(originalSelectionNodes[0].open.scrollCalls)), [{ block: 'nearest' }]);
 assert.equal(selection.move(-1, true), true, 'production ArrowUp must reverse-wrap from the first result to the final result');
 assert.equal(selection.state().selectedId, 'c');
-assert.equal(originalSelectionNodes[2].focusCalls, 2);
-assert.deepEqual(JSON.parse(JSON.stringify(originalSelectionNodes[2].scrollCalls)), [{ block: 'nearest' }, { block: 'nearest' }]);
+assert.equal(originalSelectionNodes[2].open.focusCalls, 2);
+assert.deepEqual(JSON.parse(JSON.stringify(originalSelectionNodes[2].open.scrollCalls)), [{ block: 'nearest' }, { block: 'nearest' }]);
 selection.setSelected(null);
 assert.equal(selection.move(1, true, 'first'), true, 'query ArrowDown edge mode must enter the first result instead of skipping it');
 assert.equal(selection.state().selectedId, 'a');
@@ -1443,20 +1471,25 @@ assert.equal(selection.move(0, true, 'last'), true, 'End edge mode must select t
 assert.equal(selection.state().selectedId, 'c');
 assert.equal(selection.move(0, true, 'first'), true, 'Home edge mode must select the first result');
 assert.equal(selection.state().selectedId, 'a');
-assert.equal(originalSelectionNodes[0].focusCalls, 3, 'first-edge entry and Home must focus the first mounted row');
-assert.equal(originalSelectionNodes[2].focusCalls, 3, 'last-edge entry must focus the final mounted row');
-assert.equal(originalSelectionNodes[0].scrollCalls.length, 3);
-assert.equal(originalSelectionNodes[2].scrollCalls.length, 3);
+assert.equal(originalSelectionNodes[0].open.focusCalls, 3, 'first-edge entry and Home must focus the first mounted row');
+assert.equal(originalSelectionNodes[2].open.focusCalls, 3, 'last-edge entry must focus the final mounted row');
+assert.equal(originalSelectionNodes[0].open.scrollCalls.length, 3);
+assert.equal(originalSelectionNodes[2].open.scrollCalls.length, 3);
 assert.deepEqual(JSON.parse(JSON.stringify(selectionHarness.syncs)), Array.from({ length: 6 }, () => ({ replace: true })), 'forward, reverse, and edge roving must never add browser-history entries');
-const effectsBeforeMissing = { syncs: selectionHarness.syncs.length, details: selectionHarness.detailIds.length };
-selectionHarness.nodes.delete('search-result-1');
+// Focus on a row's Details action selects its row without pulling focus away.
+assert.equal(selection.select(selectionRows[1], 1, originalSelectionNodes[1].open, { focus: false }), true);
+assert.equal(selection.state().selectedId, 'b');
+assert.equal(originalSelectionNodes[1].open.focusCalls, 0, 'selecting a row from its Details action must leave focus on Details');
+assert.equal(originalSelectionNodes[1].row.classList.contains('selected'), true);
+const effectsBeforeMissing = { syncs: selectionHarness.syncs.length, glide: selectionGlide.props['--glide-y'] };
+selectionHarness.nodes.delete('search-result-2');
 assert.equal(selection.move(1, true), false, 'a missing mounted target must fail without selecting a different row');
-assert.equal(selection.state().selectedId, 'a');
-assert.deepEqual({ syncs: selectionHarness.syncs.length, details: selectionHarness.detailIds.length }, effectsBeforeMissing);
-const disconnected = originalSelectionNodes[1];
+assert.equal(selection.state().selectedId, 'b');
+assert.deepEqual({ syncs: selectionHarness.syncs.length, glide: selectionGlide.props['--glide-y'] }, effectsBeforeMissing);
+const disconnected = originalSelectionNodes[0].open;
 disconnected.isConnected = false;
-assert.equal(selection.select(selectionRows[1], 1, disconnected), false, 'a disconnected result must fail without effects');
-assert.deepEqual({ syncs: selectionHarness.syncs.length, details: selectionHarness.detailIds.length }, effectsBeforeMissing);
+assert.equal(selection.select(selectionRows[0], 0, disconnected), false, 'a disconnected result must fail without effects');
+assert.deepEqual({ syncs: selectionHarness.syncs.length, glide: selectionGlide.props['--glide-y'] }, effectsBeforeMissing);
 
 const i18nSource = extractBetween('const I18N = {', '\nfunction tr(');
 const i18nContext = vm.createContext({});
@@ -1471,14 +1504,15 @@ for (const key of [
   'search.resultCount',
   'search.showingResults',
   'search.showMore',
-  'search.openPage',
-  'search.viewDetails',
-  'search.openItem',
+  'search.open',
+  'search.details',
   'search.detailsItem',
+  'search.resultWord',
+  'search.noResultsIn',
+  'search.nothingIn',
   'search.resultOpenAria',
   'search.resultDetailsAria',
   'search.recoveryUnavailable',
-  'search.openUnavailable',
 ]) {
   const en = i18nContext.__I18N.en[key];
   const zhTW = i18nContext.__I18N['zh-TW'][key];

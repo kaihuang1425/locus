@@ -772,9 +772,7 @@ const I18N = {
     'palette.recent': 'Recently saved',
     'palette.shortcuts': 'Shortcuts',
     'palette.results': 'Results',
-    'palette.noMatch': 'No commands or saved links match this search.',
-    'palette.recentEmpty': 'Recently saved links will appear here.',
-    'palette.footer': 'Use ↑ ↓ to navigate, Enter to open, and Esc to close',
+    'palette.nothingMatches': 'Nothing matches',
     'palette.saveTab': 'Save recent browser tab',
     'palette.saveTabDesc': 'Save the most recently used browser page to Inbox',
     'palette.createNote': 'Create note',
@@ -811,6 +809,8 @@ const I18N = {
     'palette.resultCount': '{count} results',
     'palette.noActiveTab': 'No savable browser page was found',
     'palette.noSpace': 'Create a space first',
+    'palette.run': 'Run',
+    'palette.open': 'Open',
     'toast.language': 'Language: {language}',
     'toast.retry': 'Retry',
     'toast.keep': 'Keep',
@@ -1563,7 +1563,6 @@ const I18N = {
     'empty.spaceTitle': '{space} is ready for its first resources',
     'empty.spaceBody': 'Add links, notes, tasks, or stacks to build this space.',
     'empty.searchTitle': 'No results for “{query}”',
-    'empty.searchBody': 'Try broader keywords or remove the active filters.',
     'empty.readLaterTitle': 'Your reading queue is clear',
     'empty.favoritesTitle': 'Start with the links you use most',
     'empty.trashTitle': 'No deleted items',
@@ -1618,11 +1617,9 @@ const I18N = {
     'search.nav': 'Search',
     'search.inputPlaceholder': 'Title, website, note, or why you saved it…',
     'search.filters': 'Filters',
-    'search.hideFilters': 'Hide filters',
     'search.activeFilterCount': '{count} active',
     'search.clear': 'Clear',
     'search.clearFilters': 'Clear filters',
-    'search.filterBy': 'Filter by',
     'search.contentType': 'Content type',
     'search.all': 'All',
     'search.links': 'Links',
@@ -1638,7 +1635,6 @@ const I18N = {
     'search.thisMonth': 'This month',
     'search.hasTags': 'Has tags',
     'search.tags': 'Tags',
-    'search.related': 'Related results',
     'search.sortBy': 'Sort by',
     'search.bestMatch': 'Best match',
     'search.newest': 'Newest',
@@ -1646,30 +1642,24 @@ const I18N = {
     'search.recent': 'Recently saved',
     'search.resultCountOne': '1 result',
     'search.resultCount': '{count} results',
+    'search.resultWordOne': 'result',
+    'search.resultWord': 'results',
+    'search.noResultsIn': 'No results for “{query}” in {scope}',
+    'search.nothingIn': 'Nothing in {scope}',
     'search.showingResults': 'Showing {shown} of {total}',
     'search.showMore': 'Show {count} more',
     'search.loading': 'Searching your local library…',
     'search.noItems': 'Nothing saved yet',
-    'search.noItemsBody': 'Save a link, note, task, or stack and it will become searchable here.',
     'search.noResults': 'No results match this search',
     'search.noResultsBody': 'Try fewer words, another space, or clear a filter.',
     'search.error': 'Search could not be completed',
     'search.errorBody': 'Your data was not changed. Clear the query and try again.',
     'search.open': 'Open',
     'search.details': 'Details',
-    'search.openPage': 'Open page',
-    'search.viewDetails': 'View details',
-    'search.openItem': 'Open “{title}”',
     'search.detailsItem': 'View details for “{title}”',
     'search.resultOpenAria': '{title}. Saved in {location}. Press Enter to open the page.',
     'search.resultDetailsAria': '{title}. Saved in {location}. Press Enter to view details.',
     'search.recoveryUnavailable': 'This saved item changed or moved. Your search is still here.',
-    'search.openUnavailable': 'This saved address can’t be opened. View details to review it.',
-    'search.preview': 'Recovery details',
-    'search.selectResult': 'Select a result to preview it.',
-    'search.saved': 'Saved',
-    'search.location': 'Saved in',
-    'search.noNotes': 'No notes added.',
     'search.resultAria': 'Search result: {title}',
     'search.stackItems': '{count} nested items',
     'search.unknownDate': 'Date unavailable',
@@ -2535,9 +2525,7 @@ const I18N = {
     'palette.recent': '最近儲存',
     'palette.shortcuts': '快捷操作',
     'palette.results': '搜尋結果',
-    'palette.noMatch': '找不到符合的指令或已儲存連結。',
-    'palette.recentEmpty': '最近儲存的連結會顯示在這裡。',
-    'palette.footer': '使用 ↑ ↓ 移動、Enter 開啟、Esc 關閉',
+    'palette.nothingMatches': '沒有符合的結果',
     'palette.saveTab': '儲存最近使用的分頁',
     'palette.saveTabDesc': '將最近使用的網頁分頁儲存到收件匣',
     'palette.createNote': '建立筆記',
@@ -2574,6 +2562,8 @@ const I18N = {
     'palette.resultCount': '{count} 個結果',
     'palette.noActiveTab': '目前沒有可儲存的網頁分頁',
     'palette.noSpace': '請先建立空間',
+    'palette.run': '執行',
+    'palette.open': '開啟',
     'toast.language': '語言：{language}',
     'toast.retry': '重試',
     'toast.keep': '保留',
@@ -3326,7 +3316,6 @@ const I18N = {
     'empty.spaceTitle': '「{space}」已準備好收納第一批資源',
     'empty.spaceBody': '新增連結、筆記、待辦或堆疊，開始建立這個空間。',
     'empty.searchTitle': '找不到「{query}」的結果',
-    'empty.searchBody': '請嘗試更廣泛的關鍵字，或移除目前的篩選條件。',
     'empty.readLaterTitle': '稍後閱讀清單是空的',
     'empty.favoritesTitle': '先收藏你最常使用的連結',
     'empty.trashTitle': '沒有已刪除的項目',
@@ -3381,11 +3370,9 @@ const I18N = {
     'search.nav': '搜尋',
     'search.inputPlaceholder': '輸入標題、網站、筆記或儲存原因…',
     'search.filters': '篩選條件',
-    'search.hideFilters': '隱藏篩選條件',
     'search.activeFilterCount': '已套用 {count} 項',
     'search.clear': '清除',
     'search.clearFilters': '清除篩選條件',
-    'search.filterBy': '篩選',
     'search.contentType': '內容類型',
     'search.all': '全部',
     'search.links': '連結',
@@ -3401,7 +3388,6 @@ const I18N = {
     'search.thisMonth': '本月',
     'search.hasTags': '含有標籤',
     'search.tags': '標籤',
-    'search.related': '相關結果',
     'search.sortBy': '排序方式',
     'search.bestMatch': '最佳符合',
     'search.newest': '最新',
@@ -3409,30 +3395,24 @@ const I18N = {
     'search.recent': '最近儲存',
     'search.resultCountOne': '1 個結果',
     'search.resultCount': '{count} 個結果',
+    'search.resultWordOne': '個結果',
+    'search.resultWord': '個結果',
+    'search.noResultsIn': '在「{scope}」找不到「{query}」的結果',
+    'search.nothingIn': '「{scope}」裡沒有符合的內容',
     'search.showingResults': '已顯示 {shown} 個，共 {total} 個結果',
     'search.showMore': '再顯示 {count} 個結果',
     'search.loading': '正在搜尋你的本機資料庫…',
     'search.noItems': '尚未儲存任何內容',
-    'search.noItemsBody': '儲存連結、筆記、待辦或堆疊後，就能在這裡搜尋。',
     'search.noResults': '沒有符合此搜尋的結果',
     'search.noResultsBody': '請減少關鍵字、改選其他空間，或清除篩選條件。',
     'search.error': '無法完成搜尋',
     'search.errorBody': '你的資料未被變更。請清除查詢後再試一次。',
     'search.open': '開啟',
     'search.details': '詳細資料',
-    'search.openPage': '開啟頁面',
-    'search.viewDetails': '查看詳細內容',
-    'search.openItem': '開啟「{title}」',
     'search.detailsItem': '查看「{title}」的詳細內容',
     'search.resultOpenAria': '「{title}」，儲存在「{location}」。按 Enter 開啟頁面。',
     'search.resultDetailsAria': '「{title}」，儲存在「{location}」。按 Enter 查看詳細內容。',
     'search.recoveryUnavailable': '這個已儲存項目已變更或移動。搜尋內容仍保留。',
-    'search.openUnavailable': '這個已儲存網址無法開啟。請查看詳細內容並確認網址。',
-    'search.preview': '復原資訊',
-    'search.selectResult': '選取一筆結果即可預覽。',
-    'search.saved': '儲存時間',
-    'search.location': '儲存位置',
-    'search.noNotes': '尚未新增筆記。',
     'search.resultAria': '搜尋結果：{title}',
     'search.stackItems': '{count} 個巢狀項目',
     'search.unknownDate': '沒有日期',
@@ -17329,7 +17309,9 @@ function renderBoard() {
   // Home is a block-scrolling surface; clear its class up front so the calendar
   // and group-page gates (which early-return below) never inherit it. renderHome()
   // re-adds it when Home is the active surface.
-  document.getElementById('board').classList.remove('home-mode', 'library-mode', 'archive-mode', 'trash-mode', 'read-later-mode', 'search-mode', 'plan-mode');
+  document.getElementById('board').classList.remove('home-mode', 'library-mode', 'archive-mode', 'trash-mode', 'read-later-mode', 'plan-mode');
+  // Find again keeps its mark through its own repaint, like the pages below.
+  if (!activeSearch) document.getElementById('board').classList.remove('search-mode');
   // The Inbox and Library pages keep their marks through their own repaint, so
   // the board's padding never drops out mid-render and clamps the scroll position.
   if (activeSearch || activeCalendar || !isInboxPageActive()) {
@@ -17361,6 +17343,7 @@ function renderBoard() {
   }
   if (libraryPageSession && !isLibraryPageActive()) libraryPageSession = null;
   if (spacePageSession && !isSpacePageActive()) spacePageSession = null;
+  if (searchPageSession && !activeSearch) searchPageSession = null;
   // The calendar (§5) and group pages (§4.1) are surfaces that sit above the
   // layout registry: when one is open every re-render keeps showing it. Each
   // renderer returns false if the user has navigated away, so we fall through to
@@ -25028,7 +25011,19 @@ function toggleSearchBar(force) {
 let _searchRenderTimer = null;
 
 function _searchPlainHtml(html) {
-  return String(html || '').replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/\s+/g, ' ').trim();
+  const source = String(html || '');
+  if (!source) return '';
+  // Find again re-reads every saved note on each keystroke; the text of an
+  // unchanged html string is remembered (keyed by the string itself, so an
+  // edit is simply a new key).
+  const cache = _searchPlainHtml.cache || (_searchPlainHtml.cache = new Map());
+  let text = cache.get(source);
+  if (text === undefined) {
+    text = source.replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]+>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/\s+/g, ' ').trim();
+    if (cache.size >= 5000) cache.clear();
+    cache.set(source, text);
+  }
+  return text;
 }
 
 function _searchNoteParts(item) {
@@ -25053,15 +25048,6 @@ function _searchItemTitle(item) {
   return item.title || item.text || item.name || item.type || '';
 }
 
-function _searchItemSnippet(item) {
-  if (!item) return '';
-  if (item.type === 'tab') return dispUrl(item.url || '');
-  if (item.type === 'note') return _searchPlainHtml(item.notes).slice(0, 180) || _searchNoteParts(item).snippet || tr('search.notes');
-  if (item.type === 'todo') return item.done ? tr('search.todos') + ' · ✓' : tr('search.todos');
-  if (item.type === 'stack') return tr('search.stackItems', { count: (item.items || []).length });
-  return '';
-}
-
 function _searchTypeLabel(type) {
   return tr(type === 'tab' ? 'search.links' : type === 'note' ? 'search.notes' : type === 'todo' ? 'search.todos' : 'search.stacks');
 }
@@ -25076,10 +25062,11 @@ function _searchItemBlob(row) {
 
 // Data-level counterpart to applySearchFilter's DOM matcher. The launch layer,
 // command palette, and search page now share this exact operator behavior.
-function searchItemMatches(row, query) {
+// `parsed` lets a caller that tests many rows parse the query once.
+function searchItemMatches(row, query, parsed = null) {
   const { item, cat, group, parents = [] } = row;
   if (!item) return false;
-  const { pos, neg } = parseSearchQuery(query);
+  const { pos, neg } = parsed || parseSearchQuery(query);
   let host = '';
   try { host = new URL(item.url || '').hostname.toLowerCase(); } catch {}
   const url = String(item.url || '').toLowerCase();
@@ -25111,12 +25098,12 @@ function _searchTimeCutoff(time) {
   return 0;
 }
 
-function _searchScore(row, query) {
+function _searchScore(row, query, parsed = null) {
   const raw = String(query || '').trim().toLowerCase();
   if (!raw) return Number(row.item.createdAt || 0);
   const title = _searchItemTitle(row.item).toLowerCase();
   const blob = _searchItemBlob(row);
-  const words = parseSearchQuery(raw).pos.text;
+  const words = (parsed || parseSearchQuery(raw)).pos.text;
   let score = 0;
   words.forEach(word => {
     if (title === word) score += 500;
@@ -25129,8 +25116,9 @@ function _searchScore(row, query) {
 
 function _searchRowsForState(state = activeSearch, { ignoreType = false } = {}) {
   const cutoff = _searchTimeCutoff(state.time);
+  const parsed = state.query ? parseSearchQuery(state.query) : null;
   const rows = collectWorkspaceItems(activeWs()).filter(row => {
-    if (state.query && !searchItemMatches(row, state.query)) return false;
+    if (state.query && !searchItemMatches(row, state.query, parsed)) return false;
     if (!ignoreType && state.type !== 'all' && row.item.type !== state.type) return false;
     if (state.spaceId !== 'all' && row.cat.id !== state.spaceId) return false;
     if (cutoff && (!row.item.createdAt || row.item.createdAt < cutoff)) return false;
@@ -25138,15 +25126,23 @@ function _searchRowsForState(state = activeSearch, { ignoreType = false } = {}) 
     if (state.tag && !(row.item.tags || []).some(tag => String(tag).toLowerCase() === state.tag.toLowerCase())) return false;
     return true;
   });
-  rows.sort(state.sort === 'recent' || !state.query
-    ? (a, b) => Number(b.item.createdAt || 0) - Number(a.item.createdAt || 0)
-    : (a, b) => _searchScore(b, state.query) - _searchScore(a, state.query));
+  if (state.sort === 'recent' || !state.query) {
+    rows.sort((a, b) => Number(b.item.createdAt || 0) - Number(a.item.createdAt || 0));
+    return rows;
+  }
+  // Score each row once; a large library would otherwise rebuild every row's
+  // text on each comparison of the sort.
+  const scores = new Map(rows.map(row => [row, _searchScore(row, state.query, parsed)]));
+  rows.sort((a, b) => scores.get(b) - scores.get(a));
   return rows;
 }
 
 function openSearchSurface(prefill = '') {
   const ws = activeWs();
   if (!ws) return;
+  // One floating layer at a time: a menu gives way to Search. Leaving the page
+  // underneath already closes Details and the Today drawer.
+  if (typeof hideContextMenu === 'function') hideContextMenu();
   const query = {};
   if (prefill) query.q = String(prefill);
   Router.navigate({ type: 'search', wsId: ws.id, query }, { persist: false });
@@ -25285,6 +25281,12 @@ function handleSearchQueryKeydown(event, state, ws) {
   if (event.key === 'Escape') {
     event.preventDefault();
     event.stopPropagation();
+    // Escape clears a typed query first (as the Library filter does); the next
+    // Escape leaves Search.
+    if (String(event.currentTarget?.value || '')) {
+      _searchSet({ query: '', selectedId: null }, 'search-surface-input');
+      return true;
+    }
     closeSearchSurface();
     return true;
   }
@@ -25392,9 +25394,6 @@ function suspendSearchRecoveryActions() {
   if (list) {
     list.setAttribute('aria-busy', 'true');
     list.inert = true;
-    const page = list.closest('.search-page');
-    page?.classList.add('no-detail');
-    page?.querySelector('.search-detail-slot')?.replaceChildren();
   }
   return true;
 }
@@ -25442,10 +25441,12 @@ function _searchQueueQuery(query) {
   announceSearchStatus(tr('search.loading'), searchAnnouncementSignature(scheduledState, null, 'loading'));
   const list = document.getElementById('search-result-list');
   if (list) {
+    // The old rows stay on screen until the new ones replace them in place, so
+    // the page does not jump on every keystroke; they leave the list semantics
+    // and stay inert meanwhile.
     list.setAttribute('aria-busy', 'true');
     list.removeAttribute('role');
     list.removeAttribute('aria-labelledby');
-    list.innerHTML = `<div class="search-state"><span class="search-spinner" aria-hidden="true"></span><strong>${esc(tr('search.loading'))}</strong></div>`;
   }
   clearTimeout(_searchRenderTimer);
   _searchRenderTimer = setTimeout(() => {
@@ -25453,37 +25454,214 @@ function _searchQueueQuery(query) {
     scheduledState.loading = false;
     renderBoard();
     Router.sync({ replace: true });
+    // The field survives the repaint with its caret; focus comes back only if a
+    // rebuild dropped it.
     const input = document.getElementById('search-surface-input');
-    if (input) { input.focus({ preventScroll: true }); input.setSelectionRange(input.value.length, input.value.length); }
+    const active = document.activeElement;
+    if (input && (!active || active === document.body)) input.focus({ preventScroll: true });
   }, 90);
 }
 
-function _searchSelectResult(row, index, result) {
+// ── Find again page (2026-11 canvas) ──────────────────────────────
+// One heading; one search field whose operators are marked as the shared parser
+// understands them; the content-type switch (its pill slides, its counts roll),
+// Filters and the sort; then the results in one card. The result count in the
+// field rolls as the matches change and the matched words are marked in each
+// title. A highlight glides to the row under the pointer or the keyboard, and
+// the selected row shows what Enter does. The page root stays across repaints,
+// so the field keeps its caret while the results change under it.
+
+const SEARCH_TYPE_ORDER = ['all', 'tab', 'note', 'todo', 'stack'];
+const SEARCH_TYPE_LABELS = { all: 'search.all', tab: 'search.links', note: 'search.notes', todo: 'search.todos', stack: 'search.stacks' };
+const SEARCH_FILTER_PATH = 'M2.5 3.5h10l-3.9 4.7v4.2l-2.2-1.1V8.2z';
+// Details as a panel glyph, shown in place of its word at phone width.
+const SEARCH_DETAILS_PATH = 'M2.5 3h10v9h-10zM9 3v9';
+const SEARCH_FIRST_PAINT_ROWS = 24;
+// What the last paint showed, so counts roll, rows rise and marks animate only
+// when something changed.
+let searchPageSession = null;
+
+function searchPageState(wsId) {
+  if (!searchPageSession || searchPageSession.wsId !== wsId) {
+    searchPageSession = { wsId, count: null, typeCounts: null, hiddenCount: 0, viewKey: null, query: null, opKeys: new Set(), filtersOpen: null };
+  }
+  return searchPageSession;
+}
+
+function searchPageRoot() {
+  return document.querySelector('#board > .search-page');
+}
+
+// The operators the shared parser understands, found in the field's own text:
+// blue for where (in:, domain:, site:, host:, url:, tag:), green for is:, grey
+// for type: and colour:, struck through for a minus.
+function searchQueryMarks(value) {
+  const text = String(value || '');
+  const marks = [];
+  const pattern = /-?"[^"]*"|\S+/g;
+  let match;
+  while ((match = pattern.exec(text))) {
+    let token = match[0].toLowerCase();
+    const negative = token[0] === '-' && token.length > 1;
+    if (negative) token = token.slice(1);
+    let kind = '';
+    if (/^(?:colou?r|type):./.test(token)) kind = 'type';
+    else if (/^is:./.test(token)) kind = 'done';
+    else if (/^(?:domain|site|host|url|in|tag):./.test(token)) kind = 'where';
+    if (negative) kind = 'not';
+    if (kind) marks.push({ start: match.index, end: match.index + match[0].length, kind });
+  }
+  return marks;
+}
+
+// The field's text is transparent; this mirror draws the same characters with
+// the operators marked, as Today's capture bar does. A mark animates only when
+// it is new, not while its value is still being typed.
+function paintSearchQueryMirror(page = searchPageRoot()) {
+  const input = page?.querySelector('#search-surface-input');
+  const mirror = page?.querySelector('.fnd-mirror');
+  if (!input || !mirror) return false;
+  const value = String(input.value || '');
+  const known = searchPageSession?.opKeys || new Set();
+  const next = new Set();
+  const perKind = {};
+  // One inline line: a flex mirror would drop the spaces between two marks.
+  const line = document.createElement('span');
+  line.className = 'fnd-mirror-line';
+  let cursor = 0;
+  searchQueryMarks(value).forEach(mark => {
+    if (mark.start > cursor) line.appendChild(document.createTextNode(value.slice(cursor, mark.start)));
+    perKind[mark.kind] = (perKind[mark.kind] || 0) + 1;
+    const key = `${mark.kind}:${perKind[mark.kind]}`;
+    const node = document.createElement('mark');
+    node.className = `fnd-op is-${mark.kind}${known.has(key) ? '' : ' is-new'}`;
+    node.textContent = value.slice(mark.start, mark.end);
+    line.appendChild(node);
+    next.add(key);
+    cursor = mark.end;
+  });
+  if (cursor < value.length) line.appendChild(document.createTextNode(value.slice(cursor)));
+  mirror.replaceChildren(line);
+  if (searchPageSession) searchPageSession.opKeys = next;
+  mirror.scrollLeft = input.scrollLeft;
+  return true;
+}
+
+// Escaped text with the given [from, to) ranges wrapped in one <mark> each
+// (overlapping and touching ranges merge).
+function hitRangesMarkup(text, ranges, className) {
+  const value = String(text || '');
+  const merged = [];
+  (ranges || []).slice().sort((a, b) => a[0] - b[0]).forEach(range => {
+    const last = merged[merged.length - 1];
+    if (last && range[0] <= last[1]) last[1] = Math.max(last[1], range[1]);
+    else merged.push(range.slice());
+  });
+  let html = '';
+  let cursor = 0;
+  merged.forEach(([from, to]) => {
+    html += `${esc(value.slice(cursor, from))}<mark class="${className}">${esc(value.slice(from, to))}</mark>`;
+    cursor = to;
+  });
+  return html + esc(value.slice(cursor));
+}
+
+// The query's words marked inside a title, a domain or a snippet. The parser
+// lowercases its words, so text whose lowercase changes length stays unmarked.
+function searchHitMarkup(text, needles) {
+  const value = String(text || '');
+  const lower = value.toLowerCase();
+  const words = (needles || []).filter(Boolean);
+  if (!words.length || lower.length !== value.length) return esc(value);
+  const ranges = [];
+  words.forEach(word => {
+    for (let at = lower.indexOf(word); at >= 0; at = lower.indexOf(word, at + word.length)) ranges.push([at, at + word.length]);
+  });
+  return hitRangesMarkup(value, ranges, 'fnd-hit');
+}
+
+// A line of the note body or the why-you-saved-it notes around the first
+// match, shown under the title only when the words matched there.
+function searchResultSnippet(item, needles) {
+  const words = (needles || []).filter(Boolean);
+  if (!words.length || !item) return '';
+  const text = [item.type === 'note' ? _searchNoteParts(item).snippet : '', _searchPlainHtml(item.notes)]
+    .filter(Boolean).join(' · ');
+  const lower = text.toLowerCase();
+  const hits = words.map(word => lower.indexOf(word)).filter(index => index >= 0);
+  if (!hits.length) return '';
+  // A match deep in long notes starts the line a few words before it.
+  const first = Math.min(...hits);
+  let start = 0;
+  if (first > 60) {
+    const space = text.indexOf(' ', first - 40);
+    start = space >= 0 && space < first ? space + 1 : first - 40;
+  }
+  return `${start ? '…' : ''}${searchHitMarkup(text.slice(start, start + 160), words)}`;
+}
+
+// A highlight behind a list's rows (Find again, the command palette): it
+// appears in place on its first row, then glides from row to row.
+function placeRowGlide(glide, row) {
+  if (!glide) return;
+  if (!row || !row.isConnected) {
+    glide.classList.remove('is-on');
+    return;
+  }
+  const appearing = !glide.classList.contains('is-on');
+  if (appearing) glide.classList.add('is-jump');
+  glide.style.setProperty('--glide-y', `${row.offsetTop}px`);
+  glide.style.setProperty('--glide-h', `${row.offsetHeight}px`);
+  if (appearing) {
+    void glide.offsetWidth;
+    glide.classList.remove('is-jump');
+  }
+  glide.classList.add('is-on');
+}
+
+// On Find again it sits on the selected row, or on the row under the pointer.
+function placeSearchGlide(page, row) {
+  placeRowGlide(page?.querySelector('.fnd-glide'), row);
+}
+
+function searchSelectedRowEl(page = searchPageRoot()) {
+  return page?.querySelector('#search-result-list .search-result-row.selected') || null;
+}
+
+function pressSearchGlide() {
+  restartLibraryMotion(searchPageRoot()?.querySelector('.fnd-glide.is-on .fnd-gi'), 'is-press');
+}
+
+function _searchSelectResult(row, index, result, { focus = true } = {}) {
   if (!activeSearch || activeSearch.loading || !row?.item || !result?.isConnected) return false;
   const changed = activeSearch.selectedId !== row.item.id;
+  const owner = result.closest('.search-result-row');
   if (changed) {
     activeSearch.selectedId = row.item.id;
-    const page = result.closest('.search-page');
     const list = result.closest('#search-result-list');
     list?.querySelectorAll('.search-result-row').forEach(candidate => {
-      const selected = candidate === result;
+      const selected = candidate === owner;
       candidate.classList.toggle('selected', selected);
-      candidate.setAttribute('aria-selected', selected ? 'true' : 'false');
-      candidate.tabIndex = selected ? 0 : -1;
+      candidate.querySelectorAll('button').forEach(button => { button.tabIndex = selected ? 0 : -1; });
     });
-    page?.classList.remove('no-detail');
-    const detailSlot = page?.querySelector('.search-detail-slot');
-    if (detailSlot) detailSlot.replaceChildren(_searchDetail(row));
     Router.sync({ replace: true });
   }
-  try { result.focus({ preventScroll: true }); } catch { try { result.focus(); } catch {} }
+  placeSearchGlide(result.closest('.search-page'), owner);
+  if (focus) {
+    try { result.focus({ preventScroll: true }); } catch { try { result.focus(); } catch {} }
+  }
   try { result.scrollIntoView({ block: 'nearest' }); } catch {}
   return true;
 }
 
+// The title button covers its row: a click opens the result (the page through
+// the shared reopen coordinator, anything else in Details) and focus selects it.
 function bindSearchResultActivation(result, row, index, recoveryContext) {
-  result.addEventListener('click', event => _searchSelectResult(row, index, event.currentTarget));
-  result.addEventListener('dblclick', event => _searchOpenPrimary(recoveryContext, event.currentTarget));
+  result.addEventListener('focus', event => _searchSelectResult(row, index, event.currentTarget));
+  result.addEventListener('click', event => {
+    pressSearchGlide();
+    _searchOpenPrimary(recoveryContext, event.currentTarget);
+  });
   result.addEventListener('keydown', event => {
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault();
@@ -25493,6 +25671,7 @@ function bindSearchResultActivation(result, row, index, recoveryContext) {
       _searchMoveSelection(0, true, event.key === 'Home' ? 'first' : 'last');
     } else if (event.key === 'Enter') {
       event.preventDefault();
+      pressSearchGlide();
       _searchOpenPrimary(recoveryContext, event.currentTarget);
     } else if (event.key === 'Escape') {
       event.preventDefault();
@@ -25513,135 +25692,75 @@ function _searchMoveSelection(delta, focusRow = false, edge = '') {
   else index = (index + delta + rows.length) % rows.length;
   const result = document.getElementById(`search-result-${index}`);
   if (!result) return false;
-  return _searchSelectResult(rows[index], index, result);
-}
-
-function _searchTypeIcon(type) {
-  if (type === 'note') return '✎';
-  if (type === 'todo') return '✓';
-  if (type === 'stack') return '▤';
-  return '↗';
+  return _searchSelectResult(rows[index], index, result, { focus: focusRow });
 }
 
 function _searchStateNode(kind, title, body) {
   const node = document.createElement('div');
   node.className = `search-state ${kind}`;
   if (kind === 'error') node.setAttribute('role', 'alert');
-  node.innerHTML = `<span class="search-state-icon" aria-hidden="true">${kind === 'error' ? '!' : '⌕'}</span><strong>${esc(title)}</strong><p>${esc(body)}</p>`;
+  node.innerHTML = `<span class="search-state-icon" aria-hidden="true">${kind === 'error' ? '!' : librarySvg('search', 22, 1.5)}</span><strong>${esc(title)}</strong>${body ? `<p>${esc(body)}</p>` : ''}`;
   return node;
 }
 
-function _searchResultRow(row, index, selected) {
+// One result: the icon, the title (the matched words marked) over the exact
+// saved place and the source, a line of the note when the words matched there,
+// the saved age, and on hover or selection Details and what Enter does.
+function _searchResultRow(row, index, selected, needles = []) {
   const item = row.item;
   const title = _searchItemTitle(item);
   const recoveryContext = createSearchRecoveryContext(row);
   const location = searchRecoveryLocationText(recoveryContext);
   const canOpen = searchRecoveryCanOpen(recoveryContext);
   const savedAgo = item.createdAt ? fmtTimeRelative(item.createdAt) : tr('search.unknownDate');
-  const result = document.createElement('div');
-  result.id = `search-result-${index}`;
+  const host = item.type === 'tab' ? planSortMeta(item).domain : '';
+  const nested = item.type === 'stack' ? tr('search.stackItems', { count: (item.items || []).length }) : '';
+  const snippet = searchResultSnippet(item, needles);
+  const node = document.createElement('div');
+  node.className = 'search-result-row fnd-row' + (selected ? ' selected' : '') + (item.type === 'todo' && item.done ? ' is-done' : '');
+  node.setAttribute('role', 'listitem');
+  node.dataset.itemId = String(item.id);
+  node.innerHTML = `
+    ${inboxFavMarkup(item)}
+    <div class="fnd-copy">
+      <button type="button" class="fnd-open" id="search-result-${index}"><span class="fnd-tt">${searchHitMarkup(title, needles)}</span>${librarySvg('go', 13, 1.9, 'fnd-go')}</button>
+      <span class="search-result-location fnd-meta"><span class="fnd-dot" style="--dot:${esc(reminderDotColor(row.group?.color || null))}" aria-hidden="true"></span>${searchRecoveryPathHtml(recoveryContext)}${host ? `<span class="fnd-src">${searchHitMarkup(host, needles)}</span>` : ''}${nested ? `<span class="fnd-src">${esc(nested)}</span>` : ''}<span class="fnd-meta-when" aria-hidden="true">${esc(savedAgo)}</span></span>
+      ${snippet ? `<span class="search-result-snippet fnd-snip">${snippet}</span>` : ''}
+    </div>
+    <span class="search-result-time fnd-when">${esc(savedAgo)}</span>
+    <div class="fnd-acts">
+      ${canOpen ? `<button type="button" class="fnd-details"><svg width="18" height="18" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true"><path d="${SEARCH_DETAILS_PATH}"/></svg><span class="fnd-details-label">${esc(tr('search.details'))}</span></button>` : ''}
+      <span class="fnd-cap" aria-hidden="true">${esc(tr(canOpen ? 'search.open' : 'search.details'))}<kbd>↵</kbd></span>
+    </div>`;
+  const result = node.querySelector('.fnd-open');
   result.dataset.itemId = String(item.id);
-  result.className = 'search-result-row' + (selected ? ' selected' : '');
   result.tabIndex = selected ? 0 : -1;
-  result.setAttribute('role', 'option');
-  result.setAttribute('aria-selected', selected ? 'true' : 'false');
   result.setAttribute('aria-label', tr(canOpen ? 'search.resultOpenAria' : 'search.resultDetailsAria', {
     title,
     location,
   }));
-  result.innerHTML = `
-    <span class="search-result-icon type-${esc(item.type)}">${esc(_searchTypeIcon(item.type))}</span>
-    <span class="search-result-copy">
-      <strong>${esc(title)}</strong>
-      <span class="search-result-location">${esc(location)}</span>
-      <span class="search-result-snippet">${esc(_searchItemSnippet(item))}</span>
-      <span class="search-result-tags">${(item.tags || []).slice(0, 3).map(tag => `<span>${esc(tag)}</span>`).join('')}</span>
-    </span>
-    <span class="search-result-end">
-      <span class="search-type-badge">${esc(_searchTypeLabel(item.type))}</span>
-      <span class="search-result-time">${esc(savedAgo)}</span>
-    </span>`;
+  // Details sits beside Open only for pages that open; anything else opens
+  // Details from its title.
+  const details = node.querySelector('.fnd-details');
+  if (details) {
+    details.tabIndex = selected ? 0 : -1;
+    details.setAttribute('aria-label', tr('search.detailsItem', { title }));
+    details.addEventListener('focus', () => _searchSelectResult(row, index, result, { focus: false }));
+    details.addEventListener('click', event => _searchOpenDetails(recoveryContext, event.currentTarget));
+  }
   bindSearchResultActivation(result, row, index, recoveryContext);
-  return result;
-}
-
-function _searchDetail(row) {
-  const aside = document.createElement('aside');
-  aside.className = 'search-detail';
-  aside.setAttribute('aria-label', tr('search.preview'));
-  if (!row) {
-    aside.appendChild(_searchStateNode('idle', tr('search.preview'), tr('search.selectResult')));
-    return aside;
-  }
-  const item = row.item;
-  const title = _searchItemTitle(item);
-  const recoveryContext = createSearchRecoveryContext(row);
-  const canOpen = searchRecoveryCanOpen(recoveryContext);
-  const notes = item.type === 'note' ? _searchNoteParts(item).snippet : _searchPlainHtml(item.notes);
-  const currentRows = searchVisibleRows(activeSearch);
-  const related = currentRows
-    .map((candidate, index) => ({ candidate, index }))
-    .filter(({ candidate }) => candidate.item.id !== item.id)
-    .sort((a, b) => {
-      const rank = candidate => candidate.group.id === row.group.id ? 2 : candidate.cat.id === row.cat.id ? 1 : 0;
-      return rank(b.candidate) - rank(a.candidate) || a.index - b.index;
-    })
-    .slice(0, 3);
-  aside.innerHTML = `
-    <header><span class="search-detail-icon type-${esc(item.type)}">${esc(_searchTypeIcon(item.type))}</span><div><strong>${esc(title)}</strong><span>${esc(_searchItemSnippet(item))}</span></div></header>
-    <div class="search-recovery-map">
-      <span>${esc(tr('search.location'))}</span>
-      ${searchRecoveryPathHtml(recoveryContext)}
-    </div>
-    <footer class="search-detail-actions"></footer>
-    <dl>
-      <div><dt>${esc(tr('search.saved'))}</dt><dd>${esc(item.createdAt ? new Date(item.createdAt).toLocaleString(appLocale(), { dateStyle: 'medium', timeStyle: 'short' }) : tr('search.unknownDate'))}</dd></div>
-      <div><dt>${esc(tr('search.contentType'))}</dt><dd>${esc(_searchTypeLabel(item.type))}</dd></div>
-    </dl>
-    <section><h3>${esc(tr('search.notes'))}</h3><p>${esc(notes || tr('search.noNotes'))}</p></section>
-    ${(item.tags || []).length ? `<section><h3>${esc(tr('search.tags'))}</h3><div class="search-detail-tags">${item.tags.map(tag => `<span>${esc(tag)}</span>`).join('')}</div></section>` : ''}
-    ${related.length ? `<section class="search-detail-related"><h3>${esc(tr('search.related'))}</h3><div>${related.map(({ candidate, index }) => `<button type="button" data-result-index="${index}" data-result-id="${esc(candidate.item.id)}"><span class="search-related-icon type-${esc(candidate.item.type)}">${esc(_searchTypeIcon(candidate.item.type))}</span><span><strong>${esc(_searchItemTitle(candidate.item))}</strong><small>${esc(candidate.cat.name)} · ${esc(candidate.group.name)}</small></span></button>`).join('')}</div></section>` : ''}`;
-  const footer = aside.querySelector('footer');
-  if (canOpen) {
-    const open = document.createElement('button');
-    open.type = 'button';
-    open.className = 'btn-primary';
-    open.textContent = tr('search.openPage');
-    open.setAttribute('aria-label', tr('search.openItem', { title }));
-    open.onclick = event => _searchOpenPrimary(recoveryContext, event.currentTarget);
-    footer.appendChild(open);
-  } else if (item.type === 'tab') {
-    const unavailable = document.createElement('p');
-    unavailable.className = 'search-open-unavailable';
-    unavailable.textContent = tr('search.openUnavailable');
-    footer.before(unavailable);
-  }
-  const details = document.createElement('button');
-  details.type = 'button';
-  details.className = canOpen ? 'btn-secondary' : 'btn-primary';
-  details.textContent = tr('search.viewDetails');
-  details.setAttribute('aria-label', tr('search.detailsItem', { title }));
-  details.onclick = event => _searchOpenDetails(recoveryContext, event.currentTarget);
-  footer.appendChild(details);
-  aside.querySelectorAll('.search-detail-related button').forEach(button => {
-    button.onclick = () => {
-      const index = Number(button.dataset.resultIndex);
-      const row = currentRows[index];
-      const result = document.getElementById(`search-result-${index}`);
-      if (!row || row.item.id !== button.dataset.resultId || !result) return false;
-      return _searchSelectResult(row, index, result);
-    };
-  });
-  return aside;
+  bindInboxFavicons(node);
+  return node;
 }
 
 function _searchFilterButton(label, active, onclick, count = null, id = '') {
   const button = document.createElement('button');
   button.type = 'button';
   if (id) button.id = id;
-  button.className = 'search-filter-option' + (active ? ' active' : '');
+  button.className = 'search-filter-option fnd-chip' + (active ? ' active' : '');
   button.setAttribute('aria-pressed', active ? 'true' : 'false');
-  button.innerHTML = `<span class="search-filter-mark" aria-hidden="true"></span><span>${esc(label)}</span>${count == null ? '' : `<b>${count}</b>`}`;
+  button.textContent = label;
+  if (count != null) button.setAttribute('aria-label', tr('library.modeCount', { label, count }));
   button.onclick = onclick;
   return button;
 }
@@ -25690,6 +25809,29 @@ function syncSearchQueryClear(input, clearButton = null) {
   return available;
 }
 
+// The empty result's title names what was searched and where; its one action
+// widens the search: every Space when it was scoped, else no filters, else no
+// query.
+function searchEmptyCopy(state, ws) {
+  const parsed = parseSearchQuery(state.query);
+  const words = parsed.pos.text.join(' ');
+  const inValue = parsed.pos.in[0] || '';
+  const names = [
+    ...ws.categories.map(cat => cat.name),
+    ...ws.categories.flatMap(cat => cat.groups.map(group => group.name)),
+  ].filter(Boolean);
+  const scope = inValue
+    ? (names.find(name => String(name).toLowerCase().includes(inValue)) || inValue)
+    : (state.spaceId !== 'all' ? (ws.categories.find(cat => cat.id === state.spaceId)?.name || '') : '');
+  const title = words
+    ? (scope ? tr('search.noResultsIn', { query: words, scope }) : tr('empty.searchTitle', { query: words }))
+    : (scope ? tr('search.nothingIn', { scope }) : tr('empty.noMatchTitle'));
+  return { title, scoped: !!scope };
+}
+
+// Renders Find again into #board. The page root stays across repaints of the
+// same workspace (the field keeps its caret, the type pill slides, counts
+// roll); the result rows are rebuilt on each settled query.
 function renderSearchSurface() {
   const state = activeSearch;
   const ws = activeWs();
@@ -25698,13 +25840,16 @@ function renderSearchSurface() {
   const board = document.getElementById('board');
   board.classList.remove('group-page-mode', 'list-mode', 'canvas-mode', 'explorer-mode', 'timeline-mode', 'gallery-mode', 'graph-mode', 'calendar-mode', 'home-mode', 'library-mode');
   board.classList.add('search-mode');
-  board.innerHTML = '';
+  const session = searchPageState(ws.id);
+  let page = searchPageRoot();
+  const firstShow = !page || page.dataset.wsId !== ws.id;
+  const keepScroll = board.scrollTop;
 
   let baseRows = [], rows = [], failure = null;
   try {
     if (state.spaceId !== 'all' && !ws.categories.some(cat => cat.id === state.spaceId)) state.spaceId = 'all';
     baseRows = _searchRowsForState(state, { ignoreType: true });
-    rows = _searchRowsForState(state);
+    rows = state.type === 'all' ? baseRows : baseRows.filter(row => row.item.type === state.type);
   } catch (err) {
     console.error(err);
     failure = err;
@@ -25712,144 +25857,291 @@ function renderSearchSurface() {
   const visibleRows = searchVisibleRows(state, rows);
   const routedSelection = reconcileSearchSelection(state, failure ? [] : visibleRows);
   const selected = !failure ? (routedSelection || visibleRows[0] || null) : null;
-  const hasDetail = !state.loading && !failure && !!selected;
   const typeCounts = { all: baseRows.length, tab: 0, note: 0, todo: 0, stack: 0 };
   baseRows.forEach(row => { if (typeCounts[row.item.type] != null) typeCounts[row.item.type]++; });
   const resultCount = tr(rows.length === 1 ? 'search.resultCountOne' : 'search.resultCount', { count: rows.length });
   const hiddenFilterCount = searchHiddenFilterCount(state);
   const filtersActive = searchFiltersActive(state);
-  const filterToggleText = tr(state.filtersOpen ? 'search.hideFilters' : 'search.filters');
+  const filterToggleText = tr('search.filters');
   const filterToggleLabel = hiddenFilterCount
     ? `${filterToggleText}, ${tr('search.activeFilterCount', { count: hiddenFilterCount })}`
     : filterToggleText;
+  const allItems = collectWorkspaceItems(ws);
+  const needles = state.query ? parseSearchQuery(state.query).pos.text : [];
+  const viewKey = [state.type, state.spaceId, state.time, state.hasTags, state.tag, state.sort].join('|');
+  const viewChanged = !firstShow && session.viewKey != null && session.viewKey !== viewKey;
+  const queryChanged = session.query !== state.query;
 
-  const page = document.createElement('section');
-  page.className = 'search-page' + (state.filtersOpen ? ' filters-open' : '') + (hasDetail ? '' : ' no-detail');
-  page.innerHTML = `
-    <header class="search-page-head">
-      <div><h2>${esc(tr('search.title'))}</h2><p>${esc(tr('search.subtitle'))}</p></div>
-      <p class="search-page-scope">${esc(tr('library.workspace', { name: ws.name }))}</p>
-    </header>
-    <div class="search-query-row">
-      <label class="search-query-box"><span aria-hidden="true">⌕</span><input id="search-surface-input" type="search" aria-controls="search-result-list" autocomplete="off" spellcheck="false"><button type="button" class="search-query-clear" aria-label="${esc(tr('search.clear'))}">×</button></label>
-      <button type="button" class="search-filter-toggle${hiddenFilterCount ? ' has-active-filters' : ''}" id="search-filter-toggle" aria-controls="search-filter-panel" aria-expanded="${state.filtersOpen ? 'true' : 'false'}" aria-label="${esc(filterToggleLabel)}"><span aria-hidden="true">⚙</span><span>${esc(filterToggleText)}</span>${hiddenFilterCount ? `<b class="search-filter-count" aria-hidden="true">${hiddenFilterCount}</b>` : ''}</button>
-    </div>
-    <div class="search-type-tabs" role="group" aria-label="${esc(tr('search.contentType'))}"></div>
-    <div class="search-workspace">
-      <aside class="search-filters" id="search-filter-panel"><header><strong>${esc(tr('search.filterBy'))}</strong><button type="button" id="search-clear-filters">${esc(tr('search.clearFilters'))}</button></header><div class="search-filter-sections"></div></aside>
-      <section class="search-results" aria-labelledby="search-results-title"><header><h3 id="search-results-title">${esc(state.query ? tr('search.results') : tr('search.recent'))}</h3><span aria-hidden="true">${esc(resultCount)}</span><label>${esc(tr('search.sortBy'))}<select class="search-sort" id="search-sort"><option value="best">${esc(tr('search.bestMatch'))}</option><option value="recent">${esc(tr('search.newest'))}</option></select></label></header><div id="search-result-list"></div><footer class="search-result-continuation" hidden><span></span><button type="button"></button></footer></section>
-      <div class="search-detail-slot"></div>
-    </div>`;
-  board.appendChild(page);
+  if (firstShow) {
+    board.innerHTML = '';
+    page = document.createElement('section');
+    page.className = 'search-page fnd';
+    page.dataset.wsId = ws.id;
+    page.innerHTML = `
+      <h1 class="fnd-title" id="search-title" tabindex="-1"></h1>
+      <p class="sr-only" id="search-sub"></p>
+      <div class="search-query-box fnd-q">
+        ${librarySvg('search', 20, 1.5, 'fnd-q-icon')}
+        <div class="fnd-field">
+          <div class="fnd-mirror" aria-hidden="true"></div>
+          <input id="search-surface-input" type="search" aria-controls="search-result-list" aria-describedby="search-sub" autocomplete="off" spellcheck="false">
+        </div>
+        <span class="fnd-count" aria-hidden="true" hidden><span class="fnd-num"></span><span class="fnd-word"></span></span>
+        <button type="button" class="search-query-clear fnd-clear">${librarySvg('close', 14, 1.8)}</button>
+      </div>
+      <div class="fnd-tools">
+        <div class="search-type-tabs fnd-seg" role="group">
+          <span class="fnd-thumb" aria-hidden="true"></span>
+          ${SEARCH_TYPE_ORDER.map(type => `<button type="button" class="fnd-seg-btn" id="search-type-${type}" data-type="${type}"><span class="fnd-seg-label"></span><span class="fnd-cnt" aria-hidden="true"></span></button>`).join('')}
+        </div>
+        <span class="fnd-gap" aria-hidden="true"></span>
+        <button type="button" class="search-filter-toggle fnd-fbtn" id="search-filter-toggle" aria-controls="search-filter-panel"></button>
+        <label class="fnd-sort"><span class="sr-only"></span><select class="search-sort" id="search-sort"><option value="best"></option><option value="recent"></option></select>${librarySvg('chevron', 14, 1.6)}</label>
+      </div>
+      <div class="search-filters fnd-panel" id="search-filter-panel" hidden>
+        <div class="search-filter-sections"></div>
+        <button type="button" class="fnd-reset" id="search-clear-filters"></button>
+      </div>
+      <h2 class="fnd-recent" id="search-results-title"></h2>
+      <div class="search-results fnd-card">
+        <span class="fnd-glide" aria-hidden="true"><span class="fnd-gi"></span></span>
+        <div id="search-result-list"></div><footer class="search-result-continuation" hidden><span></span><button type="button"></button></footer>
+      </div>`;
+    board.appendChild(page);
 
+    const input = page.querySelector('#search-surface-input');
+    const clearQueryButton = page.querySelector('.search-query-clear');
+    input.value = state.query;
+    syncSearchQueryClear(input, clearQueryButton);
+    input.oncompositionstart = () => startSearchQueryComposition(input);
+    input.oninput = event => {
+      syncSearchQueryClear(input, clearQueryButton);
+      paintSearchQueryMirror(page);
+      queueSearchQueryInput(event);
+    };
+    input.oncompositionend = () => {
+      syncSearchQueryClear(input, clearQueryButton);
+      endSearchQueryComposition(input);
+    };
+    input.onkeydown = event => handleSearchQueryKeydown(event, activeSearch, activeWs());
+    const mirror = page.querySelector('.fnd-mirror');
+    ['scroll', 'keyup', 'click', 'select', 'focus'].forEach(type => {
+      input.addEventListener(type, () => requestAnimationFrame(() => { mirror.scrollLeft = input.scrollLeft; }));
+    });
+    clearQueryButton.onclick = () => _searchSet({ query: '', selectedId: null }, 'search-surface-input');
+
+    // The highlight follows the pointer over the card and returns to the
+    // selected row when the pointer leaves.
+    const card = page.querySelector('.fnd-card');
+    card.addEventListener('pointerover', event => {
+      const row = event.target.closest?.('.search-result-row');
+      if (row && !row.closest('[inert]')) placeSearchGlide(page, row);
+    });
+    card.addEventListener('pointerleave', () => placeSearchGlide(page, searchSelectedRowEl(page)));
+    // Rows change height when a font loads, the language changes or the
+    // window narrows; the highlight stays on its row.
+    if (typeof ResizeObserver === 'function') {
+      new ResizeObserver(() => {
+        if (!card.matches(':hover')) placeSearchGlide(page, searchSelectedRowEl(page));
+      }).observe(page.querySelector('#search-result-list'));
+    }
+  }
+
+  page.querySelector('#search-title').textContent = tr('search.title');
+  page.querySelector('#search-sub').textContent = tr('search.subtitle');
   const input = page.querySelector('#search-surface-input');
   const clearQueryButton = page.querySelector('.search-query-clear');
-  input.value = state.query;
   input.placeholder = tr('search.inputPlaceholder');
   input.setAttribute('aria-label', tr('search.inputPlaceholder'));
+  // A query that changed elsewhere (Clear, Escape, a route) reaches the field;
+  // an IME composition in progress is never overwritten.
+  if (input.value !== state.query && input.dataset.searchComposing !== 'true') input.value = state.query;
   syncSearchQueryClear(input, clearQueryButton);
-  input.oncompositionstart = () => startSearchQueryComposition(input);
-  input.oninput = event => {
-    syncSearchQueryClear(input, clearQueryButton);
-    queueSearchQueryInput(event);
-  };
-  input.oncompositionend = () => {
-    syncSearchQueryClear(input, clearQueryButton);
-    endSearchQueryComposition(input);
-  };
-  input.onkeydown = event => handleSearchQueryKeydown(event, state, ws);
-  clearQueryButton.onclick = () => _searchSet({ query: '', selectedId: null }, 'search-surface-input');
-  page.querySelector('.search-filter-toggle').onclick = () => _searchSet({ filtersOpen: !state.filtersOpen }, 'search-filter-toggle');
+  clearQueryButton.setAttribute('aria-label', tr('search.clear'));
+  clearQueryButton.title = tr('search.clear');
+  paintSearchQueryMirror(page);
+
+  // The result count in the field rolls to its new value.
+  const count = page.querySelector('.fnd-count');
+  count.hidden = !state.query || state.loading || !!failure;
+  const countNum = count.querySelector('.fnd-num');
+  if (session.count !== rows.length || !countNum.firstChild) {
+    countNum.innerHTML = libraryRollMarkup(rows.length, session.count);
+  }
+  count.querySelector('.fnd-word').textContent = tr(rows.length === 1 ? 'search.resultWordOne' : 'search.resultWord');
+
+  // Content type: the pill slides to the pressed type; counts ignore the type.
+  const typeTabs = page.querySelector('.search-type-tabs');
+  typeTabs.setAttribute('aria-label', tr('search.contentType'));
+  typeTabs.style.setProperty('--fnd-i', String(Math.max(0, SEARCH_TYPE_ORDER.indexOf(state.type))));
+  typeTabs.querySelectorAll('[data-type]').forEach(button => {
+    const type = button.dataset.type;
+    const label = tr(SEARCH_TYPE_LABELS[type]);
+    const pressed = state.type === type;
+    button.classList.toggle('active', pressed);
+    button.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+    button.setAttribute('aria-label', tr('library.modeCount', { label, count: typeCounts[type] }));
+    button.querySelector('.fnd-seg-label').textContent = label;
+    const cnt = button.querySelector('.fnd-cnt');
+    const previous = session.typeCounts ? session.typeCounts[type] : null;
+    if (previous !== typeCounts[type] || !cnt.firstChild) cnt.innerHTML = libraryRollMarkup(typeCounts[type], previous);
+    button.onclick = () => _searchSet({ type, selectedId: null }, button.id);
+  });
+
+  // Filters: the button turns dark while the panel is open and carries a
+  // bubble with the number of filters the closed panel hides.
+  const toggle = page.querySelector('#search-filter-toggle');
+  toggle.classList.toggle('has-active-filters', hiddenFilterCount > 0);
+  toggle.setAttribute('aria-expanded', state.filtersOpen ? 'true' : 'false');
+  toggle.setAttribute('aria-label', filterToggleLabel);
+  const bubblePops = hiddenFilterCount > 0 && hiddenFilterCount !== session.hiddenCount;
+  toggle.innerHTML = `<svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="${SEARCH_FILTER_PATH}"/></svg><span>${esc(filterToggleText)}</span>${hiddenFilterCount ? `<b class="search-filter-count" aria-hidden="true">${hiddenFilterCount}</b>` : ''}`;
+  if (bubblePops) toggle.querySelector('.search-filter-count')?.classList.add('is-pop');
+  toggle.onclick = () => _searchSet({ filtersOpen: !activeSearch.filtersOpen }, 'search-filter-toggle');
+
+  const panel = page.querySelector('#search-filter-panel');
+  const opening = state.filtersOpen && panel.hidden;
+  panel.hidden = !state.filtersOpen;
+  if (opening && session.filtersOpen != null) restartLibraryMotion(panel, 'is-rise');
+  panel.classList.toggle('is-opening', opening);
+  const filterSections = panel.querySelector('.search-filter-sections');
+  filterSections.replaceChildren();
+  if (state.filtersOpen) {
+    let chipIndex = 0;
+    const addFilterSection = title => {
+      const section = document.createElement('div');
+      section.className = 'fnd-fgroup';
+      section.setAttribute('role', 'group');
+      section.setAttribute('aria-label', title);
+      section.innerHTML = `<h3 class="fnd-fgl" aria-hidden="true">${esc(title)}</h3><div class="fnd-chips"></div>`;
+      filterSections.appendChild(section);
+      const chips = section.querySelector('.fnd-chips');
+      return { appendChild(chip) { chip.style.setProperty('--fnd-d', `${Math.min(chipIndex++, 10) * 24}ms`); chips.appendChild(chip); } };
+    };
+    const itemsPerSpace = new Map();
+    allItems.forEach(({ cat }) => itemsPerSpace.set(cat.id, (itemsPerSpace.get(cat.id) || 0) + 1));
+    const spaces = addFilterSection(tr('search.space'));
+    const allSpacesFilterId = 'search-filter-space-all';
+    spaces.appendChild(_searchFilterButton(tr('search.allSpaces'), state.spaceId === 'all', () => _searchSet({ spaceId: 'all', selectedId: null }, allSpacesFilterId), allItems.length, allSpacesFilterId));
+    ws.categories.forEach((cat, index) => {
+      const focusId = `search-filter-space-${index}`;
+      spaces.appendChild(_searchFilterButton(cat.name, state.spaceId === cat.id, () => _searchSet({ spaceId: cat.id, selectedId: null }, focusId), itemsPerSpace.get(cat.id) || 0, focusId));
+    });
+    const times = addFilterSection(tr('search.time'));
+    [['any', tr('search.anyTime')], ['today', tr('search.today')], ['week', tr('search.thisWeek')], ['month', tr('search.thisMonth')]].forEach(([time, label]) => {
+      const focusId = `search-filter-time-${time}`;
+      times.appendChild(_searchFilterButton(label, state.time === time, () => _searchSet({ time, selectedId: null }, focusId), null, focusId));
+    });
+    const tagCounts = new Map();
+    const activeTag = String(state.tag || '');
+    allItems.forEach(({ item }) => (item.tags || []).forEach(rawTag => {
+      const label = String(rawTag || '').trim();
+      if (!label) return;
+      const key = label.toLowerCase();
+      const current = tagCounts.get(key);
+      tagCounts.set(key, { label: current?.label || label, count: (current?.count || 0) + 1 });
+    }));
+    const tags = addFilterSection(tr('search.tags'));
+    const hasTagsFilterId = 'search-filter-has-tags';
+    tags.appendChild(_searchFilterButton(tr('search.hasTags'), state.hasTags, () => _searchSet({ hasTags: !state.hasTags, tag: '', selectedId: null }, hasTagsFilterId), null, hasTagsFilterId));
+    [...tagCounts.values()]
+      .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, appLocale()))
+      .slice(0, 8)
+      .forEach(({ label, count }, index) => {
+        const focusId = `search-filter-tag-${index}`;
+        tags.appendChild(_searchFilterButton(label, activeTag.toLowerCase() === label.toLowerCase(), () => _searchSet({ tag: activeTag.toLowerCase() === label.toLowerCase() ? '' : label, hasTags: false, selectedId: null }, focusId), count, focusId));
+      });
+  }
   const clearFiltersButton = page.querySelector('#search-clear-filters');
+  clearFiltersButton.textContent = tr('search.clearFilters');
   clearFiltersButton.disabled = !filtersActive;
   clearFiltersButton.onclick = () => _searchSet(searchFilterResetPatch(), 'search-surface-input');
 
-  const typeTabs = page.querySelector('.search-type-tabs');
-  [
-    ['all', tr('search.all')], ['tab', tr('search.links')], ['note', tr('search.notes')],
-    ['todo', tr('search.todos')], ['stack', tr('search.stacks')],
-  ].forEach(([type, label]) => {
-    const button = document.createElement('button'); button.type = 'button';
-    button.id = `search-type-${type}`;
-    button.className = state.type === type ? 'active' : '';
-    button.setAttribute('aria-pressed', state.type === type ? 'true' : 'false');
-    button.innerHTML = `${esc(label)} <b>${typeCounts[type]}</b>`;
-    button.onclick = () => _searchSet({ type, selectedId: null }, button.id);
-    typeTabs.appendChild(button);
-  });
-
-  const filterSections = page.querySelector('.search-filter-sections');
-  const addFilterSection = title => { const section = document.createElement('section'); section.innerHTML = `<h3>${esc(title)}</h3>`; filterSections.appendChild(section); return section; };
-  const spaces = addFilterSection(tr('search.space'));
-  const allSpacesFilterId = 'search-filter-space-all';
-  spaces.appendChild(_searchFilterButton(tr('search.allSpaces'), state.spaceId === 'all', () => _searchSet({ spaceId: 'all', selectedId: null }, allSpacesFilterId), collectWorkspaceItems(ws).length, allSpacesFilterId));
-  ws.categories.forEach((cat, index) => {
-    const focusId = `search-filter-space-${index}`;
-    spaces.appendChild(_searchFilterButton(cat.name, state.spaceId === cat.id, () => _searchSet({ spaceId: cat.id, selectedId: null }, focusId), collectWorkspaceItems({ categories: [cat] }).length, focusId));
-  });
-  const times = addFilterSection(tr('search.time'));
-  [['any', tr('search.anyTime')], ['today', tr('search.today')], ['week', tr('search.thisWeek')], ['month', tr('search.thisMonth')]].forEach(([time, label]) => {
-    const focusId = `search-filter-time-${time}`;
-    times.appendChild(_searchFilterButton(label, state.time === time, () => _searchSet({ time, selectedId: null }, focusId), null, focusId));
-  });
-  const tagCounts = new Map();
-  const activeTag = String(state.tag || '');
-  collectWorkspaceItems(ws).forEach(({ item }) => (item.tags || []).forEach(rawTag => {
-    const label = String(rawTag || '').trim();
-    if (!label) return;
-    const key = label.toLowerCase();
-    const current = tagCounts.get(key);
-    tagCounts.set(key, { label: current?.label || label, count: (current?.count || 0) + 1 });
-  }));
-  const tags = addFilterSection(tr('search.tags'));
-  const hasTagsFilterId = 'search-filter-has-tags';
-  tags.appendChild(_searchFilterButton(tr('search.hasTags'), state.hasTags, () => _searchSet({ hasTags: !state.hasTags, tag: '', selectedId: null }, hasTagsFilterId), null, hasTagsFilterId));
-  [...tagCounts.values()]
-    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, appLocale()))
-    .slice(0, 8)
-    .forEach(({ label, count }, index) => {
-      const focusId = `search-filter-tag-${index}`;
-      tags.appendChild(_searchFilterButton(label, activeTag.toLowerCase() === label.toLowerCase(), () => _searchSet({ tag: activeTag.toLowerCase() === label.toLowerCase() ? '' : label, hasTags: false, selectedId: null }, focusId), count, focusId));
-    });
+  const sortLabel = page.querySelector('.fnd-sort .sr-only');
+  sortLabel.textContent = tr('search.sortBy');
   const sort = page.querySelector('.search-sort');
+  [...sort.options].forEach(option => { option.textContent = tr(option.value === 'recent' ? 'search.newest' : 'search.bestMatch'); });
   sort.value = state.sort;
   sort.onchange = () => _searchSet({ sort: sort.value, selectedId: null }, 'search-sort');
 
+  // "Recently saved" heads the list only without a query; with one, the same
+  // heading names the list for assistive tech.
+  const listTitle = page.querySelector('#search-results-title');
+  listTitle.textContent = state.query ? tr('search.results') : tr('search.recent');
+  listTitle.classList.toggle('sr-only', !!state.query || !rows.length || !!failure || state.loading);
+
   const list = page.querySelector('#search-result-list');
+  // A repaint supersedes rows still waiting from the previous one.
+  session.restToken = (session.restToken || 0) + 1;
+  list.replaceChildren();
+  list.removeAttribute('role');
+  list.removeAttribute('aria-labelledby');
+  list.removeAttribute('aria-busy');
+  list.inert = false;
+  list.classList.toggle('is-fresh', queryChanged);
   if (state.loading) {
     list.setAttribute('aria-busy', 'true');
     list.appendChild(_searchStateNode('loading', tr('search.loading'), ''));
   } else if (failure) {
     list.appendChild(_searchStateNode('error', tr('search.error'), tr('search.errorBody')));
-  } else if (!collectWorkspaceItems(ws).length) {
-    list.appendChild(buildSystemEmptyState({
-      kind: 'library', title: tr('empty.libraryTitle'), body: tr('search.noItemsBody'),
+  } else if (!allItems.length) {
+    list.appendChild(buildLibraryEmpty({
+      icon: librarySvg('search', 26, 1.5),
+      title: tr('empty.libraryTitle'),
       actions: [
-        { label: tr('empty.addSave'), icon: '+', run: () => openCommandPalette() },
-        { label: tr('empty.importBookmarks'), icon: '⇩', run: () => importBookmarks() },
+        { label: tr('empty.addSave'), run: () => openCommandPalette() },
+        { label: tr('empty.importBookmarks'), run: () => importBookmarks() },
       ],
-      note: tr('empty.localNote'),
     }));
   } else if (!rows.length) {
+    const copy = searchEmptyCopy(state, ws);
     const clearFilters = () => _searchSet(searchFilterResetPatch(), 'search-surface-input');
     const clearSearch = () => _searchSet({ query: '', selectedId: null }, 'search-surface-input');
-    const actions = [{
-      label: tr(filtersActive ? 'empty.clearFilters' : 'empty.clearSearch'), icon: '×',
-      run: filtersActive ? clearFilters : clearSearch,
-    }];
-    if (state.spaceId !== 'all') actions.push({ label: tr('empty.searchAllSpaces'), icon: '↗', run: () => _searchSet({ spaceId: 'all', selectedId: null }, 'search-surface-input') });
-    else actions.push({ label: tr('empty.browseLibrary'), icon: '↗', run: () => openLibrarySurface('all') });
-    list.appendChild(buildSystemEmptyState({
-      kind: 'search',
-      title: state.query ? tr('empty.searchTitle', { query: state.query }) : tr('empty.noMatchTitle'),
-      body: tr('empty.searchBody'), actions,
-    }));
+    const searchAllSpaces = () => _searchSet({
+      query: state.query.replace(/(^|\s)in:\S+/gi, ' ').replace(/\s+/g, ' ').trim(),
+      spaceId: 'all',
+      selectedId: null,
+    }, 'search-surface-input');
+    const action = copy.scoped
+      ? { label: tr('empty.searchAllSpaces'), run: searchAllSpaces }
+      : { label: tr(filtersActive ? 'empty.clearFilters' : 'empty.clearSearch'), run: filtersActive ? clearFilters : clearSearch };
+    list.appendChild(buildLibraryEmpty({ icon: librarySvg('search', 26, 1.5), title: copy.title, actions: [action] }));
   } else {
-    list.setAttribute('role', 'listbox');
+    list.setAttribute('role', 'list');
     list.setAttribute('aria-labelledby', 'search-results-title');
-    visibleRows.forEach((row, index) => list.appendChild(_searchResultRow(row, index, row.item.id === selected?.item.id)));
+    const selectedId = () => activeSearch?.selectedId || selected?.item.id;
+    const appendRows = (from, to) => {
+      const fragment = document.createDocumentFragment();
+      for (let index = from; index < to; index += 1) {
+        const row = visibleRows[index];
+        const node = _searchResultRow(row, index, row.item.id === selectedId(), needles);
+        if (viewChanged && index < 12) {
+          node.classList.add('is-rise');
+          node.style.setProperty('--fnd-d', `${Math.min(index, 8) * 24}ms`);
+        }
+        fragment.appendChild(node);
+      }
+      list.appendChild(fragment);
+    };
+    // The rows on screen (and the selected one) are built at once; the rest of
+    // the result window follows on the next frame, so a keystroke on a large
+    // library repaints quickly.
+    const selectedIndex = visibleRows.findIndex(row => row.item.id === selectedId());
+    const firstPart = Math.min(visibleRows.length, Math.max(SEARCH_FIRST_PAINT_ROWS, selectedIndex + 1));
+    appendRows(0, firstPart);
+    if (firstPart < visibleRows.length) {
+      const token = session.restToken;
+      const rest = () => {
+        if (session.restToken !== token || searchPageSession !== session || !list.isConnected) return;
+        session.restToken += 1;
+        appendRows(firstPart, visibleRows.length);
+      };
+      requestAnimationFrame(rest);
+      setTimeout(rest, 60);
+    }
   }
   const continuation = page.querySelector('.search-result-continuation');
+  continuation.hidden = true;
   const showingResults = tr('search.showingResults', { shown: visibleRows.length, total: rows.length });
   if (!state.loading && !failure && rows.length > SEARCH_RESULT_BATCH_SIZE) {
     continuation.hidden = false;
@@ -25862,7 +26154,6 @@ function renderSearchSurface() {
       more.onclick = () => showNextSearchResultBatch();
     }
   }
-  if (hasDetail) page.querySelector('.search-detail-slot').appendChild(_searchDetail(selected));
   if (failure) {
     resetSearchAnnouncement();
   } else {
@@ -25878,6 +26169,15 @@ function renderSearchSurface() {
     announceSearchStatus(state.loading ? tr('search.loading') : announcement, announcementSignature);
   }
 
+  session.count = rows.length;
+  session.typeCounts = typeCounts;
+  session.hiddenCount = hiddenFilterCount;
+  session.viewKey = viewKey;
+  session.query = state.query;
+  session.filtersOpen = state.filtersOpen;
+  if (viewChanged || (queryChanged && !firstShow)) board.scrollTo({ top: 0, behavior: 'instant' });
+  else if (!firstShow && board.scrollTop !== keepScroll) board.scrollTo({ top: keepScroll, behavior: 'instant' });
+  placeSearchGlide(page, page.querySelector('#search-result-list .search-result-row:hover') || searchSelectedRowEl(page));
   return true;
 }
 
@@ -30022,9 +30322,11 @@ function renderItemDetail() {
   root.classList.add('open');
   // The panel slides in when it opens, not on every repaint after an edit.
   root.classList.toggle('is-entering', !wasOpen);
-  // Details is the one floating layer: an open menu or the Today drawer gives way.
+  // Details is the one floating layer: an open menu, the command palette or the
+  // Today drawer gives way.
   if (!wasOpen) {
     hideContextMenu();
+    closeCommandPalette();
     if (typeof isTodayTabsDrawerOpen === 'function' && isTodayTabsDrawerOpen()) {
       setTodayTabsDrawer(false, { restoreFocus: false });
     }
@@ -33938,7 +34240,7 @@ function _palSavedLinkCommand(row) {
     icon: PAL_ICONS.link,
     label: row.item.title || host || row.item.url,
     desc: tr('palette.savedLinkDesc', { host: host || tr('palette.savedLink'), destination }),
-    badge: tr('palette.savedLink'),
+    favicon: { type: 'tab', url: row.item.url, title: row.item.title },
     meta: _palRecentTime(row.item.createdAt),
     keywords: `${row.item.url || ''} ${(row.item.tags || []).join(' ')} ${row.cat.name} ${row.group.name}`,
     keepOpenOnFalse: true,
@@ -34045,11 +34347,10 @@ function _palEnsureDom() {
       `<div class="cmdp-inputrow">` +
         `<span class="cmdp-ico">${PAL_ICONS.search}</span>` +
         `<input id="cmdp-input" type="text" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="cmdp-list" aria-autocomplete="list">` +
-        `<span class="cmdp-trigger" aria-hidden="true"><kbd></kbd><kbd>K</kbd></span>` +
+        `<kbd class="pal-esc" aria-hidden="true">Esc</kbd>` +
       `</div>` +
       `<div class="cmdp-list" id="cmdp-list" role="listbox"></div>` +
       `<div id="cmdp-status" class="cmdp-status" aria-live="polite"></div>` +
-      `<div class="cmdp-footer"><span aria-hidden="true">✧</span><span></span></div>` +
     `</div>`;
   document.body.appendChild(ov);
   inheritActiveBodyInterlocks(ov);
@@ -34069,8 +34370,6 @@ function _palSyncLocale(ov) {
   const inp = ov.querySelector('#cmdp-input');
   inp.placeholder = tr('palette.placeholder');
   inp.setAttribute('aria-label', tr('palette.placeholder'));
-  ov.querySelector('.cmdp-trigger kbd').textContent = _palModKey();
-  ov.querySelector('.cmdp-footer span:last-child').textContent = tr('palette.footer');
 }
 
 function openCommandPalette() {
@@ -34078,11 +34377,35 @@ function openCommandPalette() {
   if (organizationName && !organizationName.classList.contains('hidden')) return false;
   const organization = document.getElementById('organization-delete-overlay');
   if (organization && !organization.classList.contains('hidden')) return false;
+  // The palette is the one floating layer: Details, an open menu or the Today
+  // drawer gives way first. Details that cannot close yet (a write is pending)
+  // keeps the palette shut.
+  const detail = document.getElementById('item-detail');
+  if (detail?.classList.contains('open')) {
+    const returnItemId = detail.dataset.returnItemId || detail.dataset.itemId || '';
+    const returnFocusKey = detail.dataset.returnFocusKey || '';
+    if (!closeItemDetail()) return false;
+    // Details hands focus back on the next task; take it now, so the palette
+    // remembers that place and returns there when it closes.
+    if (!detail.classList.contains('open')) restoreItemDetailFocus(detail, returnItemId, returnFocusKey);
+  }
+  hideContextMenu();
+  if (typeof isTodayTabsDrawerOpen === 'function' && isTodayTabsDrawerOpen()) {
+    setTodayTabsDrawer(false, { restoreFocus: false });
+  }
   const ov = _palEnsureDom();
+  const wasOpen = !ov.classList.contains('hidden');
   _palSyncLocale(ov);
-  rememberOpener(ov);
+  if (!wasOpen) rememberOpener(ov);
   _palState = { cmds: buildPaletteCommands(), filtered: [], sel: 0, query: '', noMatch: false };
   ov.classList.remove('hidden');
+  // A short scale-in on each open; the class restarts the way Today's motion does.
+  if (!wasOpen) {
+    const box = ov.querySelector('.cmdp-box');
+    box.classList.remove('is-in');
+    void box.offsetWidth;
+    box.classList.add('is-in');
+  }
   const inp = ov.querySelector('#cmdp-input');
   inp.value = '';
   _palRender('');
@@ -34102,38 +34425,94 @@ function _palShortcutHtml(keys) {
   return (keys || []).map(key => `<kbd>${esc(key)}</kbd>`).join('');
 }
 
+// Actions run; places and pages open.
+function _palCapLabel(command) {
+  const runs = command.section === 'quick' || command.id === 'toggle-sidebar' || String(command.id || '').startsWith('layout-');
+  return tr(runs ? 'palette.run' : 'palette.open');
+}
+
+function _palLetters(text, q) {
+  const positions = [];
+  let qi = 0;
+  for (let i = 0; i < text.length && qi < q.length; i++) {
+    if (text[i] === q[qi]) { positions.push(i); qi++; }
+  }
+  return qi === q.length ? positions : null;
+}
+
+// Why a row matched: the typed text inside its label; else the label letters it
+// matched in order; else the words of the description or keywords the match ran
+// into, shown beside the label. Saved links mark the query's words, as Find
+// again does.
+function _palMatchMarkup(command, q) {
+  const label = String(command.label || '');
+  const plain = { label: esc(label), via: '' };
+  if (!q || command.id === 'search-board-fallback') return plain;
+  if (command.section === 'recent') return { label: searchHitMarkup(label, parseSearchQuery(q).pos.text), via: '' };
+  const lower = label.toLowerCase();
+  if (lower.length !== label.length) return plain;
+  const at = lower.indexOf(q);
+  if (at >= 0) return { label: hitRangesMarkup(label, [[at, at + q.length]], 'pal-hit'), via: '' };
+  const inLabel = _palLetters(lower, q);
+  if (inLabel) return { label: hitRangesMarkup(label, inLabel.map(i => [i, i + 1]), 'pal-hit'), via: '' };
+  const extra = `${command.desc || ''} ${command.keywords || ''}`.replace(/\s+/g, ' ').trim();
+  const full = `${lower} ${extra.toLowerCase()}`;
+  if (!extra || full.length !== label.length + 1 + extra.length) return plain;
+  const contiguous = full.indexOf(q);
+  const positions = contiguous >= 0
+    ? Array.from({ length: q.length }, (_, i) => contiguous + i)
+    : (_palLetters(full, q) || []);
+  const labelRanges = positions.filter(p => p < label.length).map(p => [p, p + 1]);
+  const via = [];
+  let from = label.length + 1;
+  extra.split(' ').forEach(word => {
+    const ranges = positions.filter(p => p >= from && p < from + word.length).map(p => [p - from, p - from + 1]);
+    if (ranges.length && via.length < 2) via.push(hitRangesMarkup(word, ranges, 'pal-hit'));
+    from += word.length + 1;
+  });
+  return { label: labelRanges.length ? hitRangesMarkup(label, labelRanges, 'pal-hit') : esc(label), via: via.join(' ') };
+}
+
 function _palRow(command, index) {
   const row = document.createElement('button');
   row.type = 'button';
   row.id = `cmdp-option-${index}`;
-  row.className = 'cmdp-row' + (index === _palState.sel ? ' sel' : '');
+  const link = command.section === 'recent';
+  row.className = 'cmdp-row' + (link ? ' is-link' : '') + (index === _palState.sel ? ' sel' : '');
   row.dataset.palIndex = index;
+  row.tabIndex = -1;
   row.setAttribute('role', 'option');
   row.setAttribute('aria-selected', index === _palState.sel ? 'true' : 'false');
+  const match = _palMatchMarkup(command, String(_palState.query || '').trim().toLowerCase());
+  const icon = link && command.favicon
+    ? inboxFavMarkup(command.favicon)
+    : `<span class="cmdp-row-ico">${command.icon || (command.sym ? esc(command.sym) : PAL_ICONS.link)}</span>`;
   row.innerHTML =
-    `<span class="cmdp-row-ico">${command.icon || (command.sym ? esc(command.sym) : PAL_ICONS.link)}</span>` +
-    `<span class="cmdp-row-copy"><span class="cmdp-row-label">${esc(command.label)}</span>${command.desc ? `<span class="cmdp-row-desc">${esc(command.desc)}</span>` : ''}</span>` +
-    `<span class="cmdp-row-end">${command.badge ? `<span class="cmdp-row-badge">${esc(command.badge)}</span>` : ''}${command.meta ? `<span class="cmdp-row-meta">${esc(command.meta)}</span>` : ''}${command.shortcut ? `<span class="cmdp-row-shortcut">${_palShortcutHtml(command.shortcut)}</span>` : ''}</span>`;
-  row.addEventListener('mouseenter', () => { if (_palState && _palState.sel !== index) { _palState.sel = index; _palSyncSel(); } });
+    icon +
+    `<span class="cmdp-row-copy"><span class="cmdp-row-label">${match.label}</span>${link && command.desc ? `<span class="cmdp-row-desc">${esc(command.desc)}${command.meta ? ` · ${esc(command.meta)}` : ''}</span>` : ''}</span>` +
+    (match.via ? `<span class="pal-via" aria-hidden="true">${match.via}</span>` : '') +
+    (command.shortcut ? `<span class="cmdp-row-shortcut">${_palShortcutHtml(command.shortcut)}</span>` : '') +
+    `<span class="pal-cap" aria-hidden="true">${esc(_palCapLabel(command))}<kbd>↵</kbd></span>`;
+  // Only a moving pointer selects: a list that opens or repaints under a resting
+  // pointer keeps its first row, so Enter runs the best match.
+  row.addEventListener('pointermove', () => { if (_palState && _palState.sel !== index) { _palState.sel = index; _palSyncSel({ reveal: false }); } });
   row.addEventListener('click', () => _palRun(index));
+  if (link) bindInboxFavicons(row);
   return row;
 }
 
-function _palSection(title, commands, emptyText = '') {
-  const section = document.createElement('section');
+function _palSection(title, commands) {
+  const section = document.createElement('div');
   section.className = 'cmdp-section';
-  section.innerHTML = `<h3>${esc(title)}</h3>`;
-  if (!commands.length && emptyText) {
-    const empty = document.createElement('p');
-    empty.className = 'cmdp-section-empty';
-    empty.textContent = emptyText;
-    section.appendChild(empty);
-    return section;
-  }
+  section.setAttribute('role', 'group');
+  section.setAttribute('aria-label', title);
+  section.innerHTML = `<h3 aria-hidden="true">${esc(title)}</h3>`;
   commands.forEach(command => section.appendChild(_palRow(command, _palState.filtered.indexOf(command))));
   return section;
 }
 
+// One column, as on the board: Quick actions, Go to, Recently saved (when
+// there is any), Shortcuts.
 function _palRenderHome(listEl) {
   const quick = _palState.cmds.filter(c => c.section === 'quick' && c.home !== false);
   const go = _palState.cmds.filter(c => c.section === 'go' && c.home !== false);
@@ -34141,28 +34520,15 @@ function _palRenderHome(listEl) {
   const shortcuts = _palState.cmds.filter(c => c.section === 'shortcuts' && c.home !== false);
   _palState.filtered = [...quick, ...go, ...recent, ...shortcuts];
   listEl.className = 'cmdp-list cmdp-home';
-  const left = document.createElement('div'); left.className = 'cmdp-column cmdp-column-main';
-  const right = document.createElement('div'); right.className = 'cmdp-column cmdp-column-side';
-  left.appendChild(_palSection(tr('palette.quickActions'), quick));
-  left.appendChild(_palSection(tr('palette.goTo'), go));
-  left.appendChild(_palSection(tr('palette.recent'), recent, tr('palette.recentEmpty')));
-  right.appendChild(_palSection(tr('palette.shortcuts'), shortcuts));
-  listEl.append(left, right);
+  listEl.appendChild(_palSection(tr('palette.quickActions'), quick));
+  listEl.appendChild(_palSection(tr('palette.goTo'), go));
+  if (recent.length) listEl.appendChild(_palSection(tr('palette.recent'), recent));
+  listEl.appendChild(_palSection(tr('palette.shortcuts'), shortcuts));
 }
 
 function _palRenderResults(listEl, commands) {
   listEl.className = 'cmdp-list cmdp-results';
-  const section = document.createElement('section');
-  section.className = 'cmdp-section';
-  section.innerHTML = `<h3>${esc(tr('palette.results'))}</h3>`;
-  if (_palState.noMatch) {
-    const empty = document.createElement('p');
-    empty.className = 'cmdp-empty';
-    empty.textContent = tr('palette.noMatch');
-    section.appendChild(empty);
-  }
-  commands.forEach(command => section.appendChild(_palRow(command, _palState.filtered.indexOf(command))));
-  listEl.appendChild(section);
+  listEl.appendChild(_palSection(tr(_palState.noMatch ? 'palette.nothingMatches' : 'palette.results'), commands));
 }
 
 function _palRender(query) {
@@ -34172,7 +34538,8 @@ function _palRender(query) {
   const raw = query.trim();
   const q = raw.toLowerCase();
   const listEl = document.getElementById('cmdp-list');
-  listEl.innerHTML = '';
+  listEl.innerHTML = '<span class="pal-glide" aria-hidden="true"><span class="pal-gi"></span></span>';
+  listEl.scrollTop = 0;
 
   if (!q) {
     _palState.noMatch = false;
@@ -34190,7 +34557,7 @@ function _palRender(query) {
     const fallback = {
       id: 'search-board-fallback', section: 'results', icon: PAL_ICONS.search,
       label: tr('palette.searchBoard', { query: raw }), desc: tr('palette.searchBoardDesc'),
-      shortcut: ['Enter'], run: () => openSearchBar(raw),
+      run: () => openSearchBar(raw),
     };
     _palState.filtered = [...matches, fallback];
     _palRenderResults(listEl, _palState.filtered);
@@ -34201,7 +34568,8 @@ function _palRender(query) {
   _palSyncSel();
 }
 
-function _palSyncSel() {
+// The selected row carries the highlight, which slides to it.
+function _palSyncSel({ reveal = true } = {}) {
   if (!_palState) return;
   const rows = document.querySelectorAll('#cmdp-list .cmdp-row');
   rows.forEach(row => {
@@ -34211,9 +34579,10 @@ function _palSyncSel() {
   });
   const sel = document.querySelector(`#cmdp-list .cmdp-row[data-pal-index="${_palState.sel}"]`);
   const inp = document.getElementById('cmdp-input');
+  placeRowGlide(document.querySelector('#cmdp-list .pal-glide'), sel);
   if (sel) {
     inp?.setAttribute('aria-activedescendant', sel.id);
-    if (sel.scrollIntoView) sel.scrollIntoView({ block: 'nearest' });
+    if (reveal && sel.scrollIntoView) sel.scrollIntoView({ block: 'nearest' });
   } else {
     inp?.removeAttribute('aria-activedescendant');
   }

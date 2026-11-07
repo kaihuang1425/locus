@@ -5240,3 +5240,36 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   Plan).
 
   **Implemented: yes. Verified: partial. User-validated: no. Released: no.**
+
+- **2026-11-06 - Find again and the command palette follow their boards (pages
+  build, page 5).** Find again (Search.dc.html) replaces the 2026-08 locator
+  ledger (accent-edged field, flat type rail, filter tray, preview pane).
+  - Shortcuts are unchanged and stay split: `/` opens Find again, Ctrl or
+    Command K opens the palette (the canvas note "one search field, / or Ctrl
+    K" is read as one field plus the palette as a floating layer; the split
+    is locked in `search-recovery`).
+  - The field marks the operators the shared parser understands; the result
+    count rolls; results are rows in one card with the matched words marked
+    and the exact saved path under each title. The preview pane and its
+    related-results list are gone: a row's title opens it (a click, Enter;
+    the old click-selects/double-click-opens split no longer applies),
+    Details sits on rows that can open a page, focus selects. Rows are a list
+    with buttons (no longer a listbox of options) because each row holds two
+    actions.
+  - Typing keeps the old rows on screen, inert and outside the list
+    semantics, until the settled rows replace them (no spinner per
+    keystroke); the caret is never moved by a repaint.
+  - Escape in the field clears a typed query first; a second Escape leaves.
+  - One empty state with one action and no paragraph. The "nothing saved"
+    state keeps Add / Save and Import bookmarks.
+  - Palette (Palette.dc.html): one column, a sliding highlight, a short
+    scale-in on open (allowed by the board; the "no ornamental entrance"
+    rule now reads "no blur, no popIn"), Run/Open on the selected row, the
+    typed text marked. The footer hint, the empty Recently saved line and
+    the no-match paragraph are gone. Only a moving pointer changes the
+    selection.
+  - One floating layer: opening the palette closes Details (and keeps it
+    shut while a Details write is pending), a menu and the Today drawer;
+    Details opening closes the palette; opening Find again closes a menu.
+
+  **Implemented: yes. Verified: partial. User-validated: no. Released: no.**

@@ -468,28 +468,36 @@ assert.match(newtabJs, /function syncSpacePage\([^)]*\)[\s\S]*?tabs\.setAttribut
 assert.doesNotMatch(newtabJs, /function openLayoutMenu\(|function openAdvancedLayoutMenu\(|'layout\.(?:advancedViews|advancedViewsOpen|backCore)'/,
   'the view tabs replaced the Advanced views grouping (2026-11-06, page board): its menus and strings are gone');
 
+// 2026-11-06 (page board): the command palette follows its board (Palette.dc.html):
+// a light card over a soft scrim, a 64 px query row, one column of sections, a
+// highlight that slides between 44 px rows, and a short scale-in on open. The
+// Locus Index palette look (registry query row, locator border-left rows) was
+// replaced; the shortcut reference keeps the Index contract.
 for (const contract of [
-  /#cmd-palette\s*\{[^}]*backdrop-filter:\s*none[^}]*animation:\s*none/,
-  /\.cmdp-box\s*\{[^}]*border-top:\s*4px solid var\(--index-locator\)[^}]*border-radius:\s*6px[^}]*background:\s*var\(--index-sheet\)[^}]*animation:\s*none/,
-  /\.cmdp-inputrow\s*\{[^}]*min-height:\s*56px[^}]*background:\s*var\(--index-registry\)/,
-  /#cmdp-input:focus-visible\s*\{[^}]*outline:\s*3px solid var\(--index-focus\)/,
-  /\.cmdp-row\s*\{[^}]*min-height:\s*44px[^}]*border-left:\s*3px solid transparent/,
-  /\.cmdp-row:hover,\s*\.cmdp-row\.sel\s*\{[^}]*border-left-color:\s*var\(--index-locator\)[^}]*background:\s*var\(--index-paper\)/,
-  /\.cmdp-row:focus-visible\s*\{[^}]*outline:\s*3px solid var\(--index-focus\)/,
-  /html:lang\(zh-TW\) \.cmdp-section h3\s*\{[^}]*text-transform:\s*none/,
+  /#cmd-palette\s*\{[^}]*backdrop-filter:\s*none/,
+  /\.cmdp-box\s*\{[^}]*border-radius:\s*22px[^}]*background:\s*var\(--today-card\)/,
+  /\.cmdp-inputrow\s*\{[^}]*min-height:\s*64px/,
+  /\.cmdp-row\s*\{[^}]*min-height:\s*44px/,
+  /\.cmdp-row:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--index-locator/,
+  /\.cmdp-section h3\s*\{[^}]*text-transform:\s*none/,
+  /\.pal-glide\s*\{[^}]*transition:\s*transform \.26s/,
   /#cheatsheet-overlay \.rm-panel\s*\{[^}]*max-height:\s*min\([^}]*border-radius:\s*6px/,
   /\.cheatsheet \.sp-shortcut-row\s*\{[^}]*min-height:\s*44px/,
 ]) {
-  assert.match(newtabIndex, contract, `command discovery must use the Locus Index contract: ${contract}`);
+  assert.match(newtabIndex, contract, `command discovery must follow its board and keep the shortcut reference contract: ${contract}`);
 }
-assert.match(newtabIndex, /@media \(max-width:\s*700px\)[\s\S]*#cmd-palette[\s\S]*\.cmdp-list\.cmdp-home/,
-  'the palette must converge to one scrolling column at the compact breakpoint');
-assert.match(newtabIndex, /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*#cmd-palette[\s\S]*\.cmdp-row/,
+assert.match(newtabIndex, /@media \(max-width: 520px\) \{\n  #cmd-palette \{ padding: 8px; \}/,
+  'the palette is one scrolling column at every width and keeps 8 px margins on a phone');
+assert.match(newtabIndex, /@media \(prefers-reduced-motion: reduce\) \{\n  \.fnd, \.fnd \*, \.fnd \*::before, \.fnd \*::after,\n  #cmd-palette, #cmd-palette \*/,
   'palette motion must remain suppressible');
-assert.match(newtabIndex, /@media \(forced-colors:\s*active\)[\s\S]*#cmd-palette[\s\S]*\.cmdp-row:focus-visible[\s\S]*#cheatsheet-overlay/,
-  'palette and shortcut reference must retain forced-color focus and surfaces');
+assert.match(newtabIndex, /@media \(forced-colors: active\) \{[\s\S]*?#cmd-palette \{ background: Canvas; \}[\s\S]*?\.cmdp-row:focus-visible \{ outline-color: CanvasText; \}/,
+  'the palette must retain forced-color focus and surfaces');
+assert.match(newtabIndex, /@media \(forced-colors:\s*active\)[\s\S]*#cheatsheet-overlay \{ background: Canvas; \}/,
+  'the shortcut reference must retain forced-color surfaces');
 assert.doesNotMatch(newtabIndex, /#cmd-palette\s*\{[^}]*blur\(|\.cmdp-box\s*\{[^}]*popIn/,
-  'command discovery must not restore glass blur or ornamental entrance motion');
+  'command discovery must not restore glass blur or the old popIn entrance');
+assert.match(newtabIndex, /\.cmdp-box\.is-in \{ animation: pal-in \.22s var\(--today-ease\) both; \}/,
+  'the palette opens with the board\'s short (220 ms) scale-in, not an ornamental entrance');
 
 assert.match(newtabHtml, /id="cheatsheet-title"[^>]*data-i18n="shortcuts\.title"/,
   'the shortcut reference heading must be localized');
