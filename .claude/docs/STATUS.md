@@ -299,6 +299,23 @@ Slices, in order:
 
 ## Done (newest first)
 
+- **2026-11-06 - Calendar built from its canvas board, inside Plan (pages build, page 6 of 9).** The
+  Calendar view (`Calendar.dc.html`) keeps Plan's header and adds one toolbar row (Month / Week / Agenda
+  with a sliding thumb, Today, paging, the period, the operator filter with a count and Clear), a Past due
+  strip (each overdue reminder with Move and a red count) and the view beside a day panel. The grid selects
+  a day (a blue box slides to it; arrows, Home, End; Enter goes to the add field; the panel slides in from
+  that side); the panel lists the day's reminders (the title opens it, Move to offers Today, Tomorrow, the
+  next weekday, This weekend and Next week at the same time of day, then Edit reminder… and Clear / Remove)
+  and adds a task through the same receipt-gated Add-task transaction (the reviewed dialog stays on the
+  day's right-click / Shift+F10 menu). A move goes through `setReminder` / `commitEntityReminderMutation`
+  with a "Moved to …" receipt and Undo, the card travels to its new day and lands, and Plan's "moved N
+  times" mark counts it. Today pulses once when the view opens. No breadcrumb bar (as on Upcoming); phone:
+  dots in the month, a stacked week, the panel under the view. No new stored field. Suites: new
+  `calendar-page-contract-test.js` (190 checks, date rules in 3 time zones, in CI); ported
+  `reminder-overdue`, `reminder-identity`, `item-detail`, `calendar-add-task`; 32 mutations caught.
+  Evidence: `locus-redesign-evidence/pages/calendar/` (Edge 157, 87/87 behaviour checks,
+  `pages-calendar-log.txt`; `00-before-*` are the old view).
+
 - **2026-11-06 - Toolbar popup on its canvas board, with one-click Save (pages build, page 9).** The popup is rebuilt from
   `Popup.dc.html`: a current-tab card whose Save morphs into a green check with a burst and bumps the red
   Inbox count, a destination chip with a list of every Group, rows with hover Save / Hibernate and saved

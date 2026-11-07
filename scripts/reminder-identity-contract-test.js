@@ -1257,15 +1257,22 @@ function testStaticRemovalBoundaryAndLocales() {
     /querySelectorAll\('\.rm-quick button'\)[\s\S]*receiptCommit[\s\S]*reminderCtx\.mutationContext[\s\S]*if \(receiptCommit\) void result;/,
     'entity quick choices must leave close ownership to the receipt-gated controller',
   );
-  const calendarDot = extractFunction('buildCalDot');
+  // The Calendar's reminder controls share one drag binding (2026-11 board).
+  assert.match(extractFunction('buildCalDot'), /calBindDrag\(dot, entry\)/,
+    'Calendar reminder controls must keep the drag-to-reschedule binding');
   assert.match(
-    calendarDot,
+    extractFunction('calBindDrag'),
     /dragstart[\s\S]*createEntityReminderMutationContext\(entry\.source, entry\.refId, entry\.reminderId\)[\s\S]*mutationContext/,
     'Calendar must freeze entity owner/reminder identity when drag begins',
   );
   assert.match(
+    extractFunction('calendarMoveMenuItems'),
+    /createEntityReminderMutationContext\(entry\.source, entry\.refId, entry\.reminderId\)[\s\S]*mutationContext[\s\S]*calMoveEntry\(moving/,
+    'Calendar Move to must freeze entity owner/reminder identity when its menu opens',
+  );
+  assert.match(
     extractFunction('calRescheduleTo'),
-    /entry\.mutationContext[\s\S]*commitEntityReminderMutation\(entry\.mutationContext, \{ at: ts \}\)/,
+    /entry\.mutationContext[\s\S]*commitEntityReminderMutation\(entry\.mutationContext, \{ at: ts \}, \{ receipt \}\)/,
     'Calendar drop must submit the drag-start mutation context',
   );
   const mutationFocus = extractFunction('focusEntityReminderMutationTarget');

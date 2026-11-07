@@ -486,9 +486,11 @@ async function runAcceptedExistingInbox() {
     itemId: task.id,
     groupId: harness.inbox.id,
   }]);
+  // The receipt names where the task went, since the day panel's quick add has
+  // no review dialog (2026-11 Calendar board).
   assert.deepEqual(harness.calls.toasts, [{
     message: `cal.added:${JSON.stringify({ date: context.dateLabel })}`,
-    options: { undo: 41 },
+    options: { undo: 41, sub: `Work › Inbox · ${context.timeLabel}` },
   }]);
 }
 

@@ -2974,7 +2974,7 @@ function testItemDetailReminderStaticContract() {
     /dot\.dataset\.reminderSource = entry\.source;[\s\S]*dot\.dataset\.reminderOwnerId = entry\.refId;/,
     'Calendar must expose a stable item-reminder focus target after acknowledged render');
   assert.match(extractFunction('calRescheduleTo'),
-    /entry\.source === 'item'\) return setReminder\(entry\.refId, ts, \{ recur: entry\.recur \}\)/,
+    /entry\.source === 'item'\) return setReminder\(entry\.refId, ts, \{ recur: entry\.recur, receipt \}\)/,
     'Calendar item reschedule must reuse the receipt-gated wrapper');
 
   const bindStaticSource = extractFunction('bindStatic');

@@ -5287,3 +5287,31 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   window result keeps the result card. "Ask where to save" is an opt-in, off for new profiles; with it on,
   the Save tab and Save window sheets work as before. The popup no longer closes itself after a save. The
   local-first / export note lives in the More menu.
+
+- **2026-11-06 - The Calendar follows its board inside Plan (pages build, page 6).** The Calendar view
+  (Calendar.dc.html) is one toolbar row under Plan's header, a Past due strip, and the month, week or
+  agenda view beside a day panel.
+  - The grid selects a day; the day panel holds the actions. Chips in a day are part of that day's
+    target (too small for a 44 px target of their own), so opening a reminder is its title in the panel
+    or the Past due strip. The grid is one tab stop: arrows, Home and End move the day, Enter goes to the
+    add field; right-click or Shift+F10 on a day keeps the old day menu with the reviewed Add task dialog.
+  - Move to (the panel's clock button, a Past due arrow, or right-click on a reminder) offers Today,
+    Tomorrow, the next weekday, This weekend and Next week, without the reminder's own day, at most four,
+    each at the same time of day; on today a passed time becomes the next whole hour, as roll-over does.
+    It runs the normal reminder transactions; the receipt reads "Moved to <day>, <time>" with the title
+    and Undo (the orange clock, as the due card's Snooze). A drag onto a day uses the same path. A Group
+    or Space reminder freezes its exact reminder when the menu opens, as a drag does at dragstart.
+  - Quick add ("Add a task…") runs the same reviewed Add-task transaction (`commitCalendarTaskMutation`),
+    reviewed when Enter is pressed rather than in a dialog. The destination is the field's description
+    and the receipt now names it ("Locus build › Inbox · 9:00 AM"); the dialog that shows it before typing
+    stays on the day menu. Changed decision: the 2026-07-29 dialog reviewed the destination visibly before
+    typing; the quick add shows it after the write.
+  - Empty: Month and Week keep the grid when the workspace has no reminders (a task can still be added on
+    any day); the one empty message sits in the day panel, or replaces the Agenda list.
+  - The breadcrumb bar is gone, as on Upcoming and Sort inbox; Escape still leaves for the board.
+  - Agenda lists the days ahead with times and Spaces; past due reminders are in the strip above every
+    view, and the relative times ("in 3h") gave way to the clock time.
+  - Phone: one dot per reminder in the month (it runs nearly edge to edge so days stay 44 px), the week
+    as a list of days, the panel under the view with titles across the row.
+
+  **Implemented: yes. Verified: partial. User-validated: no. Released: no.**

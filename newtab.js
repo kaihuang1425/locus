@@ -238,9 +238,11 @@ const I18N = {
     'cal.addScheduleWarning': 'Task saved, but its reminder may need attention.',
     'cal.closeAddDialog': 'Close Add task dialog',
     'cal.title': 'Calendar',
-    'cal.breadcrumb': 'Calendar navigation',
-    'cal.back': 'Back',
-    'cal.backToBoard': 'Back to board',
+    'cal.addPlaceholder': 'Add a task…',
+    'cal.addOn': 'Add a task on {date}',
+    'cal.addFailed': 'Couldn’t add the task. Try again.',
+    'cal.movedTo': 'Moved to {date}, {time}',
+    'cal.now': 'Now {time}',
     'cal.upcoming': 'Upcoming',
     'cal.viewLabel': 'Calendar view',
     'cal.view.month': 'Month',
@@ -1991,9 +1993,11 @@ const I18N = {
     'cal.addScheduleWarning': '待辦已儲存，但提醒排程可能需要處理。',
     'cal.closeAddDialog': '關閉新增待辦對話框',
     'cal.title': '行事曆',
-    'cal.breadcrumb': '行事曆導覽',
-    'cal.back': '返回',
-    'cal.backToBoard': '返回看板',
+    'cal.addPlaceholder': '新增待辦…',
+    'cal.addOn': '在 {date} 新增待辦',
+    'cal.addFailed': '無法新增待辦，請再試一次。',
+    'cal.movedTo': '已移到 {date} {time}',
+    'cal.now': '現在 {time}',
     'cal.upcoming': '近期提醒',
     'cal.viewLabel': '行事曆檢視',
     'cal.view.month': '月',
@@ -9444,6 +9448,7 @@ function focusItemReminderTarget(context, hasReminder) {
     if (hasReminder && focusTarget(document.querySelector(
       `.cal-dot[data-reminder-source="item"][data-reminder-owner-id="${id}"]`,
     ))) return true;
+    if (typeof calendarFocusAfterMove === 'function' && focusTarget(calendarFocusAfterMove())) return true;
     if (focusTarget(document.getElementById('cal-filter-input'))) return true;
   }
   return false;
@@ -9541,7 +9546,9 @@ async function commitItemReminderMutation(context, reminder, opts = {}) {
   }
   renderBoard();
   requestAnimationFrame(() => focusItemReminderTarget(context, nextReminder != null));
-  if (alarmsReconciled) {
+  if (alarmsReconciled && nextReminder && opts.receipt?.message) {
+    toast(opts.receipt.message, { ...opts.receipt.options, undo: actionId });
+  } else if (alarmsReconciled) {
     toast(tr(nextReminder ? 'reminder.setSuccess' : 'reminder.clearSuccess'), { undo: actionId });
   } else {
     toast(tr(nextReminder ? 'reminder.scheduleWarning' : 'reminder.clearScheduleWarning'), {
@@ -9559,7 +9566,7 @@ async function setReminder(itemId, ts, opts = {}) {
     toast(tr('reminder.changed'), { danger: true });
     return false;
   }
-  return commitItemReminderMutation(context, { at: ts, recur: opts.recur });
+  return commitItemReminderMutation(context, { at: ts, recur: opts.recur }, { receipt: opts.receipt });
 }
 
 async function clearReminder(itemId) {
@@ -9987,6 +9994,8 @@ function focusEntityReminderMutationTarget(context, reminderId) {
       + `[data-reminder-owner-id="${ownerId}"]`
       + `[data-reminder-id="${stableReminderId}"]`,
   ))) return true;
+  if (activeCalendar && typeof calendarFocusAfterMove === 'function'
+      && focusTarget(calendarFocusAfterMove())) return true;
   return focusEntityReminderOwnerFallback(context.kind, context.entityId);
 }
 async function commitEntityReminderRemoval(context) {
@@ -10206,7 +10215,9 @@ async function commitEntityReminderMutation(context, changes, opts = {}) {
   } else setReminderInterlock(false);
   renderBoard();
   requestAnimationFrame(() => focusEntityReminderMutationTarget(context, nextReminder.id));
-  if (writeReceipt?.reminderReconciliation?.ok === true) {
+  if (writeReceipt?.reminderReconciliation?.ok === true && opts.receipt?.message) {
+    toast(opts.receipt.message, { ...opts.receipt.options, undo: actionId });
+  } else if (writeReceipt?.reminderReconciliation?.ok === true) {
     toast(tr('reminder.setSuccess'), { undo: actionId });
   } else {
     toast(tr('reminder.scheduleWarning'), {
@@ -17347,6 +17358,7 @@ function renderBoard() {
   if (libraryPageSession && !isLibraryPageActive()) libraryPageSession = null;
   if (spacePageSession && !isSpacePageActive()) spacePageSession = null;
   if (searchPageSession && !activeSearch) searchPageSession = null;
+  if (calendarPageSession && !(activeCalendar && CAL_VIEWS.includes(activeCalendar.view))) calendarPageSession = null;
   // The calendar (§5) and group pages (§4.1) are surfaces that sit above the
   // layout registry: when one is open every re-render keeps showing it. Each
   // renderer returns false if the user has navigated away, so we fall through to
@@ -33024,19 +33036,23 @@ function setCalendarView(view) {
   Router.navigate({ type: 'calendar', wsId: ws.id, query: view !== 'month' ? { cal: view } : {} });
 }
 // Prev/next page the anchor by the active granularity. Not a route change (the
-// anchor is ephemeral), so it just re-renders.
+// anchor is ephemeral), so it just re-renders. A month page keeps the selected
+// day; a week page moves the selection by a week, as on the board.
 function shiftCalendar(dir) {
   if (!activeCalendar) return;
+  if (activeCalendar.view === 'week') {
+    calSelectDay(planAddDays(calSelectedDay(), dir * 7));
+    return;
+  }
   const a = new Date(activeCalendar.anchor);
-  if (activeCalendar.view === 'month') a.setMonth(a.getMonth() + dir, 1);
-  else a.setDate(a.getDate() + dir * 7);
-  activeCalendar.anchor = a.getTime();
+  a.setMonth(a.getMonth() + dir, 1);
+  calSetAnchor(a.getTime());
   renderBoard();
 }
 function calendarToday() {
   if (!activeCalendar) return;
-  activeCalendar.anchor = Date.now();
-  renderBoard();
+  calSetAnchor(Date.now());
+  calSelectDay(_tlStartOfDay(Date.now()));
 }
 // Reflect calendar-open state on the top-bar button (called from renderBoard,
 // which runs before the calendar's own early-return, so it toggles both ways).
@@ -33162,17 +33178,31 @@ function calendarDotMenuItems(entry, opener) {
   }
   return items;
 }
-// Move a reminder to a different day, preserving its time-of-day.
-function calRescheduleTo(entry, dayStart) {
+// Move a reminder to a different day, preserving its time-of-day. `receipt`
+// words the success toast ("Moved to Mon 9 Nov, 09:00"); the write and its Undo
+// are the normal reminder transaction.
+function calRescheduleTo(entry, dayStart, receipt = undefined) {
   if (!entry) return false;
-  const orig = new Date(entry.at);
-  const d = new Date(dayStart);
-  d.setHours(orig.getHours(), orig.getMinutes(), 0, 0);
-  const ts = d.getTime();
+  const ts = calMoveTime(entry, dayStart);
+  if (ts == null) {
+    toast(tr('reminder.futureTime'), { danger: true });
+    return false;
+  }
   if (ts === entry.at) return true;
-  if (entry.source === 'item') return setReminder(entry.refId, ts, { recur: entry.recur });
+  if (entry.source === 'item') return setReminder(entry.refId, ts, { recur: entry.recur, receipt });
   if (!entry.mutationContext) return false;
-  return commitEntityReminderMutation(entry.mutationContext, { at: ts });
+  return commitEntityReminderMutation(entry.mutationContext, { at: ts }, { receipt });
+}
+// The time a reminder lands on when it moves to another day: the same time of
+// day (DST-safe). On today, a time that has already passed becomes the next
+// whole hour, as roll-over does; a past day has no valid time.
+function calMoveTime(entry, dayStart, now = Date.now()) {
+  if (!entry || !Number.isFinite(Number(entry.at))) return null;
+  const ts = planSameTimeOn(entry.at, dayStart);
+  if (ts > now) return ts;
+  if (dayStart !== planDayStart(now)) return null;
+  const next = planNextWholeHour(now);
+  return next < planAddDays(dayStart, 1) ? next : null;
 }
 // Wire a container (day cell / week column) as a drop target for reschedule.
 function calMakeDropTarget(el, dayStart) {
@@ -33188,7 +33218,7 @@ function calMakeDropTarget(el, dayStart) {
     e.preventDefault();
     el.classList.remove('cal-drop');
     const entry = calDrag; calDrag = null;
-    calRescheduleTo(entry, dayStart);
+    void calMoveEntry(entry, dayStart, null);
   });
 }
 
@@ -33213,25 +33243,30 @@ function calendarDotTitle(entry) {
   });
 }
 
-function buildCalDot(entry, showTime) {
+// The control that stands for one reminder in the day panel and the Past due
+// strip: its title opens the target. Its data attributes are the focus target
+// every reminder write, Add task and Plan with AI return to.
+function buildCalDot(entry, className = '') {
   const dot = document.createElement('button');
   dot.type = 'button';
-  dot.className = 'cal-dot' + (entry.at < Date.now() ? ' past' : '') + (entry.notified ? ' notified' : '');
-  dot.style.setProperty('--dot', reminderDotColor(entry.color));
+  dot.className = 'cal-dot' + (className ? ` ${className}` : '');
   dot.dataset.reminderSource = entry.source;
   dot.dataset.reminderOwnerId = entry.refId;
   if (entry.source !== 'item' && isStableEntityReminderId(entry.reminderId)) {
     dot.dataset.reminderId = entry.reminderId;
   }
-  const hm = new Date(entry.at).toLocaleTimeString(appLocale(), { hour: 'numeric', minute: '2-digit' });
-  dot.innerHTML = (showTime ? `<span class="cal-dot-time">${esc(hm)}</span>` : '') +
-    `<span class="cal-dot-title">${esc(entry.title)}</span>`;
+  dot.textContent = entry.title;
   dot.title = calendarDotTitle(entry);
   dot.onclick = e => { e.stopPropagation(); openReminderTarget(entry); };
-  bindAnchoredContextMenu(dot, () => calendarDotMenuItems(entry, dot));
-  // Every reminder — item, group, or category — can be dragged to reschedule.
-  dot.draggable = true;
-  dot.addEventListener('dragstart', ev => {
+  bindAnchoredContextMenu(dot, () => calendarMoveMenuItems(entry, dot, { withOpen: true }));
+  calBindDrag(dot, entry);
+  return dot;
+}
+
+// Every reminder (item, Group or Space) can be dragged onto a day to move it.
+function calBindDrag(el, entry) {
+  el.draggable = true;
+  el.addEventListener('dragstart', ev => {
     let mutationContext = null;
     if (entry.source !== 'item') {
       mutationContext = createEntityReminderMutationContext(entry.source, entry.refId, entry.reminderId);
@@ -33244,34 +33279,15 @@ function buildCalDot(entry, showTime) {
       }
     }
     calDrag = mutationContext ? { ...entry, mutationContext } : entry;
-    dot.classList.add('cal-dragging');
+    el.classList.add('cal-dragging');
     try { ev.dataTransfer.setData('text/plain', entry.refId); ev.dataTransfer.effectAllowed = 'move'; } catch {}
   });
-  dot.addEventListener('dragend', () => { calDrag = null; dot.classList.remove('cal-dragging'); });
-  return dot;
+  el.addEventListener('dragend', () => { calDrag = null; el.classList.remove('cal-dragging'); });
 }
 
-// The persistent "Past due" rail (§5.1). Returns null when nothing is overdue.
-function buildPastDueRail(entries) {
-  const now = Date.now();
-  const overdue = entries.filter(e => e.at < now).sort((a, b) => b.at - a.at);
-  if (!overdue.length) return null;
-  const rail = document.createElement('div');
-  rail.className = 'cal-pastdue';
-  const hd = document.createElement('div');
-  hd.className = 'cal-pastdue-hd';
-  hd.innerHTML = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4.6" stroke="currentColor" stroke-width="1.2"/><path d="M6 3.4v3l1.8 1" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg><span>${esc(tr('cal.pastDue'))}</span><span class="cal-pastdue-n">${overdue.length}</span>`;
-  const strip = document.createElement('div');
-  strip.className = 'cal-pastdue-strip';
-  overdue.slice(0, 40).forEach(e => strip.appendChild(buildCalDot(e, true)));
-  rail.appendChild(hd); rail.appendChild(strip);
-  return rail;
-}
-
-// A day's panel — opened by clicking any calendar cell (or a cell's "+N more").
-// Lets the user ADD a task on that date and VIEW/open the day's reminders;
-// existing reminders can be edited/rescheduled by right-clicking their dot or
-// by opening the item. Keyboard-openable from the focusable cell.
+// A day's menu: right-click, ContextMenu or Shift+F10 on a day. It offers the
+// reviewed Add task dialog (date, 9:00, Space and Inbox shown before typing)
+// beside the day panel's quick add, and opens any of the day's reminders.
 const CAL_ADD_ICON = '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 2v9M2 6.5h9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
 function openCalDay(dayStart, list, x, y, opener = null) {
   const dLabel = new Date(dayStart).toLocaleDateString(appLocale(), { weekday: 'long', month: 'long', day: 'numeric' });
@@ -33403,6 +33419,10 @@ function setCalendarTaskInterlock(enabled) {
 }
 
 function paintCalendarTaskDialog() {
+  if (calendarTaskCtx?.inline) {
+    paintCalendarAddInline();
+    return;
+  }
   const overlay = document.getElementById('calendar-task-overlay');
   if (!overlay || !calendarTaskCtx) return;
   const input = document.getElementById('calendar-task-input');
@@ -33437,7 +33457,7 @@ function paintCalendarTaskDialog() {
 function setCalendarTaskBusy(busy) {
   calendarTaskBusy = !!busy;
   paintCalendarTaskDialog();
-  if (calendarTaskBusy) {
+  if (calendarTaskBusy && !calendarTaskCtx?.inline) {
     const confirm = document.getElementById('calendar-task-confirm');
     try { confirm?.focus({ preventScroll: true }); } catch { try { confirm?.focus(); } catch {} }
   }
@@ -33448,6 +33468,11 @@ function setCalendarTaskError(errorKey, { unavailable = false } = {}) {
   calendarTaskCtx.errorKey = errorKey || null;
   calendarTaskCtx.unavailable = !!unavailable;
   paintCalendarTaskDialog();
+  if (calendarTaskCtx.inline) {
+    const input = document.getElementById('cal-add-input');
+    try { input?.focus({ preventScroll: true }); } catch { try { input?.focus(); } catch {} }
+    return;
+  }
   const target = unavailable
     ? document.getElementById('calendar-task-close')
     : document.getElementById('calendar-task-input');
@@ -33489,6 +33514,12 @@ function focusCalendarTaskMutationTarget(context, itemId, groupId) {
     try { target.scrollIntoView({ block: 'nearest' }); } catch {}
     return true;
   };
+  // A task added from the day panel lands in its list; focus stays in the add
+  // field for the next one.
+  if (context?.inline && activeCalendar) {
+    calMarkDropped(itemId);
+    if (focusTarget(document.getElementById('cal-add-input'))) return true;
+  }
   const escapedItemId = escapeValue(itemId || '');
   if (activeCalendar && escapedItemId && focusTarget(document.querySelector(
     `.cal-dot[data-reminder-source="item"][data-reminder-owner-id="${escapedItemId}"]`,
@@ -33498,6 +33529,12 @@ function focusCalendarTaskMutationTarget(context, itemId, groupId) {
 }
 
 function closeCalendarTaskDialog({ restoreFocus = true } = {}) {
+  if (calendarTaskCtx?.inline) {
+    if (calendarTaskBusy) return false;
+    calendarTaskCtx = null;
+    paintCalendarAddInline();
+    return true;
+  }
   const overlay = document.getElementById('calendar-task-overlay');
   if (!overlay || overlay.classList.contains('hidden') || calendarTaskBusy) return false;
   const closingContext = calendarTaskCtx;
@@ -33516,7 +33553,7 @@ function closeCalendarTaskDialog({ restoreFocus = true } = {}) {
 
 function openCalendarTaskDialog(dayStart, opener = null) {
   const overlay = document.getElementById('calendar-task-overlay');
-  if (!overlay || !overlay.classList.contains('hidden')) return false;
+  if (!overlay || !overlay.classList.contains('hidden') || isCalendarTaskMutationPending()) return false;
   const conflictingIds = [
     'state-recovery-overlay',
     'paste-overlay',
@@ -33654,7 +33691,10 @@ async function commitCalendarTaskMutation(context, rawText) {
     transaction.groupId,
   ));
   if (writeReceipt?.reminderReconciliation?.ok === true) {
-    toast(tr('cal.added', { date: context.dateLabel }), { undo: actionId });
+    toast(tr('cal.added', { date: context.dateLabel }), {
+      undo: actionId,
+      sub: `${context.spaceName} › ${context.inboxName} · ${context.timeLabel}`,
+    });
   } else {
     toast(tr('cal.addScheduleWarning'), {
       tone: 'warning',
@@ -33729,12 +33769,125 @@ function bindCalendarTaskDialog() {
 }
 
 // ── View builders ───────────────────────────────────────────────
+// The view follows its canvas board (Calendar.dc.html): one toolbar row, the
+// Past due strip, then the month, week or agenda view beside a day panel. The
+// grid selects a day; the panel lists that day's reminders (open, Move, Edit,
+// Clear) and adds a task. The selected day, like the anchor, is view state only.
+let calendarPageSession = null;
+
+const CAL_ICONS = {
+  prev: 'M10 3.5 5.5 8l4.5 4.5',
+  next: 'M6 3.5 10.5 8 6 12.5',
+  search: 'M7 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM10.6 10.6 13.5 13.5',
+  close: 'M4 4l8 8M12 4l-8 8',
+  plus: 'M8 3v10M3 8h10',
+  arrow: 'M3 8h9M8.5 4.5 12 8l-3.5 3.5',
+};
+function calIcon(name, size = 15, stroke = 1.7) {
+  return planSvg(CAL_ICONS[name] || PLAN_ICONS[name], size, stroke);
+}
+
+// One session per visit to the Calendar view: what the last paint showed, so
+// the selection box, the view thumb, the panel and the counts can move from
+// there instead of jumping.
+function calendarSession() {
+  if (!calendarPageSession || calendarPageSession.cal !== activeCalendar) {
+    calendarPageSession = {
+      cal: activeCalendar,
+      view: null,
+      viewIndex: null,
+      sel: null,
+      box: null,
+      counts: new Map(),
+      pulseAt: Date.now(),
+      afterMove: null,
+    };
+  }
+  return calendarPageSession;
+}
+
+function calSetAnchor(ts) {
+  if (!activeCalendar) return;
+  activeCalendar.anchor = ts;
+  activeCalendar.anchorSeen = ts;
+}
+
+// The selected day. When something other than the view moved the anchor (the
+// view was just entered, or Plan with AI shows its first block), the selection
+// follows the anchor.
+function calSelectedDay() {
+  if (!activeCalendar) return _tlStartOfDay(Date.now());
+  if (activeCalendar.anchorSeen !== activeCalendar.anchor || !Number.isFinite(activeCalendar.selected)) {
+    activeCalendar.selected = _tlStartOfDay(activeCalendar.anchor);
+    activeCalendar.anchorSeen = activeCalendar.anchor;
+  }
+  return activeCalendar.selected;
+}
+
+function calMonthGridStart() {
+  return _tlStartOfWeek(_tlStartOfMonth(activeCalendar.anchor));
+}
+function calWeekStart() {
+  return _tlStartOfWeek(calSelectedDay());
+}
+// Index of a day in a run of days from `start` (DST-safe), or -1 past `count`.
+function calDayIndex(start, day, count) {
+  let cursor = start;
+  for (let index = 0; index < count; index += 1) {
+    if (cursor === day) return index;
+    cursor = planAddDays(cursor, 1);
+  }
+  return -1;
+}
+function calInMonthGrid(day) {
+  return calDayIndex(calMonthGridStart(), day, 42) >= 0;
+}
+
+function calSelectDay(dayStart, { focus = false } = {}) {
+  if (!activeCalendar || !Number.isFinite(dayStart)) return;
+  const day = _tlStartOfDay(dayStart);
+  activeCalendar.selected = day;
+  // The shown period follows the selection: a week shows the selected day's
+  // week, and a day outside the month grid turns the month.
+  if (activeCalendar.view === 'week' || (activeCalendar.view === 'month' && !calInMonthGrid(day))) calSetAnchor(day);
+  renderBoard();
+  if (focus) calFocusDay(day);
+}
+
+function calFocusDay(day) {
+  const target = document.querySelector(`.cld [data-cal-day="${day}"]`);
+  if (!target) return false;
+  try { target.focus({ preventScroll: false }); } catch { try { target.focus(); } catch {} }
+  return document.activeElement === target;
+}
+
+function calEntryKey(entry) {
+  return `${entry.source}:${entry.refId}:${entry.reminderId || ''}`;
+}
+
+// Restart a one-shot animation class, as Today does.
+function calReplay(el, className) {
+  if (!el?.classList) return;
+  el.classList.remove(className);
+  void el.offsetWidth;
+  el.classList.add(className);
+}
+
+// One authoritative empty message per view: the workspace has no reminders, or
+// the filter matches none. Month and Week still draw the grid, so a task can be
+// added on any day; the message is the day panel's, or it replaces the Agenda.
+function calEmptyKey(allCount, shownCount) {
+  if (!allCount) return 'cal.noWorkspaceReminders';
+  if (!shownCount) return 'cal.noFilterMatches';
+  return null;
+}
+
 function calPeriodLabel() {
   if (!activeCalendar) return '';
   if (activeCalendar.view === 'agenda') return tr('cal.upcoming');
   const nowYear = new Date().getFullYear();
   if (activeCalendar.view === 'week') {
-    const start = _tlStartOfWeek(activeCalendar.anchor);
+    const start = calWeekStart();
     const a = new Date(start), b = new Date(start); b.setDate(b.getDate() + 6);
     const sameMonth = a.getMonth() === b.getMonth();
     const left = a.toLocaleDateString(appLocale(), { month: 'short', day: 'numeric' });
@@ -33744,65 +33897,87 @@ function calPeriodLabel() {
   return new Date(activeCalendar.anchor).toLocaleDateString(appLocale(), { month: 'long', year: 'numeric' });
 }
 
-function buildCalToolbar(shownCount, totalCount) {
+// "Today 09:00", "Thu 17:00", or "Nov 2 17:00" for older ones.
+function calWhenLabel(at, now = Date.now()) {
+  const day = planDayStart(at);
+  const today = planDayStart(now);
+  if (day === today) return `${tr('cal.today')} ${planTimeLabel(at)}`;
+  if (day > planAddDays(today, -7) && day < planAddDays(today, 7)) return `${planWeekdayLabel(at)} ${planTimeLabel(at)}`;
+  return `${new Date(at).toLocaleDateString(appLocale(), { month: 'short', day: 'numeric' })} ${planTimeLabel(at)}`;
+}
+
+function buildCalToolbar(shownCount, totalCount, session = null, after = []) {
   const bar = document.createElement('div');
-  bar.className = 'cal-toolbar';
+  bar.className = 'cld-bar';
   const isAgenda = activeCalendar.view === 'agenda';
 
-  // Left cluster: period label + prev/today/next (paging is hidden in agenda).
-  const nav = document.createElement('div');
-  nav.className = 'cal-nav';
-  nav.setAttribute('role', 'group');
-  nav.setAttribute('aria-label', tr('cal.periodNavigation'));
-  const title = document.createElement('div');
-  title.className = 'cal-title';
-  title.textContent = calPeriodLabel();
-  nav.appendChild(title);
-  if (!isAgenda) {
-    const mkNav = (label, aria, fn) => {
-      const b = document.createElement('button');
-      b.type = 'button'; b.className = 'cal-nav-btn'; b.setAttribute('aria-label', aria);
-      b.textContent = label; b.onclick = fn; return b;
-    };
-    const grp = document.createElement('div');
-    grp.className = 'cal-nav-grp';
-    grp.appendChild(mkNav('‹', tr('cal.previousPeriod'), () => shiftCalendar(-1)));
-    const today = document.createElement('button');
-    today.type = 'button'; today.className = 'cal-today-btn'; today.textContent = tr('cal.today');
-    today.onclick = calendarToday;
-    grp.appendChild(today);
-    grp.appendChild(mkNav('›', tr('cal.nextPeriod'), () => shiftCalendar(1)));
-    nav.appendChild(grp);
-  }
-  bar.appendChild(nav);
-
-  // Middle: view segmented control.
+  // View switch; its thumb slides from the view shown last.
   const seg = document.createElement('div');
-  seg.className = 'cal-seg';
+  seg.className = 'cld-seg';
   seg.setAttribute('role', 'group');
   seg.setAttribute('aria-label', tr('cal.viewLabel'));
+  const thumb = document.createElement('span');
+  thumb.className = 'cld-seg-thumb';
+  thumb.setAttribute('aria-hidden', 'true');
+  seg.appendChild(thumb);
   [['month', 'cal.view.month'], ['week', 'cal.view.week'], ['agenda', 'cal.view.agenda']].forEach(([v, key]) => {
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'cal-seg-btn' + (activeCalendar.view === v ? ' active' : '');
+    b.className = 'cld-seg-btn';
     b.textContent = tr(key);
     b.setAttribute('aria-pressed', String(activeCalendar.view === v));
     b.onclick = () => setCalendarView(v);
     seg.appendChild(b);
   });
+  const index = CAL_VIEWS.indexOf(activeCalendar.view);
+  const from = session && session.viewIndex != null ? session.viewIndex : index;
+  thumb.style.setProperty('--i', String(from));
+  if (from !== index) after.push(() => { void thumb.offsetWidth; thumb.style.setProperty('--i', String(index)); });
+  if (session) session.viewIndex = index;
   bar.appendChild(seg);
 
-  // AI planning lives in Plan's header (plan.js), one planning place shared by
-  // Upcoming, Sort inbox, and this Calendar view.
+  // Today, previous and next. Agenda lists everything ahead, so it has no pages.
+  const nav = document.createElement('div');
+  nav.className = 'cld-nav';
+  nav.setAttribute('role', 'group');
+  nav.setAttribute('aria-label', tr('cal.periodNavigation'));
+  const today = document.createElement('button');
+  today.type = 'button';
+  today.className = 'cld-btn';
+  today.textContent = tr('cal.today');
+  today.onclick = calendarToday;
+  nav.appendChild(today);
+  if (!isAgenda) {
+    const mkNav = (icon, aria, fn) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'cld-ibtn';
+      b.setAttribute('aria-label', aria);
+      b.title = aria;
+      b.innerHTML = calIcon(icon, 15, 1.8);
+      b.onclick = fn;
+      return b;
+    };
+    nav.appendChild(mkNav('prev', tr('cal.previousPeriod'), () => shiftCalendar(-1)));
+    nav.appendChild(mkNav('next', tr('cal.nextPeriod'), () => shiftCalendar(1)));
+  }
+  bar.appendChild(nav);
 
-  // Right: filter input (the differentiator, §5.2).
-  const filter = document.createElement('div');
-  filter.className = 'cal-filter';
-  filter.innerHTML = `<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+  const title = document.createElement('h2');
+  title.className = 'cld-period';
+  title.setAttribute('aria-live', 'polite');
+  title.textContent = calPeriodLabel();
+  bar.appendChild(title);
+
+  // Filter: the board search vocabulary applied to reminders (§5.2).
+  const filter = document.createElement('label');
+  filter.className = 'cld-filter';
+  filter.innerHTML = calIcon('search', 15, 1.6);
   const input = document.createElement('input');
   input.id = 'cal-filter-input';
   input.type = 'text';
   input.autocomplete = 'off';
+  input.spellcheck = false;
   input.placeholder = tr('cal.filterPlaceholder');
   input.setAttribute('aria-label', tr('cal.filterLabel'));
   input.value = calendarFilter;
@@ -33816,9 +33991,21 @@ function buildCalToolbar(shownCount, totalCount) {
   filter.appendChild(input);
   if (calendarFilter) {
     const count = document.createElement('span');
-    count.className = 'cal-filter-count';
+    count.className = 'cld-filter-count';
     count.textContent = `${shownCount}/${totalCount}`;
     filter.appendChild(count);
+    const clear = document.createElement('button');
+    clear.type = 'button';
+    clear.className = 'cld-filter-clear';
+    clear.setAttribute('aria-label', tr('rail.clearFilter'));
+    clear.innerHTML = calIcon('close', 12, 2);
+    clear.onclick = event => {
+      event.preventDefault();
+      calendarFilter = '';
+      _calFilterRestore = { caret: 0 };
+      renderBoard();
+    };
+    filter.appendChild(clear);
   }
   bar.appendChild(filter);
 
@@ -33826,8 +34013,8 @@ function buildCalToolbar(shownCount, totalCount) {
 }
 
 function _calEmptyNote(text) {
-  const n = document.createElement('div');
-  n.className = 'cal-empty-note';
+  const n = document.createElement('p');
+  n.className = 'cld-empty';
   n.textContent = text;
   return n;
 }
@@ -33843,121 +34030,222 @@ function calendarDayAriaLabel(dayStart, count) {
   return tr('cal.dayNoReminders', { date });
 }
 
-function buildCalMonth(entries) {
-  const body = document.createElement('div');
-  body.className = 'cal-body';
-  const rail = buildPastDueRail(entries);
-  if (rail) body.appendChild(rail);
-
-  const grid = document.createElement('div');
-  grid.className = 'cal-grid';
+function buildCalMonth(entries, selected, now, session = null, after = []) {
+  const wrap = document.createElement('div');
+  wrap.className = 'cld-card cld-month';
 
   // Weekday header (Mon-first, matching the timeline's week start).
-  const hdCur = new Date(_tlStartOfWeek(Date.now()));
+  const dows = document.createElement('div');
+  dows.className = 'cld-dows';
+  dows.setAttribute('aria-hidden', 'true');
+  const hdCur = new Date(_tlStartOfWeek(now));
   for (let i = 0; i < 7; i++) {
-    const h = document.createElement('div');
-    h.className = 'cal-weekhd';
+    const h = document.createElement('span');
     h.textContent = hdCur.toLocaleDateString(appLocale(), { weekday: 'short' });
-    grid.appendChild(h);
+    dows.appendChild(h);
     hdCur.setDate(hdCur.getDate() + 1);
   }
-
-  const byDay = calGroupByDay(entries);
-  const todayStart = _tlStartOfDay(Date.now());
-  const monthStart = _tlStartOfMonth(activeCalendar.anchor);
-  const curMonth = new Date(monthStart).getMonth();
-  const reduce = _calReduceMotion();
-  // Iterate with Date arithmetic (DST-safe) from the Monday of the month's first week.
-  const cur = new Date(_tlStartOfWeek(monthStart));
-  const MAX_DOTS = 4;
-  for (let i = 0; i < 42; i++) {
-    const dayStart = _tlStartOfDay(cur.getTime());
-    const cell = document.createElement('div');
-    cell.className = 'cal-cell';
-    if (dayStart === todayStart) cell.classList.add('today');
-    if (cur.getMonth() !== curMonth) cell.classList.add('dim');
-    if (!reduce) { cell.style.setProperty('--i', Math.min(i, 27)); cell.classList.add('cal-anim'); }
-
-    const dnum = document.createElement('div');
-    dnum.className = 'cal-date';
-    dnum.textContent = cur.getDate();
-    cell.appendChild(dnum);
-
-    const list = byDay.get(dayStart) || [];
-    const dots = document.createElement('div');
-    dots.className = 'cal-cell-dots';
-    list.slice(0, MAX_DOTS).forEach(e => dots.appendChild(buildCalDot(e, false)));
-    if (list.length > MAX_DOTS) {
-      const more = document.createElement('button');
-      more.type = 'button';
-      more.className = 'cal-more';
-      more.textContent = tr('cal.more', { count: list.length - MAX_DOTS });
-      more.onclick = ev => {
-        ev.stopPropagation();
-        openCalDay(dayStart, list, ev.clientX, ev.clientY, more);
-      };
-      dots.appendChild(more);
-    }
-    cell.appendChild(dots);
-    // Whole cell is an interactive day target: click / Enter / Space opens the
-    // day panel to view reminders and add a task on that date. Dots and the
-    // "+N more" button stopPropagation, so they act first.
-    cell.tabIndex = 0;
-    cell.setAttribute('role', 'button');
-    cell.setAttribute('aria-label', calendarDayAriaLabel(dayStart, list.length));
-    const openThisDay = ev => {
-      const r = cell.getBoundingClientRect();
-      openCalDay(
-        dayStart,
-        list,
-        ev && ev.clientX ? ev.clientX : r.left + 24,
-        ev && ev.clientY ? ev.clientY : r.bottom - 8,
-        cell,
-      );
-    };
-    cell.addEventListener('click', openThisDay);
-    cell.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); openThisDay(ev); } });
-    calMakeDropTarget(cell, dayStart);
-    grid.appendChild(cell);
-    cur.setDate(cur.getDate() + 1);
-  }
-  body.appendChild(grid);
-  return body;
-}
-
-function buildCalWeek(entries) {
-  const body = document.createElement('div');
-  body.className = 'cal-body';
-  const rail = buildPastDueRail(entries);
-  if (rail) body.appendChild(rail);
+  wrap.appendChild(dows);
 
   const grid = document.createElement('div');
-  grid.className = 'cal-week';
+  grid.className = 'cld-grid';
+  grid.setAttribute('role', 'group');
+  grid.setAttribute('aria-label', calPeriodLabel());
   const byDay = calGroupByDay(entries);
-  const todayStart = _tlStartOfDay(Date.now());
-  const cur = new Date(_tlStartOfWeek(activeCalendar.anchor));
-  const reduce = _calReduceMotion();
-  for (let i = 0; i < 7; i++) {
-    const dayStart = _tlStartOfDay(cur.getTime());
-    const col = document.createElement('div');
-    col.className = 'cal-week-col' + (dayStart === todayStart ? ' today' : '');
-    if (!reduce) { col.style.setProperty('--i', i); col.classList.add('cal-anim'); }
-    const hd = document.createElement('div');
-    hd.className = 'cal-week-colhd';
-    hd.innerHTML = `<span class="cal-week-dow">${esc(cur.toLocaleDateString(appLocale(), { weekday: 'short' }))}</span><span class="cal-week-dnum">${cur.getDate()}</span>`;
-    col.appendChild(hd);
-    const colBody = document.createElement('div');
-    colBody.className = 'cal-week-colbody';
-    const list = byDay.get(dayStart) || [];
-    if (!list.length) { const em = document.createElement('div'); em.className = 'cal-week-empty'; colBody.appendChild(em); }
-    list.forEach(e => colBody.appendChild(buildCalDot(e, true)));
-    col.appendChild(colBody);
-    calMakeDropTarget(col, dayStart);
-    grid.appendChild(col);
-    cur.setDate(cur.getDate() + 1);
+  const todayStart = _tlStartOfDay(now);
+  const curMonth = new Date(_tlStartOfMonth(activeCalendar.anchor)).getMonth();
+  const start = calMonthGridStart();
+  const selIndex = calDayIndex(start, selected, 42);
+  // Days from the Monday of the month's first week (DST-safe).
+  let day = start;
+  let firstOfMonth = -1;
+  for (let i = 0; i < 42; i++) {
+    const date = new Date(day);
+    const inMonth = date.getMonth() === curMonth;
+    if (inMonth && firstOfMonth < 0) firstOfMonth = i;
+    const list = byDay.get(day) || [];
+    const cell = document.createElement('button');
+    cell.type = 'button';
+    cell.className = 'cld-cell' + (inMonth ? '' : ' is-out');
+    cell.dataset.calDay = String(day);
+    cell.setAttribute('aria-pressed', String(day === selected));
+    cell.setAttribute('aria-label', calendarDayAriaLabel(day, list.length));
+    cell.appendChild(calDayNumber(date, day === todayStart, session, now));
+    list.slice(0, 2).forEach(entry => cell.appendChild(calChip(entry, now, 'cld-chip')));
+    if (list.length > 2) {
+      const more = document.createElement('span');
+      more.className = 'cld-more';
+      more.textContent = tr('cal.more', { count: list.length - 2 });
+      cell.appendChild(more);
+    }
+    // At phone width the chips give way to one dot per reminder (up to three).
+    if (list.length) {
+      const dots = document.createElement('span');
+      dots.className = 'cld-dots';
+      dots.setAttribute('aria-hidden', 'true');
+      list.slice(0, 3).forEach(entry => {
+        const dot = document.createElement('i');
+        dot.style.setProperty('--dot', reminderDotColor(entry.color));
+        dots.appendChild(dot);
+      });
+      cell.appendChild(dots);
+    }
+    calBindDay(cell, day, list);
+    grid.appendChild(cell);
+    day = planAddDays(day, 1);
   }
-  body.appendChild(grid);
-  return body;
+  const focusIndex = selIndex >= 0 ? selIndex : Math.max(0, firstOfMonth);
+  grid.children[focusIndex].tabIndex = 0;
+  [...grid.children].forEach((cell, i) => { if (i !== focusIndex) cell.tabIndex = -1; });
+  grid.appendChild(calSelectionBox('month', start, selIndex, session, after));
+  grid.addEventListener('keydown', calGridKey);
+  wrap.appendChild(grid);
+  return wrap;
+}
+
+// The day number; today's is orange and pulses once when the view opens.
+function calDayNumber(date, isToday, session, now) {
+  const num = document.createElement('span');
+  num.className = 'cld-num' + (isToday ? ' is-today' : '');
+  num.textContent = String(date.getDate());
+  if (isToday && session) {
+    // A repaint during the pulse carries it on instead of restarting it.
+    const elapsed = now - session.pulseAt;
+    if (elapsed < 1400) {
+      num.classList.add('is-pulse');
+      num.style.setProperty('--cld-pulse-t', `${-elapsed}ms`);
+    }
+  }
+  return num;
+}
+
+// A reminder drawn inside a day: colour, mono time, title. Part of the day's
+// target (the day panel holds its actions).
+function calChip(entry, now, className) {
+  const chip = document.createElement('span');
+  chip.className = className + (entry.at < now ? ' is-past' : '');
+  chip.dataset.calKey = calEntryKey(entry);
+  chip.style.setProperty('--dot', reminderDotColor(entry.color));
+  const time = document.createElement('span');
+  time.className = 'cld-chip-t';
+  time.textContent = planTimeLabel(entry.at);
+  const title = document.createElement('span');
+  title.className = 'cld-chip-n';
+  title.textContent = entry.title;
+  chip.append(time, title);
+  return chip;
+}
+
+// The blue box around the selected day. It slides from where the last paint
+// had it when the period is the same.
+function calSelectionBox(view, start, index, session, after) {
+  const box = document.createElement('span');
+  box.className = 'cld-sel';
+  box.setAttribute('aria-hidden', 'true');
+  const cols = 7;
+  const c = index % cols;
+  const r = Math.floor(index / cols);
+  if (index < 0) box.classList.add('is-off');
+  const prev = session?.box;
+  const same = prev && prev.view === view && prev.start === start && prev.index >= 0 && index >= 0;
+  box.style.setProperty('--c', String(same ? prev.c : c));
+  box.style.setProperty('--r', String(same ? prev.r : r));
+  if (same && (prev.c !== c || prev.r !== r)) {
+    after.push(() => {
+      void box.offsetWidth;
+      box.style.setProperty('--c', String(c));
+      box.style.setProperty('--r', String(r));
+    });
+  }
+  if (session) session.box = { view, start, index, c, r };
+  return box;
+}
+
+// A day target: click selects it; right-click, ContextMenu or Shift+F10 opens
+// the day menu; a dragged reminder can be dropped on it.
+function calBindDay(el, day, list) {
+  el.addEventListener('click', () => calSelectDay(day, { focus: true }));
+  el.addEventListener('contextmenu', event => {
+    event.preventDefault();
+    event.stopPropagation();
+    openCalDay(day, list, event.clientX, event.clientY, el.dataset.calDay ? el : el.querySelector('[data-cal-day]'));
+  });
+  el.addEventListener('keydown', event => {
+    if (!(event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10'))) return;
+    if (!event.target.dataset?.calDay) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const r = event.target.getBoundingClientRect();
+    openCalDay(day, list, r.left + 16, r.bottom - 6, event.target);
+  });
+  calMakeDropTarget(el, day);
+}
+
+// Arrow keys move the selected day (the grid is one tab stop); Home and End go
+// to the start and end of the week; Enter goes to the day panel's add field.
+function calGridKey(event) {
+  const target = event.target.closest?.('[data-cal-day]');
+  if (!target || !activeCalendar || event.altKey || event.ctrlKey || event.metaKey) return;
+  const day = Number(target.dataset.calDay);
+  const month = activeCalendar.view === 'month';
+  const steps = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: month ? -7 : -1, ArrowDown: month ? 7 : 1 };
+  let next = null;
+  if (steps[event.key]) next = planAddDays(day, steps[event.key]);
+  else if (event.key === 'Home') next = _tlStartOfWeek(day);
+  else if (event.key === 'End') next = planAddDays(_tlStartOfWeek(day), 6);
+  else if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (day !== calSelectedDay()) calSelectDay(day);
+    document.getElementById('cal-add-input')?.focus();
+    return;
+  }
+  if (next == null) return;
+  event.preventDefault();
+  event.stopPropagation();
+  calSelectDay(next, { focus: true });
+}
+
+function buildCalWeek(entries, selected, now, session = null, after = []) {
+  const wrap = document.createElement('div');
+  wrap.className = 'cld-card cld-week';
+  const grid = document.createElement('div');
+  grid.className = 'cld-wk';
+  grid.setAttribute('role', 'group');
+  grid.setAttribute('aria-label', calPeriodLabel());
+  const byDay = calGroupByDay(entries);
+  const todayStart = _tlStartOfDay(now);
+  const start = calWeekStart();
+  let day = start;
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(day);
+    const list = byDay.get(day) || [];
+    const col = document.createElement('div');
+    col.className = 'cld-wcol' + (day === selected ? ' is-sel' : '');
+    const head = document.createElement('button');
+    head.type = 'button';
+    head.className = 'cld-wh';
+    head.dataset.calDay = String(day);
+    head.tabIndex = day === selected ? 0 : -1;
+    head.setAttribute('aria-pressed', String(day === selected));
+    head.setAttribute('aria-label', calendarDayAriaLabel(day, list.length));
+    const dow = document.createElement('span');
+    dow.className = 'cld-wh-dow';
+    dow.textContent = date.toLocaleDateString(appLocale(), { weekday: 'short' });
+    head.append(dow, calDayNumber(date, day === todayStart, session, now));
+    col.appendChild(head);
+    const body = document.createElement('div');
+    body.className = 'cld-wbody';
+    list.forEach(entry => body.appendChild(calChip(entry, now, 'cld-wchip')));
+    col.appendChild(body);
+    calBindDay(col, day, list);
+    grid.appendChild(col);
+    day = planAddDays(day, 1);
+  }
+  grid.appendChild(calSelectionBox('week', start, calDayIndex(start, selected, 7), session, after));
+  grid.addEventListener('keydown', calGridKey);
+  wrap.appendChild(grid);
+  return wrap;
 }
 
 function _calAgendaDayLabel(dayStart, now = Date.now()) {
@@ -33967,67 +34255,388 @@ function _calAgendaDayLabel(dayStart, now = Date.now()) {
   if (dayStart === _tlStartOfDay(tmr.getTime())) return tr('cal.tomorrow');
   return new Date(dayStart).toLocaleDateString(appLocale(), { weekday: 'long', month: 'short', day: 'numeric' });
 }
-function _calAgendaSection(label, list, past) {
-  const sec = document.createElement('div');
-  sec.className = 'cal-ag-sec' + (past ? ' past' : '');
-  const hd = document.createElement('div');
-  hd.className = 'cal-ag-hd';
-  hd.textContent = label;
+function _calAgendaSection(day, list, selected, now) {
+  const sec = document.createElement('section');
+  sec.className = 'cld-ag-sec';
+  const hd = document.createElement('h3');
+  hd.className = 'cld-ag-hd' + (day === _tlStartOfDay(now) ? ' is-today' : '');
+  hd.textContent = _calAgendaDayLabel(day, now);
   sec.appendChild(hd);
-  list.forEach(e => {
-    const row = document.createElement('div');
-    row.className = 'cal-ag-row';
-    row.appendChild(buildCalDot(e, true));
-    const rel = document.createElement('span');
-    rel.className = 'cal-ag-rel';
-    rel.textContent = fmtTimeRelative(e.at);
-    row.appendChild(rel);
+  list.forEach(entry => {
+    const row = document.createElement('button');
+    row.type = 'button';
+    row.className = 'cld-arow';
+    row.dataset.calKey = calEntryKey(entry);
+    row.style.setProperty('--dot', reminderDotColor(entry.color));
+    row.setAttribute('aria-pressed', String(day === selected));
+    row.innerHTML = `<span class="cld-arow-t">${esc(planTimeLabel(entry.at))}</span><span class="cld-rdot" aria-hidden="true"></span><span class="cld-arow-n">${esc(entry.title)}</span><span class="cld-arow-s">${esc(calPlaceLabel(entry))}</span>`;
+    row.onclick = () => {
+      calSelectDay(day);
+      document.querySelector(`.cld .cld-arow[data-cal-key="${CSS.escape(row.dataset.calKey)}"]`)?.focus({ preventScroll: true });
+    };
     sec.appendChild(row);
   });
   return sec;
 }
-function buildCalAgenda(entries) {
+function buildCalAgenda(entries, selected, now) {
   const body = document.createElement('div');
-  body.className = 'cal-body cal-agenda';
-  if (!entries.length) { body.appendChild(_calEmptyNote(tr('cal.noRemindersHere'))); return body; }
-  const now = Date.now();
-  const overdue = entries.filter(e => e.at < now).sort((a, b) => a.at - b.at);
+  body.className = 'cld-card cld-agenda';
+  // Past due sits in its own strip above every view.
   const upcoming = entries.filter(e => e.at >= now).sort((a, b) => a.at - b.at);
-  if (overdue.length) body.appendChild(_calAgendaSection(tr('cal.pastDue'), overdue, true));
+  if (!upcoming.length) {
+    body.appendChild(_calEmptyNote(tr(entries.length ? 'cal.nothingUpcoming' : 'cal.noRemindersHere')));
+    return body;
+  }
   const byDay = calGroupByDay(upcoming);
-  const days = [...byDay.keys()].sort((a, b) => a - b);
-  if (!upcoming.length && overdue.length) body.appendChild(_calEmptyNote(tr('cal.nothingUpcoming')));
-  days.forEach(d => body.appendChild(_calAgendaSection(_calAgendaDayLabel(d), byDay.get(d), false)));
+  [...byDay.keys()].sort((a, b) => a - b).forEach(day => body.appendChild(_calAgendaSection(day, byDay.get(day), selected, now)));
   return body;
 }
 
-// Workspace › Calendar breadcrumb (mirrors renderBreadcrumb's chrome).
-function renderCalendarBreadcrumb(ws) {
-  const bar = document.getElementById('breadcrumb-bar');
-  if (!bar) return;
-  bar.classList.remove('hidden');
-  bar.setAttribute('aria-label', tr('cal.breadcrumb'));
-  bar.innerHTML = '';
-  const back = document.createElement('button');
-  back.className = 'bc-back';
-  back.type = 'button';
-  back.title = tr('cal.backToBoard');
-  back.setAttribute('aria-label', tr('cal.backToBoard'));
-  back.innerHTML = `<svg width="12" height="12" viewBox="0 0 14 14" fill="none"><path d="M9 3L5 7l4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> ${esc(tr('cal.back'))}`;
-  back.onclick = closeCalendar;
-  bar.appendChild(back);
-  const crumb = (label, sym, onClick) => {
-    const b = document.createElement('button');
-    b.className = 'bc-crumb' + (onClick ? '' : ' current');
-    b.type = 'button';
-    b.innerHTML = (sym ? `<span class="bc-sym">${esc(sym)}</span>` : '') + `<span>${esc(label)}</span>`;
-    if (onClick) b.onclick = onClick; else b.setAttribute('aria-current', 'page');
-    return b;
+// Where a reminder lives: its Space, plus "Group" or "Space" for those.
+function calPlaceLabel(entry) {
+  const source = calendarSourceLabel(entry.source);
+  return [entry.catName, source].filter(Boolean).join(' · ');
+}
+
+// The Past due strip: every overdue reminder (newest first), each with Move.
+function buildCalPastDue(entries, now, entering = false) {
+  const overdue = entries.filter(e => e.at < now).sort((a, b) => b.at - a.at);
+  if (!overdue.length) return null;
+  const strip = document.createElement('section');
+  // The chips slide in when the view opens, not on every repaint.
+  strip.className = 'cld-due' + (entering ? ' is-in' : '');
+  strip.setAttribute('aria-labelledby', 'cld-due-hd');
+  strip.innerHTML = `<h2 class="cld-due-hd" id="cld-due-hd">${planSvg(PLAN_ICONS.clock, 14, 1.7)}<span>${esc(tr('cal.pastDue'))}</span><span class="cld-due-n">${overdue.length}</span></h2>`;
+  const list = document.createElement('div');
+  list.className = 'cld-due-list';
+  overdue.slice(0, 40).forEach(entry => {
+    const chip = document.createElement('div');
+    chip.className = 'cld-due-chip';
+    chip.dataset.calKey = calEntryKey(entry);
+    const when = document.createElement('span');
+    when.className = 'cld-due-when';
+    when.textContent = calWhenLabel(entry.at, now);
+    chip.append(when, buildCalDot(entry, 'cld-due-title'), calMoveButton(entry, 'arrow'));
+    list.appendChild(chip);
+  });
+  strip.appendChild(list);
+  return strip;
+}
+
+function calMoveButton(entry, icon) {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'cld-mv';
+  b.setAttribute('aria-haspopup', 'menu');
+  b.setAttribute('aria-expanded', 'false');
+  b.setAttribute('aria-label', tr('plan.moveNamed', { name: entry.title || tr('plan.untitled') }));
+  b.innerHTML = icon === 'arrow' ? calIcon('arrow', 15, 1.6) : calIcon('clock', 16, 1.6);
+  b.onclick = event => {
+    event.stopPropagation();
+    showAnchoredContextMenu(b, calendarMoveMenuItems(entry, b), { ariaLabel: tr('plan.moveTo'), expandedOwner: b });
   };
-  const sep = () => { const s = document.createElement('span'); s.className = 'bc-sep'; s.textContent = '›'; return s; };
-  bar.appendChild(crumb(ws.name, ws.symbol, closeCalendar));
-  bar.appendChild(sep());
-  bar.appendChild(crumb(tr('cal.title'), '📅', null));
+  return b;
+}
+
+// Days offered by Move to: Today, Tomorrow, the day after (a weekday), This
+// weekend and Next week, without the reminder's own day, at most four. Each
+// keeps the reminder's time of day (see calMoveTime).
+function calendarMoveOptions(entry, now = Date.now()) {
+  const b = planBounds(now);
+  const saturday = planAddDays(b.weekStart, 5);
+  const from = planDayStart(entry.at);
+  const candidates = [
+    { key: 'today', day: b.today, label: tr('cal.today') },
+    { key: 'tomorrow', day: b.tomorrow, label: tr('cal.tomorrow') },
+    { key: 'day', day: b.afterTomorrow, label: new Date(b.afterTomorrow).toLocaleDateString(appLocale(), { weekday: 'long' }) },
+    { key: 'weekend', day: saturday, label: tr('plan.move.weekend') },
+    { key: 'nextWeek', day: b.nextWeek, label: tr('plan.move.nextWeek') },
+  ];
+  const seen = new Set();
+  const options = [];
+  candidates.forEach(option => {
+    if (option.day < b.today || option.day === from || seen.has(option.day)) return;
+    if (option.key === 'day' && option.day >= saturday) return;
+    const at = calMoveTime(entry, option.day, now);
+    if (at == null) return;
+    seen.add(option.day);
+    options.push({ ...option, at });
+  });
+  return options.slice(0, 4);
+}
+
+// Move to, then Edit reminder… and Clear / Remove (calendarDotMenuItems). A
+// Group or Space reminder freezes its exact reminder now, as a drag does.
+function calendarMoveMenuItems(entry, opener, { withOpen = false } = {}) {
+  const base = calendarDotMenuItems(entry, opener);
+  const rest = base.slice(1).filter(item => !item.sep).map(item => ({
+    ...item,
+    action: () => {
+      calPrepareFocusAfter(opener);
+      return item.action();
+    },
+  }));
+  let moving = entry;
+  if (entry.source !== 'item') {
+    const mutationContext = createEntityReminderMutationContext(entry.source, entry.refId, entry.reminderId);
+    moving = mutationContext ? { ...entry, mutationContext } : null;
+  }
+  const items = withOpen ? [base[0], { sep: true }] : [];
+  const options = moving ? calendarMoveOptions(entry) : [];
+  options.forEach(option => items.push({
+    text: option.label,
+    sub: planOptionHint(option),
+    action: () => calMoveEntry(moving, option.day, opener),
+  }));
+  if (options.length) items.push({ sep: true });
+  return items.concat(rest);
+}
+
+// After a reminder leaves the panel or the Past due strip, focus goes to the
+// neighbour's Move button, else to the add field or the selected day.
+function calPrepareFocusAfter(source) {
+  const session = calendarPageSession;
+  const item = source?.closest?.('[data-cal-key]');
+  if (!session || !item?.parentElement) return;
+  const siblings = [...item.parentElement.children].filter(el => el.dataset?.calKey);
+  const index = siblings.indexOf(item);
+  const mv = el => (el ? `.cld [data-cal-key="${CSS.escape(el.dataset.calKey)}"] .cld-mv` : null);
+  session.afterMove = [
+    mv(siblings[index + 1]),
+    mv(siblings[index - 1]),
+    item.closest('.cld-due') ? '.cld [data-cal-day][aria-pressed="true"]' : '#cal-add-input',
+  ].filter(Boolean);
+}
+function calendarFocusAfterMove() {
+  const session = calendarPageSession;
+  const list = session?.afterMove;
+  if (!list) return null;
+  session.afterMove = null;
+  for (const selector of list) {
+    const target = document.querySelector(selector);
+    if (target) return target;
+  }
+  return null;
+}
+
+function calMovedReceipt(entry, at) {
+  const date = new Date(at).toLocaleDateString(appLocale(), { weekday: 'short', month: 'short', day: 'numeric' });
+  return {
+    message: tr('cal.movedTo', { date, time: planTimeLabel(at) }),
+    options: { tone: 'warning', glyph: 'clock', sub: entry.title },
+  };
+}
+
+// Move a reminder to a day through the normal reminder transaction (receipt
+// with Undo), then fly its card from where it was to its new day.
+async function calMoveEntry(entry, dayStart, source = null) {
+  if (!entry || isReminderMutationPending()) return false;
+  const at = calMoveTime(entry, dayStart);
+  if (at == null) {
+    toast(tr('reminder.futureTime'), { danger: true });
+    return false;
+  }
+  if (at === entry.at) return true;
+  const from = source?.isConnected
+    ? (source.closest('[data-cal-key]') || source).getBoundingClientRect()
+    : null;
+  if (source) calPrepareFocusAfter(source);
+  const ok = await calRescheduleTo(entry, dayStart, calMovedReceipt(entry, at));
+  if (ok !== true) {
+    if (calendarPageSession) calendarPageSession.afterMove = null;
+    return false;
+  }
+  // Plan's "moved N times" mark counts Calendar moves too; Undo takes it back.
+  if (entry.source === 'item' && typeof planBumpMoves === 'function') planBumpMoves(entry.refId, planLatestActionId());
+  calLand(entry, at, from);
+  return true;
+}
+
+// The moved card lands on its new day: a ghost travels from the old spot
+// (with a small hop), then the card in the new day flashes. Without motion, or
+// with no old spot (a drop), only the landing shows.
+function calLand(entry, at, from) {
+  const key = CSS.escape(calEntryKey(entry));
+  const day = planDayStart(at);
+  const target = document.querySelector(`.cld :is(.cld-chip, .cld-wchip, .cld-arow)[data-cal-key="${key}"]`)
+    || document.querySelector(`.cld [data-cal-day="${day}"] .cld-more`)
+    || document.querySelector(`.cld .cld-cell[data-cal-day="${day}"]`);
+  if (!target || !target.getClientRects().length) return;
+  if (!from || planReducedMotion()) {
+    calReplay(target, 'is-landed');
+    return;
+  }
+  const to = target.getBoundingClientRect();
+  const ghost = document.createElement('div');
+  ghost.className = 'cld-ghost';
+  ghost.setAttribute('aria-hidden', 'true');
+  ghost.style.setProperty('--dot', reminderDotColor(entry.color));
+  ghost.style.left = `${Math.round(from.left)}px`;
+  ghost.style.top = `${Math.round(from.top + Math.max(0, (from.height - to.height) / 2))}px`;
+  ghost.style.width = `${Math.round(Math.max(to.width, 120))}px`;
+  ghost.style.setProperty('--dx', `${Math.round(to.left - from.left)}px`);
+  ghost.style.setProperty('--dy', `${Math.round(to.top - from.top - Math.max(0, (from.height - to.height) / 2))}px`);
+  ghost.innerHTML = `<span class="cld-chip-t">${esc(planTimeLabel(at))}</span><span class="cld-chip-n">${esc(entry.title)}</span>`;
+  target.classList.add('is-arriving');
+  document.body.appendChild(ghost);
+  let settled = false;
+  const land = () => {
+    if (settled) return;
+    settled = true;
+    ghost.remove();
+    const live = document.querySelector(`.cld :is(.cld-chip, .cld-wchip, .cld-arow)[data-cal-key="${key}"]`) || target;
+    live.classList.remove('is-arriving');
+    calReplay(live, 'is-landed');
+  };
+  ghost.addEventListener('animationend', land, { once: true });
+  // A hidden tab may never finish the animation; the card must not stay hidden.
+  setTimeout(land, 900);
+}
+
+// A task added from the day panel drops into its list.
+function calMarkDropped(itemId) {
+  if (!itemId) return;
+  const row = document.querySelector(`.cld .cld-row[data-cal-key^="item:${CSS.escape(String(itemId))}:"]`);
+  if (row) calReplay(row, 'is-dropped');
+}
+
+// Add a task from the day panel: the same receipt-gated transaction as the Add
+// task dialog (commitCalendarTaskMutation), reviewed when Enter is pressed.
+async function calendarAddInline(dayStart, rawText) {
+  const text = String(rawText || '').trim();
+  if (!text || isCalendarTaskMutationPending()) return false;
+  if (calendarTaskCtx && !calendarTaskCtx.inline) return false;
+  const workspace = activeWs();
+  if (!workspace || !Array.isArray(workspace.categories) || !workspace.categories.length) {
+    toast(tr('cal.needSpace'), { danger: true });
+    return false;
+  }
+  const context = createCalendarTaskMutationContext(dayStart);
+  if (!context) {
+    toast(tr('cal.addFailed'), { danger: true });
+    return false;
+  }
+  calendarTaskCtx = { ...context, inline: true, errorKey: null, unavailable: false };
+  calendarTaskBusy = false;
+  return commitCalendarTaskMutation(calendarTaskCtx, text);
+}
+
+function paintCalendarAddInline() {
+  const form = document.getElementById('cal-add-form');
+  const input = document.getElementById('cal-add-input');
+  const status = document.getElementById('cal-add-status');
+  if (!form || !input || !status) return;
+  const ctx = calendarTaskCtx?.inline ? calendarTaskCtx : null;
+  const busy = !!ctx && calendarTaskBusy;
+  const errorKey = ctx?.errorKey || null;
+  const key = busy ? 'cal.adding'
+    : errorKey === 'cal.saveFailed' ? errorKey
+      : errorKey && errorKey !== 'cal.taskRequired' ? 'cal.addFailed' : '';
+  input.disabled = busy;
+  form.setAttribute('aria-busy', String(busy));
+  status.textContent = key ? tr(key) : '';
+  status.hidden = !key;
+  if (busy) status.dataset.tone = 'pending';
+  else if (key) status.dataset.tone = 'error';
+  else delete status.dataset.tone;
+}
+
+function buildCalPanel(entries, selected, now, emptyText, session = null) {
+  const list = (calGroupByDay(entries).get(selected) || []).slice();
+  const todayStart = _tlStartOfDay(now);
+  const date = new Date(selected);
+  const aside = document.createElement('aside');
+  aside.className = 'cld-panel';
+  aside.setAttribute('aria-label', calendarDayAriaLabel(selected, list.length));
+  const inner = document.createElement('div');
+  inner.className = 'cld-pin';
+  if (session && session.sel != null && session.sel !== selected) inner.classList.add(selected > session.sel ? 'is-next' : 'is-prev');
+
+  const weekday = date.toLocaleDateString(appLocale(), { weekday: 'long' });
+  const rel = selected === todayStart ? tr('cal.today') : selected === planAddDays(todayStart, 1) ? tr('cal.tomorrow') : '';
+  const countKey = `d${selected}`;
+  const roll = session ? spaceCountRoll(session, countKey, list.length) : { previous: null, delay: 0 };
+  if (session) session.counts.set(countKey, list.length);
+  const head = document.createElement('div');
+  head.className = 'cld-ph';
+  head.innerHTML = `<div class="cld-ph-text"><div class="cld-pwd${selected === todayStart ? ' is-today' : ''}">${rel ? `${esc(rel)} · ` : ''}${esc(weekday)}</div><div class="cld-pdate">${esc(date.toLocaleDateString(appLocale(), { month: 'long', day: 'numeric' }))}</div></div><span class="cld-pcount" aria-hidden="true">${spaceRollMarkup(list.length, roll.previous, roll.delay)}</span>`;
+  inner.appendChild(head);
+
+  // Add a task on this day (9:00, the active Space's Inbox).
+  const review = createCalendarTaskMutationContext(selected);
+  const form = document.createElement('form');
+  form.className = 'cld-add';
+  form.id = 'cal-add-form';
+  form.setAttribute('aria-busy', 'false');
+  const label = tr('cal.addOn', { date: date.toLocaleDateString(appLocale(), { weekday: 'long', month: 'long', day: 'numeric' }) });
+  form.innerHTML = `<span class="cld-add-plus" aria-hidden="true">${calIcon('plus', 12, 2.2)}</span><label class="sr-only" for="cal-add-input">${esc(label)}</label><input id="cal-add-input" type="text" autocomplete="off" spellcheck="false" aria-describedby="cal-add-review cal-add-status"><span class="cld-add-time" aria-hidden="true"></span><kbd class="cld-kbd" aria-hidden="true">Enter</kbd><span class="sr-only" id="cal-add-review"></span>`;
+  const input = form.querySelector('input');
+  input.placeholder = tr('cal.addPlaceholder');
+  if (review) {
+    const reviewText = tr('cal.addDescription', { space: review.spaceName, group: review.inboxName, date: review.dateLabel, time: review.timeLabel });
+    form.querySelector('#cal-add-review').textContent = reviewText;
+    form.querySelector('.cld-add-time').textContent = planTimeLabel(review.at);
+    form.title = reviewText;
+  }
+  input.addEventListener('input', () => form.classList.toggle('has-text', !!input.value.trim()));
+  input.addEventListener('keydown', event => {
+    if (event.key !== 'Escape') return;
+    event.stopPropagation();
+    if (input.value) {
+      input.value = '';
+      form.classList.remove('has-text');
+    } else calFocusDay(selected);
+  });
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    void calendarAddInline(selected, input.value);
+  });
+  inner.appendChild(form);
+  const status = document.createElement('p');
+  status.className = 'cld-add-status';
+  status.id = 'cal-add-status';
+  status.setAttribute('role', 'status');
+  status.setAttribute('aria-live', 'polite');
+  status.hidden = true;
+  inner.appendChild(status);
+
+  const rows = document.createElement('div');
+  rows.className = 'cld-rows';
+  let nowShown = selected !== todayStart;
+  list.forEach(entry => {
+    if (!nowShown && entry.at >= now) {
+      nowShown = true;
+      const line = document.createElement('div');
+      line.className = 'cld-now';
+      line.innerHTML = `<span>${esc(tr('cal.now', { time: planTimeLabel(now) }))}</span><i aria-hidden="true"></i>`;
+      rows.appendChild(line);
+    }
+    rows.appendChild(buildCalRow(entry, now));
+  });
+  if (!list.length && emptyText) rows.appendChild(_calEmptyNote(emptyText));
+  inner.appendChild(rows);
+  aside.appendChild(inner);
+  return aside;
+}
+
+function buildCalRow(entry, now) {
+  const row = document.createElement('div');
+  row.className = 'cld-row' + (entry.at < now ? ' is-past' : '');
+  row.dataset.calKey = calEntryKey(entry);
+  row.style.setProperty('--dot', reminderDotColor(entry.color));
+  const time = document.createElement('span');
+  time.className = 'cld-rtime';
+  time.textContent = planTimeLabel(entry.at);
+  const main = document.createElement('div');
+  main.className = 'cld-rmain';
+  main.appendChild(buildCalDot(entry, 'cld-rtitle'));
+  const meta = document.createElement('div');
+  meta.className = 'cld-rmeta';
+  meta.innerHTML = `<span class="cld-rdot" aria-hidden="true"></span><span>${esc(calPlaceLabel(entry))}</span>`
+    + (entry.recur?.every ? `<span class="cld-rrep">${planSvg(PLAN_ICONS.rolled, 11, 2)}<span>${esc(recurLabel(entry.recur))}</span></span>` : '');
+  main.appendChild(meta);
+  row.append(time, main, calMoveButton(entry, 'clock'));
+  return row;
 }
 
 // Render the calendar surface into #board. Returns false (letting the board
@@ -34039,31 +34648,51 @@ function renderCalendar() {
     if (typeof renderPlanSurface === 'function') return renderPlanSurface(ws);
     activeCalendar.view = 'month';
   }
-  renderCalendarBreadcrumb(ws);
+  // A Plan view: no breadcrumb bar, as on Upcoming and Sort inbox.
+  hideBreadcrumb();
 
   const $b = document.getElementById('board');
+  const scrollTop = $b.classList.contains('calendar-mode') ? $b.scrollTop : 0;
   $b.classList.remove('list-mode', 'canvas-mode', 'explorer-mode', 'timeline-mode', 'group-page-mode');
   $b.classList.add('calendar-mode');
   $b.innerHTML = '';
 
+  const session = calendarSession();
+  const now = Date.now();
   const all = buildCalendarEntries();
   const pred = parseCalendarFilter(calendarFilter);
   const shown = pred ? all.filter(pred) : all;
+  const view = activeCalendar.view;
+  const selected = calSelectedDay();
+  // Month opens on the selected day's month.
+  if (view === 'month' && session.view !== 'month' && !calInMonthGrid(selected)) calSetAnchor(selected);
+  const emptyKey = calEmptyKey(all.length, shown.length);
+  const after = [];
 
   const wrap = document.createElement('div');
-  wrap.className = 'cal-wrap';
+  wrap.className = 'cal-wrap cld';
   // The Calendar is a view inside Plan, so it carries Plan's header.
   if (typeof buildPlanHeader === 'function') wrap.appendChild(buildPlanHeader(ws, 'calendar'));
-  wrap.appendChild(buildCalToolbar(shown.length, all.length));
-  const view = activeCalendar.view;
-  if (!all.length) {
-    wrap.appendChild(_calEmptyNote(tr('cal.noWorkspaceReminders')));
-  } else if (!shown.length) {
-    wrap.appendChild(_calEmptyNote(tr('cal.noFilterMatches')));
-  } else {
-    wrap.appendChild(view === 'agenda' ? buildCalAgenda(shown) : view === 'week' ? buildCalWeek(shown) : buildCalMonth(shown));
-  }
+  wrap.appendChild(buildCalToolbar(shown.length, all.length, session, after));
+  const due = buildCalPastDue(shown, now, !session.view);
+  if (due) wrap.appendChild(due);
+  const main = document.createElement('div');
+  main.className = 'cld-main';
+  main.setAttribute('role', 'region');
+  main.setAttribute('aria-label', tr('cal.title'));
+  const host = document.createElement('div');
+  host.className = 'cld-view' + (session.view && session.view !== view ? ' is-in' : '');
+  if (view === 'agenda') host.appendChild(emptyKey ? _calEmptyNote(tr(emptyKey)) : buildCalAgenda(shown, selected, now));
+  else host.appendChild(view === 'week' ? buildCalWeek(shown, selected, now, session, after) : buildCalMonth(shown, selected, now, session, after));
+  main.appendChild(host);
+  main.appendChild(buildCalPanel(shown, selected, now, view === 'agenda' && emptyKey ? '' : tr(emptyKey || 'cal.noRemindersHere'), session));
+  wrap.appendChild(main);
   $b.appendChild(wrap);
+  after.forEach(step => step());
+  if (scrollTop) $b.scrollTo({ top: scrollTop, behavior: 'instant' });
+  session.view = view;
+  session.sel = selected;
+  paintCalendarAddInline();
 
   // Restore the filter input's focus/caret across the keystroke-triggered render.
   if (_calFilterRestore) {

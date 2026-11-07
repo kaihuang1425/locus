@@ -197,9 +197,6 @@ assert.match(
 const calendarCopy = {
   en: {
     'cal.title': 'Calendar',
-    'cal.breadcrumb': 'Calendar navigation',
-    'cal.back': 'Back',
-    'cal.backToBoard': 'Back to board',
     'cal.upcoming': 'Upcoming',
     'cal.viewLabel': 'Calendar view',
     'cal.view.month': 'Month',
@@ -232,9 +229,6 @@ const calendarCopy = {
   },
   'zh-TW': {
     'cal.title': '行事曆',
-    'cal.breadcrumb': '行事曆導覽',
-    'cal.back': '返回',
-    'cal.backToBoard': '返回看板',
     'cal.upcoming': '近期提醒',
     'cal.viewLabel': '行事曆檢視',
     'cal.view.month': '月',
@@ -345,7 +339,11 @@ assert.match(executableCalendarSource, /seg\.setAttribute\('role', 'group'\)/, '
 assert.match(executableCalendarSource, /seg\.setAttribute\('aria-label', tr\('cal\.viewLabel'\)\)/, 'Calendar views need a localized group name');
 assert.match(executableCalendarSource, /b\.setAttribute\('aria-pressed', String\(activeCalendar\.view === v\)\)/, 'Calendar view state must be exposed');
 assert.match(executableCalendarSource, /input\.setAttribute\('aria-label', tr\('cal\.filterLabel'\)\)/, 'Calendar filter needs a localized accessible name');
-assert.match(executableCalendarSource, /bar\.setAttribute\('aria-label', tr\('cal\.breadcrumb'\)\)/, 'Calendar breadcrumb needs a localized landmark name');
+// The Calendar is a Plan view (2026-11 board): no breadcrumb bar, as on
+// Upcoming and Sort inbox; the view region carries the localized name.
+assert.match(executableCalendarSource, /activeCalendar\.view = 'month';\s*\}\s*hideBreadcrumb\(\);/, 'the Calendar view must hide the breadcrumb bar like the other Plan views');
+assert.doesNotMatch(executableCalendarSource, /breadcrumb-bar|renderCalendarBreadcrumb/, 'the Calendar view must not draw its own breadcrumb');
+assert.match(executableCalendarSource, /main\.setAttribute\('role', 'region'\);\n\s*main\.setAttribute\('aria-label', tr\('cal\.title'\)\);/, 'the Calendar view region needs a localized landmark name');
 assert.match(
   executableCalendarSource,
   /if \(input\.value\) \{ input\.value = ''; calendarFilter = ''; _calFilterRestore = \{ caret: 0 \}; renderBoard\(\); \} else input\.blur\(\);/,
@@ -355,10 +353,18 @@ const calendarCopyUseSource = `${calendarSurfaceSource}\n${reminderItemTitleSour
 for (const key of Object.keys(calendarCopy.en)) {
   assert.ok(calendarCopyUseSource.includes(`'${key}'`), `Calendar production paths must use ${key}`);
 }
+// One authoritative empty message per view (ported 2026-11): Month and Week
+// keep the grid so a task can be added on any day, and the day panel owns the
+// message; Agenda shows it in place of its list and the panel stays quiet.
 assert.match(
   executableCalendarSource,
-  /if \(!all\.length\) \{\s+wrap\.appendChild\(_calEmptyNote\(tr\('cal\.noWorkspaceReminders'\)\)\);\s+\} else if \(!shown\.length\) \{\s+wrap\.appendChild\(_calEmptyNote\(tr\('cal\.noFilterMatches'\)\)\);\s+\} else \{\s+wrap\.appendChild\(view === 'agenda'/,
-  'Calendar must render one authoritative workspace-empty or filter-empty state instead of stacking a view empty state',
+  /function calEmptyKey\(allCount, shownCount\) \{\n\s*if \(!allCount\) return 'cal\.noWorkspaceReminders';\n\s*if \(!shownCount\) return 'cal\.noFilterMatches';\n\s*return null;\n\}/,
+  'Calendar must pick one authoritative workspace-empty or filter-empty message',
+);
+assert.match(
+  executableCalendarSource,
+  /const emptyKey = calEmptyKey\(all\.length, shown\.length\);[\s\S]*if \(view === 'agenda'\) host\.appendChild\(emptyKey \? _calEmptyNote\(tr\(emptyKey\)\) : buildCalAgenda\([\s\S]*buildCalPanel\(shown, selected, now, view === 'agenda' && emptyKey \? '' : tr\(emptyKey \|\| 'cal\.noRemindersHere'\)/,
+  'Calendar must render that message once per view instead of stacking a view empty state',
 );
 
 const context = vm.createContext({
