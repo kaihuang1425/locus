@@ -1286,6 +1286,22 @@ plugin disclosures do not add another Settings route or stored plugin state.
   Menu, and Shift+F10 entry. Escape restores the actual opener instead of a redundant
   wrapper. The visible More button owns local Archive pending feedback; no direct
   destructive X, anchored color popup, slash writer, or inline editor remains.
+- `popupAsksWhereToSave()` is the one rule: only a stored `captureAskEveryTime === true` asks. New
+  profiles get `false` from `createInitialState()`; `hydrateStoredState()` fills a missing value with
+  `false` and never rewrites a stored `true`; the Settings switch and the save contract use the same
+  `=== true` rule. A one-click save is the existing quick branch (`doSave(..., { quick: true })` with
+  `quickCaptureItem` on the `locus-state-write` request); a confirmed `quickCaptureResult` goes to
+  `showQuickSaveReceipt()`, an unconfirmed one to the durable `showQuickCaptureResult()` card. The branch
+  owns no tab effect, timer or dismissal. Undo (`undoQuickSave`) and Move (`moveQuickSave`) find the item
+  with `findPopupSavedItem()` (exactly one item with the saved id, still a tab at the saved URL, in the
+  receipt's Workspace), change only that item in the popup's graph and write it with `persistPopupState()`
+  (revision-checked, worker-acknowledged); a conflict or unknown acknowledgement rolls back through
+  `recoverCaptureWriteFailure(..., { change: true })`. Locate is the worker's `locus-complete-quick-capture`
+  open action, with `closeSource` set from close-after-save. One-click Save window is `saveWindow({ quick:
+  true })`; a clean worker result goes to `showWindowSaveReceipt()`, whose Open uses
+  `locus-open-window-save-destination`. The popup toast entry carries `undo`, `move` and one `action`;
+  `runPopupToastAction` / `settlePopupToastAction` morph it in place (`keepActions` keeps the actions and
+  restarts the drain) and return focus to the button or the page.
 - Popup capture target rendering is read-only.
   `resolvePopupCaptureDestination()` /
   `previewPopupCaptureTarget()` require one exact explicit, remembered,

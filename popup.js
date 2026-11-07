@@ -18,72 +18,74 @@ const browserLanguage = () => normalizeLanguage(navigator.languages?.[0] || navi
 
 const I18N = {
   en: {
-    openLocus: 'Open Locus', back: 'Back', searchTabs: 'Search open tabs…', currentWindow: 'Current window',
-    tabs: 'tabs', saveWindow: 'Save window', hibernateWindow: 'Hibernate window', loadingTabs: 'Loading tabs…',
-    retry: 'Try again', loadErrorTitle: 'Couldn’t read this window', loadError: 'No tabs were saved or closed.', noTabs: 'No saveable tabs in this window.',
+    openLocus: 'Open Locus', close: 'Close', searchTabs: 'Search open tabs…',
+    tabs: 'tabs', saveWindow: 'Save window', loadingTabs: 'Loading tabs…',
+    retry: 'Try again', loadErrorTitle: 'Couldn’t read this window', loadError: 'No tabs were saved or closed.', noTabs: 'No other saveable tabs in this window.',
     noMatches: 'No tabs match your search.', moreTabs: n => `+ ${n} more tabs`, fewerTabs: 'Show fewer tabs',
-    destination: 'Destination', change: 'Change', saveTab: 'Save tab', chooseDestination: 'Choose destination',
-    noWorkspaces: 'No workspaces yet. Open Locus to get started.', noGroups: 'No groups yet.',
-    hibernateExplainer: 'Hibernate replaces eligible tabs with packaged placeholders that you can continue from later.', scope: 'Scope',
-    thisWindow: 'This window', allWindows: 'All windows', options: 'Options', keepPinned: 'Keep pinned tabs awake',
+    destination: 'Destination', saveTab: 'Save tab', chooseDestination: 'Choose destination',
+    noWorkspaces: 'No workspaces yet. Open Locus to get started.', noGroups: 'No groups yet.', scope: 'Scope',
+    thisWindow: 'This window', allWindows: 'All windows', keepPinned: 'Keep pinned tabs awake',
     keepAudio: 'Keep tabs playing audio awake', hibernate: 'Hibernate', privacyProof: 'Profile-local; export before uninstalling or deleting the profile.',
-    viewing: 'Viewing', save: 'Save', hibernateTab: 'Hibernate this tab', openTab: 'Open tab', idle: n => `${n} idle`,
-    openFirst: 'Open the full workspace first', alreadySaved: 'Already saved', saved: 'Saved!',
+    save: 'Save', hibernateTab: 'Hibernate this tab', openTab: 'Open tab',
+    openFirst: 'Open the full workspace first', alreadySaved: 'Already saved',
     couldNotHibernate: 'Could not hibernate tab', tabHibernated: 'Tab hibernated',
     hibernated: n => n === 1 ? 'Hibernated 1 tab' : `Hibernated ${n} tabs`, cannotSave: "This tab can't be saved",
     savedTabs: n => `Saved ${n} ${n === 1 ? 'tab' : 'tabs'}`, savedTabsClosed: n => `Saved ${n} tabs · load when opened`,
     session: 'Session', unnamedTab: 'Untitled tab',
-    saveOptions: 'Save options', saveLinksOnly: 'Save links only', saveLinksOnlyDesc: 'Lightweight and fast',
-    saveLinksGroup: 'Save links + tab group', saveLinksGroupDesc: 'Keep tabs organized as a group',
-    saveQueue: 'Save as reading queue', saveQueueDesc: 'Review later in Read Later',
+    saveOptions: 'Save options', saveLinksOnly: 'Links only', saveLinksGroup: 'Links + tab group', saveQueue: 'Reading queue',
     closeAfterSave: 'Close other tabs after saving', addNote: 'Add note', notePlaceholder: 'A note saved alongside these tabs…',
-    suggestedTags: 'Suggested tags', addTag: '+ Add tag', localFirst: 'No Locus account or host permissions.',
-    video: 'Video', pdf: 'PDF', more: 'More', moreSubtitle: 'Local tools and browser actions',
-    saveCurrentTab: 'Save current tab', saveCurrentTabDesc: 'Save only this tab',
-    importBookmarks: 'Import bookmarks', importBookmarksDesc: 'Bring browser bookmarks into this Space',
-    keyboardShortcuts: 'Keyboard shortcuts', keyboardShortcutsDesc: 'Review or change extension shortcuts',
-    moreLocalProof: "These actions use browser APIs and this profile's Locus data.",
+    tags: 'Tags', addTag: '+ Add tag', localFirst: 'No Locus account or host permissions.',
+    video: 'Video', pdf: 'PDF', more: 'More',
+    saveCurrentTab: 'Save current tab', importBookmarks: 'Import bookmarks', keyboardShortcuts: 'Keyboard shortcuts',
     selectTab: title => `Select ${title}`, deselectTab: title => `Deselect ${title}`,
-    selectedTabs: 'Selected', selectedCount: n => n === 1 ? '1 tab selected' : `${n} tabs selected`,
+    selectedTabs: 'Selected', selectedCount: n => `${n} selected`,
     saveBeforeHibernate: 'Save links to Locus before hibernating',
     importedBookmarks: n => n === 1 ? 'Imported 1 bookmark' : `Imported ${n} bookmarks`,
     noBookmarks: 'No saveable bookmarks found', bookmarkImportFailed: 'Could not import bookmarks',
     bookmarksUnavailable: 'Bookmarks are unavailable', saveBeforeFailed: 'Links could not be saved; nothing was hibernated',
-    hibernatedAndSaved: (hibernated, saved) => `Saved ${saved} new · hibernated ${hibernated}`
+    hibernatedAndSaved: (hibernated, saved) => `Saved ${saved} new · hibernated ${hibernated}`,
+    thisTab: 'This tab', saveTo: 'Save to', inboxName: 'Inbox',
+    destinationChip: (path, waiting) => waiting > 0 ? `Save to ${path}, ${waiting} waiting` : `Save to ${path}`,
+    savedTo: name => `Saved to ${name}`, locate: 'Locate',
+    undo: 'Undo', move: 'Move', moveTo: 'Move to', undone: 'Undone',
+    clearSelection: 'Clear selection', clearSearch: 'Clear search', dismiss: 'Dismiss',
+    nothingToHibernate: 'Nothing to hibernate',
+    saveTabNamed: title => `Save ${title}`, hibernateTabNamed: title => `Hibernate ${title}`
   },
   'zh-TW': {
-    openLocus: '開啟 Locus', back: '返回', searchTabs: '搜尋開啟的分頁…', currentWindow: '目前視窗',
-    tabs: '個分頁', saveWindow: '儲存視窗', hibernateWindow: '休眠視窗', loadingTabs: '正在載入分頁…',
-    retry: '再試一次', loadErrorTitle: '無法讀取目前視窗', loadError: '沒有儲存或關閉任何分頁。', noTabs: '這個視窗沒有可儲存的分頁。',
+    openLocus: '開啟 Locus', close: '關閉', searchTabs: '搜尋開啟的分頁…',
+    tabs: '個分頁', saveWindow: '儲存視窗', loadingTabs: '正在載入分頁…',
+    retry: '再試一次', loadErrorTitle: '無法讀取目前視窗', loadError: '沒有儲存或關閉任何分頁。', noTabs: '這個視窗沒有其他可儲存的分頁。',
     noMatches: '沒有符合搜尋的分頁。', moreTabs: n => `另有 ${n} 個分頁`, fewerTabs: '顯示較少分頁',
-    destination: '儲存位置', change: '變更', saveTab: '儲存分頁', chooseDestination: '選擇儲存位置',
-    noWorkspaces: '尚無工作區。請先開啟 Locus 開始使用。', noGroups: '尚無群組。',
-    hibernateExplainer: '休眠會將符合條件的分頁換成封裝預留頁，之後可從預留頁繼續。', scope: '範圍',
-    thisWindow: '這個視窗', allWindows: '所有視窗', options: '選項', keepPinned: '讓釘選分頁保持啟用',
+    destination: '儲存位置', saveTab: '儲存分頁', chooseDestination: '選擇儲存位置',
+    noWorkspaces: '尚無工作區。請先開啟 Locus 開始使用。', noGroups: '尚無群組。', scope: '範圍',
+    thisWindow: '這個視窗', allWindows: '所有視窗', keepPinned: '讓釘選分頁保持啟用',
     keepAudio: '讓播放音訊的分頁保持啟用', hibernate: '休眠', privacyProof: '設定檔本機資料；解除安裝或刪除設定檔前請先匯出。',
-    viewing: '檢視中', save: '儲存', hibernateTab: '休眠此分頁', openTab: '開啟分頁', idle: n => `${n} 個閒置`,
-    openFirst: '請先開啟完整工作區', alreadySaved: '已儲存', saved: '已儲存！',
+    save: '儲存', hibernateTab: '休眠此分頁', openTab: '開啟分頁',
+    openFirst: '請先開啟完整工作區', alreadySaved: '已儲存',
     couldNotHibernate: '無法休眠分頁', tabHibernated: '分頁已休眠',
     hibernated: n => `已休眠 ${n} 個分頁`, cannotSave: '無法儲存此分頁',
     savedTabs: n => `已儲存 ${n} 個分頁`, savedTabsClosed: n => `已儲存 ${n} 個分頁 · 開啟時載入`,
     session: '工作階段', unnamedTab: '未命名分頁',
-    saveOptions: '儲存方式', saveLinksOnly: '只儲存連結', saveLinksOnlyDesc: '輕量、快速',
-    saveLinksGroup: '儲存連結＋分頁群組', saveLinksGroupDesc: '以群組保持分頁井然有序',
-    saveQueue: '存為閱讀佇列', saveQueueDesc: '之後在「稍後閱讀」中檢閱',
+    saveOptions: '儲存方式', saveLinksOnly: '只存連結', saveLinksGroup: '連結＋分頁群組', saveQueue: '閱讀佇列',
     closeAfterSave: '儲存後關閉其他分頁', addNote: '加入備註', notePlaceholder: '隨這些分頁一併儲存的備註…',
-    suggestedTags: '建議標籤', addTag: '＋新增標籤', localFirst: '沒有 Locus 帳號或主機權限。',
-    video: '影片', pdf: 'PDF', more: '更多', moreSubtitle: '本機工具與瀏覽器操作',
-    saveCurrentTab: '儲存目前分頁', saveCurrentTabDesc: '只儲存這個分頁',
-    importBookmarks: '匯入書籤', importBookmarksDesc: '將瀏覽器書籤匯入這個空間',
-    keyboardShortcuts: '鍵盤快速鍵', keyboardShortcutsDesc: '查看或變更擴充功能快速鍵',
-    moreLocalProof: '這些操作使用瀏覽器 API 與此設定檔中的 Locus 資料。',
+    tags: '標籤', addTag: '＋新增標籤', localFirst: '沒有 Locus 帳號或主機權限。',
+    video: '影片', pdf: 'PDF', more: '更多',
+    saveCurrentTab: '儲存目前分頁', importBookmarks: '匯入書籤', keyboardShortcuts: '鍵盤快速鍵',
     selectTab: title => `選取「${title}」`, deselectTab: title => `取消選取「${title}」`,
-    selectedTabs: '已選取', selectedCount: n => `已選取 ${n} 個分頁`,
+    selectedTabs: '已選取', selectedCount: n => `已選取 ${n} 個`,
     saveBeforeHibernate: '休眠前先將連結儲存到 Locus',
     importedBookmarks: n => `已匯入 ${n} 個書籤`, noBookmarks: '找不到可儲存的書籤',
     bookmarkImportFailed: '無法匯入書籤', bookmarksUnavailable: '無法使用書籤功能',
     saveBeforeFailed: '無法儲存連結，因此未休眠任何分頁',
-    hibernatedAndSaved: (hibernated, saved) => `已新增儲存 ${saved} 個，並休眠 ${hibernated} 個分頁`
+    hibernatedAndSaved: (hibernated, saved) => `已新增儲存 ${saved} 個，並休眠 ${hibernated} 個分頁`,
+    thisTab: '目前分頁', saveTo: '儲存到', inboxName: '收件匣',
+    destinationChip: (path, waiting) => waiting > 0 ? `儲存到「${path}」，有 ${waiting} 項待整理` : `儲存到「${path}」`,
+    savedTo: name => `已儲存到「${name}」`, locate: '查看位置',
+    undo: '復原', move: '移動', moveTo: '移到', undone: '已復原',
+    clearSelection: '清除選取', clearSearch: '清除搜尋', dismiss: '關閉通知',
+    nothingToHibernate: '沒有可休眠的分頁',
+    saveTabNamed: title => `儲存「${title}」`, hibernateTabNamed: title => `休眠「${title}」`
   }
 };
 
@@ -92,6 +94,10 @@ Object.assign(I18N.en, {
   captureFailed: 'Save failed. Your tabs were left untouched. Open Locus, then retry.',
   captureUnknown: 'Locus could not confirm the save. Reopen Locus before retrying; the source tab may stay open.',
   captureBusy: 'Another save is still being confirmed. Your tabs were left untouched.',
+  changeConflict: 'Locus changed in another window, so nothing changed here. Open Locus, then try again.',
+  changeFailed: 'That change didn’t save. Open Locus, then try again.',
+  changeUnknown: 'Locus couldn’t confirm that change. Reopen Locus before trying again.',
+  savedItemChanged: 'The item changed in Locus, so nothing changed here.',
   locateAfterSave: 'Open saved item in Locus',
   savedTitle: 'Saved',
   done: 'Close',
@@ -123,7 +129,6 @@ Object.assign(I18N.en, {
   openSavedItem: 'Open saved item',
   closeSavedTab: 'Close tab',
   closePopup: 'Close popup',
-  quickCaptureSourceOpen: 'The saved tab stayed open.',
   quickCaptureReceiptUnavailable: 'The tab was saved, but Locus could not confirm its current destination. The saved tab stayed open.',
   quickCaptureOpenFailed: destination => `Saved to ${destination}, but Locus could not open the item. The saved tab stayed open. Try again.`,
   quickCaptureOpenUnknown: (destination, closeRequested) => closeRequested
@@ -140,6 +145,10 @@ Object.assign(I18N['zh-TW'], {
   captureFailed: '儲存失敗。分頁完全未受影響。請開啟 Locus 後再試。',
   captureUnknown: 'Locus 無法確認是否已儲存。請重新開啟 Locus 後再試；原分頁可能仍開啟。',
   captureBusy: '另一項儲存仍在確認中。分頁完全未受影響。',
+  changeConflict: 'Locus 已在其他視窗變更，這次操作沒有生效。請開啟 Locus 後再試。',
+  changeFailed: '這項變更沒有儲存。請開啟 Locus 後再試。',
+  changeUnknown: 'Locus 無法確認這項變更是否完成。請重新開啟 Locus 後再試。',
+  savedItemChanged: '這個項目已在 Locus 裡變更，這次操作沒有生效。',
   locateAfterSave: '儲存後在 Locus 開啟項目',
   savedTitle: '已儲存',
   done: '關閉',
@@ -171,7 +180,6 @@ Object.assign(I18N['zh-TW'], {
   openSavedItem: '開啟已儲存項目',
   closeSavedTab: '關閉分頁',
   closePopup: '關閉彈出式視窗',
-  quickCaptureSourceOpen: '剛儲存的分頁仍開著。',
   quickCaptureReceiptUnavailable: '分頁已儲存，但 Locus 無法確認目前的儲存位置。剛儲存的分頁仍開著。',
   quickCaptureOpenFailed: destination => `已儲存到「${destination}」，但 Locus 無法開啟這個項目。剛儲存的分頁仍開著，請再試一次。`,
   quickCaptureOpenUnknown: (destination, closeRequested) => closeRequested
@@ -187,15 +195,20 @@ Object.assign(I18N['zh-TW'], {
 let all = [];
 let state = null;
 let pendingTab = null;
+let activeTab = null;
 let activeTabId = null;
 let activeWindowId = null;
 let tabsExpanded = false;
 let activeSection = 'main-section';
 let sectionHistory = [];
 let toastTimer = null;
-// The destination picker serves three flows: saving one tab now ('tab'),
-// changing the resolved destination from the main view ('destination'), and
-// picking where a window save lands ('window').
+// Tab URLs already saved anywhere in Locus, for the rows' saved mark.
+let savedTabUrls = new Set();
+let heroSavedTabId = null;
+// One floating layer at a time: the More menu or a destination list.
+let openLayer = null;
+// The Save tab sheet saves one tab into the row a user picks ('tab'). The
+// destination lists by the chips change where a later save lands instead.
 let pickerMode = 'tab';
 // Session-scoped destination override (group id) — survives even when
 // captureRememberLast is off, because it is an explicit choice made just now.
@@ -390,8 +403,6 @@ function applyAppearance() {
   document.documentElement.lang = appLocale();
   document.body.dataset.font = FONT_IDS.has(font) ? font : 'dm';
   document.body.dataset.anim = state?.settings?.animate === false ? 'off' : 'on';
-  const name = String(state?.settings?.profile?.name || 'Locus').trim();
-  $('profile-initial').textContent = Array.from(name)[0]?.toUpperCase() || 'L';
 }
 
 function applyLocale() {
@@ -435,39 +446,33 @@ function clonePopupState() {
   return state == null ? state : JSON.parse(JSON.stringify(state));
 }
 
-function showCaptureFailure(error) {
+// A failed Undo or Move on a saved item ("change") names the change, not a save.
+function showCaptureFailure(error, { change = false } = {}) {
   const message = tr(
     error?.code === 'LOCUS_STATE_CONFLICT'
-      ? 'captureConflict'
+      ? (change ? 'changeConflict' : 'captureConflict')
       : isPopupStateRecoveryError(error)
-        ? 'captureUnknown'
-        : 'captureFailed'
+        ? (change ? 'changeUnknown' : 'captureUnknown')
+        : (change ? 'changeFailed' : 'captureFailed')
   );
-  toast(message, { persistent: true });
-  const host = $('pop-toast');
-  const copy = document.createElement('span');
-  copy.className = 'pop-toast-copy';
-  copy.textContent = message;
-  const action = document.createElement('button');
-  action.type = 'button';
-  action.className = 'pop-toast-action';
-  action.textContent = tr('openLocus');
-  action.onclick = async () => {
-    try {
-      await chrome.tabs.create({ url: chrome.runtime.getURL('newtab.html') });
-      window.close();
-    } catch (openError) {
-      console.error('Could not open Locus after capture failure', openError);
-    }
-  };
-  host.textContent = '';
-  host.appendChild(copy);
-  host.appendChild(action);
-  host.classList.add('interactive');
-  requestAnimationFrame(() => action.focus());
+  toast(message, {
+    persistent: true,
+    actionLabel: tr('openLocus'),
+    action: async () => {
+      try {
+        await chrome.tabs.create({ url: chrome.runtime.getURL('newtab.html') });
+        window.close();
+      } catch (openError) {
+        console.error('Could not open Locus after capture failure', openError);
+        return 'keep';
+      }
+    },
+  });
+  $('pop-toast').classList.add('interactive');
+  requestAnimationFrame(() => $('pop-toast-action').focus());
 }
 
-async function recoverCaptureWriteFailure(error, snapshot) {
+async function recoverCaptureWriteFailure(error, snapshot, failureOptions = {}) {
   console.error('Popup capture failed', error);
   if (error && typeof error === 'object') {
     try { error.locusCaptureHandled = true; } catch {}
@@ -489,7 +494,7 @@ async function recoverCaptureWriteFailure(error, snapshot) {
   } catch (renderError) {
     console.error('Could not refresh the popup after capture failure', renderError);
   }
-  try { showCaptureFailure(error); } catch (displayError) {
+  try { showCaptureFailure(error, failureOptions); } catch (displayError) {
     console.error('Could not display the capture failure', displayError);
   }
 }
@@ -906,8 +911,40 @@ function resolvePopupSelectedTarget(groupId, { useLast = true } = {}) {
 
 function updateDestination() {
   const target = findCaptureTarget();
-  $('destination-card').classList.toggle('hidden', !target);
-  if (target) $('destination-name').textContent = `${target.cat.name} / ${target.group.name}`;
+  $('destination-wrap').classList.toggle('hidden', !target);
+  if (!target) return 0;
+  const waiting = popupInboxWaiting(target.group);
+  // The card's chip is narrow: it names the Group, and the full path stays in
+  // its accessible name, its tooltip, and the list.
+  paintDestinationLabel($('destination-name'), target, { withSpace: false });
+  $('destination-chip').title = popupTargetPath(target);
+  const bubble = $('destination-count');
+  bubble.textContent = String(waiting);
+  bubble.classList.toggle('hidden', waiting === 0);
+  $('destination-chip').setAttribute('aria-label', tr('destinationChip', popupTargetPath(target), waiting));
+  return waiting;
+}
+
+function popupTargetPath(target) {
+  return `${target?.cat?.name || ''} › ${popupGroupDisplayName(target?.group)}`;
+}
+
+// The red bubble counts what is waiting in an Inbox; other Groups show none.
+function popupInboxWaiting(group) {
+  return group?.name === 'Inbox' && Array.isArray(group.items) ? group.items.length : 0;
+}
+
+function paintDestinationLabel(label, target, { withSpace = true } = {}) {
+  const name = document.createElement('b');
+  name.textContent = popupGroupDisplayName(target?.group);
+  if (!withSpace) {
+    label.replaceChildren(name);
+    return;
+  }
+  const space = document.createElement('span');
+  space.className = 'dchip-space';
+  space.textContent = `${target?.cat?.name || ''} ›`;
+  label.replaceChildren(space, ' ', name);
 }
 
 function renderSearchShortcutHint() {
@@ -926,10 +963,12 @@ function setMainCaptureReadState(readState, count = 0) {
     control.disabled = unavailable;
     control.setAttribute('aria-disabled', String(unavailable));
   }
-  const currentAction = $('more-save-current');
   const currentUnavailable = unavailable || !all.some(candidate => candidate.id === activeTabId);
-  currentAction.disabled = currentUnavailable;
-  currentAction.setAttribute('aria-disabled', String(currentUnavailable));
+  for (const id of ['more-save-current', 'hero-save']) {
+    const currentAction = $(id);
+    currentAction.disabled = currentUnavailable;
+    currentAction.setAttribute('aria-disabled', String(currentUnavailable));
+  }
 }
 
 function renderLoadError() {
@@ -941,7 +980,7 @@ function renderLoadError() {
   loadState.innerHTML = `<div class="state-card-content"><span class="state-card-mark" aria-hidden="true">!</span><span class="state-card-copy"><strong>${esc(tr('loadErrorTitle'))}</strong><span>${esc(tr('loadError'))}</span></span></div><button id="retry-load" class="state-card-action" type="button">${esc(tr('retry'))}</button>`;
   $('retry-load').onclick = load;
   $('tabs-region').classList.add('hidden');
-  $('destination-card').classList.add('hidden');
+  $('hero').classList.add('hidden');
   requestAnimationFrame(() => $('retry-load')?.focus());
 }
 
@@ -955,6 +994,25 @@ function renderLoadingState() {
   loadState.classList.remove('hidden');
 }
 
+async function readPopupWindow() {
+  const [current, tabs] = await Promise.all([
+    chrome.tabs.query({ active: true, currentWindow: true }),
+    chrome.tabs.query({ currentWindow: true })
+  ]);
+  activeTab = current[0] || null;
+  activeTabId = current[0]?.id ?? null;
+  activeWindowId = current[0]?.windowId ?? null;
+  all = tabs.filter(t => isPopupCapturableUrl(t.url));
+  savedTabUrls = popupCaptureDestinationTabUrls(popupCaptureHierarchy(state).groups
+    .flatMap(entry => Array.isArray(entry.group.items) ? entry.group.items : []));
+  reconcileSelectedTabs();
+  $('window-count').textContent = all.length;
+  setMainCaptureReadState('ready', all.length);
+  renderHero();
+  renderTabs();
+  updateDestination();
+}
+
 async function load() {
   const retrying = document.activeElement?.id === 'retry-load';
   $('popup').setAttribute('aria-busy', 'true');
@@ -964,19 +1022,7 @@ async function load() {
     loadHibernatePrefs();
     applyAppearance();
     applyLocale();
-    const [current, tabs] = await Promise.all([
-      chrome.tabs.query({ active: true, currentWindow: true }),
-      chrome.tabs.query({ currentWindow: true })
-    ]);
-    activeTabId = current[0]?.id ?? null;
-    activeWindowId = current[0]?.windowId ?? null;
-    all = tabs.filter(t => isPopupCapturableUrl(t.url));
-    reconcileSelectedTabs();
-    $('window-count').textContent = all.length;
-    setMainCaptureReadState('ready', all.length);
-    renderTabs();
-    updateDestination();
-    await refreshHibernateHint();
+    await readPopupWindow();
     $('load-state').classList.add('hidden');
     $('tabs-region').classList.remove('hidden');
     if (retrying) requestAnimationFrame(() => mainCaptureFocusTarget()?.focus());
@@ -988,16 +1034,97 @@ async function load() {
   }
 }
 
+// After a save or hibernate the list is read again in place: rows for tabs
+// that are gone slide out first, and the loading card never flashes.
+async function refreshPopupWindow() {
+  try {
+    await loadState();
+    const before = all.map(tab => tab.id);
+    const live = new Set((await chrome.tabs.query({ currentWindow: true }))
+      .filter(tab => isPopupCapturableUrl(tab.url))
+      .map(tab => tab.id));
+    await animateRowsOut(before.filter(id => !live.has(id)));
+    await readPopupWindow();
+  } catch (error) {
+    console.error('Popup refresh failed', error);
+    renderLoadError();
+  }
+}
+
+function animateRowsOut(tabIds) {
+  const rows = tabIds
+    .map(id => $('ptabs').querySelector(`.pti[data-tab-id="${id}"]`))
+    .filter(Boolean);
+  if (!rows.length || popupMotionOff()) return Promise.resolve();
+  rows.forEach((row, index) => {
+    row.style.transitionDelay = `${index * 35}ms`;
+    row.classList.add('is-leaving');
+    row.setAttribute('aria-hidden', 'true');
+  });
+  return new Promise(resolve => {
+    const last = rows[rows.length - 1];
+    const done = () => { last.removeEventListener('transitionend', onEnd); clearTimeout(fallback); resolve(); };
+    const onEnd = event => { if (event.target === last && event.propertyName === 'height') done(); };
+    const fallback = setTimeout(done, 360 + rows.length * 35);
+    last.addEventListener('transitionend', onEnd);
+  });
+}
+
+function popupMotionOff() {
+  return document.body.dataset.anim === 'off' || matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function popupTabInitial(tab) {
+  return (tab?.title || dispUrl(tab?.url) || '?').trim()[0]?.toUpperCase() || '?';
+}
+
+function renderHero() {
+  const hero = $('hero');
+  hero.classList.toggle('hidden', !activeTab);
+  if (!activeTab) return;
+  const title = activeTab.title || activeTab.url || tr('unnamedTab');
+  $('hero-title').textContent = title;
+  $('hero-title').title = title;
+  $('hero-host').textContent = dispUrl(activeTab.url);
+  const icon = $('hero-icon');
+  const initial = $('hero-initial');
+  const src = localFaviconUrl(activeTab.url, 64);
+  initial.textContent = popupTabInitial(activeTab);
+  icon.classList.toggle('hidden', !src);
+  initial.classList.toggle('hidden', !!src);
+  if (src) {
+    icon.addEventListener('error', () => { icon.classList.add('hidden'); initial.classList.remove('hidden'); }, { once: true });
+    icon.src = src;
+  }
+  paintHeroSaved(heroSavedTabId === activeTabId);
+}
+
+function popupTabKind(url) {
+  // Content-type chips (PDF / Video), derived from the URL alone, no page access.
+  return /\.pdf(?:[?#]|$)/i.test(url || '') ? tr('pdf')
+    : /(?:youtube\.com\/watch|youtu\.be\/|vimeo\.com\/\d)/i.test(url || '') ? tr('video') : '';
+}
+
+// The matched part of a title is marked so the eye finds it while typing.
+function popupTitleWithHit(title, query) {
+  const at = query ? title.toLowerCase().indexOf(query) : -1;
+  if (at < 0) return esc(title);
+  return `${esc(title.slice(0, at))}<mark class="hit">${esc(title.slice(at, at + query.length))}</mark>${esc(title.slice(at + query.length))}`;
+}
+
 function renderTabs() {
   const query = $('ps').value.trim().toLowerCase();
-  const matches = all.filter(t => !query || (t.title || '').toLowerCase().includes(query) || (t.url || '').toLowerCase().includes(query));
+  const others = all.filter(t => t.id !== activeTabId);
+  const matches = others.filter(t => !query || (t.title || '').toLowerCase().includes(query) || (t.url || '').toLowerCase().includes(query));
   const shown = tabsExpanded || query ? matches : matches.slice(0, 5);
   const list = $('ptabs');
   list.innerHTML = '';
   if (!matches.length) {
-    list.innerHTML = `<div class="empty-hint" role="status" tabindex="-1">${esc(query ? tr('noMatches') : tr('noTabs'))}</div>`;
+    list.innerHTML = `<div class="empty-hint" role="status" tabindex="-1"><span>${esc(query ? tr('noMatches') : tr('noTabs'))}</span>${query ? `<button id="empty-clear-search" class="btn btn-sm" type="button">${esc(tr('clearSearch'))}</button>` : ''}</div>`;
+    const clear = $('empty-clear-search');
+    if (clear) clear.onclick = clearPopupSearch;
   }
-  shown.forEach(tab => list.appendChild(buildTabRow(tab)));
+  shown.forEach(tab => list.appendChild(buildTabRow(tab, query)));
   const more = $('more-tabs');
   const remaining = matches.length - shown.length;
   more.classList.toggle('hidden', Boolean(query) || matches.length <= 5);
@@ -1005,40 +1132,47 @@ function renderTabs() {
     more.textContent = tabsExpanded ? tr('fewerTabs') : tr('moreTabs', remaining);
     more.setAttribute('aria-expanded', String(tabsExpanded));
   }
+  const count = $('search-count');
+  const counted = String(matches.length);
+  if (query && count.textContent !== counted) restartAnimation(count, 'is-ticking');
+  count.textContent = counted;
+  count.classList.toggle('hidden', !query);
+  $('search-clear').classList.toggle('hidden', !query);
+  $('search-shortcut').classList.toggle('hidden', Boolean(query));
   updateSelectionUi();
 }
 
-function buildTabRow(tab) {
+function clearPopupSearch() {
+  $('ps').value = '';
+  renderTabs();
+  $('ps').focus();
+}
+
+function buildTabRow(tab, query = '') {
   const row = document.createElement('div');
-  const isActive = tab.id === activeTabId;
-  row.className = `pti${isActive ? ' active-tab' : ''}`;
+  const selected = selectedTabIds.has(tab.id);
+  const saved = savedTabUrls.has(tab.url);
+  row.className = `pti${selected ? ' selected' : ''}${saved ? ' is-saved' : ''}`;
   row.setAttribute('role', 'listitem');
-  const initial = (tab.title || dispUrl(tab.url) || '?').trim()[0]?.toUpperCase() || '?';
+  row.dataset.tabId = String(tab.id);
+  const initial = popupTabInitial(tab);
   const localIcon = localFaviconUrl(tab.url);
   const icon = localIcon
-    ? `<img src="${esc(localIcon)}" alt=""><span class="pti-fallback hidden" aria-hidden="true">${esc(initial)}</span>`
-    : `<span class="pti-fallback" aria-hidden="true">${esc(initial)}</span>`;
-  // Content-type chips like the popup preview (PDF / Video), derived from the
-  // URL alone — no page access.
-  const kind = /\.pdf(?:[?#]|$)/i.test(tab.url || '') ? tr('pdf')
-    : /(?:youtube\.com\/watch|youtu\.be\/|vimeo\.com\/\d)/i.test(tab.url || '') ? tr('video') : '';
+    ? `<img src="${esc(localIcon)}" alt=""><span class="pti-fallback fav-initial hidden" aria-hidden="true">${esc(initial)}</span>`
+    : `<span class="pti-fallback fav-initial" aria-hidden="true">${esc(initial)}</span>`;
+  const kind = popupTabKind(tab.url);
   const kindBadge = kind ? `<span class="pti-badge pti-kind">${esc(kind)}</span>` : '';
-  const selected = selectedTabIds.has(tab.id);
+  const savedMark = saved ? `<span class="pti-mark" title="${esc(tr('savedTitle'))}"><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg><span class="sr-only">${esc(tr('savedTitle'))}</span></span>` : '';
   const title = tab.title || tab.url || tr('unnamedTab');
-  const select = isActive ? '' : `<button class="pti-select" type="button" data-tab-id="${tab.id}" aria-pressed="${selected}" aria-label="${esc(tr(selected ? 'deselectTab' : 'selectTab', title))}"></button>`;
-  const actions = isActive
-    ? `${kindBadge}<span class="pti-badge">${esc(tr('viewing'))}</span><button class="pti-save" type="button">${esc(tr('save'))}</button>`
-    : `<div class="pti-acts">${kindBadge}<button class="pti-hib" type="button" title="${esc(tr('hibernateTab'))}" aria-label="${esc(tr('hibernateTab'))}"><svg width="12" height="12" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M11.5 8.2A4.6 4.6 0 015.8 2.5a4.6 4.6 0 105.7 5.7z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg></button><button class="pti-save" type="button">${esc(tr('save'))}</button></div>`;
-  row.classList.toggle('selected', selected);
-  row.innerHTML = `${select}<button class="pti-open" type="button" title="${esc(tr('openTab'))}">${icon}<span class="pti-info"><span class="pti-title">${esc(title)}</span><span class="pti-url">${esc(dispUrl(tab.url))}</span></span></button>${actions}`;
+  const select = `<button class="pti-select" type="button" data-tab-id="${tab.id}" aria-pressed="${selected}" aria-label="${esc(tr(selected ? 'deselectTab' : 'selectTab', title))}"><span><svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg></span></button>`;
+  const actions = `<div class="pti-acts"><button class="pti-save" type="button" title="${esc(tr('save'))}" aria-label="${esc(tr('saveTabNamed', title))}"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5h7a1 1 0 0 1 1 1v10L8 11l-4.5 2.5v-10a1 1 0 0 1 1-1z"/></svg></button><button class="pti-hib" type="button" title="${esc(tr('hibernateTab'))}" aria-label="${esc(tr('hibernateTabNamed', title))}"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="M11.5 8.2A4.6 4.6 0 0 1 5.8 2.5a4.6 4.6 0 1 0 5.7 5.7z"/></svg></button></div>`;
+  row.innerHTML = `<span class="pti-lead"><span class="pti-fav" aria-hidden="true">${icon}</span>${select}</span><button class="pti-open" type="button" title="${esc(tr('openTab'))}"><span class="pti-info"><span class="pti-title">${popupTitleWithHit(title, query)}</span><span class="pti-url">${esc(dispUrl(tab.url))}</span></span></button>${kindBadge}${savedMark}${actions}`;
   const image = row.querySelector('img');
   if (image) image.addEventListener('error', () => { image.classList.add('hidden'); row.querySelector('.pti-fallback')?.classList.remove('hidden'); });
   row.querySelector('.pti-open').onclick = () => { chrome.tabs.update(tab.id, { active: true }); window.close(); };
   row.querySelector('.pti-save').onclick = () => startCapture(tab);
-  const selector = row.querySelector('.pti-select');
-  if (selector) selector.onclick = () => toggleTabSelection(tab.id);
-  const hib = row.querySelector('.pti-hib');
-  if (hib) hib.onclick = () => hibernateSingle(tab);
+  row.querySelector('.pti-select').onclick = () => toggleTabSelection(tab.id);
+  row.querySelector('.pti-hib').onclick = () => hibernateSingle(tab);
   return row;
 }
 
@@ -1070,6 +1204,15 @@ function toggleTabSelection(tabId) {
   updateHibernateCount().catch(() => {});
 }
 
+function clearTabSelection() {
+  if (!selectedTabIds.size) return;
+  selectedTabIds.clear();
+  persistSelectedTabs();
+  updateSelectionUi();
+  updateHibernateCount().catch(() => {});
+  $('ps').focus();
+}
+
 function updateSelectionUi() {
   document.querySelectorAll('.pti-select').forEach(button => {
     const id = Number(button.dataset.tabId);
@@ -1081,12 +1224,18 @@ function updateSelectionUi() {
     button.closest('.pti')?.classList.toggle('selected', selected);
   });
   const count = selectedTabIds.size;
+  $('ptabs').classList.toggle('picking', count > 0);
   $('selection-status').textContent = tr('selectedCount', count);
   $('selection-status').classList.toggle('hidden', count === 0);
+  $('clear-selection').classList.toggle('hidden', count === 0);
   $('hib-selected-count').textContent = `(${count})`;
   const selectedScope = $('hib-scope').querySelector('[data-val="selected"]');
   selectedScope.disabled = count === 0;
   selectedScope.setAttribute('aria-disabled', String(count === 0));
+  // An emptied selection never leaves Hibernate on a disabled "Selected (0)".
+  if (count === 0 && $('hib-scope').querySelector('.active')?.dataset.val === 'selected') {
+    setHibernateScope('window');
+  }
 }
 
 function isVisiblePopupControl(element) {
@@ -1100,7 +1249,12 @@ function mainCaptureFocusTarget() {
 }
 
 function renderSection(id, preferredFocus = null) {
-  ['main-section', 'more-section', 'save-window-section', 'save-to-section', 'hibernate-section'].forEach(section => $(section).classList.toggle('hidden', section !== id));
+  // The other sections are sheets over the main view. Main stays visible behind
+  // the scrim, out of reach while a sheet is open.
+  ['save-window-section', 'save-to-section', 'hibernate-section'].forEach(section => $(section).classList.toggle('hidden', section !== id));
+  $('main-section').inert = id !== 'main-section';
+  const header = $('popup-header');
+  if (header) header.inert = id !== 'main-section';
   activeSection = id;
   requestAnimationFrame(() => {
     const fallback = id === 'main-section'
@@ -1135,17 +1289,25 @@ function resetToMain(focusTarget = $('ps')) {
 async function quickCapture(tab) {
   const target = findCaptureTarget();
   if (!target) return toast(tr('openFirst'), { tone: 'warning' });
-  await doSave(target.ws, target.cat, target.group, tab, { quick: true });
+  if (await doSave(target.ws, target.cat, target.group, tab, { quick: true })) markTabSaved(tab);
+}
+
+// Save is one click (Kai, 2026-11-06). "Ask where to save" is an opt-in: only a
+// stored true opens a sheet first; a missing or false value saves at once.
+function popupAsksWhereToSave() {
+  return state?.settings?.captureAskEveryTime === true;
 }
 
 function startCapture(tab) {
-  if (state?.settings?.captureAskEveryTime === false) quickCapture(tab);
-  else openSavePicker(tab);
+  closeFloatingLayer();
+  if (popupAsksWhereToSave()) openSavePicker(tab);
+  else quickCapture(tab);
 }
 
-function openSavePicker(tab, mode = 'tab') {
-  pickerMode = mode;
-  pendingTab = mode === 'tab' ? tab : null;
+// "Ask where to save" opens this sheet: pick a Group and the tab is saved there.
+function openSavePicker(tab) {
+  pickerMode = 'tab';
+  pendingTab = tab;
   locateResultVisible = false;
   locateRecoveryRoute = null;
   windowSaveRecoveryIntent = null;
@@ -1160,33 +1322,22 @@ function openSavePicker(tab, mode = 'tab') {
   $('stg-locate-result').classList.add('hidden');
   $('stg-locate-result').setAttribute('role', 'status');
   const hasDestination = state?.workspaces?.some(ws => (ws.categories || []).some(cat => (cat.groups || []).length));
-  $('stg-locate-option').classList.toggle('hidden', mode !== 'tab' || !hasDestination);
+  $('stg-locate-option').classList.toggle('hidden', !hasDestination);
   $('stg-locate').checked = false;
-  if (mode === 'tab') {
-    $('save-title').textContent = tr('saveTab');
-    $('save-tab-title').textContent = tab?.title || tab?.url || tr('unnamedTab');
-    $('save-context').textContent = dispUrl(tab?.url);
-  } else {
-    // Changing a destination, not saving anything yet — show what is currently
-    // resolved so the choice reads as a replacement.
-    $('save-title').textContent = tr('destination');
-    const current = mode === 'window'
-      ? resolvePopupSelectedTarget(windowSaveTargetGroupId)
-      : mode === 'hibernate'
-        ? resolvePopupSelectedTarget(hibernateTargetGroupId)
-        : findCaptureTarget();
-    $('save-tab-title').textContent = current ? `${current.cat.name} / ${current.group.name}` : '';
-    $('save-context').textContent = '';
-  }
+  $('save-title').textContent = tr('saveTab');
+  $('save-tab-title').textContent = tab?.title || tab?.url || tr('unnamedTab');
+  $('save-context').textContent = dispUrl(tab?.url);
   const list = $('stg-list');
   list.innerHTML = '';
   if (!state?.workspaces?.length) {
     list.innerHTML = `<div class="empty-hint">${esc(tr('noWorkspaces'))}</div>`;
   } else {
+    const current = findCaptureTarget();
+    const manyWorkspaces = state.workspaces.length > 1;
     state.workspaces.forEach(ws => (ws.categories || []).forEach(cat => {
       const label = document.createElement('div');
       label.className = 'stg-cat-lbl';
-      label.textContent = `${ws.symbol || '◫'} ${ws.name} · ${cat.name}`;
+      label.textContent = manyWorkspaces ? `${ws.name} · ${cat.name}` : cat.name;
       list.appendChild(label);
       if (!(cat.groups || []).length) {
         const empty = document.createElement('div');
@@ -1198,48 +1349,30 @@ function openSavePicker(tab, mode = 'tab') {
         const row = document.createElement('button');
         row.type = 'button';
         row.className = 'stg-row';
-        row.innerHTML = `<span class="sym">${esc(group.symbol || '⌑')}</span><span class="nm">${esc(group.name)}</span><span class="cnt">${group.items?.length || 0}</span>`;
-        row.onclick = () => {
-          const selected = resolveGroupById(group.id);
-          if (!selected || selected.ws !== ws || selected.cat !== cat || selected.group !== group) {
-            toast(tr('openFirst'), { tone: 'warning' });
-            return;
-          }
-          if (pickerMode === 'tab') {
-            doSave(selected.ws, selected.cat, selected.group, tab, { locate: $('stg-locate').checked });
-            return;
-          }
-          if (pickerMode === 'window') {
-            windowSaveTargetGroupId = selected.group.id;
-            $('sw-destination-name').textContent = `${selected.cat.name} / ${selected.group.name}`;
-            returnToPreviousSection();
-            return;
-          }
-          if (pickerMode === 'hibernate') {
-            hibernateTargetGroupId = selected.group.id;
-            updateHibernateDestination();
-            returnToPreviousSection();
-            return;
-          }
-          // 'destination': update the resolved capture target for this popup
-          // session, and persist it when remember-last is on.
-          destinationOverrideGroupId = selected.group.id;
-          if (state.settings?.captureRememberLast !== false) {
-            state.settings.captureLastTarget = {
-              workspaceId: selected.ws.id,
-              categoryId: selected.cat.id,
-              groupId: selected.group.id,
-            };
-            persistPopupState().catch(() => {});
-          }
-          updateDestination();
-          returnToPreviousSection();
-        };
+        const isCurrent = current?.group === group;
+        if (isCurrent) row.setAttribute('aria-current', 'true');
+        row.innerHTML = `<span class="dest-dot" aria-hidden="true"></span><span class="nm">${esc(popupGroupDisplayName(group))}</span><span class="cnt mono">${group.items?.length || 0}</span>${isCurrent ? '<svg class="dest-check" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg>' : ''}`;
+        row.querySelector('.dest-dot').style.background = popupGroupColor(group);
+        row.onclick = () => saveFromPicker(ws, cat, group, tab);
         list.appendChild(row);
       });
     }));
   }
   showSection('save-to-section');
+}
+
+async function saveFromPicker(ws, cat, group, tab) {
+  const selected = resolveGroupById(group.id);
+  if (!selected || selected.ws !== ws || selected.cat !== cat || selected.group !== group) {
+    toast(tr('openFirst'), { tone: 'warning' });
+    return;
+  }
+  const accepted = await doSave(selected.ws, selected.cat, selected.group, tab, { locate: $('stg-locate').checked });
+  if (!accepted) return;
+  markTabSaved(tab);
+  // A result card that needs an answer keeps the sheet; a clean save returns
+  // to the page so the check and the receipt are in view.
+  if (!locateResultVisible) resetToMain(tab?.id === activeTabId ? $('hero-save') : $('ps'));
 }
 
 function popupLocateRecoveryRouteMatches(tab, recovery, { requireActive = true } = {}) {
@@ -1352,19 +1485,17 @@ function setQuickCaptureDoneAction(closeSource) {
   $('stg-done').setAttribute('aria-label', tr(ariaKey));
 }
 
-function showQuickCaptureResult({ cat, group, item, intent, result }) {
+// A one-click save whose receipt could not confirm where the item went keeps
+// this durable card with its exact retry; a confirmed one gets the receipt toast.
+function showQuickCaptureResult({ cat, group, item, intent }) {
   locateResultVisible = true;
   locateRecoveryRoute = null;
   windowSaveRecoveryIntent = null;
   windowSaveResultMessage = '';
   quickCaptureRecoveryIntent = { ...intent };
-  const confirmed = isValidQuickCaptureResult(result, intent) && result.destinationReady;
-  const destination = confirmed
-    ? `${result.destination.categoryName} / ${result.destination.groupName}`
-    : `${cat.name} / ${group.name}`;
-  quickCaptureResultMessage = tr(confirmed ? 'quickCaptureSourceOpen' : 'quickCaptureReceiptUnavailable');
+  quickCaptureResultMessage = tr('quickCaptureReceiptUnavailable');
   $('save-title').textContent = tr('savedTitle');
-  $('save-context').textContent = destination;
+  $('save-context').textContent = `${cat.name} / ${group.name}`;
   $('save-tab-title').textContent = item.title || item.url || tr('unnamedTab');
   $('stg-destination-label').classList.add('hidden');
   $('stg-list').classList.add('hidden');
@@ -1372,7 +1503,7 @@ function showQuickCaptureResult({ cat, group, item, intent, result }) {
   $('stg-back').classList.add('hidden');
   $('stg-locate-result-message').textContent = quickCaptureResultMessage;
   $('stg-open-locus').textContent = tr('openSavedItem');
-  setQuickCaptureDoneAction(confirmed && intent.closeSource === true);
+  setQuickCaptureDoneAction(false);
   $('stg-locate-result').classList.remove('hidden');
   showSection('save-to-section');
   requestAnimationFrame(() => $('stg-open-locus').focus());
@@ -1415,8 +1546,16 @@ function isValidWindowSaveResult(result, intent) {
   return true;
 }
 
-function showWindowSaveResult({ target, receiving, itemCount, hasNote, result }) {
+function showWindowSaveResult(args) {
+  prepareWindowSaveResult(args);
   locateResultVisible = true;
+  showSection('save-to-section');
+  requestAnimationFrame(() => $('stg-open-locus').focus());
+}
+
+// Fills the result card for a window save without showing it, so the receipt's
+// Open can retry through the same card when the destination cannot open.
+function prepareWindowSaveResult({ target, receiving, itemCount, hasNote, result }) {
   locateRecoveryRoute = null;
   quickCaptureRecoveryIntent = null;
   quickCaptureCloseRequested = false;
@@ -1443,8 +1582,6 @@ function showWindowSaveResult({ target, receiving, itemCount, hasNote, result })
   $('stg-locate-result-message').textContent = windowSaveResultMessage;
   $('stg-open-locus').textContent = tr(windowSaveRecoveryIntent ? 'openDestination' : 'openLocus');
   $('stg-locate-result').classList.remove('hidden');
-  showSection('save-to-section');
-  requestAnimationFrame(() => $('stg-open-locus').focus());
 }
 
 function announcePopupResult(message, focusTarget = $('stg-open-locus')) {
@@ -1467,7 +1604,7 @@ function isValidWindowDestinationResult(result) {
 }
 
 async function openWindowSaveDestination() {
-  if (!windowSaveRecoveryIntent || !beginPopupCapture()) return;
+  if (!windowSaveRecoveryIntent || !beginPopupCapture()) return false;
   try {
     let result;
     try {
@@ -1486,7 +1623,7 @@ async function openWindowSaveDestination() {
     }
     if (result?.ok === true) {
       window.close();
-      return;
+      return true;
     }
     if (result?.routeCreated && Number.isInteger(result.routeTabId)) {
       $('stg-open-locus').textContent = tr('switchToDestination');
@@ -1636,7 +1773,7 @@ async function runQuickCaptureAction(action) {
       if (result.routeReady === true) {
         if (result.ok) {
           window.close();
-          return;
+          return true;
         }
         disableQuickCaptureClose();
         quickCaptureResultMessage = tr(
@@ -1941,13 +2078,25 @@ async function doSave(ws, cat, group, tab, { locate = false, quick = false } = {
             code: 'LOCUS_QUICK_CAPTURE_RECEIPT_UNKNOWN',
             destinationReady: false,
           };
-      showQuickCaptureResult({
-        cat,
-        group,
-        item,
-        intent: quickCaptureIntent,
-        result: quickResult,
-      });
+      // A confirmed destination gets the receipt toast (Undo, Move, Locate); an
+      // unconfirmed one keeps the durable card. Neither closes the source here.
+      if (quickResult.destinationReady === true) {
+        showQuickSaveReceipt({
+          cat,
+          group,
+          item,
+          intent: quickCaptureIntent,
+          result: quickResult,
+        });
+      } else {
+        showQuickCaptureResult({
+          cat,
+          group,
+          item,
+          intent: quickCaptureIntent,
+          result: quickResult,
+        });
+      }
       return true;
     }
     const closeRequested = acceptedItemIntent.closeSource === true;
@@ -1962,12 +2111,21 @@ async function doSave(ws, cat, group, tab, { locate = false, quick = false } = {
       });
       return true;
     }
-    toast(tr('saved'));
-    setTimeout(() => window.close(), 400);
+    // The popup stays open: the receipt offers Locate while the next tab waits.
+    toast(tr('savedTo', popupGroupDisplayName(group)), {
+      tone: 'success',
+      actionLabel: tr('locate'),
+      action: () => locateFromSaveReceipt({ cat, group, item, intent: acceptedItemIntent }),
+    });
     return true;
   } finally {
     finishPopupCapture();
   }
+}
+
+// Sits inside the single-save source slices that the contract suites run.
+function popupGroupDisplayName(group) {
+  return group?.name === 'Inbox' ? tr('inboxName') : String(group?.name || '');
 }
 
 function loadHibernatePrefs() {
@@ -1994,12 +2152,14 @@ function persistHibernatePrefs() {
 
 function setHibernateScope(value, refresh = true, persist = true) {
   if (value === 'selected' && !selectedTabIds.size) value = 'window';
-  $('hib-scope').querySelectorAll('button').forEach(button => {
+  const buttons = [...$('hib-scope').querySelectorAll('button')];
+  buttons.forEach(button => {
     const active = button.dataset.val === value;
     button.classList.toggle('active', active);
     button.setAttribute('aria-checked', String(active));
     button.tabIndex = active ? 0 : -1;
   });
+  $('hib-scope').style.setProperty('--seg-index', String(Math.max(0, buttons.findIndex(button => button.dataset.val === value))));
   if (persist) persistHibernatePrefs();
   if (refresh) updateHibernateCount();
 }
@@ -2018,22 +2178,21 @@ async function getHibernateCandidates() {
 
 async function updateHibernateCount() {
   const count = (await getHibernateCandidates()).length;
+  const label = $('hib-title-count');
+  if (label.textContent !== String(count)) restartAnimation(label, 'is-ticking');
   $('hib-count').textContent = count;
-  $('hib-title-count').textContent = count;
+  label.textContent = count;
   $('hib-go').disabled = count === 0;
+  $('hib-go-label').classList.toggle('hidden', count === 0);
+  $('hib-go-none').classList.toggle('hidden', count !== 0);
 }
 
 function updateHibernateDestination() {
   const target = resolvePopupSelectedTarget(hibernateTargetGroupId);
   $('hib-destination-card').classList.toggle('hidden', !$('hib-save-before').checked);
-  $('hib-destination-name').textContent = target ? `${target.cat.name} / ${target.group.name}` : tr('openFirst');
-}
-
-async function refreshHibernateHint() {
-  const focused = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
-  const keepAwakeId = focused[0]?.id ?? activeTabId;
-  const tabs = (await chrome.tabs.query({ currentWindow: true })).filter(tab => isPopupCapturableUrl(tab.url) && tab.id !== keepAwakeId && !tab.pinned && !tab.audible);
-  $('hib-open-hint').textContent = tabs.length ? tr('idle', tabs.length) : '';
+  if (target) paintDestinationLabel($('hib-destination-name'), target);
+  else $('hib-destination-name').textContent = tr('openFirst');
+  $('hib-change').setAttribute('aria-label', target ? tr('destinationChip', popupTargetPath(target), 0) : tr('openFirst'));
 }
 
 function popupHibernateSourceDescriptor(tab) {
@@ -2088,8 +2247,8 @@ async function hibernateSingle(tab) {
         fav: descriptor.fav,
       }),
     });
-    toast(tr('tabHibernated'));
-    await load();
+    toast(tr('tabHibernated'), { tone: 'info', glyph: 'moon' });
+    await refreshPopupWindow();
     return true;
   } catch {
     toast(tr('couldNotHibernate'), { tone: 'error' });
@@ -2132,9 +2291,9 @@ async function hibernateSelectedScope() {
         count++;
       } catch {}
     }
-    toast(saved == null ? tr('hibernated', count) : tr('hibernatedAndSaved', count, saved));
-    await load();
-    resetToMain();
+    resetToMain($('hib-open'));
+    toast(saved == null ? tr('hibernated', count) : tr('hibernatedAndSaved', count, saved), { tone: 'info', glyph: 'moon' });
+    await refreshPopupWindow();
     return true;
   } finally {
     finishPopupCapture();
@@ -2200,14 +2359,14 @@ function collectTopTags(limit = 4) {
   return [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit).map(([tag]) => tag);
 }
 
-function renderSwTags(suggestions) {
+function renderSwTags(suggestions, freshTag = null) {
   const host = $('sw-tags');
   host.innerHTML = '';
   const shown = [...new Set([...suggestions, ...swSelectedTags])];
   shown.forEach(tag => {
     const chip = document.createElement('button');
     chip.type = 'button';
-    chip.className = `sw-tag${swSelectedTags.has(tag) ? ' on' : ''}`;
+    chip.className = `sw-tag${swSelectedTags.has(tag) ? ' on' : ''}${tag === freshTag ? ' is-new' : ''}`;
     chip.textContent = tag;
     chip.setAttribute('aria-pressed', String(swSelectedTags.has(tag)));
     chip.onclick = () => {
@@ -2219,12 +2378,14 @@ function renderSwTags(suggestions) {
 }
 
 function setSaveMode(value, persist = true) {
-  $('sw-modes').querySelectorAll('.sw-mode').forEach(button => {
+  const modes = [...$('sw-modes').querySelectorAll('.sw-mode')];
+  modes.forEach(button => {
     const active = button.dataset.val === value;
     button.classList.toggle('active', active);
     button.setAttribute('aria-checked', String(active));
     button.tabIndex = active ? 0 : -1;
   });
+  $('sw-modes').style.setProperty('--mode-index', String(Math.max(0, modes.findIndex(button => button.dataset.val === value))));
   if (persist && state) {
     state.settings = state.settings || {};
     state.settings.popupSaveMode = value;
@@ -2238,12 +2399,13 @@ function currentSaveMode() {
 }
 
 function openSaveWindow(opener) {
+  closeFloatingLayer();
   if (!state?.workspaces?.length) return toast(tr('openFirst'), { tone: 'warning' });
   const target = resolvePopupSelectedTarget(windowSaveTargetGroupId);
   if (!target?.cat) return toast(tr('openFirst'), { tone: 'warning' });
   $('sw-count').textContent = all.length;
   $('sw-go-count').textContent = all.length;
-  $('sw-destination-name').textContent = `${target.cat.name} / ${target.group.name}`;
+  updateWindowDestination(target);
   setSaveMode(['links', 'group', 'queue'].includes(state.settings?.popupSaveMode) ? state.settings.popupSaveMode : 'group', false);
   $('sw-close').checked = state.settings?.closeTabOnSave !== false;
   $('sw-note-toggle').checked = false;
@@ -2254,7 +2416,7 @@ function openSaveWindow(opener) {
   showSection('save-window-section', opener);
 }
 
-async function saveWindow({ mode, closeTabs, note, tags } = {}) {
+async function saveWindow({ mode, closeTabs, note, tags, quick = false } = {}) {
   if (!state?.workspaces?.length) return toast(tr('openFirst'), { tone: 'warning' });
   let target = resolvePopupSelectedTarget(windowSaveTargetGroupId);
   if (!target?.cat) return toast(tr('openFirst'), { tone: 'warning' });
@@ -2384,13 +2546,17 @@ async function saveWindow({ mode, closeTabs, note, tags } = {}) {
         unconfirmedCount: close ? windowSaveEffect.sourceTabs.length : 0,
       };
     }
-    showWindowSaveResult({
+    const saved = {
       target,
       receiving,
       itemCount: items.length,
       hasNote: !!note,
       result: windowSaveResult,
-    });
+    };
+    // One click confirms a clean window save with the receipt toast. A partial or
+    // unknown outcome, or a save made from the sheet, keeps the result card.
+    if (quick && windowSaveResult.ok === true) showWindowSaveReceipt(saved);
+    else showWindowSaveResult(saved);
     return true;
   } finally {
     finishPopupCapture();
@@ -2498,19 +2664,694 @@ function trapTabKey(event, root, extraRoot = null) {
   }
 }
 
-function toast(message, { persistent = false, tone = '' } = {}) {
+// Restarts a one-shot animation the way the Today code does: drop the class,
+// force a reflow, add it back.
+function restartAnimation(el, className) {
+  if (!el) return;
+  el.classList.remove(className);
+  void el.offsetWidth;
+  el.classList.add(className);
+}
+
+function popupGroupColor(group) {
+  const color = typeof group?.color === 'string' ? group.color.trim() : '';
+  return /^#[0-9a-f]{3,8}$/i.test(color) ? color : 'var(--pp-muted)';
+}
+
+function paintHeroSaved(saved) {
+  const button = $('hero-save');
+  const key = saved ? 'savedTitle' : 'saveCurrentTab';
+  button.classList.toggle('done', saved);
+  button.dataset.popAria = key;
+  button.setAttribute('aria-label', tr(key));
+}
+
+// A confirmed save turns the Save button into a check, marks the row, and bumps
+// the waiting count when the tab went into the Inbox the chip shows.
+function markTabSaved(tab) {
+  if (!tab) return;
+  if (typeof tab.url === 'string') savedTabUrls.add(tab.url);
+  const bubble = $('destination-count');
+  const before = bubble.classList.contains('hidden') ? 0 : Number(bubble.textContent) || 0;
+  if (updateDestination() > before) restartAnimation(bubble, 'is-bumping');
+  if (tab.id === activeTabId) {
+    heroSavedTabId = tab.id;
+    paintHeroSaved(true);
+    restartAnimation($('hero-save'), 'is-celebrating');
+    return;
+  }
+  const row = $('ptabs').querySelector(`.pti[data-tab-id="${tab.id}"]`);
+  if (!row || row.classList.contains('is-saved')) return;
+  row.classList.add('is-saved');
+  const mark = document.createElement('span');
+  mark.className = 'pti-mark is-new';
+  mark.title = tr('savedTitle');
+  mark.innerHTML = `<svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg><span class="sr-only">${esc(tr('savedTitle'))}</span>`;
+  row.insertBefore(mark, row.querySelector('.pti-acts'));
+}
+
+function saveActiveTab() {
+  closeFloatingLayer();
+  const tab = all.find(candidate => candidate.id === activeTabId);
+  if (!tab) return toast(tr('cannotSave'), { tone: 'warning' });
+  startCapture(tab);
+}
+
+// Locate on a save receipt opens the saved item through the worker. When that
+// cannot finish, the same result sheet as a quick save keeps the retry. A save
+// made from the sheet has already handled its source tab, so its Locate never
+// asks for a close; a one-click save still has its source open and passes the
+// close-after-save choice on, as the card it replaced did.
+function prepareSavedItemRecovery({ item, intent }, closeSource = false) {
+  locateRecoveryRoute = null;
+  windowSaveRecoveryIntent = null;
+  windowSaveResultMessage = '';
+  quickCaptureRecoveryIntent = { ...intent, closeSource: closeSource === true };
+  quickCaptureResultMessage = '';
+  setQuickCaptureDoneAction(closeSource === true);
+  $('save-title').textContent = tr('savedTitle');
+  $('save-context').textContent = '';
+  $('save-tab-title').textContent = item.title || item.url || tr('unnamedTab');
+  ['stg-destination-label', 'stg-list', 'stg-locate-option', 'stg-back'].forEach(id => $(id).classList.add('hidden'));
+  $('stg-locate-result-message').textContent = '';
+  $('stg-open-locus').textContent = tr('openSavedItem');
+  $('stg-locate-result').classList.remove('hidden');
+}
+
+async function locateFromSaveReceipt(saved, { closeSource = false } = {}) {
+  if (popupCapturePending) {
+    toast(tr('captureBusy'), { tone: 'warning' });
+    return 'keep';
+  }
+  prepareSavedItemRecovery(saved, closeSource);
+  if (await runQuickCaptureAction('open')) return undefined;
+  locateResultVisible = true;
+  showSection('save-to-section');
+  return undefined;
+}
+
+// One-click Save confirms with the shared receipt: where the tab went, then
+// Undo, Move and Locate. The receipt owns no timer or tab effect of its own;
+// its drain belongs to the toast and every action is its own receipt-gated
+// request. Move updates this receipt in place, so Undo and Locate follow it.
+function showQuickSaveReceipt({ cat, group, item, intent, result }) {
+  const receipt = {
+    cat,
+    group,
+    item,
+    intent: { ...intent },
+    groupName: String(result?.destination?.groupName ?? group?.name ?? ''),
+    entry: null,
+  };
+  receipt.entry = toast(tr('savedTo', popupGroupDisplayName({ name: receipt.groupName })), {
+    tone: 'success',
+    undo: () => undoQuickSave(receipt),
+    move: () => openQuickSaveMove(receipt),
+    actionLabel: tr('locate'),
+    action: () => locateFromSaveReceipt(receipt, { closeSource: receipt.intent.closeSource === true }),
+  });
+  return receipt;
+}
+
+// The exact saved item: one item with this id in the whole graph, still a tab at
+// the saved URL, inside the Workspace the receipt names. Anything else means it
+// changed in Locus, and Undo or Move leaves it alone.
+function findPopupSavedItem(candidateState, intent) {
+  if (typeof intent?.itemId !== 'string' || !intent.itemId) return null;
+  const matches = [];
+  for (const entry of popupCaptureHierarchy(candidateState).groups) {
+    if (!Array.isArray(entry.group.items)) continue;
+    entry.group.items.forEach((item, index) => {
+      if (item?.id === intent?.itemId) matches.push({ ...entry, item, index });
+    });
+  }
+  if (matches.length !== 1) return null;
+  const [match] = matches;
+  return match.ws?.id === intent.workspaceId
+    && match.item.type === 'tab'
+    && match.item.url === intent.expectedUrl
+    ? match
+    : null;
+}
+
+// After Undo or Move the saved marks, the Save check and the Inbox count follow
+// the graph again.
+function repaintSavedMarks() {
+  savedTabUrls = popupCaptureDestinationTabUrls(popupCaptureHierarchy(state).groups
+    .flatMap(entry => Array.isArray(entry.group.items) ? entry.group.items : []));
+  paintHeroSaved(heroSavedTabId != null && heroSavedTabId === activeTabId);
+  renderTabs();
+  updateDestination();
+}
+
+// Undo takes back exactly the item this receipt saved, through the same
+// receipt-gated write as the save. Everything else in the graph stays.
+async function undoQuickSave(receipt) {
+  if (!beginPopupCapture()) return 'keep';
+  let snapshot;
+  try {
+    snapshot = clonePopupState();
+    const found = findPopupSavedItem(state, receipt.intent);
+    if (!found) return { message: tr('savedItemChanged'), tone: 'warning' };
+    found.group.items.splice(found.index, 1);
+    await persistPopupState();
+  } catch (error) {
+    await recoverCaptureWriteFailure(error, snapshot, { change: true });
+    return undefined;
+  } finally {
+    finishPopupCapture();
+  }
+  if (receipt.intent.sourceTabId === heroSavedTabId) heroSavedTabId = null;
+  repaintSavedMarks();
+  const heroTab = receipt.intent.sourceTabId === activeTabId;
+  return { message: tr('undone'), tone: 'info', glyph: 'undo', focus: heroTab ? $('hero-save') : null };
+}
+
+let quickSaveMoveReceipt = null;
+
+function openQuickSaveMove(receipt) {
+  quickSaveMoveReceipt = receipt;
+  openDestinationList('move');
+  return 'keep';
+}
+
+// Move puts the saved item into another Group with the same receipt-gated write
+// and keeps the receipt, now naming the new Group, with its actions and drain.
+async function moveQuickSave(receipt, groupId) {
+  if (!beginPopupCapture()) return 'keep';
+  let snapshot;
+  let destination;
+  try {
+    snapshot = clonePopupState();
+    const found = findPopupSavedItem(state, receipt.intent);
+    destination = resolveGroupById(groupId);
+    if (!found || !destination
+      || (destination.group.items != null && !Array.isArray(destination.group.items))) {
+      return { message: tr('savedItemChanged'), tone: 'warning' };
+    }
+    if (destination.group === found.group) return 'keep';
+    found.group.items.splice(found.index, 1);
+    if (destination.group.items == null) destination.group.items = [];
+    destination.group.items.push(found.item);
+    await persistPopupState();
+  } catch (error) {
+    await recoverCaptureWriteFailure(error, snapshot, { change: true });
+    return undefined;
+  } finally {
+    finishPopupCapture();
+  }
+  receipt.intent = { ...receipt.intent, workspaceId: destination.ws.id };
+  receipt.cat = destination.cat;
+  receipt.group = destination.group;
+  receipt.groupName = String(destination.group.name ?? '');
+  repaintSavedMarks();
+  return { message: tr('savedTo', popupGroupDisplayName(destination.group)), tone: 'success', keepActions: true };
+}
+
+// One-click Save window confirms a clean save the same way; Open goes to the
+// destination, and when it cannot, the result card keeps the exact retry.
+function showWindowSaveReceipt(saved) {
+  const receipt = { ...saved };
+  const entry = toast(tr('savedTabs', saved.itemCount), {
+    tone: 'success',
+    actionLabel: tr('openDestination'),
+    action: () => openWindowSaveFromReceipt(receipt),
+  });
+  refreshPopupWindow();
+  return entry;
+}
+
+async function openWindowSaveFromReceipt(receipt) {
+  if (popupCapturePending) {
+    toast(tr('captureBusy'), { tone: 'warning' });
+    return 'keep';
+  }
+  prepareWindowSaveResult(receipt);
+  if (await openWindowSaveDestination()) return undefined;
+  locateResultVisible = true;
+  showSection('save-to-section');
+  return undefined;
+}
+
+function updateWindowDestination(target = resolvePopupSelectedTarget(windowSaveTargetGroupId)) {
+  if (target) paintDestinationLabel($('sw-destination-name'), target);
+  else $('sw-destination-name').textContent = tr('openFirst');
+  $('sw-change').setAttribute('aria-label', target ? tr('destinationChip', popupTargetPath(target), 0) : tr('openFirst'));
+}
+
+const DESTINATION_TRIGGERS = { destination: 'destination-chip', window: 'sw-change', hibernate: 'hib-change', move: 'pop-toast-move' };
+
+function popupDestinationOptions(mode) {
+  // Move lists every Group and marks the one that holds the saved item now.
+  if (mode === 'move') {
+    const holder = quickSaveMoveReceipt ? findPopupSavedItem(state, quickSaveMoveReceipt.intent)?.group : null;
+    return popupCaptureHierarchy(state).groups.map(({ ws, cat, group }) => ({ ws, cat, group, proposed: false, selected: group === holder }));
+  }
+  const current = mode === 'window'
+    ? resolvePopupSelectedTarget(windowSaveTargetGroupId)
+    : mode === 'hibernate'
+      ? resolvePopupSelectedTarget(hibernateTargetGroupId)
+      : findCaptureTarget();
+  const options = [];
+  // A Space without an Inbox still offers one; it is created on the first save.
+  if (current?.proposedInbox) options.push({ ws: current.ws, cat: current.cat, group: current.group, proposed: true, selected: true });
+  popupCaptureHierarchy(state).groups.forEach(({ ws, cat, group }) => {
+    options.push({ ws, cat, group, proposed: false, selected: current?.group === group });
+  });
+  return options;
+}
+
+function positionFloatingLayer(layer, trigger) {
+  const host = $('popup').getBoundingClientRect();
+  const rect = trigger.getBoundingClientRect();
+  const width = Math.min(host.width - 16, Math.max(rect.width, 248));
+  layer.style.width = `${width}px`;
+  layer.style.left = `${Math.min(Math.max(8, rect.left - host.left), host.width - width - 8)}px`;
+  const below = host.bottom - rect.bottom - 12;
+  const above = rect.top - host.top - 12;
+  if (below >= Math.min(220, above)) {
+    layer.dataset.side = 'below';
+    layer.style.top = `${rect.bottom - host.top + 6}px`;
+    layer.style.bottom = '';
+    layer.style.maxHeight = `${Math.max(132, below)}px`;
+  } else {
+    layer.dataset.side = 'above';
+    layer.style.top = '';
+    layer.style.bottom = `${host.bottom - rect.top + 6}px`;
+    layer.style.maxHeight = `${above}px`;
+  }
+}
+
+function openDestinationList(mode) {
+  if (openLayer?.kind === 'list' && openLayer.mode === mode) {
+    closeFloatingLayer({ restoreFocus: true });
+    return;
+  }
+  closeFloatingLayer();
+  const trigger = $(DESTINATION_TRIGGERS[mode]);
+  const list = $('dest-list');
+  list.replaceChildren();
+  const options = popupDestinationOptions(mode);
+  if (!options.length) {
+    const empty = document.createElement('div');
+    empty.className = 'dlist-empty';
+    empty.textContent = tr(state?.workspaces?.length ? 'noGroups' : 'noWorkspaces');
+    list.appendChild(empty);
+  }
+  options.forEach(option => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'mi dest-option';
+    button.setAttribute('role', 'option');
+    button.setAttribute('aria-selected', String(option.selected));
+    button.tabIndex = -1;
+    button.innerHTML = `<span class="dest-dot" aria-hidden="true"></span><span class="dest-path"><span class="dest-space">${esc(option.cat.name)} ›</span> <b>${esc(popupGroupDisplayName(option.group))}</b></span>${option.selected ? '<svg class="dest-check" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg>' : ''}`;
+    button.querySelector('.dest-dot').style.background = popupGroupColor(option.group);
+    button.onclick = () => chooseDestination(mode, option);
+    list.appendChild(button);
+  });
+  // Moving from the receipt opens the list above the whole card, and the card
+  // holds its drain while the list is open.
+  list.setAttribute('aria-label', tr(mode === 'move' ? 'moveTo' : 'saveTo'));
+  positionFloatingLayer(list, mode === 'move' ? $('pop-toast') : trigger);
+  if (mode === 'move') pinPopupToast(true);
+  list.classList.remove('hidden');
+  restartAnimation(list, 'is-opening');
+  trigger.setAttribute('aria-expanded', 'true');
+  openLayer = { kind: 'list', mode, element: list, trigger };
+  (list.querySelector('[aria-selected="true"]') || list.querySelector('.dest-option'))?.focus();
+}
+
+function chooseDestination(mode, option) {
+  if (mode === 'move') {
+    // The move runs on its own receipt, which shows the spinner and then the
+    // new Group. A receipt that has already gone moves nothing.
+    const receipt = quickSaveMoveReceipt;
+    closeFloatingLayer({ restoreFocus: true });
+    if (receipt && popupToastEntries.includes(receipt.entry)) {
+      runPopupToastAction(receipt.entry, () => moveQuickSave(receipt, option.group.id));
+    }
+    return;
+  }
+  const groupId = option.proposed ? null : option.group.id;
+  if (!option.proposed) {
+    const selected = resolveGroupById(groupId);
+    if (!selected || selected.ws !== option.ws || selected.cat !== option.cat || selected.group !== option.group) {
+      closeFloatingLayer({ restoreFocus: true });
+      toast(tr('openFirst'), { tone: 'warning' });
+      return;
+    }
+  }
+  let label;
+  if (mode === 'window') {
+    windowSaveTargetGroupId = groupId;
+    updateWindowDestination();
+    label = $('sw-destination-name');
+  } else if (mode === 'hibernate') {
+    hibernateTargetGroupId = groupId;
+    updateHibernateDestination();
+    label = $('hib-destination-name');
+  } else {
+    // The chip changes where this popup saves; with remember-last on, the choice
+    // also becomes the next quick-save destination.
+    destinationOverrideGroupId = groupId;
+    if (!option.proposed && state.settings?.captureRememberLast !== false) {
+      state.settings.captureLastTarget = {
+        workspaceId: option.ws.id,
+        categoryId: option.cat.id,
+        groupId,
+      };
+      persistPopupState().catch(() => {});
+    }
+    updateDestination();
+    label = $('destination-name');
+  }
+  closeFloatingLayer({ restoreFocus: true });
+  restartAnimation(label, 'is-swapping');
+}
+
+function openMoreMenu() {
+  if (openLayer?.kind === 'menu') {
+    closeFloatingLayer({ restoreFocus: true });
+    return;
+  }
+  closeFloatingLayer();
+  const menu = $('more-menu');
+  menu.classList.remove('hidden');
+  restartAnimation(menu, 'is-opening');
+  $('open-more').setAttribute('aria-expanded', 'true');
+  openLayer = { kind: 'menu', element: menu, trigger: $('open-more') };
+  floatingLayerItems()[0]?.focus();
+}
+
+function floatingLayerItems() {
+  if (!openLayer) return [];
+  const selector = openLayer.kind === 'menu' ? '[role="menuitem"]' : '[role="option"]';
+  return [...openLayer.element.querySelectorAll(selector)].filter(item => !item.disabled);
+}
+
+function closeFloatingLayer({ restoreFocus = false } = {}) {
+  if (!openLayer) return false;
+  const { element, trigger, mode } = openLayer;
+  const focusWasInside = element.contains(document.activeElement);
+  openLayer = null;
+  element.classList.add('hidden');
+  trigger?.setAttribute('aria-expanded', 'false');
+  if ((restoreFocus || focusWasInside) && trigger?.isConnected) trigger.focus();
+  if (mode === 'move') {
+    quickSaveMoveReceipt = null;
+    pinPopupToast(false);
+  }
+  return true;
+}
+
+function handleFloatingLayerKey(event) {
+  if (event.key === 'Tab') {
+    event.preventDefault();
+    closeFloatingLayer({ restoreFocus: true });
+    return;
+  }
+  const items = floatingLayerItems();
+  if (!items.length) return;
+  const index = items.indexOf(document.activeElement);
+  const next = event.key === 'ArrowDown' ? items[(index + 1) % items.length]
+    : event.key === 'ArrowUp' ? items[(index - 1 + items.length) % items.length]
+      : event.key === 'Home' ? items[0]
+        : event.key === 'End' ? items[items.length - 1]
+          : null;
+  if (!next) return;
+  event.preventDefault();
+  next.focus();
+}
+
+// Receipts use the one notification style of the new tab: a dark card, an icon
+// circle, the message, its actions, and a close button. A receipt with Undo or
+// an action drains for 5.2 s and holds while hovered or focused; the previous
+// receipt waits behind the newest one. A save receipt carries Undo, Move and
+// Locate; with more than one action they sit on a row under the message.
+const POPUP_TOAST_ACTION_MS = 5200;
+const POPUP_TOAST_PASSIVE_MS = 2600;
+const POPUP_TOAST_BUTTONS = [['pop-toast-undo', 'undo'], ['pop-toast-move', 'move'], ['pop-toast-action', 'action']];
+let popupToastEntries = [];
+let popupToastStartedAt = 0;
+let popupToastHeld = false;
+// The Move list pins the receipt: it keeps its time while a Group is picked.
+let popupToastPinned = false;
+
+function popupToastFront() {
+  return popupToastEntries[popupToastEntries.length - 1] || null;
+}
+
+function paintPopupToastBehind() {
+  const behind = $('pop-toast-behind');
+  const entry = popupToastEntries[popupToastEntries.length - 2] || null;
+  if (!entry) {
+    behind.classList.add('hidden');
+    return;
+  }
+  behind.dataset.tone = entry.tone;
+  $('pop-toast-behind-msg').textContent = entry.message;
+  behind.classList.remove('hidden');
+}
+
+function startPopupToastTimer(entry) {
+  clearTimeout(toastTimer);
+  toastTimer = null;
   const el = $('pop-toast');
+  const drain = $('pop-toast-drain');
+  const draining = !!entry && entry.drains && entry.remaining > 0;
+  el.dataset.draining = String(draining);
+  drain.classList.remove('is-running');
+  if (draining) {
+    drain.style.setProperty('--toast-ms', `${entry.total}ms`);
+    drain.style.setProperty('--toast-elapsed', `-${Math.max(0, entry.total - entry.remaining)}ms`);
+    void drain.offsetWidth;
+    drain.classList.add('is-running');
+  }
+  if (!entry || !(entry.remaining > 0) || popupToastHeld) return;
+  popupToastStartedAt = Date.now();
+  toastTimer = setTimeout(() => dismissPopupToast(), entry.remaining);
+}
+
+function pausePopupToastFront() {
+  const front = popupToastFront();
+  if (toastTimer && front && front.remaining > 0) {
+    front.remaining = Math.max(0, front.remaining - (Date.now() - popupToastStartedAt));
+  }
+  clearTimeout(toastTimer);
+  toastTimer = null;
+}
+
+function holdPopupToast() {
+  if (popupToastHeld) return;
+  pausePopupToastFront();
+  popupToastHeld = true;
+  $('pop-toast').classList.add('is-held');
+}
+
+function releasePopupToast() {
+  if (!popupToastHeld || popupToastPinned) return;
+  popupToastHeld = false;
+  $('pop-toast').classList.remove('is-held');
+  const front = popupToastFront();
+  if (!front || !$('pop-toast').classList.contains('show')) return;
+  if (front.remaining > 0) front.remaining = Math.max(front.remaining, 1200);
+  startPopupToastTimer(front);
+}
+
+function pinPopupToast(pinned) {
+  popupToastPinned = pinned;
+  if (pinned) {
+    holdPopupToast();
+    return;
+  }
+  const el = $('pop-toast');
+  if (!el.contains(document.activeElement) && !el.matches(':hover')) releasePopupToast();
+}
+
+function paintPopupToast(entry, animation = '') {
+  const el = $('pop-toast');
+  const assertive = entry.tone === 'error';
   el.classList.remove('interactive');
-  el.textContent = message;
+  el.dataset.tone = entry.tone;
+  el.dataset.glyph = entry.glyph;
+  el.dataset.busy = String(entry.busy);
+  el.setAttribute('role', assertive ? 'alert' : 'status');
+  el.setAttribute('aria-live', assertive ? 'assertive' : 'polite');
+  $('pop-toast-msg').textContent = entry.message;
+  let actions = 0;
+  for (const [id, key] of POPUP_TOAST_BUTTONS) {
+    const button = $(id);
+    if (typeof entry[key] === 'function') {
+      button.textContent = key === 'action' ? entry.actionLabel : tr(key);
+      button.classList.remove('hidden');
+      button.disabled = entry.busy;
+      button.onclick = () => runPopupToastAction(entry, entry[key]);
+      actions += 1;
+    } else {
+      button.textContent = '';
+      button.classList.add('hidden');
+      button.onclick = null;
+    }
+  }
+  el.dataset.stacked = String(actions > 1);
+  el.classList.add('show');
+  if (animation) {
+    el.classList.remove('is-entering', 'is-promoted', 'is-morphing');
+    void el.offsetWidth;
+    el.classList.add(animation);
+  }
+  paintPopupToastBehind();
+}
+
+function dismissPopupToast({ restoreFocus = false } = {}) {
+  const el = $('pop-toast');
+  clearTimeout(toastTimer);
+  toastTimer = null;
+  const focusWasInside = el.contains(document.activeElement);
+  popupToastEntries.pop();
+  const next = popupToastFront();
+  if (next) {
+    if (next.remaining > 0) next.remaining = Math.max(next.remaining, 1500);
+    paintPopupToast(next, 'is-promoted');
+    startPopupToastTimer(next);
+  } else {
+    el.classList.remove('show', 'interactive', 'is-held');
+    popupToastHeld = false;
+    paintPopupToastBehind();
+    startPopupToastTimer(null);
+  }
+  if (restoreFocus && focusWasInside) mainCaptureFocusTarget()?.focus();
+  return true;
+}
+
+function removePopupToastEntry(entry) {
+  const index = popupToastEntries.indexOf(entry);
+  if (index < 0) return;
+  if (index === popupToastEntries.length - 1) {
+    dismissPopupToast({ restoreFocus: true });
+    return;
+  }
+  popupToastEntries.splice(index, 1);
+  paintPopupToastBehind();
+}
+
+// An action that returns a promise shows a spinner in the icon circle until it
+// settles. Resolving to 'keep' leaves the receipt up; a { message } turns the
+// receipt into its result in place (with keepActions it keeps its actions and
+// starts its drain again, otherwise it becomes a short passive note); anything
+// else closes it. The busy buttons are disabled, which drops their focus, so the
+// focused button is remembered and focus comes back when the action settles.
+function runPopupToastAction(entry, run = entry.action) {
+  if (typeof run !== 'function' || entry.busy) return;
+  const focused = $('pop-toast').contains(document.activeElement) ? document.activeElement : null;
+  let result;
+  try {
+    result = run();
+  } catch (error) {
+    console.error('Popup receipt action failed', error);
+    result = 'keep';
+  }
+  if (!result || typeof result.then !== 'function') {
+    settlePopupToastAction(entry, result, focused);
+    return;
+  }
+  entry.busy = true;
+  if (popupToastFront() === entry) paintPopupToast(entry, 'is-morphing');
+  Promise.resolve(result)
+    .catch(error => {
+      console.error('Popup receipt action failed', error);
+      return 'keep';
+    })
+    .then(outcome => {
+      entry.busy = false;
+      settlePopupToastAction(entry, outcome, focused);
+    });
+}
+
+function settlePopupToastAction(entry, outcome, focused = null) {
+  if (!popupToastEntries.includes(entry)) return;
+  const front = popupToastFront() === entry;
+  const focusLost = () => !!focused && (!document.activeElement || document.activeElement === document.body);
+  if (outcome === 'keep') {
+    if (front) paintPopupToast(entry, 'is-morphing');
+    if (focusLost() && isVisiblePopupControl(focused)) focused.focus();
+    return;
+  }
+  if (!outcome || typeof outcome !== 'object' || !outcome.message) {
+    removePopupToastEntry(entry);
+    if (focusLost()) mainCaptureFocusTarget()?.focus();
+    return;
+  }
+  entry.message = String(outcome.message);
+  entry.tone = ['success', 'info', 'warning', 'error'].includes(outcome.tone) ? outcome.tone : 'success';
+  entry.glyph = String(outcome.glyph || '');
+  if (!outcome.keepActions) {
+    entry.undo = null;
+    entry.move = null;
+    entry.action = null;
+    entry.actionLabel = '';
+    entry.drains = false;
+    entry.total = POPUP_TOAST_PASSIVE_MS;
+  }
+  entry.remaining = entry.total;
+  if (!front) {
+    paintPopupToastBehind();
+    return;
+  }
+  paintPopupToast(entry, 'is-morphing');
+  startPopupToastTimer(entry);
+  // The same button takes focus back; one that went away hands it to the page.
+  if (!focusLost() && !(focused && !isVisiblePopupControl(focused))) return;
+  if (isVisiblePopupControl(focused)) focused.focus();
+  else (outcome.focus || mainCaptureFocusTarget())?.focus();
+}
+
+function dismissToastForEscape() {
+  if (!$('pop-toast').classList.contains('show')) return false;
+  return dismissPopupToast({ restoreFocus: true });
+}
+
+// Ctrl Z / Cmd Z takes back the newest save while its receipt still offers Undo.
+function undoFromPopupKeyboard() {
+  const front = popupToastFront();
+  if (!$('pop-toast').classList.contains('show') || typeof front?.undo !== 'function' || front.busy) return false;
+  runPopupToastAction(front, front.undo);
+  return true;
+}
+
+function toast(message, { persistent = false, tone = '', glyph = '', actionLabel = '', action = null, undo = null, move = null } = {}) {
+  const el = $('pop-toast');
   // Same notification style as the new tab. Each caller names its tone; a
   // persistent receipt without one reports a problem, a passing one confirms.
   const tones = ['success', 'info', 'warning', 'error'];
   const resolved = tones.includes(tone) ? tone : (persistent ? 'error' : 'success');
-  el.dataset.tone = resolved;
-  el.setAttribute('role', resolved === 'error' ? 'alert' : 'status');
-  requestAnimationFrame(() => el.classList.add('show'));
-  clearTimeout(toastTimer);
-  toastTimer = persistent ? null : setTimeout(() => el.classList.remove('show'), 1600);
+  const hasAction = !!actionLabel && typeof action === 'function';
+  const hasUndo = typeof undo === 'function';
+  const drains = !persistent && (hasAction || hasUndo);
+  const total = persistent ? 0 : (drains ? POPUP_TOAST_ACTION_MS : POPUP_TOAST_PASSIVE_MS);
+  const entry = {
+    message: String(message ?? ''),
+    tone: resolved,
+    glyph: String(glyph || ''),
+    actionLabel: hasAction ? String(actionLabel) : '',
+    action: hasAction ? action : null,
+    undo: hasUndo ? undo : null,
+    move: typeof move === 'function' ? move : null,
+    busy: false,
+    drains,
+    total,
+    remaining: total,
+  };
+  if (!el.classList.contains('show')) popupToastEntries = [];
+  else pausePopupToastFront();
+  popupToastEntries.push(entry);
+  while (popupToastEntries.length > 2) popupToastEntries.shift();
+  popupToastHeld = popupToastPinned || el.contains(document.activeElement) || el.matches(':hover');
+  el.classList.toggle('is-held', popupToastHeld);
+  paintPopupToast(entry, 'is-entering');
+  startPopupToastTimer(entry);
+  return entry;
 }
 
 function bind() {
@@ -2523,27 +3364,40 @@ function bind() {
     event.preventDefault();
     event.stopImmediatePropagation();
   }, true);
+  // One floating layer at a time: a press anywhere outside it closes it.
+  document.addEventListener('pointerdown', event => {
+    if (!openLayer) return;
+    if (openLayer.element.contains(event.target) || openLayer.trigger?.contains(event.target)) return;
+    closeFloatingLayer();
+  }, true);
   $('open-full').onclick = () => { chrome.tabs.create({ url: chrome.runtime.getURL('newtab.html') }); window.close(); };
-  $('open-more').onclick = event => showSection('more-section', event.currentTarget);
-  $('more-back').onclick = returnToPreviousSection;
-  $('more-save-current').onclick = () => {
-    const tab = all.find(candidate => candidate.id === activeTabId);
-    if (!tab) return toast(tr('cannotSave'), { tone: 'warning' });
-    startCapture(tab);
+  $('open-more').onclick = openMoreMenu;
+  $('more-menu-list').addEventListener('keydown', handleFloatingLayerKey);
+  $('dest-list').addEventListener('keydown', handleFloatingLayerKey);
+  $('more-save-current').onclick = saveActiveTab;
+  $('more-import-bookmarks').onclick = () => {
+    closeFloatingLayer({ restoreFocus: true });
+    importBookmarksFromPopup();
   };
-  $('more-import-bookmarks').onclick = importBookmarksFromPopup;
   $('more-shortcuts').onclick = () => { chrome.tabs.create({ url: 'chrome://extensions/shortcuts' }); window.close(); };
+  $('hero-save').onclick = saveActiveTab;
+  $('destination-chip').onclick = () => openDestinationList('destination');
   $('ps').oninput = renderTabs;
+  $('search-clear').onclick = clearPopupSearch;
+  $('clear-selection').onclick = clearTabSelection;
   $('more-tabs').onclick = () => { tabsExpanded = !tabsExpanded; renderTabs(); };
-  // Save window: a confirm panel with destination + options when capture asks
-  // every time (default), an instant save with the remembered choices when the
-  // user opted out of being asked.
+  // Save window follows Save: one click with the remembered choices and a
+  // receipt, or the sheet with destination and options when the user opted in
+  // to being asked.
   $('qs-all').onclick = event => {
-    if (state?.settings?.captureAskEveryTime === false) saveWindow();
-    else openSaveWindow(event.currentTarget);
+    closeFloatingLayer();
+    if (popupAsksWhereToSave()) openSaveWindow(event.currentTarget);
+    else saveWindow({ quick: true });
   };
-  // "Change" changes the destination — it never saves anything by itself.
-  $('change-destination').onclick = () => openSavePicker(null, 'destination');
+  $('sheet-scrim').onclick = () => {
+    if (locateResultVisible || popupCapturePending || activeSection === 'main-section') return;
+    returnToPreviousSection();
+  };
   $('stg-back').onclick = () => {
     if (locateResultVisible) {
       window.close();
@@ -2585,7 +3439,7 @@ function bind() {
     window.close();
   };
   $('sw-back').onclick = returnToPreviousSection;
-  $('sw-change').onclick = () => openSavePicker(null, 'window');
+  $('sw-change').onclick = () => openDestinationList('window');
   $('sw-modes').querySelectorAll('.sw-mode').forEach(button => {
     button.onclick = () => setSaveMode(button.dataset.val);
     button.onkeydown = event => {
@@ -2609,7 +3463,7 @@ function bind() {
     if (!tag) return;
     swSelectedTags.add(tag);
     $('sw-tag-input').value = '';
-    renderSwTags(collectTopTags());
+    renderSwTags(collectTopTags(), tag);
   };
   $('sw-go').onclick = () => {
     $('sw-go').disabled = true;
@@ -2620,7 +3474,12 @@ function bind() {
       tags: [...swSelectedTags]
     }).finally(() => { $('sw-go').disabled = false; });
   };
-  $('hib-open').onclick = async event => { await updateHibernateCount(); showSection('hibernate-section', event.currentTarget); };
+  $('hib-open').onclick = async event => {
+    const opener = event.currentTarget;
+    closeFloatingLayer();
+    await updateHibernateCount();
+    showSection('hibernate-section', opener);
+  };
   $('hib-back').onclick = returnToPreviousSection;
   $('hib-scope').querySelectorAll('button').forEach(button => {
     button.onclick = () => setHibernateScope(button.dataset.val);
@@ -2636,8 +3495,17 @@ function bind() {
   });
   ['hib-keep-pinned', 'hib-keep-audio'].forEach(id => $(id).onchange = () => { persistHibernatePrefs(); updateHibernateCount(); });
   $('hib-save-before').onchange = () => { persistHibernatePrefs(); updateHibernateDestination(); };
-  $('hib-change').onclick = () => openSavePicker(null, 'hibernate');
+  $('hib-change').onclick = () => openDestinationList('hibernate');
   $('hib-go').onclick = hibernateSelectedScope;
+  const toastEl = $('pop-toast');
+  toastEl.addEventListener('pointerenter', holdPopupToast);
+  toastEl.addEventListener('pointerleave', () => { if (!toastEl.contains(document.activeElement)) releasePopupToast(); });
+  toastEl.addEventListener('focusin', holdPopupToast);
+  toastEl.addEventListener('focusout', event => {
+    if (event.relatedTarget && toastEl.contains(event.relatedTarget)) return;
+    if (!toastEl.matches(':hover')) releasePopupToast();
+  });
+  $('pop-toast-close').onclick = () => dismissPopupToast({ restoreFocus: true });
   document.addEventListener('keydown', event => {
     const searchShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k';
     if (popupCapturePending && (event.key === 'Escape' || searchShortcut)) {
@@ -2651,9 +3519,15 @@ function bind() {
     if (event.key === 'Tab' && (activeSection !== 'main-section' || toastRoot)) {
       trapTabKey(event, $(activeSection), toastRoot);
     }
+    if ((event.metaKey || event.ctrlKey) && !event.shiftKey && event.key.toLowerCase() === 'z'
+      && !event.target?.closest?.('input, textarea') && undoFromPopupKeyboard()) {
+      event.preventDefault();
+      return;
+    }
     if (searchShortcut) {
       event.preventDefault();
       if (locateResultVisible) return;
+      closeFloatingLayer();
       if (activeSection !== 'main-section') resetToMain();
       const target = mainCaptureFocusTarget();
       target?.focus();
@@ -2662,8 +3536,10 @@ function bind() {
     if (event.key === 'Escape') {
       event.preventDefault();
       if (locateResultVisible) window.close();
+      else if (closeFloatingLayer({ restoreFocus: true })) return;
       else if (activeSection !== 'main-section') returnToPreviousSection();
-      else window.close();
+      else if (document.activeElement === $('ps') && $('ps').value) clearPopupSearch();
+      else if (!dismissToastForEscape()) window.close();
     }
   });
 }

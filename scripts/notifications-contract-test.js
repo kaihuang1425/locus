@@ -77,8 +77,11 @@ function testToastWiring() {
   ok(/renderAll\(\);\n\s*if \(typeof renderOpenToolOverlay === 'function'\) renderOpenToolOverlay\(\);\n\s*\/\/ Morph the receipt/.test(newtab)
     && /const label = await State\.redo\(\);\n\s*if \(label\) \{\n\s*renderAll\(\);\n\s*if \(typeof renderOpenToolOverlay === 'function'\) renderOpenToolOverlay\(\);/.test(newtab),
   'Undo and Redo repaint the open tool');
-  // Review finding 7: the popup layer keeps the error card's red rule.
-  ok(/html\[data-theme\] \.state-card\.error \{ border-top: 3px solid var\(--red\); \}/.test(popupCss) && /html\[data-theme\] \.pa-btn\.primary:disabled,/.test(popupCss), 'the popup layer keeps the error card and disabled button states');
+  // Review finding 7: the popup layer keeps the error card's red rule and the
+  // disabled state of its filled buttons (Save, the sheet actions).
+  ok(/html\[data-theme\] \.state-card\.error \{ border-top: 3px solid var\(--red\); \}/.test(popupCss)
+    && /\.hsave:disabled \{[^}]*opacity: \.45/.test(popupCss) && /\.go:disabled \{[^}]*opacity: \.45/.test(popupCss),
+  'the popup layer keeps the error card and disabled button states');
   ok(newtab.indexOf('_escToastFirst && dismissToastForEscape()') > newtab.indexOf('const _overlayWasOpen = _escBlockers.some'), 'the receipt step comes after the overlay check');
   ok(/e\.key\.toLowerCase\(\) === 'z' && !inField\) \{ e\.preventDefault\(\); performUndo\(\); \}/.test(newtab), 'Ctrl+Z still undoes from history');
   ok(/const undoneId = expectedActionId \?\? /.test(newtab) && /toast\(tr\('history\.undid', \{ action: label \}\), \{ tone: 'info', glyph: 'undo', duration: 1600, replaceUndo: undoneId \}\);/.test(newtab),
@@ -251,16 +254,109 @@ async function testToastController() {
   eq(e.sent, ['clear:te-notif-t1'], 'the card can clear the item’s system notice');
 }
 
-function testPopupReceipt() {
-  const fnStart = popupJs.indexOf('function toast(message, { persistent = false, tone = \'\' } = {}) {');
-  ok(fnStart > 0, 'the popup receipt takes an explicit tone');
+// The popup receipt controller (2026-11 popup board) runs in a VM against fake
+// elements: tones, the one action, the 5.2 s drain on action and Undo receipts
+// only, two receipts at most with the older one behind, and promise-driven
+// actions. The one-click save receipt (Kai, 2026-11-06) adds Undo and Move.
+async function testPopupReceipt() {
+  const start = popupJs.indexOf('const POPUP_TOAST_ACTION_MS');
+  const fnStart = popupJs.indexOf('function toast(message, { persistent = false, tone = \'\', glyph = \'\', actionLabel = \'\', action = null, undo = null, move = null } = {}) {');
+  ok(start > 0 && fnStart > start, 'the popup receipt takes an explicit tone, one action, and Undo and Move for a save');
   const fnEnd = popupJs.indexOf('\n}\n', fnStart) + 3;
-  const el = { classList: { add() {}, remove() {} }, dataset: {}, attrs: {}, setAttribute(name, value) { this.attrs[name] = value; } };
-  const popup = vm.createContext({ $: () => el, requestAnimationFrame: fn => fn(), clearTimeout() {}, setTimeout: () => 1, toastTimer: null });
-  vm.runInContext(`let toastTimer = null;\n${popupJs.slice(fnStart, fnEnd)}\nglobalThis.__toast = toast;`, popup);
+  const els = new Map();
+  const fake = id => {
+    if (!els.has(id)) {
+      const classes = new Set(['pop-toast-behind', 'pop-toast-action', 'pop-toast-undo', 'pop-toast-move'].includes(id) ? ['hidden'] : []);
+      els.set(id, {
+        id, textContent: '', dataset: {}, attrs: {}, offsetWidth: 1, disabled: false, onclick: null,
+        style: { props: {}, setProperty(name, value) { this.props[name] = value; } },
+        classList: {
+          add: (...names) => names.forEach(name => classes.add(name)),
+          remove: (...names) => names.forEach(name => classes.delete(name)),
+          toggle: (name, on) => { if (on ?? !classes.has(name)) classes.add(name); else classes.delete(name); },
+          contains: name => classes.has(name),
+        },
+        setAttribute(name, value) { this.attrs[name] = value; },
+        contains: () => false,
+        matches: () => false,
+      });
+    }
+    return els.get(id);
+  };
+  const timers = [];
+  const popup = vm.createContext({
+    $: fake, console, Date, Promise,
+    document: { activeElement: null },
+    tr: key => key,
+    mainCaptureFocusTarget: () => null,
+    clearTimeout() {},
+    setTimeout: (fn, ms) => { timers.push(ms); return timers.length; },
+  });
+  vm.runInContext(`let toastTimer = null;\n${popupJs.slice(start, fnEnd)}\nglobalThis.__toast = toast;\nglobalThis.__count = () => popupToastEntries.length;\nglobalThis.__dismiss = () => dismissPopupToast();`, popup);
+  const el = fake('pop-toast');
   const tone = (opts) => { popup.__toast('x', opts); return [el.dataset.tone, el.attrs.role]; };
   eq([tone({ tone: 'error' }), tone({ tone: 'warning' }), tone({}), tone({ persistent: true })],
     [['error', 'alert'], ['warning', 'status'], ['success', 'status'], ['error', 'alert']], 'the popup receipt shows the tone its caller names (N7)');
+  eq(popup.__count(), 2, 'at most two popup receipts are kept');
+  eq([fake('pop-toast-behind').classList.contains('hidden'), fake('pop-toast-behind-msg').textContent], [false, 'x'], 'the previous receipt waits behind the newest one');
+  while (popup.__count()) popup.__dismiss();
+  timers.length = 0;
+  let located = 0;
+  popup.__toast('Saved to Inbox', { tone: 'success', actionLabel: 'Locate', action: () => { located += 1; } });
+  eq([timers.at(-1), el.dataset.draining, fake('pop-toast-action').textContent, fake('pop-toast-action').classList.contains('hidden')],
+    [5200, 'true', 'Locate', false], 'a receipt with an action drains for 5.2 s and offers its one action');
+  fake('pop-toast-action').onclick();
+  eq([located, el.classList.contains('show')], [1, false], 'the action runs once and the receipt closes');
+  popup.__toast('Tab hibernated', { tone: 'info', glyph: 'moon' });
+  eq([timers.at(-1), el.dataset.draining, el.dataset.glyph, fake('pop-toast-action').classList.contains('hidden')],
+    [2600, 'false', 'moon', true], 'a passive receipt leaves without a drain bar');
+  popup.__dismiss();
+  const before = timers.length;
+  let settle;
+  popup.__toast('Could not save', { persistent: true, actionLabel: 'Open Locus', action: () => new Promise(resolve => { settle = resolve; }) });
+  eq([timers.length, el.dataset.draining], [before, 'false'], 'a persistent receipt waits for an answer');
+  fake('pop-toast-action').onclick();
+  eq([el.dataset.busy, fake('pop-toast-action').disabled], ['true', true], 'an action that returns a promise shows a spinner in place');
+  settle('keep');
+  await new Promise(resolve => setImmediate(resolve));
+  eq([el.dataset.busy, el.classList.contains('show')], ['false', true], 'an action that resolves to keep leaves the receipt up');
+  popup.__dismiss();
+
+  // One-click save receipt: Undo, Move and Locate on their own row, the 5.2 s
+  // drain, and results that morph the card in place.
+  let undoSettle;
+  let moveSettle;
+  popup.__toast('Saved to Inbox', {
+    tone: 'success',
+    undo: () => new Promise(resolve => { undoSettle = resolve; }),
+    move: () => new Promise(resolve => { moveSettle = resolve; }),
+    actionLabel: 'Locate',
+    action: () => 'keep',
+  });
+  const button = id => fake(`pop-toast-${id}`);
+  eq([timers.at(-1), el.dataset.draining, el.dataset.stacked, ['undo', 'move', 'action'].map(id => [button(id).textContent, button(id).classList.contains('hidden')])],
+    [5200, 'true', 'true', [['undo', false], ['move', false], ['Locate', false]]],
+    'a save receipt drains for 5.2 s and offers Undo, Move and Locate on a row under the message');
+  button('move').onclick();
+  eq([el.dataset.busy, button('undo').disabled, button('action').disabled], ['true', true, true], 'while one action runs, every action waits');
+  moveSettle({ message: 'Saved to Reading', tone: 'success', keepActions: true });
+  await new Promise(resolve => setImmediate(resolve));
+  eq([fake('pop-toast-msg').textContent, el.dataset.busy, el.dataset.stacked, timers.at(-1), button('undo').classList.contains('hidden')],
+    ['Saved to Reading', 'false', 'true', 5200, false], 'a move turns the receipt into the new Group and starts its drain again with every action');
+  button('undo').onclick();
+  undoSettle({ message: 'Undone', tone: 'info', glyph: 'undo' });
+  await new Promise(resolve => setImmediate(resolve));
+  eq([fake('pop-toast-msg').textContent, el.dataset.tone, el.dataset.glyph, el.dataset.draining, el.dataset.stacked, timers.at(-1), ['undo', 'move', 'action'].every(id => button(id).classList.contains('hidden'))],
+    ['Undone', 'info', 'undo', 'false', 'false', 2600, true], 'Undo turns the receipt into a short "Undone" note in place, with no actions left');
+  popup.__dismiss();
+  popup.__toast('Saved to Inbox', { tone: 'success', undo: () => 'keep' });
+  eq([timers.at(-1), el.dataset.draining, el.dataset.stacked], [5200, 'true', 'false'], 'an Undo alone drains like an action receipt and stays on one line');
+  const pinnedAt = timers.length;
+  vm.runInContext('pinPopupToast(true); releasePopupToast();', popup);
+  eq([timers.length, el.classList.contains('is-held')], [pinnedAt, true], 'the open Move list pins the receipt: leaving it does not start the drain');
+  vm.runInContext('pinPopupToast(false);', popup);
+  eq([timers.length, el.classList.contains('is-held')], [pinnedAt + 1, false], 'closing the Move list releases the receipt and its drain');
+  popup.__dismiss();
   for (const [key, expected] of [['couldNotHibernate', 'error'], ['cannotSave', 'warning'], ['openFirst', 'warning'], ['captureBusy', 'warning'], ['bookmarksUnavailable', 'warning'], ['alreadySaved', 'info'], ['noBookmarks', 'info']]) {
     const calls = [...popupJs.matchAll(new RegExp(`toast\\(tr\\('${key}'\\)([^)]*)\\)`, 'g'))];
     ok(calls.length && calls.every(call => call[1].includes(`tone: '${expected}'`)), `every ${key} receipt is ${expected}`);
@@ -488,7 +584,7 @@ function testLocales() {
 async function main() {
   testToastWiring();
   await testToastController();
-  testPopupReceipt();
+  await testPopupReceipt();
   await testSystemNotifications();
   testDueCard();
   await testSnoozeKeepsWarning();

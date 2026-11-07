@@ -244,17 +244,19 @@ function testSelectorsMatchMarkup() {
   const popupHtml = read('popup.html');
   ok(/document\.documentElement\.dataset\.theme = theme;/.test(popupJs) && /<html[^>]*\sdata-theme="/.test(popupHtml), 'the popup keeps its theme on <html>');
   ok(!/body\[data-theme\]/.test(popupCss), 'no popup rule waits for a data-theme on <body> that is never set');
-  const popupLayer = cssRules(popupCss.slice(popupCss.lastIndexOf('/*', popupCss.indexOf('Toolbar popup (2026-11 canvas)'))));
-  ok(popupLayer.length >= 8, 'the popup canvas layer is present');
-  for (const rule of popupLayer) {
-    ok(rule.selector.split(',').every(part => part.trim().startsWith('html[data-theme]')), `popup layer rule roots on html[data-theme]: ${rule.selector.slice(0, 50)}`);
-  }
+  // The 2026-11 popup board rebuilt popup.css as one canvas layer. Its colour
+  // tokens map the theme where the theme lives, on <html>.
+  ok(popupCss.includes('TOOLBAR POPUP (2026-11 canvas board'), 'the popup canvas layer is present');
+  const popupRules = cssRules(popupCss);
+  const tokenRule = popupRules.find(rule => rule.selector === 'html[data-theme]' && /--pp-ground:\s*var\(--ground/.test(rule.body));
+  ok(!!tokenRule && /--pp-card:\s*var\(--card/.test(tokenRule.body) && /--pp-where:\s*var\(--locator/.test(tokenRule.body), 'the popup tokens root on html[data-theme] and read the canvas palette');
+  ok(popupRules.length >= 8, 'the popup canvas rules are present');
   const popupSources = `${popupHtml}\n${popupJs}`;
   const popupMissing = new Set();
-  popupLayer.forEach(rule => classesIn(rule.selector).forEach(name => {
+  popupRules.forEach(rule => classesIn(rule.selector).forEach(name => {
     if (!new RegExp(`(?<![\\w-])${name}(?![\\w-])`).test(popupSources)) popupMissing.add(name);
   }));
-  eq([...popupMissing], [], 'every class in the popup layer exists in popup.html or popup.js');
+  eq([...popupMissing], [], 'every class in popup.css exists in popup.html or popup.js');
 
   // R3: every class a new-tab canvas rule names exists in the markup or in the
   // scripts that build it. A class only made from a template literal is listed

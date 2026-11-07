@@ -559,7 +559,7 @@ const I18N = {
     'settings.captureDestinationLabel': 'Default for quick saves',
     'settings.captureDestinationHint': 'Used by the keyboard shortcut and context menu. If unavailable, saving stops and the source tab stays open.',
     'settings.captureAsk': 'Ask where to save in the popup',
-    'settings.captureAskHint': 'Turn off to use the quick-save destination immediately.',
+    'settings.captureAskHint': 'Off: Save goes straight to the quick-save destination.',
     'settings.captureRemember': 'Remember the last destination',
     'settings.captureRememberHint': 'A popup choice becomes the next quick-save destination.',
     'settings.captureSourceHeading': 'Source-tab consequence',
@@ -2312,7 +2312,7 @@ const I18N = {
     'settings.captureDestinationLabel': '快速儲存的預設位置',
     'settings.captureDestinationHint': '鍵盤快速鍵與右鍵選單會使用這個位置；若無法確認，會停止儲存並保留原分頁。',
     'settings.captureAsk': '在彈出視窗中詢問儲存位置',
-    'settings.captureAskHint': '關閉後，會直接使用快速儲存位置。',
+    'settings.captureAskHint': '關閉時，按「儲存」會直接存到快速儲存位置。',
     'settings.captureRemember': '記住上次使用的位置',
     'settings.captureRememberHint': '在彈出視窗選擇的位置，會成為下一次快速儲存位置。',
     'settings.captureSourceHeading': '原分頁處理方式',
@@ -3687,7 +3687,7 @@ const State = (() => {
       closeTabOnSave:true, hibernate:true, showUrls:true,
       animate:true, confirmDelete:true, sidebarCollapsed:false,
       blurPrivacy:false, windowSync:false, showLanding:false,
-      captureDefaultCategoryId:'', captureAskEveryTime:true,
+      captureDefaultCategoryId:'', captureAskEveryTime:false,
       captureRememberLast:true, captureDeduplicate:true,
       captureIncludeTitle:true, captureIncludeFavicon:true,
       popupHibernateScope:'window', popupHibernateKeepPinned:true,
@@ -6570,7 +6570,7 @@ const CAPTURE_SETTING_KEYS = new Set([
   'captureIncludeFavicon',
 ]);
 const CAPTURE_SETTING_DEFAULTS = Object.freeze({
-  captureAskEveryTime: true,
+  captureAskEveryTime: false,
   captureRememberLast: true,
   closeTabOnSave: true,
   captureDeduplicate: true,
@@ -6753,7 +6753,8 @@ function captureSettingsContractModel(state) {
   const settings = state?.settings || {};
   const resolved = captureSettingsResolveDestination(state);
   const destination = resolved?.label || tr('settings.captureDestinationUnavailable');
-  const asks = settings.captureAskEveryTime !== false;
+  // The popup asks only when the profile stored true; anything else saves in one click.
+  const asks = settings.captureAskEveryTime === true;
   const includeTitle = settings.captureIncludeTitle !== false;
   const includeFavicon = settings.captureIncludeFavicon !== false;
   const closeSource = settings.closeTabOnSave !== false;
@@ -6859,7 +6860,9 @@ function renderCaptureSettings() {
     ['tog-capture-favicon', 'captureIncludeFavicon'],
   ]) {
     const control = document.getElementById(id);
-    if (control) control.checked = captureSettingValue(settings, key) !== false;
+    if (!control) continue;
+    const value = captureSettingValue(settings, key);
+    control.checked = key === 'captureAskEveryTime' ? value === true : value !== false;
   }
 
   const text = (id, value) => {

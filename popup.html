@@ -11,202 +11,231 @@
 </head>
 <body>
   <main id="popup" aria-busy="true">
-    <header class="ph">
+    <header id="popup-header" class="ph">
       <div class="logo">
-        <img class="brand-mark" src="icons/icon128.png" width="30" height="30" alt="">
+        <img class="brand-mark" src="icons/icon128.png" width="28" height="28" alt="">
         <span class="logo-name">Locus</span>
       </div>
       <div class="header-actions">
-        <button id="open-more" class="header-icon-btn" type="button" data-pop-title="more" aria-label="More">
-          <svg width="17" height="17" viewBox="0 0 18 18" fill="none" aria-hidden="true"><path d="M9 6.75A2.25 2.25 0 109 11.25 2.25 2.25 0 009 6.75z" stroke="currentColor" stroke-width="1.35"/><path d="M14.25 10.1a5.5 5.5 0 000-2.2l1.2-.95-1.35-2.35-1.44.56a5.7 5.7 0 00-1.9-1.1L10.53 2.5h-2.7L7.6 4.05a5.7 5.7 0 00-1.9 1.1l-1.44-.56-1.35 2.35 1.2.95a5.5 5.5 0 000 2.2l-1.2.95 1.35 2.35 1.44-.56a5.7 5.7 0 001.9 1.1l.23 1.55h2.7l.23-1.55a5.7 5.7 0 001.9-1.1l1.44.56 1.35-2.35-1.2-.95z" stroke="currentColor" stroke-width="1.15" stroke-linejoin="round"/></svg>
+        <button id="open-more" class="hb" type="button" data-pop-title="more" aria-label="More" aria-haspopup="menu" aria-expanded="false" aria-controls="more-menu">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="M9 6.75A2.25 2.25 0 1 0 9 11.25 2.25 2.25 0 0 0 9 6.75z"/><path d="M14.25 10.1a5.5 5.5 0 0 0 0-2.2l1.2-.95-1.35-2.35-1.44.56a5.7 5.7 0 0 0-1.9-1.1L10.53 2.5h-2.7L7.6 4.05a5.7 5.7 0 0 0-1.9 1.1l-1.44-.56-1.35 2.35 1.2.95a5.5 5.5 0 0 0 0 2.2l-1.2.95 1.35 2.35 1.44-.56a5.7 5.7 0 0 0 1.9 1.1l.23 1.55h2.7l.23-1.55a5.7 5.7 0 0 0 1.9-1.1l1.44.56 1.35-2.35-1.2-.95z"/></svg>
         </button>
-        <button id="open-full" class="profile-btn" type="button" data-pop-title="openLocus" aria-label="Open Locus">
-          <span id="profile-initial" aria-hidden="true">L</span>
-          <svg width="13" height="13" viewBox="0 0 12 12" fill="none" aria-hidden="true"><path d="M4 2.5H2a1 1 0 00-1 1v6.5A1 1 0 002 11h6.5a1 1 0 001-1V8M7 1h4m0 0v4M11 1L5.5 6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <button id="open-full" class="hb" type="button" data-pop-title="openLocus" aria-label="Open Locus">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3H3.5a1 1 0 0 0-1 1v8.5a1 1 0 0 0 1 1H12a1 1 0 0 0 1-1V9M9.5 2.5h4v4M13.5 2.5 7.5 8.5"/></svg>
         </button>
       </div>
     </header>
 
-    <section id="main-section" class="popup-view" aria-labelledby="window-heading-label">
-      <label class="popup-search" for="ps">
-        <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5" fill="none"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        <input id="ps" type="search" data-pop-placeholder="searchTabs" placeholder="Search open tabs…" autocomplete="off">
-        <kbd id="search-shortcut" aria-hidden="true">Ctrl K</kbd>
-      </label>
+    <div id="more-menu" class="pop-menu hidden">
+      <div id="more-menu-list" role="menu" aria-labelledby="open-more">
+        <button id="more-save-current" class="mi" type="button" role="menuitem" tabindex="-1">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5h7a1 1 0 0 1 1 1v10L8 11l-4.5 2.5v-10a1 1 0 0 1 1-1z"/></svg>
+          <span data-pop-i18n="saveCurrentTab">Save current tab</span>
+        </button>
+        <button id="more-import-bookmarks" class="mi" type="button" role="menuitem" tabindex="-1">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5h7a1 1 0 0 1 1 1v10L8 11l-4.5 2.5v-10a1 1 0 0 1 1-1zM8 5v4M6 7h4"/></svg>
+          <span data-pop-i18n="importBookmarks">Import bookmarks</span>
+        </button>
+        <button id="more-shortcuts" class="mi" type="button" role="menuitem" tabindex="-1">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4h11a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zM4.5 6.5h.01M7 6.5h.01M9.5 6.5h.01M12 6.5h.01M5.5 9.5h5"/></svg>
+          <span data-pop-i18n="keyboardShortcuts">Keyboard shortcuts</span>
+        </button>
+      </div>
+      <p class="menu-note"><span data-pop-i18n="localFirst">No Locus account or host permissions.</span> <span data-pop-i18n="privacyProof">Profile-local; export before uninstalling or deleting the profile.</span></p>
+    </div>
 
-      <div class="window-heading">
-        <span id="window-heading-label" class="window-label">
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.75" y="2.75" width="12.5" height="9" rx="1.4" stroke="currentColor" stroke-width="1.25"/><path d="M6 14h4M8 12v2" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>
-          <span data-pop-i18n="currentWindow">Current window</span>
-        </span>
-        <span><b id="window-count">0</b> <span data-pop-i18n="tabs">tabs</span></span>
+    <section id="main-section" class="popup-view" aria-labelledby="window-heading-label">
+      <div class="pv-scroll">
+        <section id="hero" class="hero hidden" data-pop-aria="thisTab" aria-label="This tab">
+          <div class="hero-head">
+            <span class="hero-fav" aria-hidden="true"><img id="hero-icon" class="hidden" src="" alt=""><span id="hero-initial" class="fav-initial"></span></span>
+            <div class="hero-copy">
+              <div id="hero-title" class="hero-title"></div>
+              <div id="hero-host" class="hero-host mono"></div>
+            </div>
+          </div>
+          <div class="hero-row">
+            <div id="destination-wrap" class="dest-wrap">
+              <button id="destination-chip" class="dchip" type="button" data-pop-aria="saveTo" aria-label="Save to" aria-haspopup="listbox" aria-expanded="false" aria-controls="dest-list">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round" aria-hidden="true"><path d="M1.75 4.25h5l1.25 1.5h6.25v7.5H1.75v-9zM1.75 5.75V2.8h4.5l1.2 1.45"/></svg>
+                <span id="destination-name" class="dchip-label"></span>
+                <span id="destination-count" class="bub hidden" aria-hidden="true"></span>
+                <svg class="cv" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 6.5 8 10l3.5-3.5"/></svg>
+              </button>
+            </div>
+            <button id="hero-save" class="hsave" type="button" data-pop-aria="saveCurrentTab" aria-label="Save current tab">
+              <span class="hsave-idle"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 2.5h7a1 1 0 0 1 1 1v10L8 11l-4.5 2.5v-10a1 1 0 0 1 1-1z"/></svg><span data-pop-i18n="save">Save</span></span>
+              <svg class="hsave-check" width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path class="ck" d="M3.5 8.5l3 3 6-7"/></svg>
+              <span class="burst" aria-hidden="true"><i style="--a: 0deg"></i><i style="--a: 60deg"></i><i style="--a: 120deg"></i><i style="--a: 180deg"></i><i style="--a: 240deg"></i><i style="--a: 300deg"></i></span>
+            </button>
+          </div>
+        </section>
+
+        <div class="window-heading">
+          <span id="window-heading-label" class="window-label" data-pop-i18n="thisWindow">This window</span>
+          <span class="window-count mono"><b id="window-count">0</b> <span data-pop-i18n="tabs">tabs</span></span>
+          <span class="wh-gap"></span>
+          <span id="selection-status" class="selection-status mono hidden" role="status" aria-live="polite"></span>
+          <button id="clear-selection" class="qx hidden" type="button" data-pop-aria="clearSelection" aria-label="Clear selection">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+          </button>
+        </div>
+
+        <label class="popup-search" for="ps">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M7 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM10.6 10.6 13.5 13.5"/></svg>
+          <input id="ps" type="search" data-pop-placeholder="searchTabs" placeholder="Search open tabs…" autocomplete="off" spellcheck="false">
+          <span id="search-count" class="search-count mono hidden" aria-hidden="true"></span>
+          <button id="search-clear" class="qx hidden" type="button" data-pop-aria="clearSearch" aria-label="Clear search">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+          </button>
+          <kbd id="search-shortcut" aria-hidden="true">Ctrl K</kbd>
+        </label>
+
+        <div id="load-state" class="state-card" role="status">
+          <span class="spinner" aria-hidden="true"></span>
+          <span data-pop-i18n="loadingTabs">Loading tabs…</span>
+        </div>
+
+        <div id="tabs-region" class="hidden">
+          <div id="ptabs" role="list" aria-label="Open tabs"></div>
+          <button id="more-tabs" class="more-tabs hidden" type="button" aria-expanded="false"></button>
+        </div>
       </div>
 
-      <div class="pa-row">
-        <button id="qs-all" class="pa-btn primary" type="button">
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 2.5h8l2 2v9H3v-11z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5 2.5v4h5v-4M5 13.5V9h6v4.5" stroke="currentColor" stroke-width="1.2"/></svg>
+      <div class="bar">
+        <button id="qs-all" class="btn btn-k" type="button">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.5 4.5h7.5a1 1 0 0 1 1 1V12a1 1 0 0 1-1 1H5.5a1 1 0 0 1-1-1V5.5a1 1 0 0 1 1-1zM2 10.5V3a1 1 0 0 1 1-1h7.5"/></svg>
           <span data-pop-i18n="saveWindow">Save window</span>
         </button>
-        <button id="hib-open" class="pa-btn" type="button">
-          <svg width="15" height="15" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M11.5 8.2A4.6 4.6 0 015.8 2.5a4.6 4.6 0 105.7 5.7z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></svg>
-          <span data-pop-i18n="hibernateWindow">Hibernate window</span>
-          <span class="pa-hint" id="hib-open-hint"></span>
+        <button id="hib-open" class="btn" type="button">
+          <svg width="15" height="15" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" aria-hidden="true"><path d="M11.5 8.2A4.6 4.6 0 0 1 5.8 2.5a4.6 4.6 0 1 0 5.7 5.7z"/></svg>
+          <span data-pop-i18n="hibernate">Hibernate</span>
         </button>
-      </div>
-
-      <div id="load-state" class="state-card" role="status">
-        <span class="spinner" aria-hidden="true"></span>
-        <span data-pop-i18n="loadingTabs">Loading tabs…</span>
-      </div>
-
-      <div id="tabs-region" class="hidden">
-        <div id="ptabs" role="list" aria-label="Open tabs"></div>
-        <button id="more-tabs" class="more-tabs hidden" type="button" aria-expanded="false"></button>
-        <div id="selection-status" class="selection-status hidden" role="status" aria-live="polite"></div>
-      </div>
-
-      <div id="destination-card" class="destination-card hidden">
-        <span class="destination-icon" aria-hidden="true">
-          <svg width="17" height="17" viewBox="0 0 16 16" fill="none"><path d="M1.75 4.25h5l1.25 1.5h6.25v7.5H1.75v-9z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M1.75 5.75V2.8h4.5l1.2 1.45" stroke="currentColor" stroke-width="1.25"/></svg>
-        </span>
-        <span class="destination-copy">
-          <span class="destination-label" data-pop-i18n="destination">Destination</span>
-          <strong id="destination-name">Inbox</strong>
-        </span>
-        <button id="change-destination" class="text-action" type="button"><span data-pop-i18n="change">Change</span><span aria-hidden="true">›</span></button>
       </div>
     </section>
 
-    <section id="more-section" class="popup-view hidden" aria-labelledby="more-title">
-      <div class="view-titlebar more-titlebar">
-        <button id="more-back" class="icon-btn" type="button" data-pop-title="back" aria-label="Back">←</button>
-        <div><h1 id="more-title" data-pop-i18n="more">More</h1><p data-pop-i18n="moreSubtitle">Local tools and browser actions</p></div>
-      </div>
-      <div class="more-list">
-        <button id="more-save-current" class="more-row" type="button">
-          <span class="more-row-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4 2.5h10v13l-5-3-5 3v-13z" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/></svg></span>
-          <span class="more-row-copy"><strong data-pop-i18n="saveCurrentTab">Save current tab</strong><span data-pop-i18n="saveCurrentTabDesc">Save only this tab</span></span>
-          <span class="more-row-arrow" aria-hidden="true">›</span>
-        </button>
-        <button id="more-import-bookmarks" class="more-row" type="button">
-          <span class="more-row-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M4 2.5h10v13l-5-3-5 3v-13z" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/><path d="M9 5.2v4.2m-2-2.1h4" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg></span>
-          <span class="more-row-copy"><strong data-pop-i18n="importBookmarks">Import bookmarks</strong><span data-pop-i18n="importBookmarksDesc">Bring browser bookmarks into this Space</span></span>
-          <span class="more-row-arrow" aria-hidden="true">›</span>
-        </button>
-        <button id="more-shortcuts" class="more-row" type="button">
-          <span class="more-row-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2.5" y="4" width="13" height="10" rx="2" stroke="currentColor" stroke-width="1.35"/><path d="M5 7h1m2 0h1m2 0h1m-7 3h1m2 0h1m2 0h1m-6 2h6" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg></span>
-          <span class="more-row-copy"><strong data-pop-i18n="keyboardShortcuts">Keyboard shortcuts</strong><span data-pop-i18n="keyboardShortcutsDesc">Review or change extension shortcuts</span></span>
-          <span class="more-row-arrow" aria-hidden="true">›</span>
-        </button>
-      </div>
-      <div class="more-local-card">
-        <span class="privacy-check" aria-hidden="true">✓</span>
-        <span data-pop-i18n="moreLocalProof">These actions stay in Chrome and your local Locus data.</span>
-      </div>
-    </section>
+    <div id="sheet-scrim" class="sheet-scrim" aria-hidden="true"></div>
 
-    <section id="save-window-section" class="popup-view hidden" aria-labelledby="sw-title">
-      <div class="view-titlebar">
-        <button id="sw-back" class="icon-btn" type="button" data-pop-title="back" aria-label="Back">←</button>
-        <div><h1 id="sw-title" data-pop-i18n="saveWindow">Save window</h1><p><b id="sw-count">0</b> <span data-pop-i18n="tabs">tabs</span></p></div>
+    <section id="save-window-section" class="popup-view popup-sheet hidden" role="dialog" aria-modal="true" aria-labelledby="sw-title">
+      <div class="grab" aria-hidden="true"></div>
+      <div class="sheet-head">
+        <h1 id="sw-title" class="sheet-title" data-pop-i18n="saveWindow">Save window</h1>
+        <span class="sheet-count mono"><b id="sw-count">0</b> <span data-pop-i18n="tabs">tabs</span></span>
+        <button id="sw-back" class="qx sheet-close" type="button" data-pop-title="close" aria-label="Close">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+        </button>
       </div>
-      <div class="destination-card sw-destination">
-        <span class="destination-icon" aria-hidden="true">
-          <svg width="17" height="17" viewBox="0 0 16 16" fill="none"><path d="M1.75 4.25h5l1.25 1.5h6.25v7.5H1.75v-9z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M1.75 5.75V2.8h4.5l1.2 1.45" stroke="currentColor" stroke-width="1.25"/></svg>
-        </span>
-        <span class="destination-copy">
-          <span class="destination-label" data-pop-i18n="destination">Destination</span>
-          <strong id="sw-destination-name">Inbox</strong>
-        </span>
-        <button id="sw-change" class="text-action" type="button"><span data-pop-i18n="change">Change</span><span aria-hidden="true">›</span></button>
+      <div class="dest-wrap sheet-dest">
+        <button id="sw-change" class="dchip" type="button" data-pop-aria="saveTo" aria-label="Save to" aria-haspopup="listbox" aria-expanded="false" aria-controls="dest-list">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round" aria-hidden="true"><path d="M1.75 4.25h5l1.25 1.5h6.25v7.5H1.75v-9zM1.75 5.75V2.8h4.5l1.2 1.45"/></svg>
+          <span id="sw-destination-name" class="dchip-label"></span>
+          <svg class="cv" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 6.5 8 10l3.5-3.5"/></svg>
+        </button>
       </div>
-      <div class="subhead" data-pop-i18n="suggestedTags">Suggested tags</div>
+      <div class="sh" id="sw-modes-label" data-pop-i18n="saveOptions">Save options</div>
+      <div id="sw-modes" class="sw-modes" role="radiogroup" data-pop-aria="saveOptions" aria-label="Save options">
+        <span class="sw-mode-thumb" aria-hidden="true"></span>
+        <button type="button" class="sw-mode" role="radio" data-val="links" aria-checked="false"><span class="sw-radio" aria-hidden="true"></span><span data-pop-i18n="saveLinksOnly">Links only</span></button>
+        <button type="button" class="sw-mode" role="radio" data-val="group" aria-checked="false"><span class="sw-radio" aria-hidden="true"></span><span data-pop-i18n="saveLinksGroup">Links + tab group</span></button>
+        <button type="button" class="sw-mode" role="radio" data-val="queue" aria-checked="false"><span class="sw-radio" aria-hidden="true"></span><span data-pop-i18n="saveQueue">Reading queue</span></button>
+      </div>
+      <div class="sh" data-pop-i18n="tags">Tags</div>
       <div class="sw-tags" id="sw-tags-row">
         <span id="sw-tags"></span>
-        <input id="sw-tag-input" type="text" data-pop-placeholder="addTag" data-pop-aria="tagInputLabel" placeholder="+ Add tag" aria-label="Add a tag" autocomplete="off">
+        <input id="sw-tag-input" type="text" data-pop-placeholder="addTag" data-pop-aria="tagInputLabel" placeholder="+ Add tag" aria-label="Add a tag" autocomplete="off" spellcheck="false">
       </div>
-      <div class="subhead" data-pop-i18n="saveOptions">Save options</div>
-      <div id="sw-modes" class="sw-modes" role="radiogroup" data-pop-aria="saveOptions" aria-label="Save options">
-        <button type="button" class="sw-mode" role="radio" data-val="links" aria-checked="false">
-          <span class="sw-radio" aria-hidden="true"></span>
-          <span class="sw-mode-copy"><span class="sw-mode-title" data-pop-i18n="saveLinksOnly">Save links only</span><span class="sw-mode-desc" data-pop-i18n="saveLinksOnlyDesc">Lightweight and fast</span></span>
-        </button>
-        <button type="button" class="sw-mode" role="radio" data-val="group" aria-checked="false">
-          <span class="sw-radio" aria-hidden="true"></span>
-          <span class="sw-mode-copy"><span class="sw-mode-title" data-pop-i18n="saveLinksGroup">Save links + tab group</span><span class="sw-mode-desc" data-pop-i18n="saveLinksGroupDesc">Keep tabs organized as a group</span></span>
-        </button>
-        <button type="button" class="sw-mode" role="radio" data-val="queue" aria-checked="false">
-          <span class="sw-radio" aria-hidden="true"></span>
-          <span class="sw-mode-copy"><span class="sw-mode-title" data-pop-i18n="saveQueue">Save as reading queue</span><span class="sw-mode-desc" data-pop-i18n="saveQueueDesc">Review later in Read Later</span></span>
-        </button>
+      <div class="switch-list">
+        <label class="sw-row"><input type="checkbox" id="sw-close"><span class="switch" aria-hidden="true"></span><span data-pop-i18n="closeAfterSave">Close other tabs after saving</span></label>
+        <label class="sw-row"><input type="checkbox" id="sw-note-toggle"><span class="switch" aria-hidden="true"></span><span data-pop-i18n="addNote">Add note</span></label>
       </div>
-      <label class="hib-toggle"><input type="checkbox" id="sw-close"><span class="hib-tog-box"></span><span data-pop-i18n="closeAfterSave">Close other tabs after saving</span></label>
-      <label class="hib-toggle"><input type="checkbox" id="sw-note-toggle"><span class="hib-tog-box"></span><span data-pop-i18n="addNote">Add note</span></label>
       <textarea id="sw-note" class="sw-note hidden" rows="2" data-pop-placeholder="notePlaceholder" data-pop-aria="noteInputLabel" placeholder="A note saved alongside these tabs…" aria-label="Window note"></textarea>
-      <button id="sw-go" class="pa-btn primary hib-go" type="button"><span data-pop-i18n="save">Save</span> <b id="sw-go-count">0</b> <span data-pop-i18n="tabs">tabs</span></button>
+      <button id="sw-go" class="go" type="button"><span data-pop-i18n="save">Save</span> <b id="sw-go-count">0</b> <span data-pop-i18n="tabs">tabs</span></button>
     </section>
 
-    <section id="save-to-section" class="popup-view hidden" aria-labelledby="save-title">
-      <div class="view-titlebar">
-        <button id="stg-back" class="icon-btn" type="button" data-pop-title="back" aria-label="Back">←</button>
-        <div><h1 id="save-title" data-pop-i18n="saveTab">Save tab</h1><p id="save-context"></p></div>
+    <section id="save-to-section" class="popup-view popup-sheet hidden" role="dialog" aria-modal="true" aria-labelledby="save-title">
+      <div class="grab" aria-hidden="true"></div>
+      <div class="sheet-head">
+        <h1 id="save-title" class="sheet-title" data-pop-i18n="saveTab">Save tab</h1>
+        <button id="stg-back" class="qx sheet-close" type="button" data-pop-title="close" aria-label="Close">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+        </button>
       </div>
-      <div class="view-summary"><span class="destination-icon" aria-hidden="true">⌑</span><span id="save-tab-title"></span></div>
-      <div id="stg-destination-label" class="subhead" data-pop-i18n="chooseDestination">Choose destination</div>
-      <label id="stg-locate-option" class="hib-toggle stg-locate-option hidden">
+      <div class="save-summary">
+        <span id="save-tab-title" class="save-summary-title"></span>
+        <span id="save-context" class="save-summary-context mono"></span>
+      </div>
+      <label id="stg-locate-option" class="sw-row stg-locate-option hidden">
         <input type="checkbox" id="stg-locate">
-        <span class="hib-tog-box" aria-hidden="true"></span>
+        <span class="switch" aria-hidden="true"></span>
         <span data-pop-i18n="locateAfterSave">Open saved item in Locus</span>
       </label>
-      <div id="stg-list" role="list"></div>
+      <div id="stg-destination-label" class="sr-only" data-pop-i18n="chooseDestination">Choose destination</div>
+      <div id="stg-list" role="list" aria-labelledby="stg-destination-label"></div>
       <div id="stg-locate-result" class="capture-result hidden" role="status" aria-live="polite" aria-atomic="true" tabindex="-1">
-        <span class="capture-result-icon" aria-hidden="true">✓</span>
+        <span class="capture-result-icon" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path class="ck" d="M3.5 8.5l3 3 6-7"/></svg></span>
         <div class="capture-result-copy">
           <span id="stg-locate-result-message"></span>
         </div>
         <div class="capture-result-actions">
-          <button id="stg-open-locus" class="pa-btn primary" type="button" data-pop-i18n="openLocus" aria-describedby="save-context save-tab-title stg-locate-result-message">Open Locus</button>
-          <button id="stg-done" class="pa-btn" type="button" data-pop-i18n="done" data-pop-aria="closePopup" aria-label="Close popup">Close</button>
+          <button id="stg-open-locus" class="go go-inline" type="button" data-pop-i18n="openLocus" aria-describedby="save-context save-tab-title stg-locate-result-message">Open Locus</button>
+          <button id="stg-done" class="btn" type="button" data-pop-i18n="done" data-pop-aria="closePopup" aria-label="Close popup">Close</button>
         </div>
       </div>
     </section>
 
-    <section id="hibernate-section" class="popup-view hidden" aria-labelledby="hibernate-title">
-      <div class="view-titlebar">
-        <button id="hib-back" class="icon-btn" type="button" data-pop-title="back" aria-label="Back">←</button>
-        <div><h1 id="hibernate-title" data-pop-i18n="hibernateWindow">Hibernate window</h1><p><b id="hib-title-count">0</b> <span data-pop-i18n="tabs">tabs</span></p></div>
+    <section id="hibernate-section" class="popup-view popup-sheet hidden" role="dialog" aria-modal="true" aria-labelledby="hibernate-title">
+      <div class="grab" aria-hidden="true"></div>
+      <div class="sheet-head">
+        <h1 id="hibernate-title" class="sheet-title" data-pop-i18n="hibernate">Hibernate</h1>
+        <span class="sheet-count mono"><b id="hib-title-count">0</b> <span data-pop-i18n="tabs">tabs</span></span>
+        <button id="hib-back" class="qx sheet-close" type="button" data-pop-title="close" aria-label="Close">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+        </button>
       </div>
-      <div class="info-card">
-        <svg width="18" height="18" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M11.5 8.2A4.6 4.6 0 015.8 2.5a4.6 4.6 0 105.7 5.7z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></svg>
-        <span data-pop-i18n="hibernateExplainer">Hibernate replaces eligible tabs with packaged placeholders that you can continue from later.</span>
-      </div>
-      <div class="subhead" data-pop-i18n="scope">Scope</div>
-      <div class="seg seg-three" id="hib-scope" role="radiogroup" aria-label="Hibernate scope">
+      <div class="sh" id="hib-scope-label" data-pop-i18n="scope">Scope</div>
+      <div class="seg" id="hib-scope" role="radiogroup" aria-labelledby="hib-scope-label">
+        <span class="seg-thumb" aria-hidden="true"></span>
         <button data-val="window" class="active" type="button" role="radio" aria-checked="true" data-pop-i18n="thisWindow">This window</button>
         <button data-val="selected" type="button" role="radio" aria-checked="false"><span data-pop-i18n="selectedTabs">Selected</span> <span id="hib-selected-count">(0)</span></button>
         <button data-val="all" type="button" role="radio" aria-checked="false" data-pop-i18n="allWindows">All windows</button>
       </div>
-      <div class="subhead" data-pop-i18n="options">Options</div>
-      <label class="hib-toggle"><input type="checkbox" id="hib-save-before"><span class="hib-tog-box"></span><span data-pop-i18n="saveBeforeHibernate">Save links to Locus before hibernating</span></label>
-      <div id="hib-destination-card" class="destination-card hib-destination hidden">
-        <span class="destination-icon" aria-hidden="true">
-          <svg width="17" height="17" viewBox="0 0 16 16" fill="none"><path d="M1.75 4.25h5l1.25 1.5h6.25v7.5H1.75v-9z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M1.75 5.75V2.8h4.5l1.2 1.45" stroke="currentColor" stroke-width="1.25"/></svg>
-        </span>
-        <span class="destination-copy"><span class="destination-label" data-pop-i18n="destination">Destination</span><strong id="hib-destination-name">Inbox</strong></span>
-        <button id="hib-change" class="text-action" type="button"><span data-pop-i18n="change">Change</span><span aria-hidden="true">›</span></button>
+      <div class="switch-list">
+        <label class="sw-row"><input type="checkbox" id="hib-save-before"><span class="switch" aria-hidden="true"></span><span data-pop-i18n="saveBeforeHibernate">Save links to Locus before hibernating</span></label>
+        <div id="hib-destination-card" class="dest-wrap sheet-dest hib-destination hidden">
+          <button id="hib-change" class="dchip" type="button" data-pop-aria="saveTo" aria-label="Save to" aria-haspopup="listbox" aria-expanded="false" aria-controls="dest-list">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round" aria-hidden="true"><path d="M1.75 4.25h5l1.25 1.5h6.25v7.5H1.75v-9zM1.75 5.75V2.8h4.5l1.2 1.45"/></svg>
+            <span id="hib-destination-name" class="dchip-label"></span>
+            <svg class="cv" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 6.5 8 10l3.5-3.5"/></svg>
+          </button>
+        </div>
+        <label class="sw-row"><input type="checkbox" id="hib-keep-pinned" checked><span class="switch" aria-hidden="true"></span><span data-pop-i18n="keepPinned">Keep pinned tabs awake</span></label>
+        <label class="sw-row"><input type="checkbox" id="hib-keep-audio" checked><span class="switch" aria-hidden="true"></span><span data-pop-i18n="keepAudio">Keep tabs playing audio awake</span></label>
       </div>
-      <label class="hib-toggle"><input type="checkbox" id="hib-keep-pinned" checked><span class="hib-tog-box"></span><span data-pop-i18n="keepPinned">Keep pinned tabs awake</span></label>
-      <label class="hib-toggle"><input type="checkbox" id="hib-keep-audio" checked><span class="hib-tog-box"></span><span data-pop-i18n="keepAudio">Keep tabs playing audio awake</span></label>
-      <button id="hib-go" class="pa-btn primary hib-go" type="button"><span data-pop-i18n="hibernate">Hibernate</span> <b id="hib-count">0</b> <span data-pop-i18n="tabs">tabs</span></button>
+      <button id="hib-go" class="go go-k" type="button"><span id="hib-go-label"><span data-pop-i18n="hibernate">Hibernate</span> <b id="hib-count">0</b> <span data-pop-i18n="tabs">tabs</span></span><span id="hib-go-none" class="hidden" data-pop-i18n="nothingToHibernate">Nothing to hibernate</span></button>
     </section>
 
-    <footer class="pfoot">
-      <span data-pop-i18n="localFirst">No Locus account or host permissions.</span>
-      <span class="pfoot-dot" aria-hidden="true">·</span>
-      <span class="privacy-check" aria-hidden="true">✓</span>
-      <span data-pop-i18n="privacyProof">Profile-local; export before uninstalling or deleting the profile.</span>
-    </footer>
-    <div id="pop-toast" role="status" aria-live="polite"></div>
+    <div id="dest-list" class="dlist hidden" role="listbox" data-pop-aria="saveTo" aria-label="Save to"></div>
+
+    <div id="pop-toast-behind" class="hidden" aria-hidden="true"><span class="toast-behind-mark"></span><span id="pop-toast-behind-msg" class="toast-behind-msg"></span></div>
+    <div id="pop-toast" role="status" aria-live="polite" aria-atomic="true" data-tone="success">
+      <span id="pop-toast-mark" class="toast-mark" aria-hidden="true">
+        <svg class="tm-check" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path class="ck" d="M3.5 8.5l3 3 6-7"/></svg>
+        <svg class="tm-bang" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M8 3.6v5.2"/><circle cx="8" cy="12.2" r=".9" fill="currentColor" stroke="none"/></svg>
+        <svg class="tm-info" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 7.2v5"/><circle cx="8" cy="4.1" r=".9" fill="currentColor" stroke="none"/></svg>
+        <svg class="tm-moon" width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M11.5 8.2A4.6 4.6 0 0 1 5.8 2.5a4.6 4.6 0 1 0 5.7 5.7z"/></svg>
+        <svg class="tm-undo" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6.5h5a3 3 0 0 1 0 6H7"/><path d="M7.5 4 5 6.5 7.5 9"/></svg>
+      </span>
+      <span id="pop-toast-msg" class="toast-msg"></span>
+      <span class="toast-acts">
+        <button id="pop-toast-undo" class="pop-toast-action hidden" type="button"></button>
+        <button id="pop-toast-move" class="pop-toast-action hidden" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="dest-list"></button>
+        <button id="pop-toast-action" class="pop-toast-action hidden" type="button"></button>
+      </span>
+      <button id="pop-toast-close" class="toast-close" type="button" data-pop-aria="dismiss" aria-label="Dismiss">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+      </button>
+      <span id="pop-toast-drain" class="toast-drain" aria-hidden="true"></span>
+    </div>
   </main>
   <script src="popup.js"></script>
 </body>

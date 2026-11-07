@@ -478,14 +478,31 @@ const popupQuickBranchEnd = popupSingleCapture.indexOf(
 const popupQuickBranch = popupSingleCapture.slice(popupQuickBranchStart, popupQuickBranchEnd);
 const popupQuickPersistIndex = popupSingleCapture.indexOf('response = await persistPopupState(');
 const popupQuickResultIndex = popupSingleCapture.indexOf('showQuickCaptureResult(');
+const popupQuickReceiptIndex = popupSingleCapture.indexOf('showQuickSaveReceipt(');
+// One-click Save (Kai, 2026-11-06): a confirmed destination is announced by the
+// receipt toast with Undo / Move / Locate, an unconfirmed one keeps the durable
+// card. Either way the branch itself owns no tab effect, timer, or dismissal.
 if (!popupQuickEntry.includes('{ quick: true }')
   || popupQuickBranchStart < 0
   || popupQuickBranchEnd <= popupQuickBranchStart
   || popupQuickPersistIndex < 0
   || popupQuickResultIndex < popupQuickPersistIndex
+  || popupQuickReceiptIndex < popupQuickPersistIndex
+  || !/if \(quickResult\.destinationReady === true\) \{\s*showQuickSaveReceipt\(/.test(popupQuickBranch)
   || !popupSingleCapture.includes('quickCaptureItem: quickCaptureIntent')
   || /chrome\.tabs\.(?:remove|create|update)|setTimeout|window\.close|toast\(/.test(popupQuickBranch)) {
-  fail('Ask-off quick capture must receive state acceptance before a durable result and must not page-own tab effects, timers, or dismissal');
+  fail('One-click capture must receive state acceptance before its receipt (the toast only for a confirmed destination) and must not page-own tab effects, timers, or dismissal');
+}
+const popupQuickReceipt = popup.slice(
+  popup.indexOf('function showQuickSaveReceipt('),
+  popup.indexOf('\n// One-click Save window confirms', popup.indexOf('function showQuickSaveReceipt(')),
+);
+if (!/undo: \(\) => undoQuickSave\(receipt\)/.test(popupQuickReceipt)
+  || !/move: \(\) => openQuickSaveMove\(receipt\)/.test(popupQuickReceipt)
+  || !/async function undoQuickSave\([\s\S]{0,400}findPopupSavedItem\(state, receipt\.intent\)[\s\S]{0,200}found\.group\.items\.splice\(found\.index, 1\);\s*await persistPopupState\(\);/.test(popupQuickReceipt)
+  || !/async function moveQuickSave\([\s\S]{0,900}await persistPopupState\(\);/.test(popupQuickReceipt)
+  || /chrome\.(?:storage|tabs\.(?:remove|create|update))/.test(popupQuickReceipt)) {
+  fail('Undo and Move on the one-click receipt must change exactly the saved item through the receipt-gated state write, never chrome.storage or a page-owned tab effect');
 }
 const popupQuickAction = popup.slice(
   popup.indexOf('async function runQuickCaptureAction('),

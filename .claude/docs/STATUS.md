@@ -299,6 +299,20 @@ Slices, in order:
 
 ## Done (newest first)
 
+- **2026-11-06 - Toolbar popup on its canvas board, with one-click Save (pages build, page 9).** The popup is rebuilt from
+  `Popup.dc.html`: a current-tab card whose Save morphs into a green check with a burst and bumps the red
+  Inbox count, a destination chip with a list of every Group, rows with hover Save / Hibernate and saved
+  marks, a bottom bar with Save window and Hibernate, the More menu, and the one notification card. Save
+  is one click (Kai, 2026-11-06): it goes straight to the chip's quick-save destination and the receipt
+  "Saved to <Group>" offers Undo, Move and Locate with the 5.2 s drain (held on hover and focus); Undo
+  removes exactly that item and Move picks another Group, both through the receipt-gated state write.
+  Save window follows the same rule ("Saved N tabs · Open destination"). "Ask where to save" is now an
+  opt-in, off for new profiles; a profile that stored true keeps the sheets. Every earlier control is kept
+  or one click away. Suites: new `popup-page-contract-test.js`; ported popup-locate, core visual system,
+  notifications, canvas pages, concurrency, onboarding (defaults) and quality gates. Evidence:
+  `locus-redesign-evidence/pages/popup/` (Edge, 380 x 600, light, dark, zh-TW, reduced motion, three
+  older themes; one-click shots `60-*`), `pages-popup-log.txt` and `60-popup-oneclick-log.txt`.
+
 - **2026-11-06 - Find again and the command palette built from their canvas boards (pages build, page 5 of 9)**
   - **What:** Find again is one page: the heading, one search field whose
     operators are marked as the shared parser understands them (blue for

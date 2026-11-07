@@ -2287,6 +2287,7 @@ function createPopupSaveHarness(persist, {
     events: [],
     ordinaryResults: [],
     quickResults: [],
+    quickReceipts: [],
     toasts: [],
     timers: [],
     pending: false,
@@ -2343,6 +2344,13 @@ function createPopupSaveHarness(persist, {
     `  closeResult: structuredClone(args.closeResult),\n` +
     `});\n` +
     `const showQuickCaptureResult = args => globalThis.__control.quickResults.push({\n` +
+    `  categoryId: args.cat.id,\n` +
+    `  groupId: args.group.id,\n` +
+    `  item: structuredClone(args.item),\n` +
+    `  intent: structuredClone(args.intent),\n` +
+    `  result: structuredClone(args.result),\n` +
+    `});\n` +
+    `const showQuickSaveReceipt = args => globalThis.__control.quickReceipts.push({\n` +
     `  categoryId: args.cat.id,\n` +
     `  groupId: args.group.id,\n` +
     `  item: structuredClone(args.item),\n` +
@@ -2432,6 +2440,7 @@ function createPopupWindowSaveHarness({
     events: [],
     effectMessages: [],
     results: [],
+    receipts: [],
     toasts: [],
     recoveries: [],
   };
@@ -2472,6 +2481,11 @@ function createPopupWindowSaveHarness({
     `  receivingId: args.receiving.id,\n` +
     `  itemCount: args.itemCount,\n` +
     `  hasNote: args.hasNote,\n` +
+    `  result: structuredClone(args.result),\n` +
+    `});\n` +
+    `const showWindowSaveReceipt = args => globalThis.__control.receipts.push({\n` +
+    `  receivingId: args.receiving.id,\n` +
+    `  itemCount: args.itemCount,\n` +
     `  result: structuredClone(args.result),\n` +
     `});\n` +
     `${popupCapturableUrlPolicySource}\n` +
@@ -3300,9 +3314,11 @@ async function testPopupQuickCaptureReceiptThenResultBoundary() {
       expectedUrl: 'https://source.test',
       closeSource: true,
     },
-  }, 'ask-off quick capture must attach only exact primitive saved/source identity to the state request');
+  }, 'one-click capture must attach only exact primitive saved/source identity to the state request');
   assert.deepEqual(deferred.control.quickResults, [],
     'the saved result must not render while state acceptance is still unknown');
+  assert.deepEqual(deferred.control.quickReceipts, [],
+    'the saved receipt must not appear while state acceptance is still unknown');
   assert.deepEqual(deferred.control.removes, [],
     'the popup page must not close the quick-capture source while the receipt is pending');
   assert.deepEqual(deferred.control.timers, [],
@@ -3326,14 +3342,18 @@ async function testPopupQuickCaptureReceiptThenResultBoundary() {
     },
   });
   assert.equal(await pending, true);
-  assert.equal(deferred.control.quickResults.length, 1,
-    'a valid combined receipt must render the durable in-popup continuation');
-  assert.deepEqual(deferred.control.quickResults[0].intent, recordedOptions.quickCaptureItem);
-  assert.equal(deferred.control.quickResults[0].result.destination.groupName, 'Inbox');
+  // Kai, 2026-11-06: one click, then the receipt toast (Undo, Move, Locate)
+  // replaces the durable card for a confirmed destination.
+  assert.equal(deferred.control.quickReceipts.length, 1,
+    'a valid combined receipt must show the one-click receipt toast');
+  assert.deepEqual(deferred.control.quickResults, [],
+    'a confirmed one-click save must not open the durable result card');
+  assert.deepEqual(deferred.control.quickReceipts[0].intent, recordedOptions.quickCaptureItem);
+  assert.equal(deferred.control.quickReceipts[0].result.destination.groupName, 'Inbox');
   assert.deepEqual(deferred.control.removes, []);
   assert.deepEqual(deferred.control.timers, []);
   assert.equal(deferred.control.closes, 0,
-    'receipt success must keep the popup result and source available for an explicit next action');
+    'receipt success must keep the popup and the source open for Undo, Move or Locate');
 
   const closeOff = createPopupSaveHarness(async options => ({
     ok: true,
@@ -3353,7 +3373,7 @@ async function testPopupQuickCaptureReceiptThenResultBoundary() {
   }));
   closeOff.api.setCloseSource(false);
   assert.equal(await closeOff.api.save({ quick: true }), true);
-  assert.equal(closeOff.control.quickResults[0].intent.closeSource, false);
+  assert.equal(closeOff.control.quickReceipts[0].intent.closeSource, false);
   assert.deepEqual(closeOff.control.removes, []);
   assert.deepEqual(closeOff.control.timers, []);
 
@@ -3366,6 +3386,8 @@ async function testPopupQuickCaptureReceiptThenResultBoundary() {
   assert.equal(rejected.api.read().workspaces[0].categories[0].groups[0].items.length, 0,
     'a rejected quick-capture write must roll back its optimistic item');
   assert.deepEqual(rejected.control.quickResults, []);
+  assert.deepEqual(rejected.control.quickReceipts, [],
+    'a rejected one-click write must show no saved receipt');
   assert.deepEqual(rejected.control.removes, []);
   assert.deepEqual(rejected.control.timers, []);
   assert.equal(rejected.control.closes, 0);
@@ -3394,7 +3416,9 @@ async function testPopupQuickCaptureReceiptThenResultBoundary() {
     assert.equal(await malformed.api.save({ quick: true }), true,
       'a malformed continuation receipt must not roll back an already accepted save');
     assert.equal(malformed.api.read().workspaces[0].categories[0].groups[0].items.length, 1);
-    assert.deepEqual(malformed.control.quickResults[0].result, {
+    assert.deepEqual(malformed.control.quickReceipts, [],
+      'an unconfirmed destination must never be announced by the saved receipt toast');
+    assert.deepEqual(malformed.control.quickResults[0]?.result, {
       ok: false,
       code: 'LOCUS_QUICK_CAPTURE_RECEIPT_UNKNOWN',
       destinationReady: false,
@@ -3406,15 +3430,18 @@ async function testPopupQuickCaptureReceiptThenResultBoundary() {
 
   assert.match(popupSource,
     /async function quickCapture\(tab\)[\s\S]{0,180}doSave\(target\.ws, target\.cat, target\.group, tab, \{ quick: true \}\)/,
-    'ask-off capture must explicitly enter the receipt/result quick branch');
+    'one-click capture must explicitly enter the receipt/result quick branch');
   const quickBranch = sourceSlice(
     popupDoSaveSource,
     'if (quick) {',
     '\n    const closeRequested =',
     'Popup quick-capture terminal branch',
   );
-  assert.doesNotMatch(quickBranch, /chrome\.tabs\.remove|setTimeout|window\.close|toast\(/,
-    'the quick branch must contain no page-owned source close, timer, popup dismissal, or toast-only result');
+  assert.doesNotMatch(quickBranch, /chrome\.tabs\.(?:remove|create|update)|setTimeout|window\.close|toast\(/,
+    'the quick branch must contain no page-owned source close, timer, popup dismissal, or bare toast');
+  assert.match(quickBranch,
+    /if \(quickResult\.destinationReady === true\) \{\s*showQuickSaveReceipt\([\s\S]*\} else \{\s*showQuickCaptureResult\(/,
+    'only a confirmed destination reaches the receipt toast; an unconfirmed one keeps the durable card');
 }
 
 async function testPopupWindowSaveReceiptThenEffectBoundary() {
@@ -3748,6 +3775,59 @@ async function testPopupWindowSaveReceiptThenEffectBoundary() {
   );
   assert.doesNotMatch(popupSaveWindowSource, /chrome\.tabs\.remove/,
     'whole-window source closing must no longer depend on popup-page lifetime');
+}
+
+// Kai, 2026-11-06: Save window follows Save. One click saves with the remembered
+// choices and confirms a clean result with the receipt toast; a partial or
+// unknown result, and every save made from the sheet, keeps the result card.
+async function testPopupOneClickWindowSaveReceipt() {
+  const clean = createPopupWindowSaveHarness();
+  assert.equal(await clean.api.save({ quick: true }), true);
+  assert.deepEqual(clean.control.events, ['persist', 'effect'],
+    'one-click Save window keeps the state receipt before the worker effect');
+  assert.equal(clean.control.effectMessages[0].closeSources, true,
+    'one-click Save window uses the stored close-after-save choice');
+  assert.equal(clean.control.receipts.length, 1,
+    'a clean one-click window save is confirmed by the receipt toast');
+  assert.deepEqual(clean.control.results, [],
+    'a clean one-click window save does not open the result card');
+  assert.equal(clean.control.receipts[0].itemCount, 4);
+  assert.equal(clean.control.receipts[0].result.ok, true);
+
+  const partial = createPopupWindowSaveHarness({
+    effect: async message => ({
+      ok: false,
+      code: 'LOCUS_WINDOW_SAVE_CLOSE_PARTIAL',
+      destinationReady: true,
+      destination: windowSaveDestination(message, { groupName: 'Session' }),
+      closeRequested: true,
+      requestedCount: message.sourceTabs.length,
+      closedCount: message.sourceTabs.length - 1,
+      unconfirmedCount: 1,
+    }),
+  });
+  assert.equal(await partial.api.save({ quick: true }), true);
+  assert.deepEqual([partial.control.receipts.length, partial.control.results.length], [0, 1],
+    'an unconfirmed close keeps the result card with its exact retry');
+
+  const unknown = createPopupWindowSaveHarness({
+    effect: async () => { throw new Error('worker lost'); },
+  });
+  assert.equal(await unknown.api.save({ quick: true }), true);
+  assert.deepEqual([unknown.control.receipts.length, unknown.control.results[0].result.effectUnknown], [0, true],
+    'an unknown effect never reaches the receipt toast');
+
+  const sheet = createPopupWindowSaveHarness();
+  assert.equal(await sheet.api.save({ mode: 'links', closeTabs: false, note: '', tags: [] }), true);
+  assert.deepEqual([sheet.control.receipts.length, sheet.control.results.length], [0, 1],
+    'a save made from the Save window sheet keeps the result card exactly as before');
+
+  assert.match(popupSource,
+    /\$\('qs-all'\)\.onclick = event => \{\s*closeFloatingLayer\(\);\s*if \(popupAsksWhereToSave\(\)\) openSaveWindow\(event\.currentTarget\);\s*else saveWindow\(\{ quick: true \}\);/,
+    'Save window opens its sheet only when the profile stored Ask where to save = true');
+  assert.match(popupSource,
+    /function popupAsksWhereToSave\(\) \{\s*return state\?\.settings\?\.captureAskEveryTime === true;\s*\}/,
+    'a missing or false Ask where to save means one click');
 }
 
 function createWriterContext(sendMessage, timeoutMs = 8, retryMs = 1) {
@@ -4485,9 +4565,13 @@ function testPopupCaptureDeskVisualContract() {
     /if \(searchShortcut\)[\s\S]*mainCaptureFocusTarget\(\)[\s\S]*target === \$\('ps'\)/,
     'the keyboard shortcut must focus Search only when it is available');
 
+  // 2026-11 popup board: the capture docket is the bottom bar (Save window,
+  // Hibernate) under the current-tab card with its own Save.
   assert.match(popupCss,
-    /\.pa-row\s*\{[^}]*display:\s*grid[^}]*grid-template-columns:\s*minmax\(0,\s*1\.3fr\)\s+minmax\(0,\s*1fr\)/,
+    /\.bar\s*\{[^}]*display:\s*grid[^}]*grid-template-columns:\s*minmax\(0,\s*1\.3fr\)\s+minmax\(0,\s*1fr\)/,
     'the capture docket must make Save visibly stronger than Hibernate');
+  assert.match(popupHtml, /id="qs-all" class="btn btn-k"[\s\S]*id="hib-open" class="btn"/,
+    'Save window is the filled button of the docket and Hibernate the plain one');
   assert.match(popupCss,
     /#load-state:not\(\.hidden\)\s*\{[^}]*flex:\s*1[^}]*min-height:\s*0/,
     'loading and failure states must deliberately occupy the remaining capture field');
@@ -4497,17 +4581,29 @@ function testPopupCaptureDeskVisualContract() {
   assert.match(popupCss,
     /\.state-card-copy span\s*\{[^}]*font-size:\s*12px/,
     'the failure consequence must remain legible at native popup width');
-  assert.match(popupCss,
-    /\.pti-title\s*\{[^}]*font-size:\s*13px[\s\S]*\.pti-url\s*\{[^}]*font-size:\s*10\.5px/,
+  const fontSizeOf = selector => {
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const rule = new RegExp(`(?:^|\\n)${escaped}\\s*\\{([^}]*)\\}`).exec(popupCss);
+    const size = rule && /font-size:\s*([\d.]+)px/.exec(rule[1]);
+    return size ? Number(size[1]) : 0;
+  };
+  assert.ok(fontSizeOf('.pti-title') >= 13 && fontSizeOf('.pti-url') >= 10.5,
     'open-tab rows must not rely on prototype-scale title and URL text');
-  assert.match(popupCss, /\.pti-badge\s*\{[^}]*font-size:\s*10\.5px/,
+  assert.ok(fontSizeOf('.pti-badge') >= 10.5,
     'open-tab status badges must remain readable at native popup width');
+  // The local-first proof moved from a footer into the More menu: one click
+  // away, readable, and still in the popup markup.
+  assert.ok(fontSizeOf('.menu-note') >= 11,
+    'local-first proof must stay a readable trust note');
+  assert.match(popupHtml,
+    /id="more-menu"[\s\S]*class="menu-note"[\s\S]*data-pop-i18n="localFirst"[\s\S]*data-pop-i18n="privacyProof"/,
+    'the More menu must carry the local-first and export-before-uninstall proof');
   assert.match(popupCss,
-    /\.pfoot\s*\{[^}]*display:\s*grid[^}]*font-size:\s*11px/,
-    'local-first proof must be a readable two-line trust block');
+    /\.pv-scroll\s*\{[^}]*min-height:\s*0[^}]*overflow-y:\s*auto/,
+    'the current tab, its destination and the live tab list must scroll as one column above the pinned bar');
   assert.match(popupCss,
-    /@media \(max-height:\s*520px\)[\s\S]*#ptabs\s*\{[^}]*max-height:\s*174px/,
-    'short popup viewports must keep the live tab list reachable without clipping the destination');
+    /@media \(max-height:\s*520px\)[\s\S]*\.hero\s*\{[^}]*padding/,
+    'short popup viewports must compact the current-tab card so the live tab list stays reachable');
   assert.match(popupCss,
     /@media \(forced-colors:\s*active\)[\s\S]*\.state-card-mark/,
     'the redesigned status mark must remain visible in forced colors');
@@ -4608,9 +4704,16 @@ function testSemanticAndLocaleContracts() {
   assert.match(popupQuickCaptureViewSource,
     /quickCaptureRecoveryIntent = \{ \.\.\.intent \}[\s\S]{0,1400}stg-locate-result-message'\)\.textContent = quickCaptureResultMessage[\s\S]{0,400}showSection\('save-to-section'\)[\s\S]{0,180}stg-open-locus'\)\.focus\(\)/,
     'a quick save must retain exact recovery identity, render the existing result card, and focus its primary action');
+  // A confirmed one-click save now gets the receipt toast; this card only shows
+  // an unconfirmed destination, which must never offer Close tab.
   assert.match(popupQuickCaptureViewSource,
-    /setQuickCaptureDoneAction\(confirmed && intent\.closeSource === true\)/,
-    'the secondary action must become Close tab only after an exact accepted destination receipt');
+    /function showQuickCaptureResult\([\s\S]{0,1200}quickCaptureResultMessage = tr\('quickCaptureReceiptUnavailable'\)[\s\S]{0,900}setQuickCaptureDoneAction\(false\)/,
+    'the durable card reports an unconfirmed destination and never offers Close tab');
+  assert.doesNotMatch(popupQuickCaptureViewSource, /quickCaptureSourceOpen/,
+    'the confirmed "tab stayed open" card left with the one-click receipt');
+  assert.match(popupSource,
+    /function prepareSavedItemRecovery\(\{ item, intent \}, closeSource = false\) \{[\s\S]{0,200}quickCaptureRecoveryIntent = \{ \.\.\.intent, closeSource: closeSource === true \};[\s\S]{0,80}setQuickCaptureDoneAction\(closeSource === true\)/,
+    'Close tab can only follow a receipt whose source is still open and close-after-save is on');
   assert.match(popupQuickCaptureViewSource,
     /dataset\.popAria = ariaKey[\s\S]{0,180}setAttribute\('aria-label', tr\(ariaKey\)\)/,
     'the dynamic Close tab/Close popup control must update its localized screen-reader name');
@@ -4759,8 +4862,17 @@ function testSemanticAndLocaleContracts() {
   assert.equal(i18n['zh-TW'].closeSavedTab, '關閉分頁');
   assert.equal(i18n.en.closePopup, 'Close popup');
   assert.equal(i18n['zh-TW'].closePopup, '關閉彈出式視窗');
-  assert.equal(i18n.en.quickCaptureSourceOpen, 'The saved tab stayed open.');
-  assert.equal(i18n['zh-TW'].quickCaptureSourceOpen, '剛儲存的分頁仍開著。');
+  assert.ok(!('quickCaptureSourceOpen' in i18n.en) && !('quickCaptureSourceOpen' in i18n['zh-TW']),
+    'the confirmed quick-save card copy left with the one-click receipt');
+  assert.deepEqual(
+    [i18n.en.undo, i18n.en.move, i18n.en.moveTo, i18n.en.undone],
+    ['Undo', 'Move', 'Move to', 'Undone'],
+  );
+  assert.deepEqual(
+    [i18n['zh-TW'].undo, i18n['zh-TW'].move, i18n['zh-TW'].moveTo, i18n['zh-TW'].undone],
+    ['復原', '移動', '移到', '已復原'],
+    'the receipt actions use the new tab’s zh-TW Undo and Move terms',
+  );
   assert.equal(
     i18n.en.quickCaptureOpenUnknown('Research / Inbox', false),
     'Saved to Research / Inbox, but Locus could not confirm whether the item opened. The saved tab stayed open.',
@@ -4826,6 +4938,7 @@ function testDeepLinkOverlaySuppression() {
   await testPopupBookmarkCaptureContracts();
   await testPopupQuickCaptureReceiptThenResultBoundary();
   await testPopupWindowSaveReceiptThenEffectBoundary();
+  await testPopupOneClickWindowSaveReceipt();
   await testPopupReceiptDeadline();
   await testPopupWriterExcludesWindowEffects();
   testPopupSectionStack();

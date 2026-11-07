@@ -7393,6 +7393,39 @@ function assertOpenTabRailResponsiveKeyboardContract() {
     /^zh:settings\.captureDestinationPath:/,
     'Capture policy copy must resolve again after a locale change');
 
+  // Kai, 2026-11-06: the popup's Save is one click. "Ask where to save" is an
+  // opt-in that asks only when the profile stored true; a missing value is one
+  // click, and an existing profile's stored true keeps asking.
+  const missingAskState = captureSettingsState();
+  delete missingAskState.settings.captureAskEveryTime;
+  assert.match(buildCaptureSettingsHarness(missingAskState).api.model(missingAskState).destination,
+    /^en:settings\.captureDestinationPath:/,
+    'a profile with no stored Ask where to save must show the one-click destination, not a popup choice');
+  const strayAskState = captureSettingsState({ captureAskEveryTime: 'true' });
+  assert.match(buildCaptureSettingsHarness(strayAskState).api.model(strayAskState).destination,
+    /^en:settings\.captureDestinationPath:/,
+    'only a stored boolean true asks, the same rule the popup applies');
+  const storedAskState = captureSettingsState({ captureAskEveryTime: true });
+  assert.equal(buildCaptureSettingsHarness(storedAskState).api.model(storedAskState).destination,
+    'en:settings.capturePopupChoose', 'an existing profile that stored true keeps the popup choice');
+  assert.match(captureSettingsSource, /const CAPTURE_SETTING_DEFAULTS = Object\.freeze\(\{\n  captureAskEveryTime: false,/,
+    'the Capture settings default for Ask where to save is off');
+  assert.match(captureSettingsSource,
+    /control\.checked = key === 'captureAskEveryTime' \? value === true : value !== false;/,
+    'the Ask where to save switch shows on only for a stored true; the other switches keep their on-unless-false rule');
+  const initialStateSource = extractBetween('  const createInitialState = () => ({', '\n  let state = createInitialState();');
+  const hydrateSource = extractBetween('  const hydrateStoredState = stored => {', '\n  const recoveryError');
+  const hydration = vm.createContext({ browserLanguage: () => 'en', deepClone: value => JSON.parse(JSON.stringify(value)) });
+  vm.runInContext(`${initialStateSource}\n${hydrateSource}\nglobalThis.__initial = createInitialState;\nglobalThis.__hydrate = hydrateStoredState;`, hydration);
+  assert.equal(hydration.__initial().settings.captureAskEveryTime, false,
+    'a new profile starts with Save as one click');
+  assert.equal(hydration.__hydrate({ settings: { captureAskEveryTime: true } }).settings.captureAskEveryTime, true,
+    'loading a profile that stored true must not rewrite it to false');
+  assert.equal(hydration.__hydrate({ settings: { captureAskEveryTime: false } }).settings.captureAskEveryTime, false,
+    'loading a profile that stored false keeps one click');
+  assert.equal(hydration.__hydrate({ settings: { theme: 'folio' } }).settings.captureAskEveryTime, false,
+    'loading a profile with no stored value fills one click');
+
   const ambiguousState = captureSettingsState({
     captureAskEveryTime: false,
     captureDefaultCategoryId: 's-focus',

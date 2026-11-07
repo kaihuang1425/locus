@@ -870,27 +870,37 @@ assert.match(newtabIndex, /@media \(forced-colors:\s*active\)[\s\S]*#quota-overl
 assert.doesNotMatch(newtabIndex, /#quota-overlay\s*\{[^}]*backdrop-filter:\s*blur|#quota-overlay \.quota-panel\s*\{[^}]*animation:\s*(?:modalIn|fadeIn|popIn)/,
   'quota recovery must not restore glass blur or spring entrance residue');
 
-const popupIndex = section(popup, 'LOCUS INDEX POPUP');
+// The 2026-11 popup board replaced the Locus Index popup layer. The same
+// decisions hold on the new markup.
+const popupIndex = section(popup, 'TOOLBAR POPUP');
+const popupHtml = fs.readFileSync(path.join(root, 'popup.html'), 'utf8').replace(/\r\n/g, '\n');
 assert.doesNotMatch(popupIndex, /(?:linear|radial|conic)-gradient\s*\(/,
   'the popup visual system must not use decorative gradients');
-assert.match(popupIndex, /\.ph[\s\S]*background:\s*var\(--index-registry\)/,
+assert.match(popupIndex, /\.ph\s*\{[^}]*background:\s*var\(--pp-registry\)/,
   'popup chrome must share the ink registry header');
-assert.doesNotMatch(popupIndex, /font-family:\s*'Lora'/,
+assert.match(popupIndex, /--pp-registry:\s*var\(--registry-bg/,
+  'the popup header reads the registry ink of the theme');
+assert.doesNotMatch(popupIndex, /font-family:\s*'Lora'|font:[^;]*'Lora'/,
   'popup headings must not override the user-selected font with an editorial face');
-for (const selector of ['.window-label', '.view-titlebar h1']) {
-  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  assert.match(popupIndex, new RegExp(`${escaped}[\\s\\S]*?font-family:\\s*var\\(--font-display\\)`),
-    `${selector} must use the shared selected-font display role`);
-}
+assert.match(popupIndex, /\.window-label\s*\{[^}]*font-family:\s*var\(--font-display\)/,
+  '.window-label must use the shared selected-font display role');
+assert.match(popupIndex, /\.sheet-title\s*\{[^}]*font:[^;]*var\(--font-brand-display\)/,
+  'sheet titles use the canvas brand display face, as the new tab canvas pages do');
 assert.match(popupJs, /document\.body\.dataset\.font\s*=\s*FONT_IDS\.has\(font\)\s*\?\s*font\s*:\s*'dm'/,
   'popup appearance must apply the persisted font with a safe default');
-assert.match(popupIndex, /\.pa-row[\s\S]*grid-template-columns:\s*1fr/,
-  'popup capture hierarchy must keep Save above secondary Hibernate');
-assert.match(popupIndex, /\.pa-btn\.primary[\s\S]*min-height:\s*50px/,
-  'popup Save must remain the dominant control');
-assert.match(popupIndex, /\.capture-result[\s\S]*border-top:\s*3px solid var\(--index-receipt\)/,
+assert.ok(popupHtml.indexOf('id="hero-save"') > 0
+  && popupHtml.indexOf('id="hero-save"') < popupHtml.indexOf('id="qs-all"')
+  && popupHtml.indexOf('id="qs-all"') < popupHtml.indexOf('id="hib-open"'),
+  'popup capture hierarchy must keep Save above Save window, and Save window before secondary Hibernate');
+assert.match(popupIndex, /\.bar\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1\.3fr\)\s+minmax\(0,\s*1fr\)/,
+  'Save window must stay wider than Hibernate');
+assert.match(popupIndex, /\.hsave\s*\{[^}]*height:\s*44px[^}]*background:\s*var\(--pp-where-fill\)/,
+  'popup Save must remain the dominant control: the one blue filled button at full hit height');
+assert.match(popupIndex, /\.capture-result-icon\s*\{[^}]*background:\s*var\(--pp-saved\)/,
   'popup success must share the receipt marker');
-assert.match(popupIndex, /@media \(max-height:\s*520px\)[\s\S]*\.pa-row[\s\S]*grid-template-columns:/,
+assert.match(popupIndex, /--pp-saved:\s*#197654/,
+  'the receipt marker is the canvas green for saved');
+assert.match(popupIndex, /@media \(max-height:\s*520px\)[\s\S]*\.hero\s*\{[^}]*padding[\s\S]*\.bar\s*\{[^}]*padding/,
   'compact popup height must retain a bounded capture layout');
 assert.match(popupIndex, /@media \(forced-colors:\s*active\)/,
   'popup must keep a forced-colors boundary');

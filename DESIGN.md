@@ -5273,3 +5273,17 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
     Details opening closes the palette; opening Find again closes a menu.
 
   **Implemented: yes. Verified: partial. User-validated: no. Released: no.**
+
+- **2026-11-06 - The toolbar popup follows its board, and Save is one click (pages build, page 9).** The popup's Save is one click (Kai, 2026-11-06). It saves to the chip's quick-save destination (the
+  remembered Group with remember-last on, else the default Space's Inbox) and never opens a sheet unless
+  the profile stored `captureAskEveryTime: true`. The confirmation is the shared notification card:
+  "Saved to <Group>" with Undo, Move and Locate, a 5.2 s drain paused on hover and focus, Ctrl Z / Cmd Z
+  for Undo. With three actions the card puts them on a row under the message. Undo removes exactly the
+  saved item; Move opens the Group list above the card and moves the item, and the card then names the
+  new Group with its actions; Locate opens the item in Locus. The source tab stays open after a one-click
+  save (the popup has to survive for the card to be seen); with close after confirmed save on, Locate
+  closes it on the way out, as the old durable card's Open saved item did. An unconfirmed destination
+  still gets the durable card with its retry. Save window follows the same rule; a partial or unknown
+  window result keeps the result card. "Ask where to save" is an opt-in, off for new profiles; with it on,
+  the Save tab and Save window sheets work as before. The popup no longer closes itself after a save. The
+  local-first / export note lives in the More menu.

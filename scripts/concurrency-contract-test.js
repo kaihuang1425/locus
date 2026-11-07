@@ -445,6 +445,8 @@ async function deterministicPopupHibernateCaptureInterlock() {
       `const buildSuspendedUrl = ({ url }) => 'suspended:' + url;\n` +
       `const localFaviconUrl = () => 'local-favicon';\n` +
       `async function load() { globalThis.__loads.push('load'); }\n` +
+      // The 2026-11 popup refreshes the list in place after Hibernate.
+      `async function refreshPopupWindow() { globalThis.__loads.push('load'); }\n` +
       `${popupUrlPolicySource}\n${popupCaptureHelperSource}\n${popupHibernateSource}\n` +
       `globalThis.__hibernateFlow = {\n` +
       `  hibernate: hibernateSingle,\n` +
