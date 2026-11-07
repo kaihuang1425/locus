@@ -21,11 +21,8 @@ function countId(id) {
 }
 
 const appearanceHtml = extractBetween('<!-- ── Appearance ── -->', '<!-- ── Capture ── -->', html);
-const appearanceCss = extractBetween(
-  '/* Appearance is intentionally small:',
-  '/* Shared section header row used by Settings shortcut groups. */',
-  css,
-);
+// Appearance is drawn by the Settings page layer (2026-11 canvas board).
+const appearanceCss = extractBetween('   SETTINGS PAGE (2026-11 canvas)', '\n/* ----', css);
 const appearanceSource = extractBetween('const APPEARANCE_SETTING_KEYS', '\n// SETTINGS PAGE');
 const appearanceCommitSource = extractBetween('async function commitAppearanceSettingsChange', '\nfunction renderPrivacySettings');
 const themeBuilderSource = extractBetween('const CORE_APPEARANCE_THEMES', '\nconst CAPTURE_SETTING_CONTROL_IDS');
@@ -169,31 +166,39 @@ assert.match(source,
   'pending Appearance must retain Tab trapping while owning Escape and lower shortcuts');
 
 for (const contract of [
-  /\.appearance-setting\s*\{[^}]*grid-template-columns:\s*minmax\(150px,\s*190px\) minmax\(0,\s*1fr\)[^}]*border-bottom:\s*1px solid var\(--border\)/,
-  /\.theme-grid\s*\{[^}]*grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/,
-  /\.theme-card\s*\{[^}]*min-height:\s*62px[^}]*border-left:\s*3px solid transparent[^}]*border-radius:\s*4px/,
-  /\.appearance-status\[data-state="success"\]\s*\{[^}]*var\(--index-receipt/,
-  /\.appearance-style-pack > summary\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) auto auto[^}]*min-height:\s*66px/,
+  /\.stg-themes \{[^}]*display: grid;[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/,
+  /#settings-drawer \.theme-card \{[^}]*min-height: 56px;[^}]*border-radius: 16px;[^}]*color: var\(--stg-ink\)/,
+  /\.stg-ring \{[^}]*left: calc\(\(100% - 20px\) \/ 3 \* var\(--stg-ring, 0\) \+ 10px \* var\(--stg-ring, 0\)\);[^}]*transition: left \.3s var\(--today-ease\)/,
+  /\.stg-seg \{[^}]*width: 276px;[^}]*max-width: 100%;/,
+  /\.stg-thumb \{[^}]*left: calc\(4px \+ \(100% - 8px\) \/ var\(--stg-n\) \* var\(--stg-i, 1\)\);[^}]*transition: left \.3s var\(--today-ease\)/,
+  /\.stg-layer \{[^}]*opacity: 0;[^}]*transition: opacity \.32s ease;/,
+  /\.stg-layer\.is-front \{ opacity: 1; \}/,
+  /\.stg-disc > summary \{[^}]*min-height: 64px;/,
+  /\.stg-status:not\(\[data-state="error"\]\) \{[^}]*position: absolute;[^}]*clip: rect\(0 0 0 0\)/,
 ]) {
-  assert.match(appearanceCss, contract, `Appearance must use the compact Locus Index preference contract: ${contract}`);
+  assert.match(appearanceCss, contract, `Appearance must use the Settings page layer: ${contract}`);
 }
-assert.doesNotMatch(appearanceCss, /(?:linear|radial|conic)-gradient\s*\(|translateY\(|scale\(/,
-  'Appearance must not use decorative gradients, lift, or scale motion');
+// The board's System preview is two flat halves, never a gradient.
+assert.doesNotMatch(appearanceCss, /(?:linear|radial|conic)-gradient\s*\(/,
+  'Appearance must not use decorative gradients');
 assert.match(appearanceCss,
-  /@media \(max-width:\s*800px\)[\s\S]*\.appearance-setting,[\s\S]*\.appearance-pack-section\s*\{[^}]*grid-template-columns:\s*1fr/,
-  'Appearance rows must deliberately stack at the required 800 px layout');
+  /@container \(max-width: 640px\) \{[\s\S]*\.stg-themes \{ grid-template-columns: 1fr; gap: 8px; \}/,
+  'the three modes must stack, with the ring following, at phone width');
 assert.match(appearanceCss,
-  /@media \(max-width:\s*620px\)[\s\S]*\.theme-grid,[\s\S]*\.appearance-font-grid\s*\{[^}]*grid-template-columns:\s*1fr[\s\S]*\.appearance-pack-footer\s*\{[^}]*flex-direction:\s*column/,
-  'core and optional choices must remain readable at 620/520 px');
-assert.match(css,
   /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*#settings-drawer \*[\s\S]*transition:\s*none !important/,
   'Appearance must inherit the Settings reduced-motion boundary');
-assert.match(css,
-  /body\[data-anim="off"\] \.appearance-profile,[\s\S]*transition:\s*none !important/,
+assert.match(appearanceCss,
+  /body\[data-anim="off"\] #settings-drawer \*,[\s\S]*transition: none !important/,
   'the product Motion preference must suppress Appearance transitions immediately');
-assert.match(css,
-  /@media \(forced-colors:\s*active\)[\s\S]*\.appearance-profile,[\s\S]*\.theme-card\.active,[\s\S]*border-left-color:\s*Highlight[\s\S]*\.appearance-seg button\.active[^}]*HighlightText/,
+assert.match(appearanceCss,
+  /@media \(forced-colors:\s*active\)[\s\S]*\.stg-ring \{ box-shadow: none; outline: 2px solid Highlight; \}[\s\S]*\.stg-seg button\[aria-pressed="true"\][\s\S]*\{ color: Highlight; \}/,
   'forced colors must preserve the active theme, font, and density indicators');
+assert.match(themeBuilderSource,
+  /const ring = document\.createElement\('span'\);[\s\S]*ring\.className = 'stg-ring';[\s\S]*grid\.appendChild\(ring\);/,
+  'the core modes carry one ring that slides to the chosen mode');
+assert.match(themeBuilderSource,
+  /hint\.className = 'th-meta sr-only';/,
+  'theme hints stay in the button, hidden visually');
 
 const CONTROL_IDS = [
   'appearance-theme-auto',

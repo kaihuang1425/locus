@@ -333,23 +333,35 @@ const settingsController = newtab.slice(
 );
 const settingsStableIds = [
   'settings-drawer', 'drawer-tabs', 'sp-main', 'sp-title', 'sp-sub', 'drawer-x',
-  ...['general', 'appearance', 'capture', 'shortcuts', 'privacy', 'storage', 'data', 'about'].map(id => `dp-${id}`),
+  ...['general', 'appearance', 'capture', 'plan', 'shortcuts', 'privacy', 'storage', 'data', 'about'].map(id => `dp-${id}`),
 ];
-if (!/id="settings-drawer"[^>]*data-settings-layout="ledger"/.test(settingsMarkup)
+// Settings is a page beside the rail (2026-11 canvas board): seven sections
+// with a sliding pill, cards of rows, the work area inert while it shows, and
+// the rail leaving it.
+// Line endings are normalized here: a Windows checkout writes CRLF.
+const settingsCssLf = newtabCss.replace(/\r\n/g, '\n');
+const settingsJsLf = newtab.replace(/\r\n/g, '\n');
+const settingsLayerStart = settingsCssLf.indexOf('   SETTINGS PAGE (2026-11 canvas)');
+const settingsLayer = settingsCssLf.slice(settingsLayerStart, settingsCssLf.indexOf('\n/* ----', settingsLayerStart));
+if (!/id="settings-drawer"[^>]*role="region"[^>]*aria-labelledby="sp-side-title"[^>]*data-settings-layout="board"/.test(settingsMarkup)
   || settingsStableIds.some(id => !new RegExp(`id=["']${id}["']`).test(settingsMarkup))
-  || !/\.sp-nav\s*\{[^}]*counter-reset:\s*settings-section/.test(newtabCss)
-  || !/\.dt::before\s*\{[^}]*counter\(settings-section,\s*decimal-leading-zero\)/.test(newtabCss)
-  || !/\.drawer-sections\s*\{[^}]*border:\s*1px solid var\(--border2\)[^}]*overflow:\s*hidden/.test(newtabCss)
-  || !/\.sp-grid\s*\{[^}]*display:\s*contents/.test(newtabCss)
-  || !/\.drawer-sec\s*\{[^}]*grid-template-columns:\s*minmax\(132px,\s*172px\) minmax\(0,\s*1fr\)/.test(newtabCss)
-  || /\.drawer-sec\s*>\s*\.field-lbl:first-child\s*\{[^}]*grid-row:\s*1\s*\/\s*span/.test(newtabCss)
-  || !/#settings-drawer \.toggle-row:has\(input:focus-visible\)\s*\{[^}]*outline:\s*2px solid var\(--accent\)/.test(newtabCss)
-  || !/@media \(max-width:\s*620px\)[\s\S]{0,900}\.drawer-sec\s*\{[^}]*grid-template-columns:\s*1fr/.test(newtabCss)
-  || !/@media \(prefers-reduced-motion:\s*reduce\)[\s\S]{0,500}#settings-drawer,[\s\S]{0,180}#settings-drawer \*\s*\{[^}]*animation:\s*none !important/.test(newtabCss)
-  || !/@media \(forced-colors:\s*active\)[\s\S]*#settings-drawer \.drawer-sec\s*\{[^}]*border:\s*0;[^}]*border-bottom:\s*1px solid CanvasText/.test(newtabCss)
+  || (settingsMarkup.match(/<button class="dt[^"]*" type="button" data-tab="/g) || []).length !== 7
+  || settingsLayerStart < 0
+  || !/#settings-drawer \{[^}]*left: var\(--stg-rail, 0px\);/.test(settingsLayer)
+  || !/\.stg-pill \{[^}]*transform: translate\(var\(--stg-pill-x, 0px\), var\(--stg-pill-y, 0px\)\);/.test(settingsLayer)
+  || !/\.stg-card \{[^}]*border-radius: 20px;/.test(settingsLayer)
+  || !/\.stg-row \{[^}]*flex-wrap: wrap;[^}]*min-height: 64px;/.test(settingsLayer)
+  || !/\.stg-sw-in:focus-visible \+ \.stg-sw-track \{ outline: 2px solid var\(--index-focus, var\(--accent\)\); outline-offset: 3px; \}/.test(settingsLayer)
+  || !/@container \(max-width: 640px\) \{\n  \.stg-body \{ flex-direction: column;/.test(settingsLayer)
+  || !/@media \(prefers-reduced-motion: reduce\) \{\n  #settings-drawer,\n  #settings-drawer \*,[\s\S]{0,120}\{ animation: none !important; transition: none !important;/.test(settingsLayer)
+  || !/@media \(forced-colors: active\) \{\n  #settings-drawer :is\(\.stg-card, /.test(settingsLayer)
   || !settingsController.includes("activeButton?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' })")
-  || !/function openSettingsDrawer\(tab,\s*opener = null\)[\s\S]{0,180}focusDialogOpener\(opener\)[\s\S]{0,120}rememberOpener\(d,\s*opener\)[\s\S]{0,600}querySelector\('#drawer-tabs \.dt\.active'\)[\s\S]{0,100}active\.focus\(\)/.test(settingsController)) {
-  fail('Settings must retain the indexed control-ledger hierarchy, stable IDs, visible keyboard focus, narrow collapse, and reduced-motion contract');
+  || !/function openSettingsDrawer\(tab,\s*opener = null\)[\s\S]{0,180}focusDialogOpener\(opener\)[\s\S]{0,120}rememberOpener\(d,\s*opener\)[\s\S]{0,600}querySelector\('#drawer-tabs \.dt\.active'\)[\s\S]{0,200}active\.focus\(\{ preventScroll: true \}\)/.test(settingsController)
+  || !/function syncSettingsPageShell\(\)[\s\S]{0,260}if \(child\.id !== 'sidebar'\) setElementInertOwner\(child, 'settings-page', open\);/.test(settingsJsLf)
+  || !/new MutationObserver\(syncSettingsPageShell\)\.observe\(_drawer, \{ attributes: true, attributeFilter: \['class'\] \}\);/.test(settingsJsLf)
+  || !/document\.getElementById\('sidebar'\)\?\.addEventListener\('click', handleSettingsRailClick, true\);/.test(settingsJsLf)
+  || !/function renderBoard\(\) \{\n  invalidateItemCache\(\);\n[^\n]*\n  closeSettingsPageOnRouteChange\(\);/.test(settingsJsLf)) {
+  fail('Settings must keep the board page beside the rail, its stable IDs, visible keyboard focus, phone collapse, and reduced-motion contract');
 }
 const importPresentation = newtab.slice(
   newtab.indexOf('function localizeImportDiagnosticPath('),
@@ -387,15 +399,13 @@ if (!/id="cat-scroll-left"[^>]*aria-label="Scroll Spaces left"[^>]*data-i18n-ari
   || !/id="import-x"[^>]*data-i18n-aria-label="import\.close"/.test(newtabHtml)
   || !/name="import-mode"[^>]*value="replace"[^>]*aria-describedby="import-replace-body"[^>]*checked/.test(newtabHtml)
   || !/name="import-mode"[^>]*value="merge"[^>]*aria-describedby="import-merge-body"/.test(newtabHtml)
-  || !/\.data-transfer-sheet\s*\{[^}]*grid-template-columns:\s*112px minmax\(0,\s*1fr\) auto[^}]*border-left:\s*4px solid var\(--index-locator\)/.test(newtabCss)
-  || !/\.data-transfer-action\s*\{[^}]*min-height:\s*44px[^}]*border-radius:\s*3px/.test(newtabCss)
   || !/#import-overlay\s*\{[^}]*backdrop-filter:\s*none[^}]*animation:\s*none/.test(newtabCss)
   || !/#import-overlay \.import-review-panel\s*\{[^}]*grid-template-rows:\s*auto minmax\(0,\s*1fr\) auto[^}]*max-height:\s*calc\(100dvh - 32px\)[^}]*border-left:\s*6px solid var\(--index-locator\)/.test(newtabCss)
   || !/#import-overlay \.import-counts\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/.test(newtabCss)
   || /\.import-mode-opt:has\(input:checked\)\s*\{[^}]*background:\s*var\(--accent-bg\)/.test(newtabCss)
   || !/#import-overlay \.import-mode-opt:has\(input:checked\)\s*\{[^}]*border-left-color:\s*var\(--index-locator\)[^}]*background:\s*var\(--index-paper\)/.test(newtabCss)
   || !/@media \(max-width:\s*520px\)[\s\S]{0,900}#import-overlay \.import-counts\s*\{[^}]*grid-template-columns:\s*1fr/.test(newtabCss)
-  || !/@media \(forced-colors:\s*active\)[\s\S]*#import-overlay \.import-review-panel,[\s\S]{0,180}\.data-transfer-sheet,[\s\S]{0,180}\.data-transfer-secondary,[\s\S]{0,80}\.data-transfer-direction\s*\{[^}]*border-color:\s*CanvasText/.test(newtabCss)) {
+  || !/@media \(forced-colors:\s*active\)[\s\S]*#import-overlay \.import-review-panel,[\s\S]{0,180}#import-overlay \.import-mode-opt \{[^}]*border-color:\s*CanvasText/.test(newtabCss)) {
   fail('Data transfer must lead with backup and keep the localized JSON review flat, named, keyboard-visible, and responsive');
 }
 const richTextLinkController = newtab.slice(
@@ -696,10 +706,12 @@ for (const file of ['newtab.html', 'newtab.js', 'popup.html', 'popup.js']) {
     fail(`${file} must keep export plus uninstall/profile-loss limits on active local-storage surfaces`);
   }
 }
-if (!/data-i18n=["']settings\.privacyFirstBody["']>Workspace data is stored in this browser profile; export before uninstalling or deleting it\./.test(newtabHtml)
+// Settings (2026-11 canvas board): the side footnote is gone; the Recovery
+// fact and the storage meter carry the qualifier as their descriptions.
+if (!/data-i18n=["']settings\.privacyRecoveryBody["']>Uninstalling Locus or losing this profile can erase local data\. Download a backup first\./.test(newtabHtml)
     || !/data-i18n=["']settings\.storageHint["']>The ruler shows Chrome's exact local-storage total for Locus in this browser profile\./.test(newtabHtml)
     || !/data-i18n=["']settings\.storagePersistenceHint["']>Download a backup before uninstalling the extension or deleting this browser profile;/.test(newtabHtml)
-    || !/["']settings\.privacyFirstBody["']\s*:\s*["']Workspace data is stored in this browser profile; export before uninstalling or deleting it\./.test(newtab)
+    || !/["']settings\.privacyRecoveryBody["']\s*:\s*["']Uninstalling Locus or losing this profile can erase local data\. Download a backup first\./.test(newtab)
     || !/["']settings\.storagePersistenceHint["']\s*:\s*["']Download a backup before uninstalling the extension or deleting this browser profile;/.test(newtab)
     || !/['"]library\.localStorage['"]\s*:\s*['"]Stored in this browser profile\. Export before uninstalling or deleting the profile\./.test(newtab)
     || !/library-local-note[\s\S]{0,180}tr\(['"]library\.localStorage['"]\)/.test(newtab)

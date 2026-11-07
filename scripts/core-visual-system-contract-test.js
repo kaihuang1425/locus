@@ -35,6 +35,10 @@ assert.match(themes, /:root\s*\{[\s\S]*?--font-mono:\s*'Geist Mono'/,
   'shared appearance tokens must reserve one monospace role for exact metadata');
 
 const newtabIndex = section(newtab, 'LOCUS INDEX REDESIGN');
+// Settings is drawn by its own page layer (2026-11 canvas board).
+const settingsLayerStart = newtab.indexOf('   SETTINGS PAGE (2026-11 canvas)');
+assert.ok(settingsLayerStart > 0, 'the Settings page layer must exist');
+const settingsLayer = newtab.slice(settingsLayerStart, newtab.indexOf('\n/* ----', settingsLayerStart));
 assert.match(newtabHtml,
   /id="dp-capture"[\s\S]*id="capture-contract"[^>]*aria-labelledby="capture-contract-title"[^>]*aria-describedby="capture-policy-status"[\s\S]*id="capture-destination"[\s\S]*id="tog-capture-close"/,
   'Capture settings must lead with one real settings-derived save contract before its existing controls');
@@ -61,7 +65,7 @@ assert.match(captureHtml,
   'Capture preferences must own one atomic receipt status');
 for (const headingId of ['capture-destination-heading', 'capture-source-heading', 'capture-record-heading']) {
   assert.match(captureHtml,
-    new RegExp(`class="capture-setting-controls"[^>]*role="group"[^>]*aria-labelledby="${headingId}"`),
+    new RegExp(`class="[^"]*\\bcapture-setting-controls\\b[^"]*"[^>]*role="group"[^>]*aria-labelledby="${headingId}"`),
     `the controls under #${headingId} must expose one named group`);
 }
 for (const [controlId, hintId] of [
@@ -76,7 +80,7 @@ for (const [controlId, hintId] of [
   assert.match(captureHtml, new RegExp(`id="${controlId}"[^>]*aria-describedby="${hintId}"`),
     `#${controlId} must expose its exact consequence to assistive technology`);
 }
-for (const key of ['settings.captureSub', 'settings.captureContractKicker',
+for (const key of ['settings.captureSub',
   'settings.captureContractTitle', 'settings.captureContractBody', 'settings.captureContractAria',
   'settings.captureSourceLabel', 'settings.captureSourceCurrent', 'settings.captureSourceAction',
   'settings.captureLocalLabel', 'settings.captureAfterLabel', 'settings.captureDestinationActive',
@@ -143,23 +147,17 @@ assert.ok(globalKeysStart >= 0 && capturePendingKey > globalKeysStart && nextRec
 assert.match(newtabJs.slice(capturePendingKey, nextReceiptKey),
   /e\.key !== 'Tab'[\s\S]*preventDefault\(\)[\s\S]*stopImmediatePropagation\(\)[\s\S]*focusSettingsPreferencePendingControl\(\)/,
   'pending Settings preferences must retain Tab trapping while blocking Escape and global navigation');
-for (const contract of [
-  /\.capture-contract-registry\s*\{[^}]*grid-template-columns:\s*132px minmax\(0,\s*1fr\)[^}]*background:\s*var\(--index-registry/,
-  /\.capture-contract-route\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\) 42px minmax\(0,\s*1\.24fr\) 42px minmax\(0,\s*1fr\)/,
-  /\.capture-contract-stop\s*\{[^}]*border-left:\s*4px solid var\(--text3\)[^}]*border-radius:\s*4px/,
-  /\.capture-policy-status\[data-state="success"\]\s*\{[^}]*var\(--index-receipt/,
-]) {
-  assert.match(newtab, contract, `Capture settings must use the flat Locus Index policy ledger: ${contract}`);
-}
-assert.match(newtab,
-  /@media \(max-width:\s*620px\)[\s\S]*\.capture-contract-route\s*\{[^}]*grid-template-columns:\s*1fr[\s\S]*\.capture-contract-link\s*\{[^}]*height:\s*28px/,
-  'the save route must become a readable vertical transaction at 620 px');
-assert.match(newtab,
-  /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*\.capture-contract[\s\S]*transition:\s*none/,
-  'Capture settings must remove motion when reduced motion is requested');
-assert.match(newtab,
-  /@media \(forced-colors:\s*active\)[\s\S]*\.capture-contract-stop\.source[\s\S]*border-left-color:\s*Highlight/,
-  'forced colors must retain the save-route locator');
+// The board shows only the Capture controls; the settings-derived contract
+// stays as the section's described summary for assistive technology, and the
+// status line shows only when a write fails.
+assert.match(captureHtml,
+  /<section id="capture-contract" class="stg-contract sr-only"/,
+  'the save contract must stay in the page as a visually hidden summary');
+assert.match(settingsLayer,
+  /\.stg-status:not\(\[data-state="error"\]\) \{[^}]*position: absolute;[\s\S]*\.stg-status\[data-state="error"\] \{[^}]*background: var\(--today-when-soft\)/,
+  'a Capture failure must still show on the page');
+assert.doesNotMatch(newtab, /\.capture-contract-(?:registry|route|stop|link)\s*\{|\.capture-proof\b|\.capture-setting-row\b/,
+  'the old Capture ledger styles must be gone');
 assert.doesNotMatch(captureHtml, /Page title|example\.com|capture-intro|capture-step|capture-preview|capture-local-badge/,
   'Capture settings must not manufacture populated page evidence or retain decorative steps');
 assert.doesNotMatch(newtab, /\.capture-(?:intro|step|preview|local-badge)\b/,
@@ -188,14 +186,14 @@ assert.match(newtabHtml,
 assert.match(newtabHtml,
   /name="import-mode" value="replace"[^>]*aria-describedby="import-replace-body"[^>]*checked[\s\S]*name="import-mode" value="merge"[^>]*aria-describedby="import-merge-body"/,
   'Replace and Merge must each expose their exact consequence to assistive technology');
-for (const key of ['settings.dataTransferAria', 'settings.dataBackupLabel', 'settings.dataBackupDirection',
+for (const key of ['settings.dataTransferAria',
   'settings.dataBackupTitle', 'settings.dataBackupBody', 'settings.dataBackupLoading',
   'settings.dataBackupSummary', 'settings.dataExportLimit', 'settings.downloadBackup',
-  'settings.dataRestoreLabel', 'settings.dataRestoreDirection', 'settings.dataRestoreTitle',
+  'settings.dataRestoreTitle',
   'settings.dataRestoreBody', 'settings.dataChooseStatus', 'settings.chooseBackup',
   'settings.dataReadingFile', 'settings.dataReviewReady', 'settings.dataReviewFailed',
   'settings.dataReviewBlocked', 'settings.dataReviewCanceled', 'settings.dataImportCompleted',
-  'settings.dataOtherLabel', 'settings.dataOtherTitle', 'settings.dataOtherBody',
+  'settings.dataOtherTitle', 'settings.dataOtherBody',
   'settings.bookmarksImporting', 'feedback.bookmarksReadFailed',
   'feedback.bookmarksDestinationChanged', 'feedback.bookmarksSaveFailed',
   'history.importReplace', 'history.importMerge', 'import.kicker', 'import.description',
@@ -230,23 +228,31 @@ assert.match(newtabJs,
   /async function importBookmarks\([\s\S]*identitySpaceTarget\(reviewedTarget\.workspaceId, reviewedTarget\.spaceId\)[\s\S]*State\.persistNow\(\)[\s\S]*State\.rollbackSnapshot\(actionId\)/,
   'bookmark import must re-resolve its reviewed Space and wait for accepted storage before success');
 for (const contract of [
-  /\.data-transfer-sheet\s*\{[^}]*grid-template-columns:\s*112px minmax\(0,\s*1fr\) auto[^}]*border-left:\s*4px solid var\(--index-locator\)/,
-  /\.data-transfer-action\s*\{[^}]*min-height:\s*44px[^}]*border-radius:\s*3px/,
   /#import-overlay\s*\{[^}]*backdrop-filter:\s*none[^}]*animation:\s*none/,
   /#import-overlay \.import-review-panel\s*\{[^}]*border-left:\s*6px solid var\(--index-locator\)[^}]*border-radius:\s*4px/,
   /#import-overlay \.import-mode-opt:has\(input:checked\)\s*\{[^}]*border-left-color:\s*var\(--index-locator\)[^}]*background:\s*var\(--index-paper\)/,
 ]) {
-  assert.match(newtab, contract, `Settings Data must use the backup-first Locus Index transfer contract: ${contract}`);
+  assert.match(newtab, contract, `the JSON review must keep its flat review contract: ${contract}`);
 }
-assert.match(newtab,
-  /@media \(max-width:\s*620px\)[\s\S]*\.data-transfer-sheet\s*\{[^}]*grid-template-columns:\s*1fr[\s\S]*\.data-transfer-secondary-actions\s*\{[^}]*flex-direction:\s*column/,
-  'the transfer ledger must reflow deliberately at 620/520 px');
+for (const contract of [
+  /\.stg-btn \{[^}]*min-height: 44px;[^}]*border-radius: 12px;/,
+  /\.stg-btn-b \{[^}]*background: var\(--stg-on\);/,
+  /\.stg-export-fill\.is-running \{ animation: stgFill \.32s var\(--today-ease\) both; \}/,
+  /\.stg-export\[data-state="done"\] \{[^}]*background: var\(--today-receipt\);/,
+]) {
+  assert.match(settingsLayer, contract, `Settings Backup must use the board's rows and download button: ${contract}`);
+}
+assert.doesNotMatch(newtab, /\.data-transfer-(?:sheet|action|direction|secondary|ledger)\b/,
+  'the old transfer ledger styles must be gone');
+assert.match(settingsLayer,
+  /@container \(max-width: 640px\) \{[\s\S]*\.stg-export,\n  \.stg-row > \.stg-btn \{ flex: 1 1 100%; width: 100%; min-width: 0; \}/,
+  'the backup actions must take the full row at phone width');
 assert.match(newtab,
   /@media \(max-width:\s*520px\)[\s\S]*#import-overlay \.import-review-panel[\s\S]*#import-overlay \.modal-ft\s*\{[^}]*grid-template-columns:\s*1fr/,
   'the backup manifest and actions must remain reachable at 520 px');
 assert.match(newtab,
-  /@media \(forced-colors:\s*active\)[\s\S]*#import-overlay \.import-review-panel,[\s\S]*\.data-transfer-sheet[\s\S]*border-left-color:\s*Highlight/,
-  'forced colors must preserve the outbound/inbound transfer spine and selected review method');
+  /@media \(forced-colors:\s*active\)[\s\S]*#import-overlay \.import-review-panel,[\s\S]*\.import-manifest \{ border-left-color: Highlight; \}/,
+  'forced colors must preserve the JSON review spine and selected review method');
 assert.match(newtabHtml,
   /id="storage-bar-meter"[^>]*role="meter"[^>]*aria-valuemin="0"[^>]*aria-valuemax="100"[^>]*aria-busy="true"[^>]*data-i18n-aria-label="settings\.storageUsageAria"/,
   'Settings Storage must expose one localized exact browser-usage meter before estimated Locus data');
@@ -258,15 +264,15 @@ for (const stableId of ['storage-capacity', 'storage-bar-text', 'storage-bar-sta
     `Settings Storage must preserve exactly one #${stableId}`);
 }
 assert.match(newtabHtml,
-  /id="storage-bar-meter"[\s\S]*id="storage-archive-row"[\s\S]*id="storage-breakdown-total"[\s\S]*id="storage-breakdown"/,
-  'exact capacity, Archive recovery, and estimated register must remain in truthful DOM order');
+  /id="storage-bar-meter"[\s\S]*id="storage-breakdown-total"[\s\S]*id="storage-breakdown"[\s\S]*id="storage-archive-row"/,
+  'exact capacity, then the estimated legend, then Archive recovery (the board order)');
 assert.match(newtabHtml,
   /id="storage-breakdown"[^>]*role="list"[^>]*data-i18n-aria-label="settings\.storageBreakdownAria"[^>]*aria-describedby="storage-breakdown-hint storage-breakdown-total"[^>]*aria-busy="true"/,
   'the estimated register must expose a localized name, explanation, total, and loading state');
-for (const key of ['settings.storageUsageScope', 'settings.storageUsageAria', 'settings.storageChecking', 'settings.storageRefresh',
+for (const key of ['settings.storageUsageAria', 'settings.storageChecking', 'settings.storageRefresh',
   'settings.storageUsageLoading', 'settings.storageUsage', 'settings.storageUsageUnavailable',
   'settings.storageStateAvailable', 'settings.storageStateWarn', 'settings.storageStateFull',
-  'settings.storageStateUnavailable', 'settings.storageProfileLimit', 'settings.storagePersistenceHint',
+  'settings.storageStateUnavailable', 'settings.storagePersistenceHint',
   'settings.storageArchiveLoading', 'settings.storageArchiveOne', 'settings.storageArchiveMany',
   'settings.storageArchiveEmpty', 'settings.storageBreakdownHint', 'settings.storageBreakdownAria',
   'settings.storageEstimateLoading', 'settings.storageEstimateTotal', 'settings.storageEmpty',
@@ -294,19 +300,21 @@ assert.doesNotMatch(newtabJs,
 assert.doesNotMatch(newtab, /\.sp-breakdown-dot\s*\{|--dot:/,
   'estimated storage rows must not retain ornamental category dots');
 for (const contract of [
-  /\.storage-capacity\s*\{[^}]*border-left:\s*4px solid var\(--index-locator[^}]*border-radius:\s*4px/,
-  /\.storage-bar-text\s*\{[^}]*font:\s*650 17px\/1\.35 var\(--font-mono/,
-  /\.storage-refresh\s*\{[^}]*min-height:\s*40px[^}]*border-radius:\s*3px/,
-  /\.sp-storage-row\s*\{[^}]*grid-template-columns:\s*36px minmax\(0,\s*1fr\) auto[^}]*border-left:\s*3px solid var\(--index-locator/,
-  /\.sp-breakdown\s*\{[^}]*counter-reset:\s*storage-area/,
-  /\.sp-breakdown-fill\s*\{[^}]*background:\s*var\(--index-locator/,
+  /\.stg-cap-text \{[^}]*font-family: var\(--today-display\);[^}]*font-size: 22px;[^}]*font-variant-numeric: tabular-nums;/,
+  /\.stg-meter \{[^}]*display: flex;[^}]*height: 12px;[^}]*border-radius: 999px;/,
+  /\.stg-fill \{[^}]*display: flex;[^}]*min-width: 6px;[^}]*transition: width \.32s var\(--today-ease\);/,
+  /\.stg-part \{ background: var\(--stg-kind\); \}/,
+  /#storage-breakdown \.sp-breakdown-rank \{[^}]*background: var\(--stg-kind\);/,
+  /#storage-breakdown \.sp-breakdown-track \{ display: none; \}/,
 ]) {
-  assert.match(newtab, contract, `Settings Storage must use the exact/estimate Locus Index ledger contract: ${contract}`);
+  assert.match(settingsLayer, contract, `Settings Storage must use the board's segmented meter and legend: ${contract}`);
 }
-assert.match(newtab, /@media \(max-width:\s*620px\)[\s\S]*\.sp-storage-row\s*\{[^}]*grid-template-columns:\s*36px minmax\(0,\s*1fr\)[\s\S]*\.sp-breakdown-row\s*\{[^}]*grid-template-columns:\s*30px minmax\(0,\s*1fr\)/,
-  'Archive and estimated rows must reflow without compression at 620/520 px');
-assert.match(newtab, /@media \(forced-colors:\s*active\)[\s\S]*\.storage-capacity,[\s\S]*border-left-color:\s*Highlight[\s\S]*\.sp-breakdown-fill[\s\S]*forced-color-adjust:\s*none/,
-  'forced colors must preserve the exact-capacity and ranked-estimate locators');
+assert.match(newtabJs, /function renderStorageSettings\([\s\S]*meterFill\.replaceChildren\([\s\S]*part\.className = 'stg-part';[\s\S]*part\.style\.flexGrow = String\(bucket\.bytes\);/,
+  'the exact-usage fill is split by the estimated share of each kind');
+assert.doesNotMatch(newtab, /\.sp-storage-row\b|\.storage-capacity\s*\{|\.storage-bar-text\s*\{|\.storage-refresh\s*\{/,
+  'the old Storage ledger styles must be gone');
+assert.match(settingsLayer, /@media \(forced-colors:\s*active\)[\s\S]*\.stg-fill,\n  \.stg-part \{ background: Highlight; forced-color-adjust: none; \}/,
+  'forced colors must preserve the usage fill');
 assert.match(newtabHtml, /<section class="wc-task"[^>]*>[\s\S]*?<div class="wc-intro">[\s\S]*?<div class="wc-operation">/,
   'Welcome must keep the explicit intro and operation groups in DOM order');
 for (const stableId of ['welcome', 'wc-card', 'wc-save-first', 'wc-retry', 'wc-explore']) {

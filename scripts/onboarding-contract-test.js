@@ -315,10 +315,19 @@ assert.equal(refreshStorageUsageSource.includes('side-storage'), false,
   'storage refresh must update Settings without a hidden sidebar projection');
 assert.match(paintSettingsStorageUsageSource, /storage-bar-fill[\s\S]*storage-bar-meter[\s\S]*storage-bar-text/,
   'storage refresh must retain the named Settings meter through its single painter');
-assert.match(html, /data-tab="privacy"[\s\S]*data-tab="storage"/,
+// Settings (2026-11 canvas board) shows Storage inside Privacy & data; the
+// Storage destination still opens there, at its own pane.
+assert.match(html, /data-tab="privacy"[\s\S]*id="dp-privacy"[\s\S]*id="dp-storage"/,
   'Settings must retain Privacy and Storage destinations');
-assert.match(html, /data-i18n="settings\.privacyFirstBody"/,
+assert.match(source, /\{ id: 'storage',\s+title: 'settings\.storage',\s+sub: 'settings\.storageSub', nav: 'privacy' \}/,
+  'the Storage destination must open Privacy & data at its Storage pane');
+// The side footnote is gone with the old index (2026-11 canvas board); the
+// four Privacy & data facts carry the boundary, and the recovery fact keeps
+// the export-before-uninstalling explanation as its description.
+assert.match(html, /data-i18n="settings\.privacyStorageValue"[\s\S]*data-i18n="settings\.privacyRecoveryBody">Uninstalling Locus or losing this profile can erase local data\. Download a backup first\./,
   'Settings must retain the local privacy boundary explanation');
+assert.doesNotMatch(source, /'settings\.privacyFirst(?:Body)?':/,
+  'the old Privacy first footnote copy is gone');
 assert.ok(html.includes('id="storage-bar-fill"') && html.includes('id="storage-bar-text"'),
   'Settings must retain its storage meter');
 assert.match(paintSettingsStorageUsageSource,

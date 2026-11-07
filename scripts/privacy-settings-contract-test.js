@@ -24,11 +24,9 @@ function countId(id) {
 }
 
 const privacyHtml = extractBetween('<!-- ── Privacy ── -->', '<!-- ── Storage ── -->', html);
-const privacyCss = extractBetween(
-  '/* Privacy is an exact local-data ledger.',
-  '/* Storage */',
-  css,
-);
+// Privacy & data is drawn by the Settings page layer (2026-11 canvas board).
+const privacyCss = extractBetween('   SETTINGS PAGE (2026-11 canvas)', '\n/* ----', css);
+const dataHtml = extractBetween('<!-- ── Import & Export ── -->', '<!-- ── About ── -->', html);
 const privacyPrimitivesSource = extractBetween(
   'const PRIVACY_SETTING_KEYS',
   '\nfunction settingsPreferencePendingTransaction',
@@ -42,9 +40,6 @@ for (const id of [
   'dp-privacy',
   'privacy-contract',
   'privacy-contract-title',
-  'privacy-export-btn',
-  'privacy-goto-data',
-  'privacy-export-limit',
   'privacy-screen-plugin',
   'privacy-plugin-state',
   'privacy-mask-heading',
@@ -62,8 +57,15 @@ assert.equal((privacyHtml.match(/class="privacy-fact(?: recovery)?" role="listit
 assert.match(privacyHtml,
   /settings\.privacyStorageLabel[\s\S]*settings\.privacyStorageValue[\s\S]*settings\.privacyNetworkLabel[\s\S]*settings\.privacyNetworkValue[\s\S]*settings\.privacyAccessLabel[\s\S]*settings\.privacyAccessValue[\s\S]*settings\.privacyRecoveryLabel[\s\S]*settings\.privacyRecoveryValue/,
   'the fact ledger must keep the exact local-data sequence');
-assert.match(privacyHtml,
-  /id="privacy-export-btn"[^>]*class="btn-primary"[^>]*type="button"[^>]*data-settings-preference-control[^>]*aria-describedby="privacy-export-limit"[\s\S]*id="privacy-goto-data"[^>]*type="button"[^>]*data-settings-preference-control/,
+// Privacy & data shows the facts, Storage and Backup as one section (the
+// board), so the backup action and the restore path sit in the same view and
+// the old duplicate Download / Review restore pair under the facts is gone.
+assert.ok(/\{ id: 'privacy',\s+title: 'settings\.privacyData',\s+sub: 'settings\.privacySub', panes: \['privacy', 'storage', 'data'\] \}/.test(source),
+  'Privacy & data must show the facts, Storage and Backup panes together');
+assert.equal(countId('privacy-export-btn') + countId('privacy-goto-data') + countId('privacy-export-limit'), 0,
+  'the duplicate backup pair under the facts must be gone');
+assert.match(dataHtml,
+  /<button id="export-btn" class="stg-btn stg-btn-b stg-export"[^>]*type="button"[^>]*aria-describedby="data-backup-body data-export-hint"[\s\S]*id="import-json-btn"/,
   'backup must be the primary native action, with the download limit and restore path named');
 assert.match(privacyHtml,
   /<details id="privacy-screen-plugin"[\s\S]*settings\.screenMaskPlugin[\s\S]*id="privacy-plugin-state"[^>]*data-state="available"[\s\S]*id="tog-blur"[^>]*data-settings-preference-control[^>]*aria-describedby="privacy-mask-hint privacy-mask-toggle-hint"/,
@@ -87,11 +89,9 @@ assert.match(manifest.content_security_policy.extension_pages, /connect-src 'non
   'the no-backend-connection fact must remain grounded in the release extension-page CSP');
 
 for (const key of [
-  'settings.privacy',
+  'settings.privacyData',
   'settings.privacySub',
-  'settings.privacyContractKicker',
   'settings.privacyContractTitle',
-  'settings.privacyContractBody',
   'settings.privacyFactsAria',
   'settings.privacyStorageLabel',
   'settings.privacyStorageValue',
@@ -105,8 +105,6 @@ for (const key of [
   'settings.privacyRecoveryLabel',
   'settings.privacyRecoveryValue',
   'settings.privacyRecoveryBody',
-  'settings.privacyActionsAria',
-  'settings.reviewRestore',
   'settings.screenMaskPlugin',
   'settings.screenMaskPluginHint',
   'settings.screenMaskAvailable',
@@ -124,7 +122,7 @@ for (const key of [
   assert.equal((source.match(new RegExp(`^\\s{4}'${escaped}':`, 'gm')) || []).length, 2,
     `${key} must exist exactly once in English and once in native zh-TW`);
 }
-assert.ok(source.includes("'settings.privacy': '隱私'"),
+assert.ok(source.includes("'settings.privacyData': '隱私與資料'"),
   'zh-TW must avoid claiming a broader Security surface');
 assert.ok(source.includes("'settings.privacyAccessValue': '零項網站存取權限'"),
   'zh-TW must name host permissions in user-facing Taiwanese browser language');
@@ -158,7 +156,7 @@ assert.match(source,
   /function paintSettingsPreferenceBusy\(\)[\s\S]*privacy-contract[\s\S]*pending\?\.kind === 'privacy'[\s\S]*control\.disabled = busy && control\.id !== ownerId/,
   'pending Privacy persistence must mark its boundary busy and disable every other tracked control');
 assert.match(source,
-  /if \(section\.id === 'privacy'\) renderPrivacySettings\(\)[\s\S]*function applySettings[\s\S]*renderPrivacySettings\(\)/,
+  /privacy: \(\) => renderPrivacySettings\(\)[\s\S]*function applySettings[\s\S]*renderPrivacySettings\(\)/,
   'section entry, locale changes, and state reconciliation must render real Privacy state');
 assert.match(source,
   /document\.getElementById\('tog-blur'\)\.onchange = e => \{[\s\S]*commitPrivacySettingsChange\(e\.target\.id, \{ blurPrivacy: !!e\.target\.checked \}\)/,
@@ -174,30 +172,27 @@ assert.match(source,
   'pending Privacy must retain Settings Tab trapping while owning Escape and lower shortcuts');
 
 for (const contract of [
-  /\.privacy-contract\s*\{[^}]*border-top:\s*4px solid var\(--index-locator[^}]*border-radius:\s*4px/,
-  /\.privacy-contract-registry\s*\{[^}]*grid-template-columns:\s*132px minmax\(0,\s*1fr\)[^}]*background:\s*var\(--index-registry/,
-  /\.privacy-fact-grid\s*\{[^}]*grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/,
-  /\.privacy-recovery-actions\s*\{[^}]*grid-template-columns:\s*auto auto minmax\(180px,\s*1fr\)/,
-  /\.privacy-recovery-actions \.btn-primary,[\s\S]*min-height:\s*42px/,
-  /\.privacy-screen-plugin\[data-locked="true"\] > summary\s*\{[^}]*cursor:\s*wait/,
+  /\.stg-facts \{[^}]*display: grid;[^}]*grid-template-columns: repeat\(auto-fit, minmax\(170px, 1fr\)\)/,
+  /\.stg-facts \.privacy-fact \{[^}]*border-radius: 16px;[^}]*background: var\(--today-now\);[^}]*color: var\(--today-now-text\)/,
+  /\.stg-disc > summary\[aria-disabled="true"\],\n\.stg-disc\[data-locked="true"\] > summary \{ cursor: wait; \}/,
 ]) {
-  assert.match(privacyCss, contract, `Privacy must use the restrained Locus Index fact contract: ${contract}`);
+  assert.match(privacyCss, contract, `Privacy must use the Settings page layer: ${contract}`);
 }
 assert.doesNotMatch(privacyCss,
-  /(?:linear|radial|conic)-gradient\s*\(|backdrop-filter|translateY\(|scale\(/,
-  'Privacy must not use decorative gradients, glass blur, lift, or scale motion');
-assert.match(css,
-  /@media \(max-width:\s*620px\)[\s\S]*\.privacy-fact-grid\s*\{[^}]*grid-template-columns:\s*1fr[\s\S]*\.privacy-recovery-actions\s*\{[^}]*grid-template-columns:\s*1fr/,
-  'the two-column 1280/800 ledger and its actions must deliberately stack by 620/520 px');
-assert.match(css,
-  /\.appearance-style-pack > summary:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--accent\)/,
+  /(?:linear|radial|conic)-gradient\s*\(|backdrop-filter/,
+  'Privacy must not use decorative gradients or glass blur');
+assert.match(privacyCss,
+  /@container \(max-width: 640px\) \{[\s\S]*\.stg-facts \{ grid-template-columns: repeat\(2, minmax\(0, 1fr\)\); gap: 8px; \}/,
+  'the four facts must fold into two columns at phone width');
+assert.match(privacyCss,
+  /#settings-drawer :is\([^)]*\.stg-disc > summary\):focus-visible \{\n  outline: 2px solid var\(--index-focus, var\(--accent\)\);/,
   'the native plugin disclosure must have a visible keyboard focus indicator');
-assert.match(css,
+assert.match(privacyCss,
   /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*#settings-drawer \*[\s\S]*transition:\s*none !important/,
   'Privacy must inherit the Settings reduced-motion boundary');
-assert.match(css,
-  /@media \(forced-colors:\s*active\)[\s\S]*\.privacy-contract,[\s\S]*\.privacy-fact[\s\S]*border-color:\s*CanvasText[\s\S]*\.appearance-style-pack > summary:focus-visible[^}]*Highlight/,
-  'forced colors must preserve the fact ledger, plugin, and focus boundaries');
+assert.match(privacyCss,
+  /@media \(forced-colors:\s*active\)[\s\S]*\.stg-facts \.privacy-fact \{ border: 1px solid CanvasText; background: Canvas; color: CanvasText; \}/,
+  'forced colors must preserve the fact ledger boundaries');
 assert.match(css,
   /body\.blur-privacy \.item-title,[\s\S]*body\.blur-privacy \.library-title,\s*body\.blur-privacy \.library-url,\s*body\.blur-privacy \.library-destination,[\s\S]*filter:\s*blur\(6px\)/,
   'the optional mask must cover saved titles and recovery locations (the Library row’s title, source and full destination)');

@@ -5376,3 +5376,44 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
     still runs).
 
   **Implemented: yes. Verified: partial. User-validated: no. Released: no.**
+
+- **2026-11-07 - Settings becomes a page beside the rail that follows its board (pages
+  build, page 8).** Settings.dc.html replaces the 2026-07 full-window "control ledger"
+  (numbered index, side footnote, header sub-line, Close, bordered ledgers).
+  - **A page, not a layer over the rail.** Settings starts at the rail's edge and covers
+    the work area, which goes inert while it shows; the rail stays usable. Choosing a rail
+    destination, any route change (palette, menu, a receipt's Show) or Escape leaves it;
+    More, the workspace list, New Space and Collapse keep it open. While a preference write
+    waits for storage, the rail, Escape and other sections are refused, as before.
+  - Seven sections with a white pill that slides to the active one: General, Appearance,
+    Capture, **Plan** (new), Shortcuts, **Privacy & data** (Privacy, Storage and Import &
+    Export as one section) and About. The Storage and Import & Export palette entries and
+    the legacy names open Privacy & data at their pane.
+  - Rows put the label on the left and the control on the right; switches have a springy
+    knob that squashes on each flip. Hints, section sub-lines and the Capture save
+    contract stay in the page as visually hidden descriptions (aria-describedby); a
+    preference status shows only when a write fails.
+  - Appearance: a preview of the page that crossfades to the chosen theme, a ring that
+    slides between System, Locus Light and Locus Dark, sliding thumbs for item size and
+    column width. Use core defaults offers Undo on the shared receipt.
+  - Plan: the two Auto-plan rules (Plan's own receipt-gated setting) and the **AI
+    companion off switch**. The switch is the browser's grant of the optional
+    nativeMessaging permission: on asks for it inside the click and pairs through the
+    planner's connect (chip "Connecting…", then "Paired <id>"); off closes the native port
+    and releases the permission with `chrome.permissions.remove`. No stored field; the
+    pairing key stays with the companion link, so on again re-pairs. Open in Plan leaves
+    Settings and opens Plan with AI.
+  - Privacy & data: four dark facts, the screen-share mask plugin, Storage (the exact
+    usage meter, its fill split by the estimated share of each kind, a legend, Archived
+    items and Open archive) and Backup (Download, Restore, Browser bookmarks, Links). The
+    duplicate Download / Review restore pair under the facts and the side "Privacy first"
+    footnote are gone; the Recovery fact and the meter carry the export-before-uninstall
+    qualifier as their descriptions.
+  - Download fills for 0.32 s, then makes one request, turns green ("Download requested")
+    and the shared receipt names the file. Restore still goes through the reviewed JSON
+    dialog (manifest, Replace or Merge, interlock); Replace keeps its pre-import backup and
+    Undo, so it has no Keep / Delete ask.
+  - Capture copy: the quick-save destination is "Used by Save in the toolbar popup, the
+    keyboard shortcut and the context menu" (the popup's one-click Save uses it too).
+
+  **Implemented: yes. Verified: partial. User-validated: no. Released: no.**

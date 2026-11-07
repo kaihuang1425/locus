@@ -519,7 +519,6 @@ const I18N = {
     'settings.appearanceSub': 'Color mode, density, and card details. Optional styles stay out of the way.',
     'settings.capture': 'Capture',
     'settings.captureSub': 'Choose where browser tabs are saved and what happens after Locus confirms the copy.',
-    'settings.captureContractKicker': 'SAVE CONTRACT',
     'settings.captureContractTitle': 'What happens when you save',
     'settings.captureContractBody': 'The source tab changes only after Locus confirms the local copy.',
     'settings.captureContractAria': 'Current capture policy',
@@ -533,7 +532,7 @@ const I18N = {
     'settings.captureDestinationUnavailable': 'Destination unavailable',
     'settings.captureDestinationUnavailableHint': 'Saving stops and the source tab stays open.',
     'settings.capturePopupChoose': 'Choose in the popup',
-    'settings.captureOtherEntry': 'Shortcut and context menu: {destination}',
+    'settings.captureOtherEntry': 'Popup, shortcut and context menu: {destination}',
     'settings.captureRecordTitleIcon': 'Page title + site icon',
     'settings.captureRecordTitleOnly': 'Page title · no site icon',
     'settings.captureRecordDomainIcon': 'Site domain + site icon',
@@ -548,51 +547,44 @@ const I18N = {
     'settings.capturePolicySaving': 'Saving capture preferences…',
     'settings.capturePolicySaved': 'Capture preferences saved in this browser profile.',
     'settings.capturePolicyFailed': 'Locus could not confirm this capture-preference change. Reload the latest saved data before continuing.',
-    'settings.captureDestinationHeading': 'Save destination',
-    'settings.captureDestinationLabel': 'Default for quick saves',
-    'settings.captureDestinationHint': 'Used by the keyboard shortcut and context menu. If unavailable, saving stops and the source tab stays open.',
+    'settings.captureDestinationHeading': 'Destination',
+    'settings.captureDestinationLabel': 'Quick saves go to',
+    'settings.captureDestinationHint': 'Used by Save in the toolbar popup, the keyboard shortcut and the context menu. If unavailable, saving stops and the source tab stays open.',
     'settings.captureAsk': 'Ask where to save in the popup',
     'settings.captureAskHint': 'Off: Save goes straight to the quick-save destination.',
     'settings.captureRemember': 'Remember the last destination',
     'settings.captureRememberHint': 'A popup choice becomes the next quick-save destination.',
-    'settings.captureSourceHeading': 'Source-tab consequence',
+    'settings.captureSourceHeading': 'Source tab',
     'settings.captureClose': 'Close after confirmed save',
     'settings.captureCloseHint': 'An unconfirmed save never closes the source tab.',
-    'settings.captureRecordHeading': 'Saved link record',
+    'settings.captureRecordHeading': 'Saved record',
     'settings.captureDedupe': 'Skip duplicate URLs',
     'settings.captureDedupeHint': 'Do not add another record when the destination already has the same URL.',
     'settings.captureTitle': 'Save page title',
     'settings.captureTitleHint': 'When off, the site domain is used as the title.',
     'settings.captureFavicon': 'Save site icon',
     'settings.captureFaviconHint': 'Keep the browser-provided site icon reference with the local record.',
-    'settings.captureStorageProof': 'Saved content and capture preferences use this browser profile; export before uninstalling or deleting the profile.',
     'settings.shortcutsSub': 'Speed up your workflow with keyboard shortcuts.',
-    'settings.privacy': 'Privacy',
     'settings.privacySub': 'What Locus stores, can access, and how to recover it.',
     'settings.storageSub': 'See exact browser-profile usage and estimated Locus data.',
     'settings.dataSub': 'Download a backup before bringing data into this browser profile.',
     'settings.dataTransferAria': 'Local data backup and import',
-    'settings.dataBackupLabel': 'Backup first',
-    'settings.dataBackupDirection': 'OUT · THIS PROFILE',
     'settings.dataBackupTitle': 'Download a backup',
     'settings.dataBackupBody': 'Save all Locus data in this browser profile as one JSON file that you keep.',
     'settings.dataBackupLoading': 'Reading current Locus data…',
     'settings.dataBackupSummary': '{workspaces} · {items} · about {size}',
     'settings.dataExportLimit': 'Locus can request the download, but cannot verify that the browser saved the file.',
     'settings.downloadBackup': 'Download JSON backup',
-    'settings.dataRestoreLabel': 'Review and restore',
-    'settings.dataRestoreDirection': 'IN · REVIEW FIRST',
-    'settings.dataRestoreTitle': 'Restore from a JSON backup',
+    'settings.dataRestoreTitle': 'Restore from a backup',
     'settings.dataRestoreBody': 'Choose a Locus or compatible legacy export. Review its contents and choose Merge or Replace before anything changes.',
     'settings.dataChooseStatus': 'No file selected. Current data is unchanged.',
-    'settings.chooseBackup': 'Choose JSON backup',
+    'settings.chooseBackup': 'Choose file…',
     'settings.dataReadingFile': 'Reading “{file}”…',
     'settings.dataReviewReady': 'Reviewing “{file}”. Current data is unchanged.',
     'settings.dataReviewFailed': '“{file}” could not be reviewed. Choose another JSON backup.',
     'settings.dataReviewBlocked': 'Another recovery step is active. Finish it, then choose “{file}” again.',
     'settings.dataReviewCanceled': 'Review canceled. Current data is unchanged.',
     'settings.dataImportCompleted': 'Import completed. Choose another backup when needed.',
-    'settings.dataOtherLabel': 'Other sources',
     'settings.dataOtherTitle': 'Add into the current Space',
     'settings.dataOtherBody': 'Bookmarks and pasted links add records; they do not restore a complete Locus backup.',
     'settings.bookmarksImporting': 'Importing bookmarks…',
@@ -600,15 +592,33 @@ const I18N = {
     'settings.aboutSub': 'Built with focus. Designed for your privacy.',
     'settings.profile': 'Local preferences',
     'settings.tipsOnboarding': 'First-save guide',
-    'settings.privacyFirst': 'Privacy first',
-    'settings.privacyFirstBody': 'Workspace data is stored in this browser profile; export before uninstalling or deleting it. Locus has no account, backend, or host permissions.',
-    'settings.globalShortcuts': 'Browser shortcuts',
+    'settings.globalShortcuts': 'In the browser',
     'settings.customizeShortcuts': 'Customize',
-    'settings.customizeShortcutsHint': "Opens the browser's extension-shortcuts page",
     'settings.globalShortcutsHint': 'These work anywhere in the browser and are managed by the browser itself.',
     'settings.inAppShortcuts': 'Inside Locus',
-    'settings.searchShortcuts': 'Search shortcuts…',
-    'settings.noShortcuts': 'No shortcuts match your search.',
+    'settings.searchShortcuts': 'Filter',
+    'settings.sectionsAria': 'Settings sections',
+    'settings.privacyData': 'Privacy & data',
+    'settings.plan': 'Plan',
+    'settings.planSub': 'Auto-plan rules and the optional AI companion.',
+    'settings.companion': 'Local AI companion',
+    'settings.companionPaired': 'Paired {id}',
+    'settings.companionConnected': 'Companion connected',
+    'settings.companionOff': 'AI companion off',
+    'settings.companionOffFailed': 'Locus could not release the companion permission. Remove it on the browser\'s extensions page.',
+    'settings.companionNotInstalled': 'Not installed',
+    'settings.companionReload': 'Reload to connect',
+    'settings.companionNotConnected': 'Not connected',
+    'settings.openInPlan': 'Open in Plan',
+    'settings.filterShortcuts': 'Filter shortcuts',
+    'settings.clearShortcutsFilter': 'Clear',
+    'settings.backupHeading': 'Backup',
+    'settings.bookmarksLabel': 'Browser bookmarks',
+    'settings.linksLabel': 'Links',
+    'settings.exportPreparing': 'Preparing…',
+    'settings.exportRequested': 'Download requested',
+    'settings.stylePackResetDone': 'Style back to core defaults',
+    'settings.noShortcuts': 'No shortcuts match.',
     'shortcuts.title': 'Keyboard shortcuts',
     'shortcuts.close': 'Close',
     'shortcuts.closeAria': 'Close keyboard shortcuts',
@@ -631,9 +641,7 @@ const I18N = {
     'shortcuts.openReference': 'Show keyboard shortcuts',
     'shortcuts.multiSelectTab': 'Select multiple open tabs',
     'shortcuts.rangeSelectTabs': 'Select a range of open tabs',
-    'settings.privacyContractKicker': 'LOCAL DATA BOUNDARY',
     'settings.privacyContractTitle': 'What Locus stores and can access',
-    'settings.privacyContractBody': "These limits come from this extension's storage, permissions, and network policy.",
     'settings.privacyFactsAria': 'Locus data and access facts',
     'settings.privacyStorageLabel': 'Storage',
     'settings.privacyStorageValue': 'This browser profile',
@@ -647,8 +655,6 @@ const I18N = {
     'settings.privacyRecoveryLabel': 'Recovery',
     'settings.privacyRecoveryValue': 'Manual JSON backup',
     'settings.privacyRecoveryBody': 'Uninstalling Locus or losing this profile can erase local data. Download a backup first.',
-    'settings.privacyActionsAria': 'Backup and restore actions',
-    'settings.reviewRestore': 'Review restore options',
     'settings.screenMaskPlugin': 'Screen-share mask plugin',
     'settings.screenMaskPluginHint': 'Optional local display mask. It changes only what Locus displays.',
     'settings.screenMaskAvailable': 'Available',
@@ -661,8 +667,6 @@ const I18N = {
     'settings.privacySaving': 'Saving the screen-share mask setting…',
     'settings.privacySaved': 'Screen-share mask setting saved in this browser profile.',
     'settings.privacyFailed': 'Locus could not confirm this screen-share mask change. Reload the latest saved data before continuing.',
-    'settings.localStorage': 'Local storage',
-    'settings.storageUsageScope': 'Exact browser usage',
     'settings.storageUsageAria': 'Exact browser-profile storage usage',
     'settings.storageChecking': 'Checking',
     'settings.storageRefresh': 'Check again',
@@ -673,16 +677,13 @@ const I18N = {
     'settings.storageStateWarn': 'Running low',
     'settings.storageStateFull': 'Almost full',
     'settings.storageStateUnavailable': 'Unavailable',
-    'settings.storageProfileLimit': 'Browser limit',
     'settings.storageHint': "The ruler shows Chrome's exact local-storage total for Locus in this browser profile.",
     'settings.storagePersistenceHint': 'Download a backup before uninstalling the extension or deleting this browser profile; either action removes the Locus data stored there.',
-    'settings.manageStorage': 'Archive & recovery',
     'settings.openArchive': 'Open archive',
     'settings.storageArchiveLoading': 'Checking Archive…',
     'settings.storageArchiveOne': '1 archived item · about {bytes}',
     'settings.storageArchiveMany': '{count} archived items · about {bytes}',
     'settings.storageArchiveEmpty': 'No archived items yet',
-    'settings.manageHint': 'Archive keeps items recoverable but does not free local storage. Download a backup before permanently deleting anything from Trash.',
     'settings.whatsUsingSpace': 'Estimated data breakdown',
     'settings.storageBreakdownHint': 'Estimated from the current Locus JSON. Browser storage encoding can make it differ from the exact total above.',
     'settings.storageBreakdownAria': 'Estimated Locus data breakdown',
@@ -737,7 +738,6 @@ const I18N = {
     'paste.duplicateGroup': '{name}, group {position} of {count}',
     'settings.exportJsonHint': 'A complete backup of every workspace',
     'settings.exportHint': 'Exports are plain JSON. Keep the file yourself; compatibility with future versions is verified per release.',
-    'settings.aboutBody': 'A desktop home for explicitly saved tabs, notes, tasks, and reminders.',
     'settings.proof.account': 'No account',
     'settings.proof.server': 'No Locus server',
     'settings.proof.host': 'No host permissions',
@@ -2230,7 +2230,6 @@ const I18N = {
     'settings.appearanceSub': '調整顯示模式、項目大小與卡片資訊；其他樣式收在選用外掛中。',
     'settings.capture': '擷取',
     'settings.captureSub': '選擇分頁的儲存位置，以及確認儲存後是否關閉原分頁。',
-    'settings.captureContractKicker': '儲存規則',
     'settings.captureContractTitle': '儲存分頁時會發生什麼事',
     'settings.captureContractBody': 'Locus 確認副本已存入這個瀏覽器設定檔後，才會變更原分頁。',
     'settings.captureContractAria': '目前的分頁儲存規則',
@@ -2244,7 +2243,7 @@ const I18N = {
     'settings.captureDestinationUnavailable': '儲存位置無法使用',
     'settings.captureDestinationUnavailableHint': '無法確認儲存位置時，會停止儲存並保留原分頁。',
     'settings.capturePopupChoose': '在彈出視窗中選擇',
-    'settings.captureOtherEntry': '鍵盤快速鍵與右鍵選單：{destination}',
+    'settings.captureOtherEntry': '彈出視窗、快速鍵與右鍵選單：{destination}',
     'settings.captureRecordTitleIcon': '頁面標題與網站圖示',
     'settings.captureRecordTitleOnly': '頁面標題，不含網站圖示',
     'settings.captureRecordDomainIcon': '網站網域與網站圖示',
@@ -2260,50 +2259,43 @@ const I18N = {
     'settings.capturePolicySaved': '擷取偏好已存入這個瀏覽器設定檔。',
     'settings.capturePolicyFailed': 'Locus 無法確認這次擷取偏好是否已儲存。請重新載入最新資料後再繼續。',
     'settings.captureDestinationHeading': '儲存位置',
-    'settings.captureDestinationLabel': '快速儲存的預設位置',
-    'settings.captureDestinationHint': '鍵盤快速鍵與右鍵選單會使用這個位置；若無法確認，會停止儲存並保留原分頁。',
+    'settings.captureDestinationLabel': '快速儲存到',
+    'settings.captureDestinationHint': '工具列彈出視窗的「儲存」、鍵盤快速鍵與右鍵選單都會存到這裡；若無法確認位置，會停止儲存並保留原分頁。',
     'settings.captureAsk': '在彈出視窗中詢問儲存位置',
     'settings.captureAskHint': '關閉時，按「儲存」會直接存到快速儲存位置。',
     'settings.captureRemember': '記住上次使用的位置',
     'settings.captureRememberHint': '在彈出視窗選擇的位置，會成為下一次快速儲存位置。',
-    'settings.captureSourceHeading': '原分頁處理方式',
+    'settings.captureSourceHeading': '原分頁',
     'settings.captureClose': '確認儲存後關閉原分頁',
     'settings.captureCloseHint': '未確認儲存時不會關閉分頁。',
-    'settings.captureRecordHeading': '儲存的連結紀錄',
+    'settings.captureRecordHeading': '儲存紀錄',
     'settings.captureDedupe': '略過重複網址',
     'settings.captureDedupeHint': '目的地已有相同網址時，不再新增一筆。',
     'settings.captureTitle': '儲存頁面標題',
     'settings.captureTitleHint': '關閉後，改用網站網域作為標題。',
     'settings.captureFavicon': '儲存網站圖示',
     'settings.captureFaviconHint': '將瀏覽器提供的網站圖示參照保留在本機紀錄中。',
-    'settings.captureStorageProof': '已儲存內容與擷取偏好使用此瀏覽器設定檔；解除安裝或刪除設定檔前請先匯出。',
     'settings.shortcutsSub': '用鍵盤快捷鍵加速你的工作流程。',
-    'settings.privacy': '隱私',
     'settings.privacySub': '了解 Locus 會儲存與存取的內容，以及如何備份與救援資料。',
     'settings.storageSub': '查看瀏覽器設定檔的實際用量，以及 Locus 資料的估算明細。',
     'settings.dataSub': '把資料帶入這個瀏覽器設定檔前，先下載一份備份。',
     'settings.dataTransferAria': '本機資料備份與匯入',
-    'settings.dataBackupLabel': '先備份',
-    'settings.dataBackupDirection': '匯出 · 這個設定檔',
     'settings.dataBackupTitle': '下載備份',
     'settings.dataBackupBody': '將這個瀏覽器設定檔中的所有 Locus 資料存成一個 JSON 檔案，由你自行保管。',
     'settings.dataBackupLoading': '正在整理目前的 Locus 資料…',
     'settings.dataBackupSummary': '{workspaces} · {items} · 約 {size}',
     'settings.dataExportLimit': 'Locus 只能請瀏覽器下載檔案，無法確認檔案是否已儲存完成。',
     'settings.downloadBackup': '下載 JSON 備份',
-    'settings.dataRestoreLabel': '檢查後還原',
-    'settings.dataRestoreDirection': '匯入 · 先檢查',
-    'settings.dataRestoreTitle': '從 JSON 備份還原',
+    'settings.dataRestoreTitle': '從備份還原',
     'settings.dataRestoreBody': '選擇 Locus 或支援的舊版匯出檔。任何資料變更前，都會先讓你檢查內容並選擇「合併」或「全部取代」。',
     'settings.dataChooseStatus': '尚未選擇檔案。目前資料沒有變更。',
-    'settings.chooseBackup': '選擇 JSON 備份',
+    'settings.chooseBackup': '選擇檔案…',
     'settings.dataReadingFile': '正在讀取「{file}」…',
     'settings.dataReviewReady': '正在檢查「{file}」。目前資料尚未變更。',
     'settings.dataReviewFailed': '無法檢查「{file}」。請選擇另一個 JSON 備份。',
     'settings.dataReviewBlocked': '目前有其他復原步驟尚未完成。完成後，請再選擇一次「{file}」。',
     'settings.dataReviewCanceled': '已取消檢查。目前資料沒有變更。',
     'settings.dataImportCompleted': '匯入完成。需要時可再選擇其他備份。',
-    'settings.dataOtherLabel': '其他來源',
     'settings.dataOtherTitle': '加入目前空間',
     'settings.dataOtherBody': '書籤與貼上的連結會新增項目，不會還原完整的 Locus 備份。',
     'settings.bookmarksImporting': '正在匯入書籤…',
@@ -2311,15 +2303,33 @@ const I18N = {
     'settings.aboutSub': '為專注而生，為隱私而設計。',
     'settings.profile': '本機偏好設定',
     'settings.tipsOnboarding': '首次儲存引導',
-    'settings.privacyFirst': '隱私優先',
-    'settings.privacyFirstBody': '工作區資料存在此瀏覽器設定檔；解除安裝或刪除前請先匯出。Locus 沒有帳號、後端或主機權限。',
-    'settings.globalShortcuts': '瀏覽器快捷鍵',
+    'settings.globalShortcuts': '瀏覽器中',
     'settings.customizeShortcuts': '自訂',
-    'settings.customizeShortcutsHint': '開啟瀏覽器的擴充功能快捷鍵頁面',
     'settings.globalShortcutsHint': '這些快捷鍵在瀏覽器任何地方都有效，由瀏覽器管理。',
     'settings.inAppShortcuts': 'Locus 內',
-    'settings.searchShortcuts': '搜尋快捷鍵…',
-    'settings.noShortcuts': '沒有符合搜尋的快捷鍵。',
+    'settings.searchShortcuts': '篩選',
+    'settings.sectionsAria': '設定分區',
+    'settings.privacyData': '隱私與資料',
+    'settings.plan': '規劃',
+    'settings.planSub': '自動規劃規則，以及選用的 AI 輔助程式。',
+    'settings.companion': '本機 AI 輔助程式',
+    'settings.companionPaired': '已配對 {id}',
+    'settings.companionConnected': '已連接輔助程式',
+    'settings.companionOff': '已關閉 AI 輔助程式',
+    'settings.companionOffFailed': 'Locus 無法收回輔助程式的權限，請到瀏覽器的擴充功能頁面移除。',
+    'settings.companionNotInstalled': '尚未安裝',
+    'settings.companionReload': '重新整理後再連接',
+    'settings.companionNotConnected': '未連接',
+    'settings.openInPlan': '在規劃中開啟',
+    'settings.filterShortcuts': '篩選快捷鍵',
+    'settings.clearShortcutsFilter': '清除',
+    'settings.backupHeading': '備份',
+    'settings.bookmarksLabel': '瀏覽器書籤',
+    'settings.linksLabel': '連結',
+    'settings.exportPreparing': '準備中…',
+    'settings.exportRequested': '已要求下載',
+    'settings.stylePackResetDone': '已恢復核心樣式',
+    'settings.noShortcuts': '沒有符合的快捷鍵',
     'shortcuts.title': '鍵盤快捷鍵',
     'shortcuts.close': '關閉',
     'shortcuts.closeAria': '關閉鍵盤快捷鍵',
@@ -2342,9 +2352,7 @@ const I18N = {
     'shortcuts.openReference': '顯示鍵盤快捷鍵',
     'shortcuts.multiSelectTab': '選取多個已開啟分頁',
     'shortcuts.rangeSelectTabs': '選取一段已開啟分頁',
-    'settings.privacyContractKicker': '本機資料界線',
     'settings.privacyContractTitle': 'Locus 會儲存與存取哪些內容',
-    'settings.privacyContractBody': '這些界線取決於擴充功能的儲存方式、瀏覽器權限與網路規則。',
     'settings.privacyFactsAria': 'Locus 的資料與存取界線',
     'settings.privacyStorageLabel': '儲存位置',
     'settings.privacyStorageValue': '此瀏覽器設定檔',
@@ -2358,8 +2366,6 @@ const I18N = {
     'settings.privacyRecoveryLabel': '資料救援',
     'settings.privacyRecoveryValue': '手動 JSON 備份',
     'settings.privacyRecoveryBody': '解除安裝 Locus 或遺失此設定檔，可能會清除本機資料。請先下載備份。',
-    'settings.privacyActionsAria': '備份與還原操作',
-    'settings.reviewRestore': '查看還原選項',
     'settings.screenMaskPlugin': '螢幕分享遮罩外掛',
     'settings.screenMaskPluginHint': '選用的本機顯示遮罩，只會改變 Locus 顯示的內容。',
     'settings.screenMaskAvailable': '可使用',
@@ -2372,8 +2378,6 @@ const I18N = {
     'settings.privacySaving': '正在儲存螢幕分享遮罩設定…',
     'settings.privacySaved': '螢幕分享遮罩設定已儲存。',
     'settings.privacyFailed': '無法確認這次螢幕分享遮罩變更是否已儲存。請重新載入最新資料後再繼續。',
-    'settings.localStorage': '本機儲存空間',
-    'settings.storageUsageScope': '瀏覽器實際用量',
     'settings.storageUsageAria': '瀏覽器設定檔的本機儲存空間用量',
     'settings.storageChecking': '正在查看',
     'settings.storageRefresh': '重新查看',
@@ -2384,16 +2388,13 @@ const I18N = {
     'settings.storageStateWarn': '空間不多',
     'settings.storageStateFull': '即將用完',
     'settings.storageStateUnavailable': '無法取得',
-    'settings.storageProfileLimit': '瀏覽器上限',
     'settings.storageHint': '上方刻度顯示 Locus 在這個瀏覽器設定檔中的實際本機儲存空間用量。',
     'settings.storagePersistenceHint': '無論解除安裝擴充功能或刪除這個瀏覽器設定檔，都會移除其中儲存的 Locus 資料；請先下載備份。',
-    'settings.manageStorage': '封存與復原',
     'settings.openArchive': '開啟封存',
     'settings.storageArchiveLoading': '正在查看封存…',
     'settings.storageArchiveOne': '1 個封存項目 · 約 {bytes}',
     'settings.storageArchiveMany': '{count} 個封存項目 · 約 {bytes}',
     'settings.storageArchiveEmpty': '目前沒有封存項目',
-    'settings.manageHint': '封存可保留項目供日後復原，但不會釋出本機儲存空間。若要從垃圾桶永久刪除資料，請先下載備份。',
     'settings.whatsUsingSpace': '資料用量估算',
     'settings.storageBreakdownHint': '依目前的 Locus JSON 資料估算；瀏覽器的儲存編碼可能使結果與上方實際用量不同。',
     'settings.storageBreakdownAria': 'Locus 資料用量估算明細',
@@ -2448,7 +2449,6 @@ const I18N = {
     'paste.duplicateGroup': '{name}，第 {position} 個群組，共 {count} 個',
     'settings.exportJsonHint': '所有工作區的完整備份',
     'settings.exportHint': '匯出為純 JSON。檔案由你自行保管；未來版本的相容性會逐版驗證。',
-    'settings.aboutBody': '明確儲存分頁、筆記、任務與提醒的桌面首頁。',
     'settings.proof.account': '免帳號',
     'settings.proof.server': '無 Locus 伺服器',
     'settings.proof.host': '免主機權限',
@@ -6136,7 +6136,7 @@ function createThemeChoiceButton(theme, { compact = false } = {}) {
   copy.appendChild(name);
   if (theme.hintKey) {
     const hint = document.createElement('span');
-    hint.className = 'th-meta';
+    hint.className = 'th-meta sr-only';
     hint.textContent = tr(theme.hintKey);
     copy.appendChild(hint);
   }
@@ -6155,6 +6155,10 @@ function buildThemeGrid() {
   if (!grid || !packGrid) return;
   grid.textContent = '';
   packGrid.textContent = '';
+  const ring = document.createElement('span');
+  ring.className = 'stg-ring';
+  ring.setAttribute('aria-hidden', 'true');
+  grid.appendChild(ring);
   for (const theme of CORE_APPEARANCE_THEMES) {
     grid.appendChild(createThemeChoiceButton(theme));
   }
@@ -6941,6 +6945,7 @@ function renderAppearanceSettings() {
     status.dataset.state = appearanceSettingsStatus.state;
     status.textContent = tr(appearanceSettingsStatus.key);
   }
+  if (typeof paintAppearanceChoices === 'function') paintAppearanceChoices(settings, theme);
   paintSettingsPreferenceBusy();
   return { theme, packActive };
 }
@@ -7120,30 +7125,48 @@ async function commitPrivacySettingsChange(controlId, patch) {
 // ════════════════════════════════════════════════════════════════
 // SETTINGS PAGE (full-page surface: sidebar sections + panes)
 // ════════════════════════════════════════════════════════════════
+// Seven sections, as on the board. Privacy & data shows three panes (the facts
+// and mask, Storage, Backup); the Storage and Import & Export palette entries
+// and the legacy names open that section at their own pane.
 const SETTINGS_SECTIONS = [
-  { id: 'general',    title: 'settings.general',    sub: 'settings.generalSub' },
-  { id: 'appearance', title: 'settings.appearance', sub: 'settings.appearanceSub' },
-  { id: 'capture',    title: 'settings.capture',    sub: 'settings.captureSub' },
-  { id: 'shortcuts',  title: 'settings.shortcuts',  sub: 'settings.shortcutsSub' },
-  { id: 'privacy',    title: 'settings.privacy',    sub: 'settings.privacySub' },
-  { id: 'storage',    title: 'settings.storage',    sub: 'settings.storageSub' },
-  { id: 'data',       title: 'settings.data',       sub: 'settings.dataSub' },
-  { id: 'about',      title: 'settings.about',      sub: 'settings.aboutSub' },
+  { id: 'general',    title: 'settings.general',     sub: 'settings.generalSub' },
+  { id: 'appearance', title: 'settings.appearance',  sub: 'settings.appearanceSub' },
+  { id: 'capture',    title: 'settings.capture',     sub: 'settings.captureSub' },
+  { id: 'plan',       title: 'settings.plan',        sub: 'settings.planSub' },
+  { id: 'shortcuts',  title: 'settings.shortcuts',   sub: 'settings.shortcutsSub' },
+  { id: 'privacy',    title: 'settings.privacyData', sub: 'settings.privacySub', panes: ['privacy', 'storage', 'data'] },
+  { id: 'storage',    title: 'settings.storage',     sub: 'settings.storageSub', nav: 'privacy' },
+  { id: 'data',       title: 'settings.data',        sub: 'settings.dataSub', nav: 'privacy' },
+  { id: 'about',      title: 'settings.about',       sub: 'settings.aboutSub' },
 ];
+const SETTINGS_PANE_RENDERERS = {
+  general: () => renderGeneralSettings(),
+  appearance: () => renderAppearanceSettings(),
+  capture: () => renderCaptureSettings(),
+  plan: () => renderPlanSettings(),
+  shortcuts: () => renderShortcutsSettings(),
+  privacy: () => renderPrivacySettings(),
+  storage: () => renderStorageSettings(),
+  data: () => renderDataSettings(),
+  about: () => renderAboutSettings(),
+};
+let settingsSectionShown = '';
 
-// Activate one settings section: sidebar highlight, pane visibility, header
-// copy, and the pane's own (lazy) renderer. `tab` accepts the legacy drawer
+// Activate one settings section: the list's pill, pane visibility, heading,
+// and each shown pane's own (lazy) renderer. `tab` accepts the legacy drawer
 // names so old deep-links (menu "Theme" → appearance, palette entries) keep
 // working after the drawer → page migration.
 function setSettingsSection(tab) {
   const legacy = { behavior: 'general', archive: 'storage' };
   const id = legacy[tab] || tab;
+  const target = SETTINGS_SECTIONS.find(s => s.id === id) || SETTINGS_SECTIONS[0];
+  const section = target.nav ? SETTINGS_SECTIONS.find(s => s.id === target.nav) : target;
   const pending = settingsPreferencePendingTransaction();
-  if (pending && id !== pending.kind) {
+  if (pending && section.id !== pending.kind) {
     focusSettingsPreferencePendingControl();
     return false;
   }
-  const section = SETTINGS_SECTIONS.find(s => s.id === id) || SETTINGS_SECTIONS[0];
+  const panes = section.panes || [section.id];
   let activeButton = null;
 
   document.querySelectorAll('#drawer-tabs .dt').forEach(b => {
@@ -7154,7 +7177,7 @@ function setSettingsSection(tab) {
   });
   SETTINGS_SECTIONS.forEach(s => {
     const pane = document.getElementById('dp-' + s.id);
-    if (pane) pane.classList.toggle('hidden', s.id !== section.id);
+    if (pane) pane.classList.toggle('hidden', !panes.includes(s.id));
   });
 
   const title = document.getElementById('sp-title');
@@ -7162,25 +7185,26 @@ function setSettingsSection(tab) {
   if (title) { title.dataset.i18n = section.title; title.textContent = tr(section.title); }
   if (sub) { sub.dataset.i18n = section.sub; sub.textContent = tr(section.sub); }
 
-  if (section.id === 'general') renderGeneralSettings();
-  if (section.id === 'appearance') renderAppearanceSettings();
-  if (section.id === 'capture') renderCaptureSettings();
-  if (section.id === 'shortcuts') renderShortcutsSettings();
-  if (section.id === 'privacy') renderPrivacySettings();
-  if (section.id === 'storage') renderStorageSettings();
-  if (section.id === 'data') renderDataSettings();
-  if (section.id === 'about') renderAboutSettings();
+  panes.forEach(pane => SETTINGS_PANE_RENDERERS[pane]?.());
+  moveSettingsPill(activeButton);
 
-  // Content scrolls back to the top and (when motion is allowed) the pane
-  // slides in — the movement tells you the page changed, nothing more.
+  // A new section starts at the top and (when motion is allowed) rises in; the
+  // movement tells you the page changed, nothing more. A palette entry for
+  // Storage or Backup lands on that pane.
+  // The list item is brought into view first (it matters on the phone strip),
+  // so the pane scroll below has the last word.
   const main = document.getElementById('sp-main');
-  if (main) main.scrollTop = 0;
+  const changed = settingsSectionShown !== section.id;
+  settingsSectionShown = section.id;
   activeButton?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
-  const pane = document.getElementById('dp-' + section.id);
-  if (pane && !prefersReducedMotion() && State.get().settings.animate) {
-    pane.classList.remove('sp-enter');
-    void pane.offsetWidth;
-    pane.classList.add('sp-enter');
+  if (main && target !== section) {
+    document.getElementById('dp-' + target.id)?.scrollIntoView?.({ block: 'start', behavior: 'instant' });
+  } else if (main && changed) main.scrollTop = 0;
+  const content = document.getElementById('stg-content');
+  if (content && changed && !prefersReducedMotion() && State.get().settings.animate) {
+    content.classList.remove('sp-enter');
+    void content.offsetWidth;
+    content.classList.add('sp-enter');
   }
   return true;
 }
@@ -7467,6 +7491,18 @@ function renderStorageSettings() {
     row.append(rank, label, meta, track);
     host.appendChild(row);
   }
+  // The exact-usage fill is split by the estimated share of each kind, so the
+  // one meter reads as the board's segmented bar without inventing a total.
+  const meterFill = document.getElementById('storage-bar-fill');
+  if (meterFill && typeof meterFill.replaceChildren === 'function') {
+    meterFill.replaceChildren(...model.rows.filter(bucket => bucket.bytes > 0).map(bucket => {
+      const part = document.createElement('span');
+      part.className = 'stg-part';
+      part.dataset.storageKind = bucket.id;
+      part.style.flexGrow = String(bucket.bytes);
+      return part;
+    }));
+  }
   return model;
 }
 
@@ -7529,7 +7565,345 @@ function renderAboutSettings() {
   if (!el) return;
   let version = '3.1.0';
   try { version = chrome.runtime.getManifest?.().version || version; } catch {}
-  el.textContent = `Version ${version}`;
+  el.textContent = version;
+}
+
+// ── Settings page shell (2026-11 canvas) ────────────────────────────
+// Settings sits beside the rail and covers only the work area. The rail stays
+// usable: choosing a page there (or any route change) leaves Settings, unless a
+// preference write is still waiting for storage.
+let settingsPageRoute = '';
+let settingsPageRailObserver = null;
+let settingsPageResize = null;
+
+function isSettingsPageOpen() {
+  const page = document.getElementById('settings-drawer');
+  return !!page && !page.classList.contains('hidden');
+}
+
+function settingsPageRouteKey() {
+  try { return Router.build(Router.currentRoute()); } catch { return ''; }
+}
+
+function placeSettingsPage() {
+  const page = document.getElementById('settings-drawer');
+  if (!page) return;
+  const rail = document.getElementById('sidebar');
+  const edge = rail ? Math.max(0, Math.round(rail.getBoundingClientRect().right)) : 0;
+  page.style.setProperty('--stg-rail', `${edge}px`);
+  moveSettingsPill(page.querySelector('#drawer-tabs .dt.active'));
+}
+
+function showSettingsPage(page = document.getElementById('settings-drawer')) {
+  if (!page) return false;
+  page.classList.remove('hidden');
+  syncSettingsPageShell();
+  return true;
+}
+
+// Runs whenever the page's hidden class changes, whoever changed it (Escape,
+// Open archive, the guide, an import Replace), so the work area never stays inert.
+function syncSettingsPageShell() {
+  const open = isSettingsPageOpen();
+  for (const child of document.getElementById('app')?.children || []) {
+    if (child.id !== 'sidebar') setElementInertOwner(child, 'settings-page', open);
+  }
+  if (open) {
+    if (!settingsPageRoute) settingsPageRoute = settingsPageRouteKey();
+    placeSettingsPage();
+    const rail = document.getElementById('sidebar');
+    if (rail && !settingsPageRailObserver && typeof ResizeObserver === 'function') {
+      settingsPageRailObserver = new ResizeObserver(() => placeSettingsPage());
+      settingsPageRailObserver.observe(rail);
+    }
+    if (!settingsPageResize) {
+      settingsPageResize = rafThrottle(placeSettingsPage);
+      window.addEventListener('resize', settingsPageResize);
+    }
+    return true;
+  }
+  settingsPageRoute = '';
+  settingsSectionShown = '';
+  settingsPageRailObserver?.disconnect();
+  settingsPageRailObserver = null;
+  if (settingsPageResize) window.removeEventListener('resize', settingsPageResize);
+  settingsPageResize = null;
+  return false;
+}
+
+function closeSettingsPage({ restoreFocus = true } = {}) {
+  const page = document.getElementById('settings-drawer');
+  if (!page || page.classList.contains('hidden')) return false;
+  if (settingsPreferenceBlocksDismissal()) {
+    focusSettingsPreferencePendingControl();
+    return false;
+  }
+  page.classList.add('hidden');
+  if (restoreFocus) restoreOpener(page);
+  else _overlayOpeners.delete(page);
+  syncSettingsPageShell();
+  return true;
+}
+
+// A rail control that goes somewhere leaves Settings first; the ones that open
+// a menu or a dialog (More, workspaces, new Space, collapse) leave it open.
+const SETTINGS_RAIL_STAYS = new Set(['nav-more', 'ws-menu-btn', 'add-ws-btn', 'add-cat-btn', 'sidebar-toggle']);
+function handleSettingsRailClick(event) {
+  if (!isSettingsPageOpen()) return false;
+  const control = event.target?.closest?.('button, a, [role="button"]');
+  if (!control || SETTINGS_RAIL_STAYS.has(control.id) || control.hasAttribute('aria-haspopup')) return false;
+  if (settingsPreferenceBlocksDismissal()) {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    focusSettingsPreferencePendingControl();
+    return true;
+  }
+  return closeSettingsPage({ restoreFocus: false });
+}
+
+// renderBoard() calls this: a route change made while Settings is open (a menu
+// item, a receipt's Show, the palette) means the person went somewhere else.
+function closeSettingsPageOnRouteChange() {
+  if (!isSettingsPageOpen() || !settingsPageRoute) return false;
+  if (settingsPageRouteKey() === settingsPageRoute) return false;
+  return closeSettingsPage({ restoreFocus: false });
+}
+
+// The white pill slides behind the active section (down the list, or along the
+// strip at phone width).
+function moveSettingsPill(button) {
+  const nav = document.getElementById('drawer-tabs');
+  const pill = nav?.querySelector('.stg-pill');
+  if (!nav || !pill) return false;
+  if (!button || !button.offsetWidth) {
+    nav.dataset.pill = 'off';
+    return false;
+  }
+  nav.style.setProperty('--stg-pill-x', `${button.offsetLeft}px`);
+  nav.style.setProperty('--stg-pill-y', `${button.offsetTop}px`);
+  nav.style.setProperty('--stg-pill-w', `${button.offsetWidth}px`);
+  nav.style.setProperty('--stg-pill-h', `${button.offsetHeight}px`);
+  nav.dataset.pill = 'on';
+  return true;
+}
+
+// The knob squashes and springs each time a switch flips (Today's replay
+// pattern: drop the class, reflow, add it back).
+function springSettingsSwitch(input) {
+  const knob = input?.closest?.('.stg-sw')?.querySelector('.stg-knob');
+  if (!knob) return false;
+  knob.classList.remove('is-sprung');
+  void knob.offsetWidth;
+  knob.classList.add('is-sprung');
+  return true;
+}
+
+// Appearance: the ring slides to the chosen core mode, the size and width
+// thumbs slide to their choice, and the preview crossfades to the new theme.
+let appearancePreviewTheme = '';
+const APPEARANCE_PREVIEW_MARKUP = '<span class="stg-pv-rail"></span><span class="stg-pv-body"><span class="stg-pv-clock"></span><span class="stg-pv-now"><i></i></span><span class="stg-pv-cards"><span></span><span></span><span></span></span></span>';
+
+function settingsThemeColors(id) {
+  const core = CORE_APPEARANCE_THEMES.find(theme => theme.id === id);
+  return core?.colors || THEMES.find(theme => theme.id === id)?.colors || CORE_APPEARANCE_THEMES[1].colors;
+}
+
+function paintAppearancePreviewLayer(layer, id) {
+  const colors = settingsThemeColors(id);
+  layer.dataset.theme = id;
+  layer.classList.toggle('is-dark', id !== 'auto' && isDarkTheme(id));
+  layer.classList.toggle('is-split', id === 'auto');
+  layer.style.setProperty('--pv-ground', colors[0]);
+  layer.style.setProperty('--pv-accent', colors[1]);
+  layer.style.setProperty('--pv-ground-2', colors[2]);
+}
+
+function paintAppearancePreview(theme) {
+  const host = document.getElementById('appearance-preview');
+  if (!host) return false;
+  if (host.children.length !== 2) {
+    host.textContent = '';
+    for (let index = 0; index < 2; index++) {
+      const layer = document.createElement('span');
+      layer.className = 'stg-layer';
+      layer.innerHTML = APPEARANCE_PREVIEW_MARKUP;
+      host.appendChild(layer);
+    }
+    appearancePreviewTheme = '';
+  }
+  const [first, second] = host.children;
+  if (!appearancePreviewTheme) {
+    paintAppearancePreviewLayer(first, theme);
+    first.classList.add('is-front');
+    second.classList.remove('is-front');
+  } else if (appearancePreviewTheme !== theme) {
+    const front = first.classList.contains('is-front') ? first : second;
+    const back = front === first ? second : first;
+    paintAppearancePreviewLayer(back, theme);
+    back.classList.add('is-front');
+    front.classList.remove('is-front');
+  }
+  appearancePreviewTheme = theme;
+  return true;
+}
+
+function paintAppearanceChoices(settings, theme) {
+  const grid = document.getElementById('theme-grid');
+  const index = CORE_APPEARANCE_THEMES.findIndex(core => core.id === theme);
+  if (grid) {
+    grid.style.setProperty('--stg-ring', String(Math.max(0, index)));
+    grid.dataset.ring = index < 0 ? 'off' : 'on';
+  }
+  for (const [id, key, values] of [
+    ['seg-size', 'size', ['compact', 'normal', 'large']],
+    ['seg-width', 'width', ['narrow', 'normal', 'wide']],
+  ]) {
+    const seg = document.getElementById(id);
+    if (seg) seg.style.setProperty('--stg-i', String(Math.max(0, values.indexOf(appearanceSettingValue(settings, key)))));
+  }
+  paintAppearancePreview(theme);
+}
+
+// Plan: the two Auto-plan rules (Plan's own setting and receipt) and the
+// optional AI companion. The companion switch is the browser's grant of the
+// optional nativeMessaging permission; there is no stored on/off field.
+let settingsCompanionBusy = false;
+let settingsCompanionGeneration = 0;
+const SETTINGS_COMPANION_ERRORS = ['notInstalled', 'forbidden', 'denied', 'reloadNeeded', 'disconnected', 'error'];
+
+function renderPlanSettings() {
+  const settings = State.get()?.settings || {};
+  const pendingRule = typeof planRuleSettingPending !== 'undefined' && !!planRuleSettingPending;
+  document.querySelectorAll('#dp-plan [data-plan-rule]').forEach(input => {
+    if (typeof planRuleOn === 'function') input.checked = planRuleOn(settings, input.dataset.planRule);
+    input.disabled = pendingRule;
+  });
+  return paintSettingsCompanion();
+}
+
+async function paintSettingsCompanion() {
+  const input = document.getElementById('tog-companion');
+  const chip = document.getElementById('settings-companion-state');
+  if (!input || !chip) return null;
+  const generation = ++settingsCompanionGeneration;
+  const granted = typeof plannerHasNativePermission === 'function' ? await plannerHasNativePermission() : false;
+  let stored = '';
+  if (granted && typeof PLANNER_LINK_KEY === 'string') {
+    try { stored = String((await chrome.storage.local.get(PLANNER_LINK_KEY))?.[PLANNER_LINK_KEY]?.pairingId || ''); } catch {}
+  }
+  if (generation !== settingsCompanionGeneration) return null;
+  const link = typeof plannerLink === 'object' && plannerLink ? plannerLink : { status: 'off', pairingId: '', detail: '' };
+  const on = settingsCompanionBusy ? input.checked : granted;
+  const id = link.pairingId || stored;
+  let key = '';
+  let state = '';
+  if (settingsCompanionBusy || link.status === 'connecting') {
+    key = on ? 'planner.companion.connecting' : '';
+    state = 'busy';
+  } else if (on && link.status === 'notInstalled') {
+    key = 'settings.companionNotInstalled';
+    state = 'error';
+  } else if (on && link.status === 'reloadNeeded') {
+    key = 'settings.companionReload';
+    state = 'error';
+  } else if (on && SETTINGS_COMPANION_ERRORS.includes(link.status)) {
+    key = 'settings.companionNotConnected';
+    state = 'error';
+  } else if (on && id) {
+    key = 'settings.companionPaired';
+    state = 'paired';
+  }
+  input.checked = on;
+  input.disabled = settingsCompanionBusy;
+  input.setAttribute('aria-busy', String(settingsCompanionBusy));
+  chip.hidden = !key;
+  chip.dataset.state = state;
+  chip.textContent = key ? tr(key, { id }) : '';
+  chip.title = state === 'error' ? tr(`planner.companion.${link.status}`, { id, message: link.detail || '' }) : '';
+  return { on, key, state };
+}
+
+// On: the permission prompt must open inside the click, so the caller passes
+// the pending grant. Off: disconnect and release the optional permission; the
+// pairing key stays with the companion link, so turning it on again re-pairs.
+async function setSettingsCompanion(on, granted = null) {
+  if (settingsCompanionBusy) return false;
+  settingsCompanionBusy = true;
+  void paintSettingsCompanion();
+  let result = false;
+  try {
+    if (on) {
+      if (!await granted) {
+        toast(tr('planner.companion.denied'), { tone: 'warning' });
+      } else if (await plannerCompanionConnect()) {
+        result = true;
+        toast(tr('settings.companionConnected'), {
+          sub: plannerLink.pairingId ? tr('settings.companionPaired', { id: plannerLink.pairingId }) : '',
+        });
+        plannerScheduleIdleDisconnect();
+      } else {
+        toast(tr(`planner.companion.${plannerLink.status}`, { id: '', message: plannerLink.detail || '' }), { tone: 'warning' });
+      }
+    } else {
+      plannerCompanionDisconnect();
+      try { result = await chrome.permissions.remove({ permissions: ['nativeMessaging'] }); } catch { result = false; }
+      toast(tr(result ? 'settings.companionOff' : 'settings.companionOffFailed'), result ? {} : { tone: 'warning' });
+    }
+  } finally {
+    settingsCompanionBusy = false;
+    await paintSettingsCompanion();
+  }
+  return result;
+}
+
+function openPlannerFromSettings() {
+  if (!closeSettingsPage({ restoreFocus: false })) return false;
+  if (typeof openPlan === 'function') openPlan('upcoming');
+  return typeof openPlannerDialog === 'function'
+    ? openPlannerDialog(document.getElementById('plan-ai-btn'))
+    : false;
+}
+
+// Download: the button fills while the backup is prepared, then the request is
+// made, the button turns green, and the shared receipt names the file. The
+// export has no measurable steps, so the fill shows no percentage.
+let settingsExportTimer = null;
+function paintSettingsExport(button, state) {
+  button.dataset.state = state;
+  button.setAttribute('aria-busy', String(state === 'run'));
+  const text = button.querySelector('.stg-export-text');
+  const key = state === 'run' ? 'settings.exportPreparing' : state === 'done' ? 'settings.exportRequested' : 'settings.downloadBackup';
+  if (text) {
+    text.dataset.i18n = key;
+    text.textContent = tr(key);
+  }
+}
+
+function runSettingsExport() {
+  const button = document.getElementById('export-btn');
+  if (!button) return exportJSON();
+  if (button.dataset.state === 'run') return false;
+  clearTimeout(settingsExportTimer);
+  let finished = false;
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    clearTimeout(settingsExportTimer);
+    const file = exportJSON();
+    renderDataSettings();
+    paintSettingsExport(button, 'done');
+    settingsExportTimer = setTimeout(() => paintSettingsExport(button, 'idle'), 2400);
+    return file;
+  };
+  paintSettingsExport(button, 'run');
+  const fill = button.querySelector('.stg-export-fill');
+  if (!fill || prefersReducedMotion() || !State.get().settings.animate) return finish();
+  fill.classList.remove('is-running');
+  void fill.offsetWidth;
+  fill.classList.add('is-running');
+  fill.addEventListener('animationend', finish, { once: true });
+  settingsExportTimer = setTimeout(finish, 900);
+  return true;
 }
 
 function applySettings() {
@@ -17160,6 +17534,8 @@ function layoutLabel(mode) {
 // mutates state calls renderBoard() to re-render whatever layout is showing.
 function renderBoard() {
   invalidateItemCache();
+  // Settings is a page beside the rail; going anywhere else leaves it.
+  closeSettingsPageOnRouteChange();
   updateCalendarButton();
   updateNavChrome();
   // Home is a block-scrolling surface; clear its class up front so the calendar
@@ -26223,10 +26599,12 @@ function exportJSON(options = {}) {
   a.download = `${prefix}${wsTag}-${new Date().toISOString().slice(0,10)}.json`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+  // The receipt names the requested file as its mono sub-line.
   if (!options.silent) toast(tr('feedback.exported', {
     workspaces: counts.workspaces,
     items: counts.items,
-  }));
+  }), { sub: a.download });
+  return a.download;
 }
 
 let importCtx = null;
@@ -34464,13 +34842,14 @@ function openSettingsDrawer(tab, opener = null) {
   if (!d) return;
   focusDialogOpener(opener);
   rememberOpener(d, opener);
-  d.classList.remove('hidden');
+  showSettingsPage(d);
   setSettingsSection(tab || document.querySelector('#drawer-tabs .dt.active')?.dataset.tab || 'general');
   try { renderAppearanceSettings(); } catch {}
   try { renderCaptureSettings(); } catch {}
   setTimeout(() => {
     const active = d.querySelector('#drawer-tabs .dt.active');
-    if (active) active.focus();
+    // No scroll: a palette entry may have opened the page at Storage or Backup.
+    if (active) active.focus({ preventScroll: true });
     else focusFirstIn(d);
   }, 50);
 }
@@ -37123,20 +37502,25 @@ function bindStatic() {
   };
 
   const _drawer = document.getElementById('settings-drawer');
-  const _openDrawer = () => { rememberOpener(_drawer); _drawer.classList.remove('hidden'); setSettingsSection(document.querySelector('#drawer-tabs .dt.active')?.dataset.tab || 'general'); renderAppearanceSettings(); renderCaptureSettings(); setTimeout(() => focusFirstIn(_drawer), 50); };
+  const _openDrawer = event => openSettingsDrawer(null, event?.currentTarget || null);
   const _closeDrawer = () => {
     if (settingsPreferenceBlocksDismissal()) {
       focusSettingsPreferencePendingControl();
       return false;
     }
-    _drawer.classList.add('hidden');
-    restoreOpener(_drawer);
-    return true;
+    return closeSettingsPage();
   };
   document.getElementById('settings-btn').onclick = _openDrawer;
   document.getElementById('drawer-x').onclick = _closeDrawer;
   _drawer.onclick = e => { if (e.target.id === 'settings-drawer') _closeDrawer(); };
-  _drawer.addEventListener('keydown', e => trapTabKey(e, _drawer));
+  // Settings is a page beside the rail, so Tab may reach the rail; only a
+  // preference write waiting for storage keeps Tab inside Settings.
+  _drawer.addEventListener('keydown', e => { if (settingsPreferencePendingTransaction()) trapTabKey(e, _drawer); });
+  new MutationObserver(syncSettingsPageShell).observe(_drawer, { attributes: true, attributeFilter: ['class'] });
+  document.getElementById('sidebar')?.addEventListener('click', handleSettingsRailClick, true);
+  _drawer.addEventListener('change', event => {
+    if (event.target?.classList?.contains('stg-sw-in')) springSettingsSwitch(event.target);
+  }, true);
   // About dialog (opened from the app menu)
   const _about = document.getElementById('about-overlay');
   if (_about) {
@@ -37207,15 +37591,17 @@ function bindStatic() {
       if (e.key === 'Escape' && shortcutsFilter.value) { e.stopPropagation(); shortcutsFilter.value = ''; filterAppShortcuts(); }
     };
   }
+  const shortcutsClear = document.getElementById('shortcuts-clear');
+  if (shortcutsClear && shortcutsFilter) shortcutsClear.onclick = () => {
+    shortcutsFilter.value = '';
+    filterAppShortcuts();
+    shortcutsFilter.focus();
+  };
   const shortcutsCustomize = document.getElementById('shortcuts-customize');
   if (shortcutsCustomize) shortcutsCustomize.onclick = () => {
     const url = /Edg\//.test(navigator.userAgent) ? 'edge://extensions/shortcuts' : 'chrome://extensions/shortcuts';
     try { chrome.tabs.create({ url }); } catch { toast(tr('shortcuts.customizeFallback', { url }), { duration: 5000 }); }
   };
-  const privacyExport = document.getElementById('privacy-export-btn');
-  if (privacyExport) privacyExport.onclick = exportJSON;
-  const privacyGotoData = document.getElementById('privacy-goto-data');
-  if (privacyGotoData) privacyGotoData.onclick = () => setSettingsSection('data');
   const storageRefreshBtn = document.getElementById('storage-refresh');
   if (storageRefreshBtn) storageRefreshBtn.onclick = () => {
     if (storageRefreshBtn.getAttribute('aria-disabled') === 'true') return;
@@ -37223,11 +37609,28 @@ function bindStatic() {
   };
   const openArchiveBtn = document.getElementById('storage-open-archive');
   if (openArchiveBtn) openArchiveBtn.onclick = () => {
-    const d = document.getElementById('settings-drawer');
-    d.classList.add('hidden');
-    restoreOpener(d);
+    if (!closeSettingsPage({ restoreFocus: false })) return;
     openLibrarySurface('archive');
   };
+  // Plan: the Auto-plan rules use Plan's own receipt-gated setting; the
+  // companion switch asks for (or releases) the optional permission.
+  document.querySelectorAll('#dp-plan [data-plan-rule]').forEach(input => {
+    input.onchange = () => {
+      if (typeof commitPlanRuleSetting !== 'function') return;
+      input.disabled = true;
+      void commitPlanRuleSetting(input.dataset.planRule, !!input.checked).finally(() => renderPlanSettings());
+    };
+  });
+  const companionToggle = document.getElementById('tog-companion');
+  if (companionToggle) companionToggle.onchange = () => {
+    const on = !!companionToggle.checked;
+    const granted = on && typeof plannerRequestNativePermission === 'function'
+      ? plannerRequestNativePermission()
+      : Promise.resolve(false);
+    void setSettingsCompanion(on, granted);
+  };
+  const openPlannerBtn = document.getElementById('settings-open-planner');
+  if (openPlannerBtn) openPlannerBtn.onclick = () => { openPlannerFromSettings(); };
 
   // Settings controls
   const languageSelect = document.getElementById('seg-language');
@@ -37244,9 +37647,20 @@ function bindStatic() {
     void commitAppearanceSettingsChange(b.id, { font: b.dataset.val });
   });
   const appearancePackReset = document.getElementById('appearance-pack-reset');
-  if (appearancePackReset) appearancePackReset.onclick = () => {
-    const patch = appearanceStylePackResetPatch(State.get().settings || {});
-    if (Object.keys(patch).length) void commitAppearanceSettingsChange(appearancePackReset.id, patch);
+  // The reset's receipt offers Undo, which puts back the exact optional theme,
+  // typeface, and width through the same acknowledged write.
+  if (appearancePackReset) appearancePackReset.onclick = async () => {
+    const settings = State.get().settings || {};
+    const patch = appearanceStylePackResetPatch(settings);
+    if (!Object.keys(patch).length) return;
+    const previous = Object.fromEntries(Object.keys(patch).map(key => [key, appearanceSettingValue(settings, key)]));
+    if (!await commitAppearanceSettingsChange(appearancePackReset.id, patch)) return;
+    toast(tr('settings.stylePackResetDone'), {
+      actionLabel: tr('history.undoAction'),
+      action: () => commitAppearanceSettingsChange(appearancePackReset.id, previous).then(ok => (ok
+        ? { message: tr('history.undid', { action: tr('settings.stylePackReset') }), tone: 'info' }
+        : { message: tr('toast.actionFailed'), tone: 'error' })),
+    });
   };
   const bindGeneralToggle = (id, key) => {
     const control = document.getElementById(id);
@@ -37330,8 +37744,7 @@ function bindStatic() {
   bindCaptureToggle('tog-capture-favicon', 'captureIncludeFavicon');
 
   document.getElementById('export-btn').onclick = () => {
-    exportJSON();
-    renderDataSettings();
+    runSettingsExport();
   };
   const importFile = document.getElementById('import-file');
   const importJsonButton = document.getElementById('import-json-btn');

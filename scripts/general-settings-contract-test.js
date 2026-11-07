@@ -22,11 +22,8 @@ function countId(id) {
 }
 
 const generalHtml = extractBetween('<!-- ── General ── -->', '<!-- ── Appearance ── -->', html);
-const generalCss = extractBetween(
-  '/* General keeps only language, recovery opening, and first-save help',
-  '/* Shared section header row used by Settings shortcut groups. */',
-  css,
-);
+// General's rows are drawn by the Settings page layer (2026-11 canvas board).
+const generalCss = extractBetween('   SETTINGS PAGE (2026-11 canvas)', '\n/* ----', css);
 const generalSource = extractBetween('const GENERAL_SETTING_KEYS', 'const CAPTURE_SETTING_CONTROL_IDS');
 
 for (const id of [
@@ -197,33 +194,32 @@ assert.doesNotMatch(source,
   'legacy blur and fire-and-forget General bindings must be gone');
 
 for (const contract of [
-  /\.general-preferences\s*\{[^}]*border-top:\s*3px solid var\(--index-locator/,
-  /#dp-general\.sp-enter\s*\{[^}]*animation:\s*none/,
-  /\.general-language-select\s*\{[^}]*width:\s*min\(100%,\s*340px\)[^}]*min-height:\s*44px[^}]*border-radius:\s*3px/,
-  /\.general-toggle-list \.toggle-row\s*\{[^}]*min-height:\s*54px[^}]*border-bottom:\s*1px solid var\(--border\)/,
-  /\.general-workspace-plugin\[data-locked="true"\] > summary\s*\{[^}]*cursor:\s*wait/,
+  /\.stg-card \{[^}]*border: 1px solid var\(--stg-rule\)[^}]*border-radius: 20px/,
+  /\.stg-content\.sp-enter \{ animation: stgIn \.3s var\(--today-ease\) both; \}/,
+  /\.stg-select \{[^}]*min-width: 220px;[^}]*max-width: 100%;[^}]*min-height: 44px;[^}]*border-radius: 12px/,
+  /\.stg-row \{[^}]*display: flex;[^}]*flex-wrap: wrap;[^}]*min-height: 64px/,
+  /\.stg-disc > summary\[aria-disabled="true"\],\n\.stg-disc\[data-locked="true"\] > summary \{ cursor: wait; \}/,
 ]) {
-  assert.match(generalCss, contract, 'General must use the compact Locus Index contract: ' + contract);
+  assert.match(generalCss, contract, 'General must use the Settings page layer: ' + contract);
 }
-assert.doesNotMatch(generalCss, /(?:linear|radial|conic)-gradient\s*\(|backdrop-filter|translateY\(|scale\(/,
-  'General must not use decorative gradients, blur, lift, or scale motion');
+// The board's motion (the springy knob, the rise of a disclosure) uses scale
+// and translate; decorative gradients and glass blur stay out.
+assert.doesNotMatch(generalCss, /(?:linear|radial|conic)-gradient\s*\(|backdrop-filter/,
+  'General must not use decorative gradients or glass blur');
 assert.match(generalCss,
-  /@media \(max-width:\s*620px\) \{\n  \.general-language-select \{ width: 100%; \}\n\}/,
-  'the language select must take the full row at 620/520 px');
-assert.doesNotMatch(css, /\.general-name-|\.general-plugin-controls/,
-  'the Welcome name field and its plugin controls must leave no styles behind');
-assert.match(css,
-  /@media \(max-width:\s*800px\)[\s\S]*\.appearance-setting,[\s\S]*\.appearance-pack-section\s*\{[^}]*grid-template-columns:\s*1fr/,
-  'General must inherit the deliberate 800 px stack from the shared preference ledger');
-assert.match(css,
+  /@container \(max-width: 640px\) \{[\s\S]*\.stg-select,\n  \.stg-seg,[\s\S]*\{ flex: 1 1 100%; width: 100%; min-width: 0; \}/,
+  'the language select must take the full row at phone width');
+assert.doesNotMatch(css, /\.general-name-|\.general-plugin-controls|\.general-language-select|\.general-toggle-list/,
+  'the Welcome name field, its plugin controls and the old General ledger must leave no styles behind');
+assert.match(generalCss,
   /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*#settings-drawer \*[\s\S]*transition:\s*none !important/,
   'General must inherit the Settings reduced-motion boundary');
-assert.match(css,
-  /body\[data-anim="off"\] \.appearance-profile,[\s\S]*transition:\s*none !important/,
+assert.match(generalCss,
+  /body\[data-anim="off"\] #settings-drawer,[\s\S]*transition:\s*none !important/,
   'the product Motion preference must suppress General transitions');
-assert.match(css,
-  /@media \(forced-colors:\s*active\)[\s\S]*\.general-language-select \{[^}]*border-color:\s*CanvasText[\s\S]*\.general-preferences\s*\{[^}]*border-top-color:\s*Highlight/,
-  'forced colors must preserve General control boundaries and its one locator');
+assert.match(generalCss,
+  /@media \(forced-colors:\s*active\)[\s\S]*#settings-drawer :is\(\.stg-card, \.stg-btn, \.stg-select[^)]*\) \{ border: 1px solid CanvasText; \}/,
+  'forced colors must preserve General card and control boundaries');
 
 const CONTROL_IDS = [
   'seg-language',

@@ -123,7 +123,10 @@ function testRemainingSurfaces() {
   ok(/<p class="sr-only" id="library-sub"><\/p>/.test(newtab) && /aria-describedby="library-sub"/.test(newtab)
     && /root\.querySelector\('#library-sub'\)\.textContent = tr\(currentMode === 'favorites' \? 'library\.subtitleFavorites' : currentMode === 'read-later' \? 'readLater\.subtitle' : 'library\.subtitleAll'\);/.test(newtab),
   'the Library sub-line copy is still in the page, hidden, as the list’s description');
-  ok(/#settings-drawer \.toggle-row small\[id\$="-hint"\] \{\n\s*position: absolute;\n\s*width: 1px;/.test(layer), 'Settings hints are hidden visually, not removed');
+  // The Settings page (2026-11 canvas board) keeps each hint as a visually
+  // hidden description of its control.
+  ok(/<small class="sr-only" id="general-hibernate-hint"/.test(html) && /<small class="sr-only" id="capture-close-hint"/.test(html)
+    && !/#settings-drawer \.toggle-row/.test(css), 'Settings hints are hidden visually, not removed');
   ok(/aria-describedby="[^"]*general-hibernate-hint/.test(html) || /general-hibernate-hint/.test(newtab), 'Settings hints stay referenced for assistive technology');
   ok(/body\[data-theme\] \.gcol \.item \{\n\s*\/\*[^*]*\*\/\n\s*flex-shrink: 0;/.test(layer), 'a full board column scrolls instead of shrinking its cards');
   ok(/@media \(prefers-reduced-motion: reduce\) \{\n\s*body\[data-theme\] \.gcol \.item \{ transition: none; \}/.test(layer), 'card hover motion stops under reduced motion');

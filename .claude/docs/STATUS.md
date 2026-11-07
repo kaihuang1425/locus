@@ -299,6 +299,20 @@ Slices, in order:
 
 ## Done (newest first)
 
+- **2026-11-07 - Settings built from its canvas board (pages build, page 8 of 9).** Settings is a
+  page beside the rail (`Settings.dc.html`): a big heading, seven sections with a sliding white pill
+  (General, Appearance, Capture, Plan, Shortcuts, Privacy & data, About), and cards of rows with
+  springy switches. The work area goes inert while it shows; the rail, any route change or Escape
+  leaves it. New: the Plan section (Auto-plan rules through Plan's own setting, and the AI companion
+  off switch on the optional nativeMessaging permission, no stored field), the theme preview
+  crossfade and sliding ring, Undo on Use core defaults, the filling download whose receipt names the
+  file, Clear on an empty shortcut filter. Privacy, Storage and Import & Export are one section.
+  Hints, sub-lines and the Capture contract stay as hidden descriptions. Capture copy names the
+  popup's Save. Suites: new `settings-page-contract-test.js` (294 checks); ported general, appearance
+  and privacy settings, core visual system, quality gates, canvas pages, onboarding. Evidence:
+  `locus-redesign-evidence/pages/settings/` (Edge 157, 68/68 checks, `pages-settings-log.txt`,
+  25/25 mutations in `mutation-results.txt`).
+
 - **2026-11-07 - Archive & Trash built from its canvas board (pages build, page 7 of 9).** One page
   for both collections (`Archive.dc.html`): a big heading, an Archive / Trash switch whose thumb slides
   and whose counts roll (a growing count bumps), one filter field and the type chips, then the entries by
