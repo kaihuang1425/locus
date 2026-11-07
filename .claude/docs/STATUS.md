@@ -299,6 +299,19 @@ Slices, in order:
 
 ## Done (newest first)
 
+- **2026-11-07 - Final-review fixes for Details, Find again with the palette, and the Calendar (R2-1 to R2-18).**
+  Focus returns to the same Calendar control after paging, a view change, Undo and quick add, and
+  leaving Search or the Calendar lands on a control, never `<body>`. Quick add on today after 9:00
+  takes the next whole hour. Move to and the Details quick times keep "every 2 weeks"; Tomorrow and
+  Next week keep the clock time across DST. Escape folds Details' quick times first; one-key shortcuts
+  wait behind Details or a dialog; Archive drops the id from the address. Enter right after typing
+  opens the first result; arrows reuse the painted rows (about 20 ms to 3.5 ms a press at 1,500 items);
+  the palette lists links once per open (13–15 ms to 7 ms a key). Calendar, Details, Find again and
+  palette text holds 4.5:1 in all 19 themes (theme-aware inks); the listed targets are 44 px boxes;
+  the palette field shows its focus again. Suites: calendar page, item detail, search page, search
+  recovery, reminder overdue, core visual; 41/41 mutations caught. Evidence:
+  `locus-redesign-evidence/pages/fixes-r2/` (Edge 157, 13/13 proof checks).
+
 - **2026-11-07 - Final-review fixes for Archive & Trash, Settings and the popup (R3-1 to R3-10).**
   Delete forever removes exactly the chosen entries by identity (twins that share a key no longer
   collapse; an unrelated entry can no longer be removed). Focus after a write lands on a visible

@@ -49,6 +49,7 @@ const SLICES = [
   'calMoveEntry', 'calendarFocusAfterMove', 'calWhenLabel', 'calPeriodLabel', 'isCalendarTaskMutationPending',
   'paintCalendarTaskDialog', 'setCalendarTaskBusy', 'setCalendarTaskError', 'closeCalendarTaskDialog',
   'focusCalendarTaskMutationTarget', 'calendarAddInline', 'paintCalendarAddInline',
+  'calendarTaskDateParts', 'reminderRecurRecord', 'calFocusMemo', 'calRestoreFocus',
 ];
 
 function element(id, extra = {}) {
@@ -195,6 +196,27 @@ function dateRules(zone) {
   eq(c.calDayIndex(days[0], local(2026, 12, 7), 42), -1, `${zone}: a day past the grid has no index`);
   eq(c.planAddDays(local(2026, 10, 31), 1), local(2026, 11, 1), `${zone}: an arrow step lands on the next local midnight`);
   eq(c.planAddDays(local(2026, 10, 25), -1), local(2026, 10, 24), `${zone}: and back across Berlin's change`);
+
+  // Finding R2-2: quick add (and the reviewed dialog) on today after 9:00 takes
+  // the next whole hour, as Move to does, so a new task is never past due.
+  const parts = (dayStart, now) => c.calendarTaskDateParts(dayStart, now);
+  eq(parts(local(2026, 11, 11), local(2026, 11, 11, 8, 10)).at, local(2026, 11, 11, 9, 0), `${zone}: before 9:00 today the task keeps 9:00`);
+  eq(parts(local(2026, 11, 11), local(2026, 11, 11, 13, 39)).at, local(2026, 11, 11, 14, 0), `${zone}: after 9:00 today the task takes the next whole hour (finding R2-2)`);
+  eq(parts(local(2026, 11, 11), local(2026, 11, 11, 9, 0)).at, local(2026, 11, 11, 10, 0), `${zone}: at 9:00 exactly the hour has passed`);
+  ok(parts(local(2026, 11, 11), local(2026, 11, 11, 23, 30)).at > local(2026, 11, 11, 23, 30), `${zone}: late in the evening the task is still ahead`);
+  eq(parts(local(2026, 11, 12), local(2026, 11, 11, 13, 39)).at, local(2026, 11, 12, 9, 0), `${zone}: another day keeps 9:00`);
+  eq(parts(local(2026, 11, 11), local(2026, 11, 11, 13, 39)).timeLabel, new Date(local(2026, 11, 11, 14, 0)).toLocaleTimeString('en', { hour: 'numeric', minute: '2-digit' }), `${zone}: the review and the receipt name that hour`);
+  eq(parts(local(2026, 11, 1), local(2026, 11, 1, 13, 39)).at, local(2026, 11, 1, 14, 0), `${zone}: on a DST change day the next hour is a wall-clock hour`);
+  eq(parts(local(2026, 11, 11, 3), local(2026, 11, 11, 13, 39)), null, `${zone}: a day start that is not a local midnight is refused`);
+
+  // Finding R2-15: after a time-zone change the stored day is no longer a
+  // local midnight; the Calendar finds the same date again. The day was
+  // selected in London (UTC midnight), the page now runs in this zone.
+  const london = Date.UTC(2026, 10, 7, 0, 0, 0);
+  c.__cal.activeCalendar = { view: 'month', anchor: london, anchorSeen: london, selected: london, selectedKey: '2026-11-07' };
+  eq(c.calSelectedDay(), local(2026, 11, 7), `${zone}: the selected day keeps its date after a time-zone change (finding R2-15)`);
+  eq([c.__cal.activeCalendar.selected, c.__cal.activeCalendar.selectedKey], [local(2026, 11, 7), '2026-11-07'], `${zone}: and is stored as this zone's midnight`);
+  ok(c.calendarTaskDateParts(c.calSelectedDay(), local(2026, 11, 6, 8)) !== null, `${zone}: so quick add accepts it again`);
   return checks;
 }
 
@@ -222,6 +244,7 @@ function testSelection() {
   eq(c.calSelectedDay(), local(2026, 11, 11), 'the view opens on today');
   c.calSelectDay(local(2026, 11, 20, 15), { focus: true });
   eq([cal.activeCalendar.selected, calls.renders, calls.focusDay], [local(2026, 11, 20), 1, [local(2026, 11, 20)]], 'selecting a day stores its midnight, repaints and focuses it');
+  eq(cal.activeCalendar.selectedKey, '2026-11-20', 'and its date, which survives a time-zone change (finding R2-15)');
   eq(cal.activeCalendar.anchor, c.__fixed, 'a day inside the month grid does not page');
   c.calSelectDay(local(2026, 12, 9));
   eq(new Date(cal.activeCalendar.anchor).getMonth(), 11, 'a day outside the grid pages the month to it');
@@ -308,7 +331,12 @@ async function testQuickAdd() {
   eq(calls.commits, [{ inline: true, text: 'Pack', same: true }], 'quick add runs commitCalendarTaskMutation with an inline context');
   c.__cal.busy = true;
   c.paintCalendarAddInline();
-  eq([input.disabled, status.textContent, status.hidden, form.attrs['aria-busy']], [true, 'cal.adding', false, 'true'], 'while the receipt is pending the field is busy');
+  eq([input.readOnly, status.textContent, status.hidden, form.attrs['aria-busy'], input.attrs['aria-busy']], [true, 'cal.adding', false, 'true', 'true'], 'while the receipt is pending the field is busy');
+  ok(input.disabled === false, 'the busy field stays enabled (read-only), so focus stays in it for the next task (finding R2-14)');
+  c.__cal.busy = false;
+  c.paintCalendarAddInline();
+  eq([input.readOnly, input.attrs['aria-busy']], [false, 'false'], 'and is editable again after the receipt');
+  c.__cal.busy = true;
   ok(c.closeCalendarTaskDialog({ restoreFocus: false }) === false, 'a pending quick add cannot be closed');
   c.__cal.busy = false;
   c.__cal.taskCtx.errorKey = 'cal.destinationChanged';
@@ -339,6 +367,89 @@ async function testQuickAdd() {
   eq(calls.focus, ['calendar-task-confirm'], 'the dialog still moves focus to its confirm button while pending');
 }
 
+// ── Focus survives a rebuild (findings R2-1, R2-10, R2-14) ─────────
+// A small DOM: nodes with classes, data keys, an id and a parent chain, so
+// calFocusMemo can name the focused control and calRestoreFocus can find it
+// again in the next paint.
+function testFocusBack() {
+  const node = (props = {}, parent = null) => {
+    const el = Object.assign({ tag: 'button', classes: [], dataset: {}, id: '', parent, disabled: false, isConnected: true, rects: 1, focused: 0, range: null }, props);
+    const is = sel => {
+      if (sel === 'input') return el.tag === 'input';
+      if (sel.startsWith('.')) return el.classes.includes(sel.slice(1));
+      const data = /^\[data-([a-z-]+)\]$/.exec(sel);
+      if (data) return data[1].replace(/-([a-z])/g, (_, ch) => ch.toUpperCase()) in el.dataset;
+      return false;
+    };
+    el.matches = is;
+    el.closest = sel => { for (let n = el; n; n = n.parent) if (n.matches(sel)) return n; return null; };
+    el.classList = { contains: name => el.classes.includes(name) };
+    el.getClientRects = () => ({ length: el.rects });
+    el.focus = () => { el.focused += 1; context.document.activeElement = el; };
+    el.setSelectionRange = (a, b) => { el.range = [a, b]; };
+    return el;
+  };
+  const board = node({ tag: 'div', id: 'board' });
+  board.contains = el => { for (let n = el; n; n = n.parent) if (n === board) return true; return false; };
+  const cld = node({ tag: 'div', classes: ['cal-wrap', 'cld'] }, board);
+  const next = node({ dataset: { calFocus: 'next' } }, cld);
+  const day = node({ dataset: { calDay: '1794268800000' } }, cld);
+  const add = node({ tag: 'input', id: 'cal-add-input', selectionStart: 3, selectionEnd: 5 }, node({ tag: 'form', classes: ['cld-add'] }, node({ tag: 'aside', classes: ['cld-panel'] }, cld)));
+  const panelRow = node({ tag: 'div', classes: ['cld-row'], dataset: { calKey: 'item:i1:' } }, node({ tag: 'aside', classes: ['cld-panel'] }, cld));
+  const move = node({ classes: ['cld-mv'] }, panelRow);
+  const agendaRow = node({ classes: ['cld-arow'], dataset: { calKey: 'item:i2:' } }, node({ tag: 'div', classes: ['cld-view'] }, cld));
+  const clear = node({ dataset: { calFocus: 'filter-clear' } }, cld);
+  const elsewhere = node({ id: 'toast-undo' });
+
+  const c = sandbox();
+  eq(plain(c.calFocusMemo(next, board)), { selector: '[data-cal-focus="next"]', selection: null }, 'a toolbar control is named by its focus key');
+  eq(c.calFocusMemo(day, board).selector, '[data-cal-day="1794268800000"]', 'a day by its date');
+  eq(plain(c.calFocusMemo(add, board)), { selector: '#cal-add-input', selection: [3, 5] }, 'the add field by its id, with its caret');
+  eq(c.calFocusMemo(move, board).selector, '.cld-panel [data-cal-key="item:i1:"] .cld-mv', 'a reminder row control by its row, in the same part of the page');
+  eq(c.calFocusMemo(agendaRow, board).selector, '.cld-view [data-cal-key="item:i2:"]', 'an Agenda row by its reminder');
+  eq(c.calFocusMemo(elsewhere, board), null, 'focus outside the Calendar is left alone');
+  eq(c.calFocusMemo(null, board), null, 'and so is no focus');
+
+  // The next paint: new nodes for the same controls.
+  const rebuilt = {};
+  const root = { querySelector: sel => rebuilt[sel] || null };
+  const els = { 'q:#board .cld': root };
+  const r = sandbox({ elements: els });
+  const fresh = (props = {}) => node(props);
+  rebuilt['[data-cal-focus="next"]'] = fresh();
+  r.document.activeElement = r.document.body = { isConnected: true };
+  r.document.activeElement = r.document.body;
+  ok(r.calRestoreFocus({ selector: '[data-cal-focus="next"]', selection: null }) === true && rebuilt['[data-cal-focus="next"]'].focused === 1, 'paging (›) keeps focus on › after the rebuild (finding R2-1)');
+  rebuilt['#cal-add-input'] = fresh({ tag: 'input' });
+  r.document.activeElement = r.document.body;
+  r.calRestoreFocus({ selector: '#cal-add-input', selection: [3, 5] });
+  eq([rebuilt['#cal-add-input'].focused, rebuilt['#cal-add-input'].range], [1, [3, 5]], 'quick add keeps focus and the caret in the add field (finding R2-14)');
+  rebuilt['#cal-filter-input'] = fresh({ tag: 'input' });
+  r.document.activeElement = r.document.body;
+  r.calRestoreFocus({ selector: '[data-cal-focus="filter-clear"]', selection: null });
+  ok(rebuilt['#cal-filter-input'].focused === 1, 'clearing the filter returns focus to the filter');
+  rebuilt['[data-cal-day][tabindex="0"]'] = fresh();
+  r.document.activeElement = r.document.body;
+  r.calRestoreFocus({ selector: '[data-cal-focus="prev"]', selection: null });
+  ok(rebuilt['[data-cal-day][tabindex="0"]'].focused === 1, 'a control that is gone gives focus to the selected day');
+  delete rebuilt['[data-cal-day][tabindex="0"]'];
+  rebuilt['.cld-seg-btn[aria-pressed="true"]'] = fresh();
+  r.document.activeElement = r.document.body;
+  r.calRestoreFocus({ selector: '[data-cal-focus="prev"]', selection: null });
+  ok(rebuilt['.cld-seg-btn[aria-pressed="true"]'].focused === 1, 'in Agenda (no days) to the pressed view');
+  r.document.activeElement = r.document.body;
+  ok(r.calRestoreFocus({ selector: '', selection: null }) === true, 'the filter\'s second Escape leaves for a control, never <body> (finding R2-10)');
+  const hidden = fresh({ rects: 0 });
+  rebuilt['[data-cal-focus="next"]'] = hidden;
+  r.document.activeElement = r.document.body;
+  r.calRestoreFocus({ selector: '[data-cal-focus="next"]', selection: null });
+  ok(hidden.focused === 0, 'a control without a box is skipped');
+  const taken = fresh();
+  r.document.activeElement = taken;
+  ok(r.calRestoreFocus({ selector: '[data-cal-focus="next"]', selection: null }) === false, 'a control that took focus meanwhile keeps it');
+  ok(r.calRestoreFocus(null) === false, 'no memo, no move');
+}
+
 // ── Source contracts ───────────────────────────────────────────────
 function testSource() {
   const render = extractFunction('renderCalendar');
@@ -348,6 +459,19 @@ function testSource() {
   ok(/const scrollTop = \$b\.classList\.contains\('calendar-mode'\) \? \$b\.scrollTop : 0;[\s\S]*\$b\.scrollTo\(\{ top: scrollTop, behavior: 'instant' \}\)/.test(render), 'a repaint keeps the scroll position');
   ok(/buildCalPanel\(shown, selected, now/.test(render) && /buildCalPastDue\(shown, now, !session\.view\)/.test(render), 'Past due and the day panel follow the filter');
   ok(/if \(calendarPageSession && !\(activeCalendar && CAL_VIEWS\.includes\(activeCalendar\.view\)\)\) calendarPageSession = null;/.test(extractFunction('renderBoard')), 'leaving the Calendar view ends its session');
+
+  // Finding R2-1: focus survives the rebuild; R2-10: leaving never drops it.
+  ok(/const focusBack = calFocusMemo\(document\.activeElement, \$b\);[\s\S]*\$b\.innerHTML = '';[\s\S]*paintCalendarAddInline\(\);\n\s*calRestoreFocus\(focusBack\);/.test(render), 'the rebuild remembers the focused control before clearing the board and gives focus back after the paint (finding R2-1)');
+  ok(/b\.dataset\.calFocus = `view:\$\{v\}`;/.test(extractFunction('buildCalToolbar')) && /today\.dataset\.calFocus = 'today';/.test(extractFunction('buildCalToolbar')) && /b\.dataset\.calFocus = icon;/.test(extractFunction('buildCalToolbar')) && /clear\.dataset\.calFocus = 'filter-clear';/.test(extractFunction('buildCalToolbar')), 'Month, Week, Agenda, Today, ‹, › and the filter Clear carry focus keys');
+  ok(/if \(Router\.navigate\(\{ type: 'board'[^\n]*\)\) focusAfterSurfaceLeave\(opener\);/.test(extractFunction('closeCalendar')) && /calendarSurfaceOpener = document\.activeElement;/.test(extractFunction('openCalendar')), 'leaving the Calendar (Escape, C) lands focus on a control, not <body> (finding R2-10)');
+  ok(/input\.blur\(\);\n\s*calRestoreFocus\(\{ selector: '' \}\);/.test(extractFunction('buildCalToolbar')), 'the filter\'s second Escape leaves for the selected day, not <body>');
+  // Finding R2-14: the busy add field is read-only, not disabled.
+  const paintAdd = extractFunction('paintCalendarAddInline');
+  ok(/input\.readOnly = busy;\n\s*input\.setAttribute\('aria-busy', String\(busy\)\);/.test(paintAdd) && !/input\.disabled =/.test(paintAdd), 'quick add keeps the field focusable while it saves (finding R2-14)');
+  // Finding R2-2: the same next-hour rule as Move to.
+  ok(/if \(when\.getTime\(\) <= now && value === planDayStart\(now\)\) when = new Date\(planNextWholeHour\(now\)\);/.test(extractFunction('calendarTaskDateParts')), 'a passed 9:00 today becomes the next whole hour (finding R2-2)');
+  // Finding R2-15: the selection is kept by date.
+  ok(/activeCalendar\.selectedKey = planDayKey\(day\);/.test(extractFunction('calSelectDay')) && /if \(_tlStartOfDay\(activeCalendar\.selected\) !== activeCalendar\.selected\) \{/.test(extractFunction('calSelectedDay')), 'the selected day is stored with its date and found again by it (finding R2-15)');
 
   const toolbar = extractFunction('buildCalToolbar');
   ok(/thumb\.style\.setProperty\('--i', String\(from\)\);\n\s*if \(from !== index\) after\.push\(\(\) => \{ void thumb\.offsetWidth; thumb\.style\.setProperty\('--i', String\(index\)\); \}\);/.test(toolbar), 'the view thumb slides from the view shown last (class restart, no timer)');
@@ -408,13 +532,20 @@ function testSource() {
   ok(/animation: cld-today-ping \.9s var\(--today-ease\) calc\(\.35s \+ var\(--cld-pulse-t, 0ms\)\) 1 both;/.test(layer), 'and its ring once');
   ok(/\.cld-sel \{[^}]*transform: translate\(calc\(var\(--c, 0\) \* 100%\), calc\(var\(--r, 0\) \* 100%\)\);[^}]*transition: transform \.3s var\(--today-ease\)/.test(layer), 'the selection box slides');
   ok(/@keyframes cld-fly \{/.test(layer) && /\.cld-ghost \{[^}]*position: fixed;[^}]*pointer-events: none;[^}]*animation: cld-fly \.5s/.test(layer), 'the moved card travels as a fixed ghost');
-  ok(/\.cld-btn,\n\.cld-ibtn \{\n\s*height: 44px;/.test(layer) && /\.cld-mv \{[^}]*width: 44px;\n\s*height: 44px;/.test(layer) && /\.cld-seg-btn::before \{ content: ''; position: absolute; inset: -3px 0; \}/.test(layer) && /\.cld-filter-clear::before \{ content: ''; position: absolute; inset: -6px; \}/.test(layer) && /\.cld-due-chip \.cld-mv::before \{ content: ''; position: absolute; inset: -2px; \}/.test(layer), 'controls are 44 px targets');
+  ok(/\.cld-btn,\n\.cld-ibtn \{\n\s*height: 44px;/.test(layer) && /\.cld-mv \{[^}]*width: 44px;\n\s*height: 44px;/.test(layer) && /\.cld-filter-clear::before \{ content: ''; position: absolute; inset: -6px; \}/.test(layer), 'controls are 44 px targets');
+  // Finding R2-17: the boxes themselves are 44 px on both sides, not only a
+  // pseudo-element hit area: the view switch, Past due's Move, the panel titles.
+  ok(/\.cld-seg-btn \{[^}]*height: 44px;\n\s*margin: -3px 0;/.test(layer) && !/\.cld-seg-btn::before/.test(layer), 'the view switch buttons are 44 px tall and keep the 46 px track (finding R2-17)');
+  ok(/\.cld-due-chip \.cld-mv \{ border-radius: 10px; color: var\(--cld-when-ink\); \}/.test(layer) && !/\.cld-due-chip \.cld-mv[^{]*\{[^}]*(?:width|height): 4[0-3]px/.test(layer), 'Past due\'s Move keeps the 44 px Move box (finding R2-17)');
+  ok(/\.cld-rtitle \{[^}]*margin: -13px 0;\n\s*padding: 13px 0;/.test(layer), 'a panel title is a 44 px box; its margins keep the row (finding R2-17)');
+  ok(/\.cld-rtitle \.cal-dot-t \{\n\s*display: -webkit-box;\n\s*overflow: hidden;\n\s*-webkit-line-clamp: 2;/.test(layer) && !/\.cld-rtitle \{[^}]*-webkit-line-clamp/.test(layer), 'at phone width the clamp sits on the text, so the box never shows a third line');
+  ok(/const text = document\.createElement\('span'\);\n\s*text\.className = 'cal-dot-t';\n\s*text\.textContent = entry\.title;\n\s*dot\.appendChild\(text\);/.test(extractFunction('buildCalDot')), 'reminder titles carry their text in a span (the clamp target)');
   ok(/\.cld-rtitle::before \{ content: ''; position: absolute; inset: 0;/.test(layer), 'a row title covers its row');
   ok(/@container \(max-width: 640px\) \{[\s\S]*\.cld-chip,\n\s*\.cld-more \{ display: none; \}[\s\S]*\.cld-dots \{ display: flex;[\s\S]*\.cld-wk \{ grid-template-columns: minmax\(0, 1fr\);[\s\S]*grid-template-areas: "title title mv" "time meta mv";/.test(layer), 'phone: dots in the month, stacked week, titles across the row');
   ok(/@container \(max-width: 340px\) \{\n\s*\.cld-month \{ margin-inline: -24px;/.test(layer), 'phone: the month runs edge to edge so days stay 44 px wide');
   ok(/@media \(prefers-reduced-motion: reduce\) \{\n\s*\.cld, \.cld \*, \.cld \*::before, \.cld \*::after,\n\s*\.cld-ghost \{ animation: none !important; transition: none !important; \}/.test(layer), 'reduced motion stops every Calendar animation');
   ok(/@media \(forced-colors: active\)/.test(layer), 'forced colours are handled');
-  ok((layer.match(/var\(--today-badge\)/g) || []).length === 1 && /\.cld-due-n \{[^}]*background: var\(--today-badge\);/.test(layer), 'red is only the overdue count bubble');
+  ok((layer.match(/var\(--cld-badge\)/g) || []).length === 1 && /\.cld-due-n \{[^}]*background: var\(--cld-badge\);/.test(layer) && !/var\(--today-badge\)/.test(layer), 'red is only the overdue count bubble');
   ok(!/\.cal-(?:cell|grid|toolbar|pastdue|week-col|ag-|more|anim|today-btn|nav-btn)\b/.test(css), 'the old calendar styles are gone');
   ok(/class="cal-seg planner-seg"/.test(html) && /\.cal-seg-btn\.active \{/.test(css), 'the Plan with AI horizon switch keeps its .cal-seg styles');
 
@@ -433,13 +564,96 @@ function testSource() {
   ok((ci.match(/calendar-page-contract-test\.js/g) || []).length === 2, 'CI syntax-checks and runs this suite');
 }
 
+// ── The stored repeat (finding R2-3) ──────────────────────────────
+function testRecur() {
+  const c = sandbox();
+  eq(c.reminderRecurRecord({ every: 'week', interval: 2 }), { every: 'week', interval: 2 }, 'Move to keeps "every 2 weeks" (finding R2-3)');
+  eq(c.reminderRecurRecord({ every: 'month', interval: '3', until: 1900000000000, extra: true }), { every: 'month', interval: 3, until: 1900000000000 }, 'the stored interval and end date stay; nothing else is copied');
+  eq(c.reminderRecurRecord({ every: 'week', interval: 2 }, { fromPicker: true }), { every: 'week', interval: 1 }, 'the picker sets a new weekly rule');
+  eq([c.reminderRecurRecord({ every: 'day', interval: 0 }), c.reminderRecurRecord({ every: 'day', interval: 'x' })], [{ every: 'day', interval: 1 }, { every: 'day', interval: 1 }], 'a broken interval is 1');
+  eq([c.reminderRecurRecord(null), c.reminderRecurRecord({ every: 'year' })], [null, null], 'no repeat, or one Locus cannot run, is none');
+  ok(/const recur = reminderRecurRecord\(reminder\.recur, \{ fromPicker \}\);/.test(extractFunction('commitItemReminderMutation')) && /const recur = reminderRecurRecord\(reminder\.recur, \{ fromPicker \}\);/.test(extractFunction('commitItemDetailReminderMutation')), 'both item reminder transactions store the repeat through it');
+}
+
+// ── Inks in every bundled theme (findings R2-4, R2-5) ─────────────
+// Computed from themes.css and the mixes the Calendar layer declares.
+function testInks() {
+  const start = css.indexOf('   CALENDAR (2026-11 canvas)');
+  const layer = css.slice(start, css.indexOf('/* ----', start));
+  const parse = value => {
+    const text = String(value || '').trim();
+    let match = /^#([0-9a-f]{6})$/i.exec(text);
+    if (match) return { r: parseInt(match[1].slice(0, 2), 16), g: parseInt(match[1].slice(2, 4), 16), b: parseInt(match[1].slice(4), 16), a: 1 };
+    match = /^rgba?\(([^)]+)\)$/.exec(text);
+    if (match) { const p = match[1].split(',').map(Number); return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 }; }
+    return null;
+  };
+  const over = (top, bottom) => ({ r: top.r * top.a + bottom.r * (1 - top.a), g: top.g * top.a + bottom.g * (1 - top.a), b: top.b * top.a + bottom.b * (1 - top.a), a: 1 });
+  const mix = (a, share, b) => ({ r: a.r * share + b.r * (1 - share), g: a.g * share + b.g * (1 - share), b: a.b * share + b.b * (1 - share), a: 1 });
+  const lum = ({ r, g, b }) => [r, g, b].map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }).reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
+  const contrast = (fg, bg) => { const a = lum(fg); const b = lum(bg); return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); };
+  const num = (pattern, label) => { const m = pattern.exec(layer); ok(m, `${label} is a theme-aware mix`); return Number(m[1]) / 100; };
+  const ink2 = num(/--cld-ink-2: color-mix\(in srgb, var\(--text2\) (\d+)%, var\(--text\)\);/, 'the secondary ink');
+  const when = num(/--cld-when-ink: var\(--when-text, color-mix\(in srgb, var\(--orange\) (\d+)%, var\(--text\)\)\);/, 'the orange "when" ink');
+  const fill = num(/--cld-today-fill: var\(--when, color-mix\(in srgb, var\(--orange\) (\d+)%, #fff\)\);/, 'today\'s fill');
+  const pressed = num(/--cld-pressed: var\(--where-soft, color-mix\(in srgb, var\(--cld-hl\) (\d+)%, var\(--today-card\)\)\);/, 'the pressed Agenda row');
+  const badge = num(/--cld-badge: var\(--badge, color-mix\(in srgb, var\(--red\) (\d+)%, #000\)\);/, 'the overdue count');
+  const rules = layer.replace(/--cld-[\w-]+: [^;]*;/g, '');
+  ok(!/var\(--text2\)/.test(rules) && !/var\(--today-when-text\)/.test(rules), 'no text in the layer uses the untuned --text2 or --today-when-text');
+  for (const selector of ['.cld-rtime', '.cld-chip-t', '.cld-pwd.is-today', '.cld-now', '.cld-ag-hd.is-today', '.cld-arow-t', '.cld-due-when', '.cld-add-time']) {
+    ok(new RegExp(`\\n${selector.replace(/\./g, '\\.')} \\{[^}]*color: var\\(--cld-when-ink\\);`).test(layer), `${selector} uses the theme-aware orange (finding R2-5)`);
+  }
+  ok(/\.cld-num\.is-today \{ background: var\(--cld-today-fill\); color: #19231f;/.test(layer), 'today\'s number sits on the theme-aware fill (finding R2-4)');
+  ok(/\.cld-arow\[aria-pressed="true"\] \{ background: var\(--cld-pressed\); \}/.test(layer), 'a pressed Agenda row uses its tint');
+  const ink = parse('#19231f');
+  const white = parse('#ffffff');
+  const black = parse('#000000');
+  const themesCss = read('themes.css');
+  const fails = [];
+  let themes = 0;
+  for (const m of themesCss.matchAll(/\n\[data-theme="([\w-]+)"\] \{([^}]*)\}/g)) {
+    themes += 1;
+    const raw = {};
+    for (const d of m[2].matchAll(/--([\w-]+):\s*([^;]+);/g)) raw[d[1]] = d[2].trim();
+    const t = name => parse(raw[name]);
+    const text = t('text');
+    const card = t('card') || t('paper-strong') || t('panel');
+    const ground = t('ground') || t('paper') || t('bg');
+    const rule = t('card-rule') || t('border2');
+    const locator = t('locator') || t('accent');
+    const secondary = mix(t('text2'), ink2, text);
+    const orange = t('when-text') || mix(t('orange'), when, text);
+    const pressedBg = t('where-soft') ? over(t('where-soft'), card) : mix(locator, pressed, card);
+    const pairs = {
+      'secondary on a card': [secondary, card],
+      'secondary on the ground': [secondary, ground],
+      'secondary on the view switch': [secondary, over({ ...rule, a: rule.a * 0.7 }, ground)],
+      'secondary on a pressed row': [secondary, pressedBg],
+      'time on a card': [orange, card],
+      'time on a chip (the ground)': [orange, ground],
+      'time on a pressed row': [orange, pressedBg],
+      'today\'s number': [ink, t('when') || mix(t('orange'), fill, white)],
+      'overdue count': [t('badge-text') || white, t('badge') || mix(t('red'), badge, black)],
+    };
+    for (const [name, [fg, bg]] of Object.entries(pairs)) {
+      const value = contrast(fg, bg);
+      if (value < 4.5) fails.push(`${m[1]}: ${name} ${value.toFixed(2)}`);
+    }
+  }
+  eq(themes, 19, 'all 19 bundled themes are checked');
+  eq(fails, [], 'every Calendar text pair is at least 4.5:1 in every bundled theme (findings R2-4, R2-5)');
+}
+
 (async () => {
   testZones();
   testSelection();
   await testMove();
   await testQuickAdd();
+  testFocusBack();
+  testRecur();
+  testInks();
   testSource();
-  console.log(`Calendar page contracts passed: ${checks} checks (date rules in 3 zones, selection and paging, Move to with receipts and Undo-ready transactions, quick add, focus after a move, keys, pulse, travelling card, phone layout, CSS, locales)`);
+  console.log(`Calendar page contracts passed: ${checks} checks (date rules in 3 zones, selection and paging, Move to with receipts and Undo-ready transactions, quick add, focus after a move and after a rebuild, the stored repeat, inks in 19 themes, 44 px boxes, keys, pulse, travelling card, phone layout, CSS, locales)`);
 })().catch(error => {
   console.error(error);
   process.exitCode = 1;

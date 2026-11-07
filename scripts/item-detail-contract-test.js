@@ -309,6 +309,7 @@ function loadItemDetailMutationFunctions(globals = {}) {
     'isItemDetailRecord',
     'applyItemDetailCandidate',
     'commitItemDetailMutation',
+    'reminderRecurRecord',
     'commitItemDetailReminderMutation',
     'flushItemDetailBeforePageHide',
     'handleItemDetailKeydown',
@@ -332,6 +333,7 @@ function loadNonDetailItemReminderFunctions(globals = {}) {
     'currentItemReminderIdentity',
     'createItemReminderMutationContext',
     'resolveItemReminderMutationTarget',
+    'reminderRecurRecord',
     'commitItemReminderMutation',
   ];
   const context = vm.createContext({ ...globals });
@@ -1416,7 +1418,17 @@ function testEscapeStack() {
   let trappedPanel = null;
   let focused = null;
   let detailMutationPending = false;
+  const sheet = { hidden: true };
+  const sheetToggle = { id: 'change' };
+  const moveButton = { id: 'move' };
+  const pickerEl = { id: 'picker' };
+  root.querySelector = selector => ({ '.idp-panel': panel, '.dtl-sheet': sheet, '[data-dtl-sheet-toggle]': sheetToggle, 'button.dtl-loc': moveButton })[selector] || null;
+  root.contains = el => el === pickerEl;
+  const folds = [];
   const context = loadFunctions(['isItemDetailEditor', 'handleItemDetailKeydown'], {
+    inboxSpacePicker: null,
+    toggleItemDetailReminderSheet: (target, open) => { folds.push(['sheet', open]); sheet.hidden = !open; return true; },
+    closeInboxSpacePicker: () => { folds.push(['picker']); context.inboxSpacePicker = null; return true; },
     Node: { ELEMENT_NODE: 1 },
     document: {
       getElementById(id) {
@@ -1481,6 +1493,25 @@ function testEscapeStack() {
   const directEscape = eventFor('Escape', panelTarget);
   context.handleItemDetailKeydown(directEscape, root);
   assert.equal(detailCloses, 2, 'Escape outside an editor must close detail directly');
+
+  // Finding R2-8: with the quick times open, Escape folds them first, also
+  // with focus on Change (outside the sheet), and focus returns to Change.
+  sheet.hidden = false;
+  const changeTarget = { nodeType: 1, tagName: 'BUTTON', closest: () => null };
+  const foldEscape = eventFor('Escape', changeTarget);
+  context.handleItemDetailKeydown(foldEscape, root);
+  assert.deepEqual(folds, [['sheet', false]], 'Escape on Change must fold the quick times before anything closes (finding R2-8)');
+  assert.equal(detailCloses, 2, 'the panel stays open while the quick times fold');
+  assert.equal(focused, sheetToggle, 'focus returns to Change');
+  assert.equal(foldEscape.defaultPrevented && foldEscape.propagationStopped, true, 'the fold owns its Escape');
+  context.handleItemDetailKeydown(eventFor('Escape', changeTarget), root);
+  assert.equal(detailCloses, 3, 'the next Escape closes the panel');
+  // The Move picker folds the same way, wherever focus is in the panel.
+  context.inboxSpacePicker = { el: pickerEl };
+  context.handleItemDetailKeydown(eventFor('Escape', changeTarget), root);
+  assert.deepEqual(folds.at(-1), ['picker'], 'Escape folds the Move picker before closing the panel');
+  assert.equal(focused, moveButton, 'focus returns to the location (Move) button');
+  assert.equal(detailCloses, 3);
 }
 
 function testEditFlushContracts() {
@@ -2357,6 +2388,25 @@ function createNonDetailItemReminderHarness({
     setIdentityMode(value) { identityMode = value; },
     setRecovery(value) { recovery = value; },
   };
+}
+
+// Finding R2-3: Move to (setReminder) and the Details quick times pass the
+// stored repeat; "every 2 weeks" stays every 2 weeks. Only the picker, which
+// sets a new rule, stores interval 1.
+async function testKeptRepeatInterval() {
+  const stored = { every: 'week', interval: 2 };
+  const moved = createNonDetailItemReminderHarness({ existingReminder: { at: Date.now() + 1_800_000, notified: false, recur: stored } });
+  void moved.context.commitItemReminderMutation(moved.mutationContext, { at: Date.now() + 86_400_000, recur: stored });
+  assert.deepEqual(plain(moved.item.reminder.recur), { every: 'week', interval: 2 },
+    'Move to keeps the stored repeat interval (finding R2-3)');
+  const quick = createItemDetailReminderHarness({ existingReminder: { at: Date.now() + 1_800_000, notified: false, recur: stored } });
+  void quick.context.commitItemDetailReminderMutation(quick.mutationContext, { at: Date.now() + 86_400_000, recur: stored });
+  assert.deepEqual(plain(quick.item.reminder.recur), { every: 'week', interval: 2 },
+    'a Details quick time keeps the stored repeat interval (finding R2-3)');
+  const picked = createItemDetailReminderHarness({ existingReminder: { at: Date.now() + 1_800_000, notified: false, recur: stored } });
+  void picked.context.commitItemDetailReminderMutation(picked.mutationContext, { at: Date.now() + 86_400_000, recur: { every: 'week', interval: 1 } }, { fromPicker: true });
+  assert.deepEqual(plain(picked.item.reminder.recur), { every: 'week', interval: 1 },
+    'the picker still sets its own rule');
 }
 
 async function testReceiptGatedNonDetailItemReminderContract() {
@@ -3524,8 +3574,9 @@ function testResponsiveAndMotionCss() {
     /\.dtl-lnk\s*\{[^}]*height:\s*44px/,
     /\.dtl-btn\s*\{[^}]*height:\s*44px/,
     /\.dtl-sho\s*\{[^}]*min-height:\s*48px/,
-    /\.idp-tag-x::after\s*\{[^}]*inset:\s*-8px/,
-    /\.idp-swatch::after\s*\{[^}]*inset:\s*-7px/,
+    // Finding R2-17: the boxes themselves, not a pseudo-element hit area.
+    /\.idp-tag-x\s*\{[^}]*width:\s*44px;\s*height:\s*44px;\s*margin:\s*-6px -6px -6px -8px;/,
+    /#item-detail \.idp-swatch\s*\{[^}]*width:\s*44px;\s*height:\s*44px;\s*border:\s*7px solid transparent;[^}]*background-clip:\s*padding-box !important;/,
     /#item-detail \.idp-cl-check\s*\{[^}]*width:\s*44px;\s*height:\s*44px/,
     /#item-detail :is\(\.idp-cl-x, \.idp-cf-x\)\s*\{[^}]*width:\s*44px;\s*height:\s*44px/,
     /#item-detail :is\(\.idp-tag-input, \.idp-cl-text, \.idp-cl-add, \.idp-cf-label, \.idp-cf-value\)\s*\{[^}]*height:\s*44px;\s*min-height:\s*44px/,
@@ -3818,8 +3869,12 @@ async function testBoardDetailsContracts() {
   // The reminder chip and its quick times use the exact-item receipt controller.
   assert.match(render, /SPACE_QUICK_TIMES\.map\(\(\[offset, key\], index\) => `<button type="button" class="dtl-sho" data-offset="\$\{offset\}" data-idp-focus="reminder-quick-\$\{index\}"/,
     'quick reminder times reuse the Space sheet’s quick times');
-  assert.match(render, /void commitItemDetailReminderMutation\(mutationContext, \{ at: Date\.now\(\) \+ Number\(button\.dataset\.offset\), recur: it\.reminder\?\.recur \}\);/,
+  assert.match(render, /void commitItemDetailReminderMutation\(mutationContext, \{ at: quickReminderAt\(button\.dataset\.offset\), recur: it\.reminder\?\.recur \}\);/,
     'a quick time sets the reminder through the Details receipt controller and keeps its repeat');
+  assert.match(render, /<span class="dtl-mono">\$\{esc\(inboxWhenLabel\(quickReminderAt\(offset, now\), now\)\)\}<\/span>/,
+    'each quick time shows the time it will set, by the same calendar arithmetic (finding R2-7)');
+  assert.doesNotMatch(render, /Date\.now\(\) \+ Number\(button\.dataset\.offset\)|inboxWhenLabel\(now \+ offset/,
+    'no quick time adds a fixed number of milliseconds for a day');
   assert.match(render, /sheet\.querySelector\('\.is-custom'\)\.onclick = \(\) => openReminderPicker\(it\.id, mutationContext\);/,
     'Pick a time… opens the full picker with the frozen item context');
   assert.match(render, /const reminderFills = sameItem && !!storedReminderAt && root\.dataset\.reminderAt != null\s*&& root\.dataset\.reminderAt !== storedReminderAt;/,
@@ -3893,8 +3948,10 @@ async function testBoardDetailsContracts() {
   assert.match(render, /star\.onclick = toggleFrom\(star, toggleFavorite, 'favorite'\);\s*later\.onclick = toggleFrom\(later, toggleReadLater, 'later'\);/,
     'Favorite and Read later use the receipt-gated toggles');
   assert.match(render, /const receipt = \{ undo: true, sub: /, 'their receipts offer Undo, as on the Library');
-  assert.match(render, /if \(it\.type === 'tab'\) changed = await archiveSavedPage\(it, archiveButton\);\s*else if \(it\.type === 'stack'\) changed = archiveItem\(it\.id\) !== false;\s*else changed = await archiveBoardLocalItem\(it, archiveButton\);\s*if \(changed\) renderItemDetail\(\);/,
+  assert.match(render, /if \(it\.type === 'tab'\) changed = await archiveSavedPage\(it, archiveButton\);\s*else if \(it\.type === 'stack'\) changed = archiveItem\(it\.id\) !== false;\s*else changed = await archiveBoardLocalItem\(it, archiveButton\);\s*if \(!changed\) return;\s*renderItemDetail\(\);/,
     'Archive uses the same archive paths as the card menus');
+  assert.match(render, /if \(!changed\) return;\s*renderItemDetail\(\);\s*\/\/[^\n]*\n\s*Router\.sync\(\{ replace: true \}\);\s*\};/,
+    'after Archive the panel drops the item and the address follows, without a history entry (finding R2-16)');
   assert.match(render, /root\.classList\.toggle\('is-entering', !wasOpen\);/,
     'the panel slides in when it opens, not on every repaint');
   assert.match(render, /if \(!wasOpen\) \{\s*hideContextMenu\(\);\s*closeCommandPalette\(\);\s*if \(typeof isTodayTabsDrawerOpen === 'function' && isTodayTabsDrawerOpen\(\)\) \{\s*setTodayTabsDrawer\(false, \{ restoreFocus: false \}\);/,
@@ -3945,6 +4002,7 @@ async function main() {
   await testReceiptGatedItemDetailMutationContract();
   await testReceiptGatedNonDetailItemReminderContract();
   await testReceiptGatedItemDetailReminderContract();
+  await testKeptRepeatInterval();
   await testReminderGlobalKeyContract();
   testRecoveryAboveReminderGlobalKeyContract();
   testItemDetailReminderStaticContract();
@@ -3957,8 +4015,129 @@ async function main() {
   testDetailMarkerPickerBehavior();
   testResponsiveAndMotionCss();
   await testBoardDetailsContracts();
+  await testR2DetailFixes();
 
   console.log('Item detail contracts passed: receipt-gated fields/direct reminders, read-only local cards, Details-owned editing/markers, rich-text Link review, Home recovery, routing, modal focus, localization, hierarchy, responsive motion, and the 2026-11 board (inline title, reminder chip and quick times, Move in the panel, marks and Archive).');
+}
+
+// Finding R2-7, run in one time zone per child process: the quick times keep
+// the clock time across a daylight-saving change; the hour offsets stay
+// durations.
+if (process.argv[2] === '--quick-times') {
+  const zone = process.argv[3];
+  assert.equal(Intl.DateTimeFormat().resolvedOptions().timeZone, zone);
+  const { quickReminderAt } = loadFunctions(['quickReminderAt']);
+  // The day before each zone's autumn change (Berlin 25 Oct, New York 1 Nov 2026).
+  const now = zone === 'Europe/Berlin' ? new Date(2026, 9, 24, 10, 15, 30).getTime() : new Date(2026, 9, 31, 10, 15, 30).getTime();
+  const wall = ts => { const d = new Date(ts); return [d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds()]; };
+  console.log(JSON.stringify({
+    now: wall(now),
+    tomorrow: wall(quickReminderAt(86400000, now)),
+    nextWeek: wall(quickReminderAt(604800000, now)),
+    tomorrowHours: (quickReminderAt(86400000, now) - now) / 3600000,
+    threeHours: (quickReminderAt(10800000, now) - now) / 3600000,
+    oneHour: (quickReminderAt('3600000', now) - now) / 3600000,
+  }));
+  process.exit(0);
+}
+
+async function testR2DetailFixes() {
+  const { spawnSync } = require('node:child_process');
+  for (const zone of ['America/New_York', 'Europe/Berlin']) {
+    const child = spawnSync(process.execPath, [__filename, '--quick-times', zone], { encoding: 'utf8', env: { ...process.env, TZ: zone } });
+    assert.equal(child.status, 0, `${zone} quick times failed:\n${child.stderr || child.stdout}`);
+    const r = JSON.parse(child.stdout.trim().split(/\r?\n/).at(-1));
+    assert.deepEqual(r.tomorrow, [zone === 'Europe/Berlin' ? 25 : 1, 10, 15, 30], `${zone}: Tomorrow keeps the clock time across the DST change (finding R2-7)`);
+    assert.equal(r.tomorrowHours, 25, `${zone}: so it is 25 hours away that day, not a fixed 24`);
+    assert.deepEqual(r.nextWeek.slice(1), [10, 15, 30], `${zone}: Next week keeps the clock time too`);
+    assert.deepEqual([r.oneHour, r.threeHours], [1, 3], `${zone}: In 1 hour and In 3 hours stay durations`);
+  }
+
+  // Finding R2-9: a modal layer owns the keyboard; one-key shortcuts wait.
+  const layer = ({ hidden = false, rects = 1, inDetail = false } = {}) => ({
+    classList: { contains: name => name === 'hidden' && hidden },
+    getClientRects: () => ({ length: rects }),
+    closest: selector => (selector === '#item-detail' && inDetail ? {} : null),
+  });
+  let detailOpen = false;
+  let layers = [];
+  const modal = loadFunctions(['isModalLayerOpen'], {
+    document: {
+      getElementById: id => (id === 'item-detail' ? { classList: { contains: name => name === 'open' && detailOpen } } : null),
+      querySelectorAll: selector => (selector === '[aria-modal="true"]' ? layers : []),
+    },
+  });
+  assert.equal(modal.isModalLayerOpen(), false, 'no layer: one-key shortcuts work');
+  detailOpen = true;
+  assert.equal(modal.isModalLayerOpen(), true, 'Details open: one-key shortcuts wait (finding R2-9)');
+  detailOpen = false;
+  layers = [layer({ inDetail: true })];
+  assert.equal(modal.isModalLayerOpen(), false, 'a closed Details panel left in the page does not count');
+  layers = [layer({ hidden: true }), layer({ rects: 0 })];
+  assert.equal(modal.isModalLayerOpen(), false, 'hidden dialogs do not count');
+  layers = [layer()];
+  assert.equal(modal.isModalLayerOpen(), true, 'an open dialog (the shortcut reference, a picker) counts');
+  const keys = source.slice(source.indexOf("    const oneKeyBlocked = inField || isModalLayerOpen();"), source.indexOf("    else if (e.key === 'Escape') {", source.indexOf('const oneKeyBlocked')));
+  assert.ok(keys.length > 0, 'the global keys read one guard for one-key shortcuts');
+  for (const [label, pattern] of [
+    ['/', /e\.key === '\/' && !oneKeyBlocked/],
+    ['S', /e\.key === 's' && !oneKeyBlocked && focusOpenTabFilter\(\)/],
+    ['C', /e\.key\.toLowerCase\(\) === 'c' && !oneKeyBlocked/],
+    ['?', /e\.key === '\?' && !oneKeyBlocked/],
+  ]) assert.match(keys, pattern, `${label} waits while Details or a dialog is open (finding R2-9)`);
+  assert.match(keys, /e\.key\.toLowerCase\(\) === 'k' && !e\.shiftKey && !inField\) \{ e\.preventDefault\(\); openCommandPalette\(\); \}/, 'Ctrl or Cmd K stays global (the palette replaces Details)');
+  assert.match(keys, /e\.key\.toLowerCase\(\) === 'z' && !inField\) \{ e\.preventDefault\(\); performUndo\(\); \}/, 'Ctrl or Cmd Z stays global');
+
+  // Finding R2-6: Details text holds 4.5:1 in every bundled theme.
+  const start = css.indexOf('ITEM DETAIL PANE (Phase 2');
+  const block = css.slice(start, css.indexOf('/* ═══', start + 10)).replace(/\r\n/g, '\n');
+  const num = (pattern, label) => { const m = pattern.exec(block); assert.ok(m, `${label} is a theme-aware mix`); return Number(m[1]) / 100; };
+  const ink2Share = num(/--dtl-ink-2: color-mix\(in srgb, var\(--text2\) (\d+)%, var\(--text\)\);/, 'the secondary ink');
+  const linkShare = num(/--dtl-link: var\(--locator, color-mix\(in srgb, var\(--accent\) (\d+)%, var\(--text\)\)\);/, 'the link ink');
+  assert.doesNotMatch(block.replace(/--dtl-[\w-]+: [^;]*;/g, ''), /var\(--text2\)/, 'no Details text uses the untuned --text2');
+  assert.match(block, /\.dtl-lnk \{[^}]*color: var\(--dtl-link\);/, 'Change uses the link ink (finding R2-6)');
+  assert.match(block, /#item-detail \.idp-add-field \{[^}]*color: var\(--dtl-link\); \}/, 'Add field uses the link ink');
+  assert.match(block, /#item-detail :is\(\.idp-notes, \.idp-note-editor\) a \{ color: var\(--dtl-link\);/, 'links in the notes use the link ink');
+  assert.match(block, /#item-detail,\nbody\.detail-open \{\n\s*--dtl-ink-2:/, 'the inks reach the formatting bar and link review Details opens');
+  const parse = value => {
+    const text = String(value || '').trim();
+    let match = /^#([0-9a-f]{6})$/i.exec(text);
+    if (match) return { r: parseInt(match[1].slice(0, 2), 16), g: parseInt(match[1].slice(2, 4), 16), b: parseInt(match[1].slice(4), 16), a: 1 };
+    match = /^rgba?\(([^)]+)\)$/.exec(text);
+    if (match) { const p = match[1].split(',').map(Number); return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 }; }
+    return null;
+  };
+  const mix = (a, share, b) => ({ r: a.r * share + b.r * (1 - share), g: a.g * share + b.g * (1 - share), b: a.b * share + b.b * (1 - share), a: 1 });
+  const lum = ({ r, g, b }) => [r, g, b].map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }).reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
+  const contrast = (fg, bg) => { const a = lum(fg); const b = lum(bg); return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); };
+  const themesCss = fs.readFileSync(path.join(root, 'themes.css'), 'utf8').replace(/\r\n/g, '\n');
+  const fails = [];
+  let themes = 0;
+  for (const m of themesCss.matchAll(/\n\[data-theme="([\w-]+)"\] \{([^}]*)\}/g)) {
+    themes += 1;
+    const raw = {};
+    for (const d of m[2].matchAll(/--([\w-]+):\s*([^;]+);/g)) raw[d[1]] = d[2].trim();
+    const t = name => parse(raw[name]);
+    const text = t('text');
+    const panel = t('panel');
+    const card = t('card') || t('paper-strong') || t('panel');
+    const ground = t('ground') || t('paper') || t('bg');
+    const secondary = mix(t('text2'), ink2Share, text);
+    const link = t('locator') || mix(t('accent'), linkShare, text);
+    const pairs = {
+      'secondary on the panel': [secondary, panel],
+      'secondary on a quick time': [secondary, card],
+      'secondary on a tag (the ground)': [secondary, ground],
+      'link on the panel': [link, panel],
+      'link on its hover tint': [link, mix(t('locator') || t('accent'), 0.12, panel)],
+    };
+    for (const [name, [fg, bg]] of Object.entries(pairs)) {
+      const value = contrast(fg, bg);
+      if (value < 4.5) fails.push(`${m[1]}: ${name} ${value.toFixed(2)}`);
+    }
+  }
+  assert.equal(themes, 19, 'all 19 bundled themes are checked');
+  assert.deepEqual(fails, [], 'every Details text pair is at least 4.5:1 in every bundled theme (finding R2-6)');
 }
 
 main().catch(error => {

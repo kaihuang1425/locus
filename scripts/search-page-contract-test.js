@@ -368,6 +368,142 @@ function testStrings() {
   }
 }
 
+// Finding R2-10: leaving Find again (or the Calendar) lands focus on a control
+// on screen, never <body>, and never a text field.
+function testLeaveFocus() {
+  const make = ({ connected = true, rects = 1, field = false, hiddenParent = false, id = '' } = {}) => {
+    const el = { id, isConnected: connected, focused: 0 };
+    el.focus = () => { el.focused += 1; doc.activeElement = el; };
+    el.matches = sel => field && /input/.test(sel);
+    el.closest = () => (hiddenParent ? {} : null);
+    el.getClientRects = () => ({ length: rects });
+    return el;
+  };
+  // <body> takes focus() like any element; it must still never count.
+  const body = { id: 'body', isConnected: true, getClientRects: () => ({ length: 1 }), matches: () => false, closest: () => null, focus() { doc.activeElement = body; } };
+  const targets = {};
+  const doc = {
+    body,
+    activeElement: body,
+    querySelector: sel => targets[sel] || null,
+    getElementById: id => targets[`#${id}`] || null,
+  };
+  const { fns } = load(['focusAfterSurfaceLeave'], { document: doc });
+  const opener = make({ id: 'opener' });
+  targets['#board h1[tabindex]'] = make({ id: 'heading' });
+  targets['#topbar-search'] = make({ id: 'topbar' });
+  targets['#sidebar :is(button, a).active'] = make({ id: 'rail' });
+  ok(fns.focusAfterSurfaceLeave(opener) === true && doc.activeElement === opener, 'the control that opened the page takes focus back when it is still on screen (finding R2-10)');
+  doc.activeElement = body;
+  fns.focusAfterSurfaceLeave(make({ connected: false }));
+  ok(doc.activeElement === targets['#board h1[tabindex]'], 'a gone opener gives way to the page\'s heading');
+  doc.activeElement = body;
+  fns.focusAfterSurfaceLeave(make({ field: true }));
+  ok(doc.activeElement === targets['#board h1[tabindex]'], 'a text field never takes it (Ctrl+Z and Escape skip fields)');
+  doc.activeElement = body;
+  targets['#board h1[tabindex]'].focused = 0;
+  fns.focusAfterSurfaceLeave(body);
+  ok(targets['#board h1[tabindex]'].focused === 1, 'Search opened from <body> (/ with nothing focused) does not count <body> as its opener');
+  delete targets['#board h1[tabindex]'];
+  doc.activeElement = body;
+  fns.focusAfterSurfaceLeave(null);
+  ok(doc.activeElement === targets['#topbar-search'], 'Today has no heading on the board: the top bar\'s search takes it');
+  targets['#topbar-search'] = make({ hiddenParent: true });
+  doc.activeElement = body;
+  fns.focusAfterSurfaceLeave(null);
+  ok(doc.activeElement === targets['#sidebar :is(button, a).active'], 'else the rail\'s entry for the page');
+  const kept = make({ id: 'kept' });
+  doc.activeElement = kept;
+  ok(fns.focusAfterSurfaceLeave(opener) === false && doc.activeElement === kept, 'a control that has focus keeps it');
+  ok(/if \(Router\.navigate\(\{ type: 'home', wsId: ws\.id, query: \{\} \}, \{ persist: false \}\)\) focusAfterSurfaceLeave\(opener\);/.test(extractFunction('closeSearchSurface')), 'every way out of Find again (Escape in the field, on a row, or on the page) goes through it');
+}
+
+// Finding R2-13: the palette lists the openable links once per open, parses a
+// query once per keystroke and stops at the seventh match.
+function testPaletteLinkScan() {
+  const counts = { lists: 0, parses: 0, matches: 0 };
+  const rows = Array.from({ length: 30 }, (_, i) => ({ item: { id: `l${i}`, url: i === 3 ? 'chrome://x' : `https://e.example/${i}`, createdAt: i } }));
+  counts.texts = 0;
+  const { fns } = load(['_palMatchingLinks'], {
+    collectWorkspaceTabs() { counts.lists += 1; return rows; },
+    activeWs() { return {}; },
+    isOpenableSavedTabUrl: url => url.startsWith('https:'),
+    parseSearchQuery(q) { counts.parses += 1; return { q, pos: { text: q.startsWith('-') ? [] : q.split(' ').filter(Boolean) } }; },
+    // A row's text, as the shared matcher builds it: every row holds "s" and
+    // "st"; even rows hold "even".
+    _searchItemBlob(row) { counts.texts += 1; return `page ${Number(row.item.id.slice(1)) % 2 ? 'odd' : 'even'} s st`; },
+    landingLinkMatches(row, query, parsed) { counts.matches += 1; return parsed?.q === query && Number(row.item.id.slice(1)) % 2 === 0; },
+    _palSavedLinkCommand: row => row.item.id,
+  }, 'let _palState = { links: null, texts: null };');
+  const seven = ['l28', 'l26', 'l24', 'l22', 'l20', 'l18', 'l16'];
+  eq(fns._palMatchingLinks('s'), seven, 'seven matching openable links, newest first');
+  eq(fns._palMatchingLinks('st'), seven, 'the same on the next keystroke');
+  eq([counts.lists, counts.parses], [1, 2], 'the links are listed once per open; each keystroke parses its query once (finding R2-13)');
+  eq(counts.matches, 28, 'the scan stops at the seventh match (14 rows a keystroke, not all 29)');
+  eq(counts.texts, 14, 'a row\'s text is built once per open');
+  eq(fns._palMatchingLinks('even'), seven, 'rows whose text lacks a word skip the full matcher');
+  eq(counts.matches, 35, 'only the seven candidates ran the full matcher');
+  eq([fns._palMatchingLinks('zzqx'), fns._palMatchingLinks('zzqxw')], [[], []], 'a word no row holds matches nothing');
+  eq([counts.matches, counts.texts], [35, 29], 'and costs one text check a row, the full matcher none');
+  eq(fns._palMatchingLinks('-odd'), seven, 'a query without plain words (operators, a minus) still runs the shared matcher on every row it needs');
+  eq(fns._palMatchingLinks('   '), [], 'no query, no links');
+  ok(/_palState = \{ cmds: buildPaletteCommands\(\), links: null, texts: null,/.test(extractFunction('openCommandPalette')) && /_palState\.cmds = buildPaletteCommands\(\);\n\s*_palState\.links = null;\n\s*_palState\.texts = null;/.test(extractFunction('_palRun')), 'a new open, or a refused link\'s rebuild, lists the links and their text again');
+}
+
+// Finding R2-6 and R2-18 in the stylesheet: the secondary ink and the Enter
+// key on the selected row hold 4.5:1 in every bundled theme; the palette's
+// field shows its focus.
+function testInksAndFocus() {
+  const share = /\.fnd,\n#cmd-palette \{ --fnd-ink-2: color-mix\(in srgb, var\(--text2\) (\d+)%, var\(--text\)\); \}/.exec(layer);
+  ok(share, 'Find again and the palette declare one theme-aware secondary ink');
+  ok(!/var\(--text2\)/.test(layer.replace(/--fnd-ink-2: [^;]*;/g, '')), 'no text on either surface uses the untuned --text2 (finding R2-6)');
+  ok(/\.fnd-seg-btn \{[^}]*color: var\(--fnd-ink-2\);/.test(layer) && /\.fnd-cnt \{[^}]*color: var\(--fnd-ink-2\);/.test(layer), 'the unpressed content types and their counts use it');
+  ok(/\.fnd-cap kbd,\n\.pal-cap kbd \{[^}]*background: transparent;\n\s*box-shadow: inset 0 0 0 1px color-mix\(in srgb, currentColor 55%, transparent\);/.test(layer), 'the Enter key is outlined, so its glyph reads as the label beside it');
+  ok(/#cmdp-input:focus-visible \{ outline: none; \}\n\.cmdp-inputrow:has\(> #cmdp-input:focus-visible\) \{/.test(layer), 'the palette field shows its focus on its row (finding R2-18)');
+  const parse = value => {
+    const text = String(value || '').trim();
+    let match = /^#([0-9a-f]{6})$/i.exec(text);
+    if (match) return { r: parseInt(match[1].slice(0, 2), 16), g: parseInt(match[1].slice(2, 4), 16), b: parseInt(match[1].slice(4), 16), a: 1 };
+    match = /^rgba?\(([^)]+)\)$/.exec(text);
+    if (match) { const p = match[1].split(',').map(Number); return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 }; }
+    return null;
+  };
+  const over = (top, bottom) => ({ r: top.r * top.a + bottom.r * (1 - top.a), g: top.g * top.a + bottom.g * (1 - top.a), b: top.b * top.a + bottom.b * (1 - top.a), a: 1 });
+  const mix = (a, part, b) => ({ r: a.r * part + b.r * (1 - part), g: a.g * part + b.g * (1 - part), b: a.b * part + b.b * (1 - part), a: 1 });
+  const lum = ({ r, g, b }) => [r, g, b].map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }).reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
+  const contrast = (fg, bg) => { const a = lum(fg); const b = lum(bg); return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); };
+  const capMix = Number(/\.fnd-cap,\n\.pal-cap \{[^}]*background: color-mix\(in srgb, var\(--accent-bg, var\(--accent\)\) (\d+)%, var\(--today-now\)\);/.exec(layer)?.[1]) / 100;
+  ok(capMix > 0, 'the selected row\'s key keeps its fill');
+  const themesCss = fs.readFileSync(path.join(root, 'themes.css'), 'utf8').replace(/\r\n/g, '\n');
+  const fails = [];
+  let themes = 0;
+  for (const m of themesCss.matchAll(/\n\[data-theme="([\w-]+)"\] \{([^}]*)\}/g)) {
+    themes += 1;
+    const raw = {};
+    for (const d of m[2].matchAll(/--([\w-]+):\s*([^;]+);/g)) raw[d[1]] = d[2].trim();
+    const t = name => parse(raw[name]);
+    const text = t('text');
+    const card = t('card') || t('paper-strong') || t('panel');
+    const ground = t('ground') || t('paper') || t('bg');
+    const locator = t('locator') || t('accent');
+    const ink = mix(t('text2'), Number(share[1]) / 100, text);
+    const now = t('registry-card') || t('registry-bg') || text;
+    const pairs = {
+      'secondary on a card': [ink, card],
+      'secondary on the type switch': [ink, over(t('card-rule') || t('border2'), ground)],
+      'secondary on the highlight': [ink, mix(locator, 0.10, card)],
+      'secondary on an icon tile': [ink, mix(text, 0.07, card)],
+      'the Enter key': [t('accent-text') || parse('#ffffff'), mix(t('accent-bg') || t('accent'), capMix, now)],
+    };
+    for (const [name, [fg, bg]] of Object.entries(pairs)) {
+      const value = contrast(fg, bg);
+      if (value < 4.5) fails.push(`${m[1]}: ${name} ${value.toFixed(2)}`);
+    }
+  }
+  eq(themes, 19, 'all 19 bundled themes are checked');
+  eq(fails, [], 'every Find again and palette text pair is at least 4.5:1 in every bundled theme (finding R2-6)');
+}
+
 function testCi() {
   ok(/for f in [^\n]*scripts\/search-page-contract-test\.js/.test(workflow), 'CI syntax-checks this suite');
   ok(/run: node scripts\/search-page-contract-test\.js/.test(workflow), 'CI runs this suite');
@@ -387,6 +523,9 @@ testPaletteHome();
 testRenderContracts();
 testStylesheet();
 testStrings();
+testLeaveFocus();
+testPaletteLinkScan();
+testInksAndFocus();
 testCi();
 
-console.log(`Search page contracts passed: ${checks} checks (operators marked in the field, matched words, snippet, plain-text memo, scoring once, empty-state copy and one action, Escape, the gliding highlight, palette matches, one floating layer, palette home, render and stylesheet rules, strings, CI)`);
+console.log(`Search page contracts passed: ${checks} checks (operators marked in the field, matched words, snippet, plain-text memo, scoring once, empty-state copy and one action, Escape, the gliding highlight, palette matches, one floating layer, palette home, render and stylesheet rules, strings, focus after leaving, the palette's link scan, inks in 19 themes and the field's focus, CI)`);

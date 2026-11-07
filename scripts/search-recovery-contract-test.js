@@ -105,6 +105,7 @@ const openDetailsSource = extractFunction('_searchOpenDetails');
 const openPrimarySource = extractFunction('_searchOpenPrimary');
 const activationContextSource = extractFunction('searchRecoveryContextForActivation');
 const queryKeydownSource = extractFunction('handleSearchQueryKeydown');
+const flushQuerySource = extractFunction('flushSearchQuery');
 const ensureLiveRegionSource = extractFunction('ensureSearchLiveRegion');
 const resetAnnouncementSource = extractFunction('resetSearchAnnouncement');
 const announcementSignatureSource = extractFunction('searchAnnouncementSignature');
@@ -434,8 +435,10 @@ assert.deepEqual(JSON.parse(JSON.stringify(linkMatchContext.__links('domain:repo
   'the shared saved-link matcher must honour search operators');
 assert.deepEqual(JSON.parse(JSON.stringify(linkMatchContext.__links('   '))), [],
   'an empty query must match no saved link');
-assert.match(paletteMatchingLinksSource, /\.filter\(row => landingLinkMatches\(row, query\)\)[\s\S]*isOpenableSavedTabUrl/,
+assert.match(paletteMatchingLinksSource, /\.filter\(row => isOpenableSavedTabUrl\(row\.item\.url\)\)[\s\S]*const parsed = parseSearchQuery\(query\);[\s\S]*if \(!landingLinkMatches\(row, query, parsed\)\) continue;/,
   'the command palette must keep using the shared saved-link matcher and only offer pages Reopen accepts');
+assert.match(landingLinkMatchesSource, /function landingLinkMatches\(row, query, parsed = null\) \{\n\s*return !!String\(query \|\| ''\)\.trim\(\) && searchItemMatches\(\{ \.\.\.row, parents: row\.parents \|\| \[\] \}, query, parsed\);/,
+  'the shared matcher takes a query parsed once by its caller and matches exactly as before');
 
 const searchHandoff = {
   routes: [],
@@ -446,10 +449,13 @@ const searchHandoff = {
 const searchHandoffElements = new Map([
   ['search-surface-input', { focus() { searchHandoff.searchFocus += 1; } }],
 ]);
+const searchHandoffOpener = { id: 'topbar-search' };
 const searchHandoffContext = vm.createContext({
   document: {
+    activeElement: searchHandoffOpener,
     getElementById(id) { return searchHandoffElements.get(id) || null; },
   },
+  focusAfterSurfaceLeave(opener) { searchHandoff.leaveFocus = opener; return true; },
   activeWs() { return { id: 'workspace/local?' }; },
   Router: {
     navigate(route, options) { searchHandoff.routes.push({ route, options }); return true; },
@@ -463,7 +469,7 @@ const searchHandoffContext = vm.createContext({
   setTimeout(callback) { callback(); return 1; },
 });
 vm.runInContext(
-  `${openSearchSurfaceSource}\n${closeSearchSurfaceSource}\nglobalThis.__search = { openSearchSurface, closeSearchSurface };`,
+  `let activeSearch = null;\nlet searchSurfaceOpener = null;\n${openSearchSurfaceSource}\n${closeSearchSurfaceSource}\nglobalThis.__search = { openSearchSurface, closeSearchSurface };`,
   searchHandoffContext,
   { filename: 'local-search-route-contract.js' },
 );
@@ -488,6 +494,8 @@ assert.deepEqual(
   },
   'leaving URL-backed Search must return Home without writing durable state',
 );
+assert.equal(searchHandoff.leaveFocus, searchHandoffOpener,
+  'leaving Search hands focus back to the control that opened it, else a visible control (finding R2-10)');
 assert.equal(manifest.permissions.includes('search'), false, 'local saved-work search must not retain the single-use browser search permission');
 assert.doesNotMatch(openSearchSurfaceSource, /chrome\.search/, 'opening Search must not retain a hidden web-search fallback');
 assert.match(html, /<span class="topbar-search-ph" data-i18n="landing\.searchPlaceholder">Search saved work…<\/span>/,
@@ -525,9 +533,16 @@ const recoveryHarness = {
   cancelled: [],
   toasts: [],
   moves: [],
+  queryInput: null,
+  renders: [],
+  syncs: [],
+  clearedTimers: [],
 };
 const recoveryContext = vm.createContext({
   recoveryHarness,
+  _searchRenderTimer: 'pending-search',
+  clearTimeout(value) { recoveryHarness.clearedTimers.push(value); },
+  renderBoard() { recoveryHarness.renders.push({ opensBefore: recoveryHarness.opens.length }); },
   State: { get() { return recoveryHarness.state; } },
   activeWs() { return recoveryHarness.activeWorkspace; },
   openSavedTabItem(item, options) {
@@ -547,12 +562,13 @@ const recoveryContext = vm.createContext({
     opener.focus({ preventScroll: true });
     return true;
   },
-  document: { getElementById(id) { return id === 'item-detail' ? detailRoot : null; } },
+  document: { getElementById(id) { return id === 'item-detail' ? detailRoot : id === 'search-surface-input' ? recoveryHarness.queryInput : null; } },
   Router: {
     navigate(route, options) {
       recoveryHarness.routes.push({ route, options });
       return recoveryHarness.navigateResult;
     },
+    sync(options) { recoveryHarness.syncs.push(options); },
   },
   toast(message, options) { recoveryHarness.toasts.push({ message, options }); },
   tr(key) { return key; },
@@ -599,6 +615,7 @@ vm.runInContext(
     'let activeSearch = null;',
     'function _searchRowsForState() { return recoveryHarness.activationRows; }',
     activationContextSource,
+    flushQuerySource,
     queryKeydownSource,
     'globalThis.__recovery = { createSearchRecoveryContext, resolveSearchRecoveryTarget, searchRecoveryCanOpen, searchRecoveryLocationText, searchRecoveryPathHtml, searchDetailRoute, _searchOpenDetails, _searchOpenPrimary, searchRecoveryContextForActivation, handleSearchQueryKeydown, setActiveSearch(value) { activeSearch = value; } };',
   ].join('\n'),
@@ -898,10 +915,29 @@ assert.deepEqual(recoveryHarness.moves, [
 ], 'query arrowing must enter the first or final perceptible option without skipping');
 supersededState.selectedId = previousSelectedId;
 supersededState.loading = true;
+// An open IME composition still owns the text: the pending search does not
+// run, and nothing older opens.
+recoveryHarness.queryInput = { dataset: { searchComposing: 'true' } };
 const loadingEvent = queryEvent();
 assert.equal(recovery.handleSearchQueryKeydown(loadingEvent, supersededState, activationModel.ws), false, 'debouncing Enter must not activate an old result');
 assert.equal(loadingEvent.preventCalls, 1);
 assert.equal(recoveryHarness.opens.length, 0);
+assert.deepEqual(recoveryHarness.renders, [], 'a composing field keeps the search pending');
+// Finding R2-11: Enter right after typing runs the search the pause is
+// waiting for, then opens the first current result, in that order.
+recoveryHarness.queryInput = { dataset: {} };
+supersededState.selectedId = null;
+const flushedEvent = queryEvent();
+assert.equal(recovery.handleSearchQueryKeydown(flushedEvent, supersededState, activationModel.ws), true, 'Enter within the pause must run the pending search and open its first result (finding R2-11)');
+assert.equal(supersededState.loading, false, 'the pending search has run');
+assert.deepEqual(JSON.parse(JSON.stringify(recoveryHarness.renders)), [{ opensBefore: 0 }], 'the results repaint once, before anything opens');
+assert.deepEqual(JSON.parse(JSON.stringify(recoveryHarness.clearedTimers)), ['pending-search'], 'the pause timer is cancelled, so the search runs once');
+assert.deepEqual(JSON.parse(JSON.stringify(recoveryHarness.syncs)), [{ replace: true }], 'the address follows without a history entry');
+assert.equal(recoveryHarness.opens.length, 1, 'and exactly one result opens');
+assert.equal(recoveryHarness.opens[0].item, activationModel.item, 'the first result of the current query');
+recoveryHarness.opens.length = 0;
+recoveryHarness.renders.length = 0;
+supersededState.selectedId = previousSelectedId;
 supersededState.loading = false;
 const currentEvent = queryEvent();
 assert.equal(recovery.handleSearchQueryKeydown(currentEvent, supersededState, activationModel.ws), true, 'settled query Enter must activate the current result');
@@ -1261,10 +1297,10 @@ const originalSelectionNodes = [...selectionHarness.nodes.values()];
 const selectionContext = vm.createContext({
   Router: { sync(options) { selectionHarness.syncs.push(options); } },
   document: { getElementById(id) { return selectionHarness.nodes.get(id)?.open || null; } },
-  _searchRowsForState() { return selectionRows; },
+  _searchRowsForState() { selectionHarness.searches = (selectionHarness.searches || 0) + 1; return selectionRows; },
 });
 vm.runInContext(
-  `${searchPagingConstantsSource}\nlet activeSearch = { selectedId: 'b' };\n${searchResultLimitSource}\n${searchVisibleRowsSource}\n${placeRowGlideSource}\n${placeSearchGlideSource}\n${selectResultSource}\n${moveSelectionSource}\nglobalThis.__selection = { move: _searchMoveSelection, select: _searchSelectResult, state() { return activeSearch; }, setSelected(value) { activeSearch.selectedId = value; } };`,
+  `${searchPagingConstantsSource}\nlet activeSearch = { selectedId: 'b' };\nlet searchPageSession = null;\n${searchResultLimitSource}\n${searchVisibleRowsSource}\n${placeRowGlideSource}\n${placeSearchGlideSource}\n${selectResultSource}\n${moveSelectionSource}\nglobalThis.__selection = { move: _searchMoveSelection, select: _searchSelectResult, state() { return activeSearch; }, setSelected(value) { activeSearch.selectedId = value; }, setPainted(rows, { stale = false } = {}) { searchPageSession = { rows, rowsFor: stale ? {} : activeSearch }; } };`,
   selectionContext,
   { filename: 'search-selection-model.js' },
 );
@@ -1319,6 +1355,18 @@ const disconnected = originalSelectionNodes[0].open;
 disconnected.isConnected = false;
 assert.equal(selection.select(selectionRows[0], 0, disconnected), false, 'a disconnected result must fail without effects');
 assert.deepEqual({ syncs: selectionHarness.syncs.length, glide: selectionGlide.props['--glide-y'] }, effectsBeforeMissing);
+disconnected.isConnected = true;
+selectionHarness.nodes.set('search-result-2', originalSelectionNodes[2]);
+// Finding R2-12: an arrow press moves through the rows the last paint showed;
+// it never runs the search again. Without a paint of this state it searches.
+const searchesBefore = selectionHarness.searches;
+selection.setPainted(selectionRows);
+assert.equal(selection.move(1, true), true);
+assert.equal(selection.state().selectedId, 'c', 'the painted rows carry the selection forward');
+assert.equal(selectionHarness.searches, searchesBefore, 'an arrow press must not run the search again (finding R2-12)');
+selection.setPainted(selectionRows, { stale: true });
+selection.move(-1, true);
+assert.equal(selectionHarness.searches, searchesBefore + 1, 'rows painted for another search state are not reused');
 
 const i18nSource = extractBetween('const I18N = {', '\nfunction tr(');
 const i18nContext = vm.createContext({});

@@ -9558,6 +9558,18 @@ function readRecurControl() {
   return every ? { every, interval: 1 } : null;
 }
 
+// The repeat an item reminder write stores. The picker sets a new rule (its
+// daily, weekly or monthly, interval 1); Move to and the quick times pass the
+// stored rule, which stays as it was: "every 2 weeks" stays every 2 weeks.
+function reminderRecurRecord(recur, { fromPicker = false } = {}) {
+  if (!['day', 'week', 'month'].includes(recur?.every)) return null;
+  if (fromPicker) return { every: recur.every, interval: 1 };
+  const rawInterval = Number(recur.interval);
+  const record = { every: recur.every, interval: Number.isFinite(rawInterval) ? Math.max(1, Math.trunc(rawInterval)) : 1 };
+  if (recur.until != null && recur.until !== '' && Number.isFinite(Number(recur.until))) record.until = Number(recur.until);
+  return record;
+}
+
 function currentItemReminderIdentity(itemId) {
   const id = String(itemId || '');
   if (!id) return null;
@@ -9698,9 +9710,9 @@ async function commitItemReminderMutation(context, reminder, opts = {}) {
     // A time the user sets starts a new schedule; the occurrence the background
     // last fired (firedAt) belonged to the old one.
     delete nextReminder.firedAt;
-    if (['day', 'week', 'month'].includes(reminder.recur?.every)) {
-      nextReminder.recur = { every: reminder.recur.every, interval: 1 };
-    } else delete nextReminder.recur;
+    const recur = reminderRecurRecord(reminder.recur, { fromPicker });
+    if (recur) nextReminder.recur = recur;
+    else delete nextReminder.recur;
   }
 
   if (itemDetailValueFingerprint(target.item.reminder)
@@ -9827,9 +9839,9 @@ async function commitItemDetailReminderMutation(context, reminder, opts = {}) {
     // A time the user sets starts a new schedule; the occurrence the background
     // last fired (firedAt) belonged to the old one.
     delete nextReminder.firedAt;
-    if (['day', 'week', 'month'].includes(reminder.recur?.every)) {
-      nextReminder.recur = { every: reminder.recur.every, interval: 1 };
-    } else delete nextReminder.recur;
+    const recur = reminderRecurRecord(reminder.recur, { fromPicker });
+    if (recur) nextReminder.recur = recur;
+    else delete nextReminder.recur;
   }
 
   const existingFingerprint = itemDetailValueFingerprint(target.item.reminder);
@@ -17935,8 +17947,8 @@ function resolveLandingInboxTarget(context) {
   }
 }
 
-function landingLinkMatches(row, query) {
-  return !!String(query || '').trim() && searchItemMatches({ ...row, parents: row.parents || [] }, query);
+function landingLinkMatches(row, query, parsed = null) {
+  return !!String(query || '').trim() && searchItemMatches({ ...row, parents: row.parents || [] }, query, parsed);
 }
 
 function landingResultDestinationText(row) {
@@ -25381,6 +25393,7 @@ function openSearchSurface(prefill = '') {
   if (typeof hideContextMenu === 'function') hideContextMenu();
   const query = {};
   if (prefill) query.q = String(prefill);
+  if (!activeSearch) searchSurfaceOpener = document.activeElement;
   Router.navigate({ type: 'search', wsId: ws.id, query }, { persist: false });
   setTimeout(() => document.getElementById('search-surface-input')?.focus({ preventScroll: true }), 40);
 }
@@ -25388,7 +25401,37 @@ function openSearchSurface(prefill = '') {
 function closeSearchSurface() {
   const ws = activeWs();
   if (!ws) return;
-  Router.navigate({ type: 'home', wsId: ws.id, query: {} }, { persist: false });
+  const opener = searchSurfaceOpener;
+  searchSurfaceOpener = null;
+  if (Router.navigate({ type: 'home', wsId: ws.id, query: {} }, { persist: false })) focusAfterSurfaceLeave(opener);
+}
+
+// The control that opened Find again or the Calendar, for focus to return to.
+let searchSurfaceOpener = null;
+let calendarSurfaceOpener = null;
+
+// After Escape (or C) leaves Find again or the Calendar, focus lands on a
+// control on screen, never on <body>: the one that opened the page when it is
+// still there, else the page's heading, the top bar's search, or the rail's
+// entry for the page. Never a text field, where Ctrl+Z and Escape skip the app.
+function focusAfterSurfaceLeave(opener = null) {
+  const active = document.activeElement;
+  if (active && active !== document.body && active.isConnected && active.getClientRects().length) return false;
+  const usable = el => !!el && el !== document.body && el.isConnected && typeof el.focus === 'function'
+    && !el.matches('input, textarea, select, [contenteditable="true"]')
+    && !el.closest('[hidden], [inert], [aria-hidden="true"], .hidden')
+    && el.getClientRects().length > 0;
+  const candidates = [
+    opener,
+    document.querySelector('#board h1[tabindex]'),
+    document.getElementById('topbar-search'),
+    document.querySelector('#sidebar :is(button, a).active'),
+  ];
+  return candidates.some(target => {
+    if (!usable(target)) return false;
+    try { target.focus({ preventScroll: true }); } catch { try { target.focus(); } catch { return false; } }
+    return document.activeElement === target;
+  });
 }
 
 function createSearchRecoveryContext(row, ws = activeWs()) {
@@ -25511,6 +25554,9 @@ function handleSearchQueryKeydown(event, state, ws) {
   }
   if (event.key === 'Enter') {
     event.preventDefault();
+    // Enter right after typing runs the search the pause is waiting for, then
+    // opens its first result; an older result never opens.
+    flushSearchQuery(state);
     const context = searchRecoveryContextForActivation(state, ws);
     return context ? _searchOpenPrimary(context, event.currentTarget) : false;
   }
@@ -25696,6 +25742,19 @@ function _searchQueueQuery(query) {
     const active = document.activeElement;
     if (input && (!active || active === document.body)) input.focus({ preventScroll: true });
   }, 90);
+}
+
+// Runs a search the pause is still waiting for, now. Nothing runs while an IME
+// composition is open (its Enter confirms the text).
+function flushSearchQuery(state = activeSearch) {
+  if (!state || state !== activeSearch || !state.loading) return false;
+  const input = document.getElementById('search-surface-input');
+  if (input?.dataset.searchComposing === 'true') return false;
+  clearTimeout(_searchRenderTimer);
+  state.loading = false;
+  renderBoard();
+  Router.sync({ replace: true });
+  return true;
 }
 
 // ── Find again page (2026-11 canvas) ──────────────────────────────
@@ -25919,7 +25978,10 @@ function bindSearchResultActivation(result, row, index, recoveryContext) {
 
 function _searchMoveSelection(delta, focusRow = false, edge = '') {
   if (!activeSearch) return false;
-  const rows = searchVisibleRows(activeSearch);
+  // The rows on screen are the last paint's: an arrow press reuses them
+  // instead of running the search again.
+  const painted = searchPageSession?.rowsFor === activeSearch ? searchPageSession.rows : null;
+  const rows = painted || searchVisibleRows(activeSearch);
   if (!rows.length) return false;
   let index = rows.findIndex(row => row.item.id === activeSearch.selectedId);
   if (index < 0) index = 0;
@@ -26405,6 +26467,9 @@ function renderSearchSurface() {
     announceSearchStatus(state.loading ? tr('search.loading') : announcement, announcementSignature);
   }
 
+  // The rows this paint shows, which the arrow keys move through.
+  session.rows = failure || state.loading ? [] : visibleRows;
+  session.rowsFor = state;
   session.count = rows.length;
   session.typeCounts = typeCounts;
   session.hiddenCount = hiddenFilterCount;
@@ -30160,7 +30225,32 @@ function handleItemDetailKeydown(event, root) {
     focusItemDetailTarget(root.querySelector('.idp-panel'));
     return;
   }
+  // The quick times and the Move picker fold before the panel closes, wherever
+  // focus is in the panel (on Change, for one).
+  const sheet = root.querySelector('.dtl-sheet');
+  if (sheet && !sheet.hidden) {
+    toggleItemDetailReminderSheet(root, false);
+    focusItemDetailTarget(root.querySelector('[data-dtl-sheet-toggle]'));
+    return;
+  }
+  if (inboxSpacePicker?.el && root.contains(inboxSpacePicker.el)) {
+    closeInboxSpacePicker();
+    focusItemDetailTarget(root.querySelector('button.dtl-loc'));
+    return;
+  }
   closeItemDetail();
+}
+
+// A quick reminder time. "In 1 hour" and "In 3 hours" are durations;
+// "Tomorrow" and "Next week" keep the clock time on a later date, so a
+// daylight-saving change in between does not move them by an hour.
+function quickReminderAt(offset, now = Date.now()) {
+  const ms = Number(offset);
+  const days = ms / 86400000;
+  if (!Number.isInteger(days) || days < 1) return now + ms;
+  const at = new Date(now);
+  at.setDate(at.getDate() + days);
+  return at.getTime();
 }
 
 function detailRecurLabel(recur) {
@@ -30632,7 +30722,10 @@ function renderItemDetail() {
     if (it.type === 'tab') changed = await archiveSavedPage(it, archiveButton);
     else if (it.type === 'stack') changed = archiveItem(it.id) !== false;
     else changed = await archiveBoardLocalItem(it, archiveButton);
-    if (changed) renderItemDetail();
+    if (!changed) return;
+    renderItemDetail();
+    // The panel dropped the archived id; the address drops it too.
+    Router.sync({ replace: true });
   };
   const body = root.querySelector('.idp-body');
 
@@ -30741,11 +30834,11 @@ function renderItemDetail() {
   sheet.hidden = true;
   sheet.setAttribute('role', 'group');
   sheet.setAttribute('aria-label', tr('space.reminderFor', { name: heading }));
-  sheet.innerHTML = `${SPACE_QUICK_TIMES.map(([offset, key], index) => `<button type="button" class="dtl-sho" data-offset="${offset}" data-idp-focus="reminder-quick-${index}" style="--dtl-d:${index * 30}ms"><span>${esc(tr(key))}</span><span class="dtl-mono">${esc(inboxWhenLabel(now + offset, now))}</span></button>`).join('')}
+  sheet.innerHTML = `${SPACE_QUICK_TIMES.map(([offset, key], index) => `<button type="button" class="dtl-sho" data-offset="${offset}" data-idp-focus="reminder-quick-${index}" style="--dtl-d:${index * 30}ms"><span>${esc(tr(key))}</span><span class="dtl-mono">${esc(inboxWhenLabel(quickReminderAt(offset, now), now))}</span></button>`).join('')}
     <button type="button" class="dtl-sho is-custom" data-idp-focus="reminder-custom" style="--dtl-d:120ms"><span>${esc(tr('space.reminderCustom'))}</span></button>`;
   sheet.querySelectorAll('[data-offset]').forEach(button => {
     button.onclick = () => {
-      void commitItemDetailReminderMutation(mutationContext, { at: Date.now() + Number(button.dataset.offset), recur: it.reminder?.recur });
+      void commitItemDetailReminderMutation(mutationContext, { at: quickReminderAt(button.dataset.offset), recur: it.reminder?.recur });
     };
   });
   sheet.querySelector('.is-custom').onclick = () => openReminderPicker(it.id, mutationContext);
@@ -33241,12 +33334,15 @@ function openCalendar() {
   const current = activeCalendar && CAL_VIEWS.includes(activeCalendar.view) ? activeCalendar.view : null;
   const last = activeCalendar && CAL_VIEWS.includes(activeCalendar.lastCalendarView) ? activeCalendar.lastCalendarView : null;
   const view = current || last || (reminderCount < 5 ? 'agenda' : 'month');
+  if (!activeCalendar || !CAL_VIEWS.includes(activeCalendar.view)) calendarSurfaceOpener = document.activeElement;
   Router.navigate({ type: 'calendar', wsId: ws.id, query: view !== 'month' ? { cal: view } : {} });
 }
 function closeCalendar() {
   const ws = activeWs();
   const cat = activeCat();
-  Router.navigate({ type: 'board', wsId: ws ? ws.id : null, catId: cat ? cat.id : null, query: {} });
+  const opener = calendarSurfaceOpener;
+  calendarSurfaceOpener = null;
+  if (Router.navigate({ type: 'board', wsId: ws ? ws.id : null, catId: cat ? cat.id : null, query: {} })) focusAfterSurfaceLeave(opener);
 }
 function setCalendarView(view) {
   if (!CAL_VIEWS.includes(view) || !activeCalendar || activeCalendar.view === view) return;
@@ -33473,7 +33569,12 @@ function buildCalDot(entry, className = '') {
   if (entry.source !== 'item' && isStableEntityReminderId(entry.reminderId)) {
     dot.dataset.reminderId = entry.reminderId;
   }
-  dot.textContent = entry.title;
+  // The text sits in its own span, so a two-line clamp never shows a third
+  // line inside the 44 px button.
+  const text = document.createElement('span');
+  text.className = 'cal-dot-t';
+  text.textContent = entry.title;
+  dot.appendChild(text);
   dot.title = calendarDotTitle(entry);
   dot.onclick = e => { e.stopPropagation(); openReminderTarget(entry); };
   bindAnchoredContextMenu(dot, () => calendarMoveMenuItems(entry, dot, { withOpen: true }));
@@ -33533,7 +33634,7 @@ let calendarTaskCtx = null;
 let calendarTaskBusy = false;
 let calendarTaskMutationPending = null;
 
-function calendarTaskDateParts(dayStart) {
+function calendarTaskDateParts(dayStart, now = Date.now()) {
   const value = Number(dayStart);
   if (!Number.isFinite(value)) return null;
   const reviewed = new Date(value);
@@ -33541,8 +33642,11 @@ function calendarTaskDateParts(dayStart) {
   const normalized = new Date(reviewed);
   normalized.setHours(0, 0, 0, 0);
   if (normalized.getTime() !== value) return null;
-  const when = new Date(normalized);
+  let when = new Date(normalized);
   when.setHours(9, 0, 0, 0);
+  // Today after 9:00, the task takes the next whole hour, as Move to does
+  // (calMoveTime), so it is never added past due.
+  if (when.getTime() <= now && value === planDayStart(now)) when = new Date(planNextWholeHour(now));
   return {
     dayStart: value,
     at: when.getTime(),
@@ -34036,7 +34140,15 @@ function calSelectedDay() {
   if (!activeCalendar) return _tlStartOfDay(Date.now());
   if (activeCalendar.anchorSeen !== activeCalendar.anchor || !Number.isFinite(activeCalendar.selected)) {
     activeCalendar.selected = _tlStartOfDay(activeCalendar.anchor);
+    activeCalendar.selectedKey = planDayKey(activeCalendar.selected);
     activeCalendar.anchorSeen = activeCalendar.anchor;
+  }
+  // A time-zone change moves local midnight: the selected day is found again
+  // by its date, so the grid, the panel and quick add keep working.
+  if (_tlStartOfDay(activeCalendar.selected) !== activeCalendar.selected) {
+    const [y, m, d] = String(activeCalendar.selectedKey || planDayKey(activeCalendar.selected)).split('-').map(Number);
+    activeCalendar.selected = new Date(y, m - 1, d).getTime();
+    activeCalendar.selectedKey = planDayKey(activeCalendar.selected);
   }
   return activeCalendar.selected;
 }
@@ -34064,6 +34176,7 @@ function calSelectDay(dayStart, { focus = false } = {}) {
   if (!activeCalendar || !Number.isFinite(dayStart)) return;
   const day = _tlStartOfDay(dayStart);
   activeCalendar.selected = day;
+  activeCalendar.selectedKey = planDayKey(day);
   // The shown period follows the selection: a week shows the selected day's
   // week, and a day outside the month grid turns the month.
   if (activeCalendar.view === 'week' || (activeCalendar.view === 'month' && !calInMonthGrid(day))) calSetAnchor(day);
@@ -34075,6 +34188,53 @@ function calFocusDay(day) {
   const target = document.querySelector(`.cld [data-cal-day="${day}"]`);
   if (!target) return false;
   try { target.focus({ preventScroll: false }); } catch { try { target.focus(); } catch {} }
+  return document.activeElement === target;
+}
+
+// Where focus was in the Calendar before a rebuild: a selector for the same
+// control in the next paint (its focus key, its day, its id, or its part of a
+// reminder row in the same strip, view or panel) and a field's caret.
+function calFocusMemo(active, board) {
+  if (!active?.closest || !board?.contains(active) || !active.closest('.cld')) return null;
+  const memo = { selector: '', selection: null };
+  if (active.matches('input')) {
+    try { memo.selection = [active.selectionStart, active.selectionEnd]; } catch {}
+  }
+  const keyed = active.closest('[data-cal-focus]');
+  const row = active.closest('[data-cal-key]');
+  if (keyed) memo.selector = `[data-cal-focus="${CSS.escape(keyed.dataset.calFocus)}"]`;
+  else if (active.dataset.calDay) memo.selector = `[data-cal-day="${CSS.escape(active.dataset.calDay)}"]`;
+  else if (active.id) memo.selector = `#${CSS.escape(active.id)}`;
+  else if (row) {
+    const part = ['cld-due', 'cld-panel', 'cld-view'].find(name => active.closest(`.${name}`));
+    const inner = active === row ? '' : active.classList.contains('cld-mv') ? ' .cld-mv' : ' .cal-dot';
+    memo.selector = `${part ? `.${part} ` : ''}[data-cal-key="${CSS.escape(row.dataset.calKey)}"]${inner}`;
+  }
+  return memo;
+}
+
+// Puts focus back after a rebuild: the same control, else (a cleared filter)
+// the filter, else the selected day, else the pressed view. Never <body>; a
+// control that took focus meanwhile keeps it.
+function calRestoreFocus(memo) {
+  if (!memo) return false;
+  const active = document.activeElement;
+  if (active && active !== document.body && active.isConnected) return false;
+  const root = document.querySelector('#board .cld');
+  if (!root) return false;
+  const selectors = [
+    memo.selector,
+    memo.selector === '[data-cal-focus="filter-clear"]' ? '#cal-filter-input' : '',
+    '[data-cal-day][tabindex="0"]',
+    '.cld-seg-btn[aria-pressed="true"]',
+  ].filter(Boolean);
+  const target = selectors.map(selector => root.querySelector(selector))
+    .find(el => !!el && !el.disabled && el.getClientRects().length > 0);
+  if (!target) return false;
+  try { target.focus({ preventScroll: true }); } catch { try { target.focus(); } catch { return false; } }
+  if (memo.selection && target.matches('input') && target === root.querySelector(memo.selector || null)) {
+    try { target.setSelectionRange(memo.selection[0], memo.selection[1]); } catch {}
+  }
   return document.activeElement === target;
 }
 
@@ -34143,6 +34303,7 @@ function buildCalToolbar(shownCount, totalCount, session = null, after = []) {
     b.className = 'cld-seg-btn';
     b.textContent = tr(key);
     b.setAttribute('aria-pressed', String(activeCalendar.view === v));
+    b.dataset.calFocus = `view:${v}`;
     b.onclick = () => setCalendarView(v);
     seg.appendChild(b);
   });
@@ -34162,6 +34323,7 @@ function buildCalToolbar(shownCount, totalCount, session = null, after = []) {
   today.type = 'button';
   today.className = 'cld-btn';
   today.textContent = tr('cal.today');
+  today.dataset.calFocus = 'today';
   today.onclick = calendarToday;
   nav.appendChild(today);
   if (!isAgenda) {
@@ -34169,6 +34331,7 @@ function buildCalToolbar(shownCount, totalCount, session = null, after = []) {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'cld-ibtn';
+      b.dataset.calFocus = icon;
       b.setAttribute('aria-label', aria);
       b.title = aria;
       b.innerHTML = calIcon(icon, 15, 1.8);
@@ -34204,7 +34367,15 @@ function buildCalToolbar(shownCount, totalCount, session = null, after = []) {
     clearTimeout(_calFilterTimer);
     _calFilterTimer = setTimeout(() => renderBoard(), 130);
   });
-  input.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); if (input.value) { input.value = ''; calendarFilter = ''; _calFilterRestore = { caret: 0 }; renderBoard(); } else input.blur(); } });
+  input.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    e.stopPropagation();
+    if (input.value) { input.value = ''; calendarFilter = ''; _calFilterRestore = { caret: 0 }; renderBoard(); return; }
+    // The next Escape leaves the field for the selected day (or the view
+    // switch in Agenda), not for <body>.
+    input.blur();
+    calRestoreFocus({ selector: '' });
+  });
   filter.appendChild(input);
   if (calendarFilter) {
     const count = document.createElement('span');
@@ -34214,6 +34385,7 @@ function buildCalToolbar(shownCount, totalCount, session = null, after = []) {
     const clear = document.createElement('button');
     clear.type = 'button';
     clear.className = 'cld-filter-clear';
+    clear.dataset.calFocus = 'filter-clear';
     clear.setAttribute('aria-label', tr('rail.clearFilter'));
     clear.innerHTML = calIcon('close', 12, 2);
     clear.onclick = event => {
@@ -34749,7 +34921,10 @@ function paintCalendarAddInline() {
   const key = busy ? 'cal.adding'
     : errorKey === 'cal.saveFailed' ? errorKey
       : errorKey && errorKey !== 'cal.taskRequired' ? 'cal.addFailed' : '';
-  input.disabled = busy;
+  // Read-only, not disabled, while the task is saved: focus stays in the field
+  // for the next task instead of falling to <body>.
+  input.readOnly = busy;
+  input.setAttribute('aria-busy', String(busy));
   form.setAttribute('aria-busy', String(busy));
   status.textContent = key ? tr(key) : '';
   status.hidden = !key;
@@ -34870,6 +35045,9 @@ function renderCalendar() {
 
   const $b = document.getElementById('board');
   const scrollTop = $b.classList.contains('calendar-mode') ? $b.scrollTop : 0;
+  // Focus on a Calendar control survives the rebuild (paging, a view change,
+  // Undo, quick add): the same control takes it back after the paint.
+  const focusBack = calFocusMemo(document.activeElement, $b);
   $b.classList.remove('list-mode', 'canvas-mode', 'explorer-mode', 'timeline-mode', 'group-page-mode');
   $b.classList.add('calendar-mode');
   $b.innerHTML = '';
@@ -34910,6 +35088,7 @@ function renderCalendar() {
   session.view = view;
   session.sel = selected;
   paintCalendarAddInline();
+  calRestoreFocus(focusBack);
 
   // Restore the filter input's focus/caret across the keystroke-triggered render.
   if (_calFilterRestore) {
@@ -35175,13 +35354,33 @@ function _palScore(command, q) {
   return qi === q.length ? score : -1;
 }
 
+// Up to seven saved links for a query, newest first, through the shared
+// matcher and only pages Reopen accepts. The openable links and their text are
+// listed once per open, the query is parsed once per keystroke, a row runs the
+// full matcher only when its text holds every plain word (the matcher requires
+// that too), and the scan stops at the seventh match, so a keystroke stays
+// cheap in a large library.
 function _palMatchingLinks(query) {
-  return collectWorkspaceTabs(activeWs())
-    .filter(row => landingLinkMatches(row, query))
+  if (!String(query || '').trim()) return [];
+  const listLinks = () => collectWorkspaceTabs(activeWs())
     .filter(row => isOpenableSavedTabUrl(row.item.url))
-    .sort((a, b) => (b.item.createdAt || 0) - (a.item.createdAt || 0))
-    .slice(0, 7)
-    .map(_palSavedLinkCommand);
+    .sort((a, b) => (b.item.createdAt || 0) - (a.item.createdAt || 0));
+  const links = _palState ? (_palState.links || (_palState.links = listLinks())) : listLinks();
+  const texts = _palState ? (_palState.texts || (_palState.texts = new Map())) : new Map();
+  const parsed = parseSearchQuery(query);
+  const words = parsed.pos.text;
+  const found = [];
+  for (const row of links) {
+    if (words.length) {
+      let text = texts.get(row);
+      if (text == null) texts.set(row, text = _searchItemBlob(row));
+      if (!words.every(word => text.includes(word))) continue;
+    }
+    if (!landingLinkMatches(row, query, parsed)) continue;
+    found.push(row);
+    if (found.length === 7) break;
+  }
+  return found.map(_palSavedLinkCommand);
 }
 
 function _palEnsureDom() {
@@ -35247,7 +35446,7 @@ function openCommandPalette() {
   const wasOpen = !ov.classList.contains('hidden');
   _palSyncLocale(ov);
   if (!wasOpen) rememberOpener(ov);
-  _palState = { cmds: buildPaletteCommands(), filtered: [], sel: 0, query: '', noMatch: false };
+  _palState = { cmds: buildPaletteCommands(), links: null, texts: null, filtered: [], sel: 0, query: '', noMatch: false };
   ov.classList.remove('hidden');
   // A short scale-in on each open; the class restarts the way Today's motion does.
   if (!wasOpen) {
@@ -35457,6 +35656,8 @@ function _palRun(i) {
     if (!_palState) return;
     const query = _palState.query;
     _palState.cmds = buildPaletteCommands();
+    _palState.links = null;
+    _palState.texts = null;
     _palRender(query);
     requestAnimationFrame(() => document.getElementById('cmdp-input')?.focus({ preventScroll: true }));
   };
@@ -37571,6 +37772,17 @@ function bindWelcome() {
   });
 }
 
+// A modal layer owns the keyboard: Details or any open dialog. One-key
+// shortcuts (/, S, C, ?) wait until it closes, so they never open a second
+// layer behind it or leave the page under it; Ctrl or Cmd combinations stay
+// global.
+function isModalLayerOpen() {
+  if (document.getElementById('item-detail')?.classList.contains('open')) return true;
+  return [...document.querySelectorAll('[aria-modal="true"]')].some(layer => !layer.closest('#item-detail')
+    && !layer.classList.contains('hidden')
+    && layer.getClientRects().length > 0);
+}
+
 // ════════════════════════════════════════════════════════════════
 // BIND STATIC UI
 // ════════════════════════════════════════════════════════════════
@@ -37952,14 +38164,15 @@ function bindStatic() {
     const tag = document.activeElement?.tagName;
     const editable = document.activeElement?.isContentEditable;
     const inField = tag === 'INPUT' || tag === 'TEXTAREA' || editable;
+    const oneKeyBlocked = inField || isModalLayerOpen();
 
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k' && !e.shiftKey && !inField) { e.preventDefault(); openCommandPalette(); }
-    else if (e.key === '/' && !inField && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); openSearchBar(); }
+    else if (e.key === '/' && !oneKeyBlocked && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); openSearchBar(); }
     else if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'z' && !inField) { e.preventDefault(); performUndo(); }
     else if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'z' && !inField) { e.preventDefault(); performRedo(); }
-    else if (e.key === 's' && !inField && focusOpenTabFilter()) { e.preventDefault(); }
-    else if (e.key.toLowerCase() === 'c' && !inField && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) { e.preventDefault(); if (activeCalendar && CAL_VIEWS.includes(activeCalendar.view)) closeCalendar(); else openCalendar(); }
-    else if (e.key === '?' && !inField && !e.ctrlKey && !e.metaKey) { e.preventDefault(); openCheatsheet(); }
+    else if (e.key === 's' && !oneKeyBlocked && focusOpenTabFilter()) { e.preventDefault(); }
+    else if (e.key.toLowerCase() === 'c' && !oneKeyBlocked && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) { e.preventDefault(); if (activeCalendar && CAL_VIEWS.includes(activeCalendar.view)) closeCalendar(); else openCalendar(); }
+    else if (e.key === '?' && !oneKeyBlocked && !e.ctrlKey && !e.metaKey) { e.preventDefault(); openCheatsheet(); }
     else if (e.key === 'Escape') {
       // The reminder picker is nested above saved-item detail. Its own handler
       // normally owns Escape; this fallback covers programmatic focus outside it.

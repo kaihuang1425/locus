@@ -487,6 +487,11 @@ for (const contract of [
   /\.cmdp-inputrow\s*\{[^}]*min-height:\s*64px/,
   /\.cmdp-row\s*\{[^}]*min-height:\s*44px/,
   /\.cmdp-row:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--index-locator/,
+  // Finding R2-18: the query field keeps a visible focus indicator (ported
+  // from the Index layer's #cmdp-input:focus-visible outline): its rule turns
+  // the focus colour at 2 px, and forced colours draw a Highlight outline.
+  /#cmdp-input:focus-visible\s*\{\s*outline:\s*none;\s*\}\s*\.cmdp-inputrow:has\(> #cmdp-input:focus-visible\)\s*\{\s*border-bottom-color:\s*var\(--index-focus, var\(--accent\)\);\s*box-shadow:\s*inset 0 -1px 0 var\(--index-focus, var\(--accent\)\);/,
+  /@media \(forced-colors: active\)[\s\S]*\.cmdp-inputrow:has\(> #cmdp-input:focus-visible\) \{ outline: 2px solid Highlight; outline-offset: -2px; \}/,
   /\.cmdp-section h3\s*\{[^}]*text-transform:\s*none/,
   /\.pal-glide\s*\{[^}]*transition:\s*transform \.26s/,
   /#cheatsheet-overlay \.rm-panel\s*\{[^}]*max-height:\s*min\([^}]*border-radius:\s*6px/,

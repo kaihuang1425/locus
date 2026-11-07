@@ -5448,3 +5448,39 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
 
   **Implemented: yes. Verified: suites and Edge (locus-redesign-evidence/pages/fixes-r3).
   User-validated: no. Released: no.**
+
+- **2026-11-07 - Fixes from the final review: Details, Find again and the palette, the Calendar (R2).**
+  - Focus never falls to `<body>`. A Calendar rebuild (paging, Month / Week / Agenda, Today, Undo,
+    quick add) gives focus back to the same control, else the selected day, else the pressed view;
+    the filter's second Escape goes to the selected day. Leaving Find again or the Calendar (Escape,
+    C) returns focus to the control that opened it, else the page's heading, the top bar's search or
+    the rail entry; never a text field. The quick add field is read-only, not disabled, while it saves.
+  - Quick add (and the day menu's reviewed Add task) on today after 9:00 takes the next whole hour,
+    as Move to does, so a new task is never past due.
+  - Move to and the Details quick times keep the stored repeat ("every 2 weeks" and an end date);
+    only the reminder picker, which sets a new rule, stores interval 1. Tomorrow and Next week keep
+    the clock time on the later date (calendar arithmetic); In 1 hour and In 3 hours are durations.
+  - Details: Escape folds the quick times or the Move picker before it closes the panel, wherever
+    focus is in the panel. While Details or any dialog is open, the one-key shortcuts (/, S, C, ?)
+    wait; Ctrl or Cmd K, Z and Shift+Z stay global. Archive from Details drops the id from the address.
+  - Find again: Enter right after typing runs the pending search, then opens the first result (an
+    older result never opens; an IME composition still owns Enter). Arrow keys move through the rows
+    the last paint showed. The palette lists the openable links and their text once per open, parses a
+    query once per keystroke, runs the shared matcher only on rows whose text holds every plain word,
+    and stops at the seventh match; the first keystroke is not delayed.
+  - Text holds 4.5:1 in all 19 themes. On the Calendar, Details, Find again and the palette, secondary
+    text leans a quarter toward the ink; the orange "when" text keeps the canvas `--when-text`, else
+    is the theme's orange halfway to the ink; today's number sits on the canvas orange, else a light
+    step of the theme's orange, under the registry ink; the overdue count is the canvas badge, else a
+    deep step of the theme's red; Details' links keep the canvas locator, else lean the accent toward
+    the ink. `--today-when-text` and the other shared Today tokens are unchanged (Today keeps its look).
+    The Enter key on the selected row is outlined instead of tinted.
+  - Targets are 44 px boxes on both sides: Details' tag remove and cover colours, the Calendar view
+    switch (overlapping its track, so it keeps Plan's 46 px height), Past due's Move and the day
+    panel's titles (the two-line clamp moved to the title's text). The palette field shows focus with a
+    2 px rule in the focus colour (a Highlight outline in forced colours).
+  - Not changed (Plan's own header, plan.js): its count bubble and its 38 to 42 px controls on the
+    Calendar view.
+
+  **Implemented: yes. Verified: suites and Edge (locus-redesign-evidence/pages/fixes-r2).
+  User-validated: no. Released: no.**

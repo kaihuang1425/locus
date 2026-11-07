@@ -346,8 +346,15 @@ assert.doesNotMatch(executableCalendarSource, /breadcrumb-bar|renderCalendarBrea
 assert.match(executableCalendarSource, /main\.setAttribute\('role', 'region'\);\n\s*main\.setAttribute\('aria-label', tr\('cal\.title'\)\);/, 'the Calendar view region needs a localized landmark name');
 assert.match(
   executableCalendarSource,
-  /if \(input\.value\) \{ input\.value = ''; calendarFilter = ''; _calFilterRestore = \{ caret: 0 \}; renderBoard\(\); \} else input\.blur\(\);/,
+  /if \(input\.value\) \{ input\.value = ''; calendarFilter = ''; _calFilterRestore = \{ caret: 0 \}; renderBoard\(\); return; \}/,
   'Escape must clear a nonempty Calendar filter without dropping focus from its rebuilt input',
+);
+// The next Escape leaves the empty field for a Calendar control (the selected
+// day, or the view switch in Agenda), not for <body> (finding R2-10).
+assert.match(
+  executableCalendarSource,
+  /renderBoard\(\); return; \}\n[^\n]*\n[^\n]*\n\s*input\.blur\(\);\n\s*calRestoreFocus\(\{ selector: '' \}\);/,
+  'a second Escape on the empty Calendar filter must hand focus to a Calendar control',
 );
 const calendarCopyUseSource = `${calendarSurfaceSource}\n${reminderItemTitleSource}`;
 for (const key of Object.keys(calendarCopy.en)) {
