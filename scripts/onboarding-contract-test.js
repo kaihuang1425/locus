@@ -709,21 +709,39 @@ assert.match(renderHeaderSource, /renderTopbarContext\(\)/,
 assert.match(renderBoardShellSource, /dataset\.surface[\s\S]{0,240}renderTopbarContext\(\)/,
   'surface-only repaints must refresh context after establishing current surface truth');
 // Just Today (2026-11-07): the calm landing surface is gone, so its Tools and
-// Reminders shortcuts cannot reach any focus order; More keeps both reachable.
+// Reminders shortcuts cannot reach any focus order; More keeps Tools reachable.
 assert.doesNotMatch(
   html,
   /id="landing-(?:layer|tools|reminders)"/,
   'the retired landing surface must leave no Tools or Reminders shortcut behind',
 );
-assert.match(
+// Calendar left More (Kai, 2026-11-07, round 2 board default 1). It stays one
+// click away through Plan's Calendar button, and in the palette.
+assert.doesNotMatch(
   secondaryNavigationSource,
-  /tr\('action\.calendar'\)[\s\S]*action:\s*openCalendar/,
-  'Calendar must remain reachable from More',
+  /action\.calendar|openCalendar/,
+  'Calendar leaves More for Plan (Kai, 2026-11-07)',
+);
+const planPageSource = fs.readFileSync(path.join(root, 'plan.js'), 'utf8').replace(/\r\n/g, '\n');
+assert.match(
+  planPageSource,
+  /<button type="button" class="plan-ibtn" data-plan-view="calendar"/,
+  'Plan\'s header must keep its Calendar button',
+);
+assert.match(
+  planPageSource,
+  /function setPlanView\(view\) \{\n\s*if \(!activeCalendar\) \{\n\s*if \(view === 'calendar'\) openCalendar\(\);/,
+  'Calendar must remain reachable through Plan\'s Calendar button',
+);
+assert.match(
+  source,
+  /add\(\{ id: 'calendar', section: 'go', icon: PAL_ICONS\.calendar, label: tr\('action\.calendar'\)[^}]*run: openCalendar \}\);/,
+  'Calendar must remain reachable from the palette',
 );
 assert.match(
   secondaryNavigationSource,
   /tr\('action\.plugins'\)[\s\S]*action:\s*\(\) => openToolsHub\(opener\)/,
-  'optional Plugins must remain reachable from More with its real focus opener',
+  'Tools (formerly Plugins) must remain reachable from More with its real focus opener',
 );
 for (const [label, action] of [
   ['nav.favorites', "openLibrarySurface('favorites')"],

@@ -1287,17 +1287,6 @@ body[data-anim="off"] .cat-tabs-wrap::after {
   border: 0;
 }
 
-/* Pending reminders annotate the single visible overflow without promoting
-   Calendar or optional plugins into permanent top-level controls. */
-.notif-host { position: relative; }
-.notif-host .notif-dot {
-  position: absolute; top: 4px; right: 4px;
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--red);
-  box-shadow: 0 0 0 2px var(--panel);
-  display: none;
-}
-.notif-host.has-notif .notif-dot { display: block; }
 .avatar-btn {
   display: flex; align-items: center; gap: 5px;
   height: 34px; padding: 2px 7px 2px 3px; margin-left: 2px;
@@ -9375,12 +9364,6 @@ html:lang(zh-TW) .cm-label {
     color: HighlightText;
     forced-color-adjust: none;
   }
-  .notif-host.has-notif .notif-dot {
-    border: 1px solid Canvas;
-    background: Highlight;
-    box-shadow: none;
-    forced-color-adjust: none;
-  }
   #cheatsheet-overlay { background: Canvas; }
   #cheatsheet-overlay .rm-panel {
     border: 2px solid CanvasText;
@@ -10098,6 +10081,154 @@ textarea.planner-input { resize: vertical; line-height: 1.45; }
 }
 @media (prefers-reduced-motion: reduce) {
   #planner-overlay, #planner-overlay.hidden, .cal-plan-btn { transition: none; animation: none; }
+}
+
+/* --------------------------------------------------------------------------
+   MORE MENU (2026-11 canvas)
+   The rail's More opens its own small menu: it rises from the button in
+   140 ms, with no blur, above More at the button's width (rail open) or 9 px
+   beside the rail (rail collapsed), never over the button. One soft
+   highlight glides between the 44 px rows; the keyboard draws it as a blue
+   ring. No counts and no visible group headers; the page on screen is blue
+   with a dot. The rail lights More for Archive, Trash and Settings ("More ·
+   Settings"), and Plan carries the pending-reminder dot. The shared context
+   menu (#context-menu) keeps its own Index look and no entrance motion.
+   -------------------------------------------------------------------------- */
+#rail-more-menu {
+  /* Secondary ink leans a quarter toward the main ink, the current-page blue
+     (where a theme has no blue text of its own) nearly half, and the ring a
+     tenth, so each holds its contrast on the card and under the highlight in
+     every bundled theme (checked in more-menu-contract-test). */
+  --mor-card: var(--today-card, var(--index-sheet));
+  --mor-rule: var(--today-rule, var(--border2));
+  --mor-ink: var(--text);
+  --mor-ink-2: color-mix(in srgb, var(--text2) 75%, var(--text));
+  --mor-hl: color-mix(in srgb, var(--text) 6%, var(--mor-card));
+  --mor-key: color-mix(in srgb, var(--index-locator, var(--accent)) 10%, var(--mor-card));
+  --mor-ring: color-mix(in srgb, var(--index-locator, var(--accent)) 90%, var(--text));
+  --mor-cur: var(--where-soft-text, color-mix(in srgb, var(--index-locator, var(--accent)) 55%, var(--text)));
+  position: fixed;
+  z-index: 10000;
+  box-sizing: border-box;
+  max-width: calc(100vw - 16px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px;
+  border: 1px solid var(--mor-rule);
+  border-radius: 16px;
+  background: var(--mor-card);
+  color: var(--mor-ink);
+  font: 500 14px/1.25 var(--font);
+  box-shadow: 0 18px 40px rgba(25, 35, 31, .22), 0 2px 6px rgba(25, 35, 31, .08);
+  backdrop-filter: none;
+  outline: none;
+  scrollbar-width: thin;
+}
+#rail-more-menu.hidden { display: none; }
+#rail-more-menu:focus,
+#rail-more-menu:focus-visible { outline: none; }
+/* It rises from More: a 140 ms fade and 6 px rise, and a 100 ms fall out. */
+#rail-more-menu.is-in { animation: mor-rise .14s var(--today-ease, cubic-bezier(.22, 1, .36, 1)) both; }
+#rail-more-menu.is-out { animation: mor-fall .1s cubic-bezier(.4, 0, 1, 1) forwards; pointer-events: none; }
+@keyframes mor-rise { from { opacity: 0; transform: translateY(6px); } }
+@keyframes mor-fall { to { opacity: 0; transform: translateY(4px); } }
+.mor-glide {
+  position: absolute;
+  top: 0;
+  left: 6px;
+  right: 6px;
+  z-index: 0;
+  height: var(--mor-h, 44px);
+  opacity: 0;
+  transform: translateY(var(--mor-y, 0));
+  pointer-events: none;
+  transition: transform .16s var(--today-ease, cubic-bezier(.22, 1, .36, 1)), opacity .12s ease;
+}
+.mor-glide.is-on { opacity: 1; }
+.mor-glide.is-jump { transition: opacity .12s ease; }
+.mor-gi {
+  display: block;
+  height: 100%;
+  border-radius: 10px;
+  background: var(--mor-hl);
+  transition: background-color .12s ease, box-shadow .12s ease;
+}
+.mor-glide.is-key .mor-gi { background: var(--mor-key); box-shadow: inset 0 0 0 2px var(--mor-ring); }
+.mor-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-sizing: border-box;
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--mor-ink);
+  font: inherit;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.mor-row svg { flex-shrink: 0; color: var(--mor-ink-2); transition: color .12s ease; }
+.mor-row.is-hot svg { color: var(--mor-ink); }
+.mor-row.is-current,
+.mor-row.is-current svg { color: var(--mor-cur); }
+#rail-more-menu .mor-row:focus-visible { outline: none; }
+.mor-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.mor-dot { flex-shrink: 0; width: 7px; height: 7px; border-radius: 50%; background: var(--mor-ring); }
+.mor-sep { height: 1px; margin: 6px 10px; background: var(--mor-rule); }
+
+/* More while its menu is open looks pressed; lit, it stays blue. */
+#sidebar #nav-more[aria-expanded="true"]:not(.active) {
+  border-color: var(--index-registry-rule);
+  background: color-mix(in srgb, var(--index-registry-text) 6%, transparent);
+  color: var(--index-registry-text);
+}
+/* Plan's pending-reminder dot: orange for "when", on the corner of its icon.
+   Where a theme has no orange tuned for its rail, the orange leans halfway to
+   the rail's ink, so the dot holds 3:1 on every rail. */
+#sidebar #nav-plan .notif-dot {
+  position: absolute;
+  top: 9px;
+  left: 22px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--when-on-registry, color-mix(in srgb, var(--orange) 50%, var(--index-registry-text)));
+  box-shadow: 0 0 0 2px var(--index-registry);
+  display: none;
+  pointer-events: none;
+}
+#sidebar #nav-plan.has-notif .notif-dot { display: block; }
+#sidebar #nav-plan.active .notif-dot { box-shadow: 0 0 0 2px var(--index-locator); }
+#sidebar.collapsed #nav-plan .notif-dot { left: calc(50% + 3px); }
+/* A page chosen in More lands focus on its heading, which draws no ring (as
+   the Library and Archive headings do). */
+#settings-drawer #sp-side-title:focus-visible { outline: none; }
+
+body[data-anim="off"] :is(#rail-more-menu, #rail-more-menu *) { animation: none !important; transition: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  #rail-more-menu, #rail-more-menu * { animation: none !important; transition: none !important; }
+}
+@media (forced-colors: active) {
+  #rail-more-menu { border: 2px solid CanvasText; background: Canvas; color: CanvasText; box-shadow: none; }
+  .mor-row, .mor-row svg, .mor-row.is-current, .mor-row.is-current svg { color: CanvasText; }
+  .mor-glide.is-on .mor-gi { background: Canvas; outline: 2px solid Highlight; outline-offset: -2px; }
+  .mor-glide.is-key .mor-gi { box-shadow: none; outline: 3px solid Highlight; }
+  .mor-dot { forced-color-adjust: none; background: Highlight; }
+  .mor-sep { background: CanvasText; }
+  #sidebar #nav-plan.has-notif .notif-dot {
+    border: 1px solid Canvas;
+    background: Highlight;
+    box-shadow: none;
+    forced-color-adjust: none;
+  }
 }
 
 /* --------------------------------------------------------------------------

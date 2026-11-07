@@ -371,14 +371,26 @@ for (const contract of [
 }
 assert.match(newtabIndex, /@media \(forced-colors:\s*active\)[\s\S]*#context-menu[\s\S]*\.cm-item:focus-visible/,
   'shared menus must retain a forced-colors boundary and visible focus');
-assert.match(newtabIndex, /@media \(forced-colors:\s*active\)[\s\S]*\.notif-host\.has-notif \.notif-dot[\s\S]*background:\s*Highlight/,
-  'the reminder signal on More must survive forced colors');
+// 2026-11-07 (Kai, round 2 board default 1): Calendar left More for Plan, and
+// the pending-reminder signal moved with it from the top bar's More to Plan in
+// the rail.
+assert.match(newtabIndex, /@media \(forced-colors:\s*active\)[\s\S]*#nav-plan\.has-notif \.notif-dot[\s\S]*background:\s*Highlight/,
+  'the reminder signal on Plan in the rail must survive forced colors (moved from More with the Calendar, 2026-11-07)');
+assert.doesNotMatch(newtabIndex, /\.notif-host/,
+  'the top bar\'s More no longer carries a reminder dot (it moved to Plan, 2026-11-07)');
+// 2026-11-07 (Kai, round 2 decision 4, "Yes, a short rise"): the rail's More
+// menu rises 140 ms from its button with no blur. The shared context menu
+// keeps no glass blur and no entrance motion.
 assert.doesNotMatch(newtabIndex, /#context-menu\s*\{[^}]*blur\(|#context-menu\s*\{[^}]*popIn/,
   'shared menus must not restore glass blur or ornamental entrance motion');
+assert.match(newtabIndex, /#rail-more-menu\.is-in \{ animation: mor-rise \.14s /,
+  'the rail\'s More menu rises from its button in 140 ms (Kai, 2026-11-07, decision 4)');
+assert.doesNotMatch(newtabIndex, /#rail-more-menu[^{]*\{[^}]*blur\(|@keyframes mor-rise \{[^}]*(?:blur|scale)/,
+  'the More menu\'s rise has no blur and no ornamental scale (Kai, 2026-11-07, decision 4)');
 assert.match(newtabJs, /menu\.setAttribute\('aria-label',\s*opts\?\.ariaLabel\s*\|\|\s*tr\('menu\.actions'\)\)/,
   'every shared menu must expose a localized screen-reader name');
 for (const key of [
-  'action.moreReminderCount', 'menu.actions', 'menu.findReview', 'menu.options', 'menu.organize',
+  'nav.planReminders', 'nav.moreShowing', 'menu.actions', 'menu.findReview', 'menu.options', 'menu.organize',
   'layout.view',
   'layout.board', 'layout.list', 'layout.canvas', 'layout.explorer',
   'layout.timeline', 'layout.gallery', 'layout.graph',
@@ -398,48 +410,63 @@ const secondaryNavigationBlock = newtabJs.match(/function secondaryNavigationIte
 assert.doesNotMatch(secondaryNavigationBlock, /tr\('search\.nav'\)/,
   'the overflow must not duplicate the global Search affordance');
 assert.match(secondaryNavigationBlock, /label:\s*tr\('menu\.options'\)[\s\S]*tr\('action\.plugins'\)[\s\S]*openToolsHub\(opener\)/,
-  'secondary utilities must stay grouped behind the named Plugins entry');
+  'secondary utilities must stay grouped behind the named Tools entry (Plugins renamed Tools, Kai 2026-11-07)');
+assert.match(newtabJs, /^\s{4}'action\.plugins': 'Tools',$/m,
+  'the grouping entry reads Tools in English (Kai, 2026-11-07, board default 2)');
+assert.match(newtabJs, /^\s{4}'action\.plugins': '工具',$/m,
+  'the grouping entry reads 工具 in zh-TW (Kai, 2026-11-07, board default 2)');
 assert.match(newtabJs, /function openMoreMenu\(btn, anchor = btn\)[\s\S]*label:\s*tr\('menu\.organize'\)/,
   'the page More menu must use its localized organize heading');
 assert.match(newtabJs, /function openMoreMenu\(btn, anchor = btn\)[\s\S]*focusDialogOpener\(btn\)[\s\S]*expandedOwner:\s*btn/,
   'the page More menu must focus its visible disclosure owner and publish expanded state');
 assert.match(newtabJs, /function openAppMenu\(anchor\)[\s\S]*getElementById\('more-btn'\)[\s\S]*positionedAnchor[\s\S]*openMoreMenu\(opener, positionedAnchor\)/,
   'the optional Welcome entry must reuse the visible More menu instead of a second model');
-assert.match(newtabJs, /function syncTopbarMoreState\(\)[\s\S]*action\.moreReminderCount[\s\S]*classList\.toggle\('has-notif'[\s\S]*setAttribute\('aria-label'/,
-  'the one overflow must expose localized reminder state visually and to assistive technology');
+assert.match(newtabJs, /function syncPlanReminderSignal\(todayCount = 0\)[\s\S]*nav\.planReminders[\s\S]*classList\.toggle\('has-notif'[\s\S]*setAttribute\('aria-label'/,
+  'Plan in the rail must expose localized reminder state visually and to assistive technology (moved from More, 2026-11-07)');
 assert.doesNotMatch(newtabJs, /APP_MENU_ICONS/,
   'the retired duplicate app-menu icon language must not remain');
 
 const syncTopbarMoreSource = newtabJs.match(/function syncTopbarMoreState\(\) \{[\s\S]*?\n\}/)?.[0] || '';
-const moreClasses = new Set();
-const moreAttributes = new Map();
-const moreButton = {
-  title: '',
-  classList: { toggle(name, on) { if (on) moreClasses.add(name); else moreClasses.delete(name); } },
-  setAttribute(name, value) { moreAttributes.set(name, value); },
+const syncPlanReminderSource = newtabJs.match(/function syncPlanReminderSignal\(todayCount = 0\) \{[\s\S]*?\n\}/)?.[0] || '';
+const fakeButton = () => {
+  const classes = new Set();
+  const attributes = new Map();
+  return {
+    classes, attributes, title: '',
+    classList: { toggle(name, on) { if (on) classes.add(name); else classes.delete(name); } },
+    setAttribute(name, value) { attributes.set(name, value); },
+  };
 };
+const moreButton = fakeButton();
+const planButton = fakeButton();
 const moreStateContext = vm.createContext({
   _pendingReminderCount: 0,
   itemSelMode: false,
   document: {
     body: { classList: { contains() { return false; } } },
-    getElementById(id) { return id === 'more-btn' ? moreButton : null; },
+    getElementById(id) { return id === 'more-btn' ? moreButton : id === 'nav-plan' ? planButton : null; },
   },
   tr(key, values = {}) {
-    return key === 'action.moreReminderCount' ? `More actions. Reminders: ${values.count}` : 'More';
+    return { 'nav.plan': 'Plan', 'plan.navToday': `${values.count} today`, 'nav.planReminders': `Reminders: ${values.count}` }[key] || 'More';
   },
 });
-vm.runInContext(`${syncTopbarMoreSource}\nglobalThis.__syncMore = syncTopbarMoreState;`, moreStateContext);
+vm.runInContext(`${syncTopbarMoreSource}\n${syncPlanReminderSource}\nglobalThis.__syncMore = syncTopbarMoreState; globalThis.__syncPlan = syncPlanReminderSignal;`, moreStateContext);
 moreStateContext.__syncMore();
+moreStateContext.__syncPlan(0);
 assert.equal(moreButton.title, 'More');
-assert.equal(moreAttributes.get('aria-label'), 'More');
-assert.equal(moreClasses.has('has-notif'), false);
+assert.equal(moreButton.attributes.get('aria-label'), 'More');
+assert.equal(planButton.attributes.get('aria-label'), 'Plan');
+assert.equal(planButton.classes.has('has-notif'), false);
 moreStateContext._pendingReminderCount = 3;
 moreStateContext.__syncMore();
-assert.equal(moreButton.title, 'More actions. Reminders: 3');
-assert.equal(moreAttributes.get('aria-label'), 'More actions. Reminders: 3');
-assert.equal(moreClasses.has('has-notif'), true,
-  'pending reminders must create one non-ornamental signal on More');
+moreStateContext.__syncPlan(4);
+assert.equal(moreButton.title, 'More', 'the top bar\'s More stays plain: the reminder signal moved to Plan (2026-11-07)');
+assert.equal(moreButton.attributes.get('aria-label'), 'More');
+assert.equal(moreButton.classes.has('has-notif'), false);
+assert.equal(planButton.attributes.get('aria-label'), 'Plan, 4 today, Reminders: 3',
+  'Plan names today\'s count and the pending reminders to assistive technology');
+assert.equal(planButton.classes.has('has-notif'), true,
+  'pending reminders must create one non-ornamental signal on Plan in the rail (moved from More with the Calendar, 2026-11-07)');
 
 const secondaryNavigationRuntimeSource = newtabJs.match(/function secondaryNavigationItems\(opener = null\) \{[\s\S]*?\n\}/)?.[0] || '';
 const menuCalls = { plugins: [], settings: [] };
@@ -449,7 +476,6 @@ const menuRuntimeContext = vm.createContext({
   cmIcons: { favorite: 'favorite', readLater: 'read', archive: 'archive', delete: 'delete', clock: 'clock', stack: 'plugins' },
   tr: key => key,
   openLibrarySurface() {},
-  openCalendar() {},
   openToolsHub(opener) { menuCalls.plugins.push(opener); },
   openSettingsDrawer(tab, opener) { menuCalls.settings.push({ tab, opener }); },
 });
@@ -458,11 +484,12 @@ const runtimeOpener = { id: 'more-btn' };
 const runtimeItems = menuRuntimeContext.__secondaryItems(runtimeOpener);
 assert.equal(runtimeItems.some(item => item.text === 'search.nav'), false,
   'runtime More items must keep Search singular');
-assert.equal(runtimeItems.find(item => item.text === 'action.calendar').sub, '4');
+assert.equal(runtimeItems.some(item => item.text === 'action.calendar' || item.sub), false,
+  'Calendar left More and no entry carries a count (Kai, 2026-11-07, board default 1)');
 runtimeItems.find(item => item.text === 'action.plugins').action();
 runtimeItems.find(item => item.text === 'action.settings').action();
 assert.equal(menuCalls.plugins[0], runtimeOpener,
-  'Plugins must inherit the visible More button as its focus-return owner');
+  'Tools must inherit the visible More button as its focus-return owner');
 assert.deepEqual(menuCalls.settings[0], { tab: 'general', opener: runtimeOpener },
   'Settings must inherit the visible More button as its focus-return owner');
 // 2026-11-06 (page board): the Space page's seven view tabs replaced the Board/List

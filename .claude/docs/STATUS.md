@@ -299,6 +299,22 @@ Slices, in order:
 
 ## Done (newest first)
 
+- **2026-11-07 - Round 2, area 01: the rail's More menu follows its board (More.dc.html).**
+  More opens its own menu (`#rail-more-menu`, `mor-` classes): it rises from the button in 140 ms
+  with no blur, above More at the button's width with the rail open and 9 px beside the rail when it
+  is collapsed, never over its button. One highlight glides between 44 px rows with the pointer or
+  the keys; a resting pointer never takes it. Enter, Space or Down open it on the first entry, Up on
+  the last; arrows wrap, Home and End jump, letters jump; Escape, Tab and an outside click (the empty
+  rail included) close it with focus back on More. A chosen page lands focus on its heading; Tools
+  and Settings return focus to More. Calendar left More and the top bar's ⋯ (shared list) and its
+  pending-reminder dot moved to Plan in the rail; Plugins reads Tools (en, zh-TW). The rail lights
+  More as "More · Archive / Trash / Settings" ("More, showing …"), All links for Favorites and Read
+  later, and nothing under Settings. Ported core-visual :377, :401, :442, :375 and the reminder
+  strings, onboarding's "Calendar reachable from More" (now Plan's button and the palette), and the
+  Plugins hub strings; new `scripts/more-menu-contract-test.js` (117 checks, 19-theme contrast,
+  18/18 mutations caught). Evidence: `locus-redesign-evidence/round2/more/` (Edge 157, 66/66).
+  Notes: `locus-pages-2/01-more.md`.
+
 - **2026-11-07 - Fixes from the final acceptance review (A to C).**
   Undo from the receipt by keyboard no longer drops focus to `<body>`: focus goes back to the page
   before the repaint (the opener if it is still on screen, else the page control that had focus,

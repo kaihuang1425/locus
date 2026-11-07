@@ -163,13 +163,13 @@ const I18N = {
     'welcome.explore': 'Explore on my own',
     'welcome.save': 'Stamp, save & close tab',
     'action.more': 'More',
-    'action.moreReminderCount': 'More actions. Reminders: {count}',
+    'nav.moreShowing': 'More, showing {page}',
+    'nav.planReminders': 'Reminders: {count}',
     'action.settings': 'Settings',
     'action.reminders': 'Reminders',
-    'action.plugins': 'Plugins',
+    'action.plugins': 'Tools',
     'action.menu': 'Menu',
     'menu.settings': 'Settings',
-    'menu.plugins': 'Plugins',
     'menu.calendar': 'Calendar & reminders',
     'menu.theme': 'Theme',
     'menu.workspaces': 'Workspaces',
@@ -191,14 +191,14 @@ const I18N = {
     'about.private': 'Privacy boundaries — browser-profile storage (export before uninstalling or deleting the profile), no Locus account or backend, and no host permissions.',
     'about.replay': 'Replay welcome guide',
     'about.close': 'Close',
-    'plugins.title': 'Plugins',
+    'plugins.title': 'Tools',
     'plugins.eyebrow': 'Optional tools',
     'plugins.subtitle': 'Already available locally. Open one when needed—no download or account.',
-    'plugins.localNote': 'Plugin data stays in this browser profile.',
-    'plugins.availableList': 'Available plugins',
+    'plugins.localNote': 'Tool data stays in this browser profile.',
+    'plugins.availableList': 'Available tools',
     'plugins.available': 'Available',
     'plugins.open': 'Open',
-    'plugins.close': 'Close plugins',
+    'plugins.close': 'Close tools',
     'plugins.pomodoro.name': 'Pomodoro',
     'plugins.pomodoro.desc': 'Run timed focus and break sessions.',
     'plugins.finance.name': 'Finance Diary',
@@ -1875,13 +1875,13 @@ const I18N = {
     'welcome.explore': '自行探索',
     'welcome.save': '蓋章儲存並關閉分頁',
     'action.more': '更多',
-    'action.moreReminderCount': '更多操作。提醒：{count}',
+    'nav.moreShowing': '更多，目前在{page}',
+    'nav.planReminders': '提醒：{count}',
     'action.settings': '設定',
     'action.reminders': '提醒',
-    'action.plugins': '外掛',
+    'action.plugins': '工具',
     'action.menu': '選單',
     'menu.settings': '設定',
-    'menu.plugins': '外掛',
     'menu.calendar': '行事曆與提醒',
     'menu.theme': '主題',
     'menu.workspaces': '工作區',
@@ -1903,14 +1903,14 @@ const I18N = {
     'about.private': '隱私界線－資料存在此瀏覽器設定檔（解除安裝或刪除設定檔前請先匯出），沒有 Locus 帳號、後端或主機權限。',
     'about.replay': '重播歡迎導覽',
     'about.close': '關閉',
-    'plugins.title': '外掛',
+    'plugins.title': '工具',
     'plugins.eyebrow': '選用工具',
     'plugins.subtitle': '已內建在此研究版，需要時直接開啟，不必下載或登入。',
-    'plugins.localNote': '外掛資料會留在此瀏覽器設定檔中。',
-    'plugins.availableList': '可使用的外掛',
+    'plugins.localNote': '工具資料會留在此瀏覽器設定檔中。',
+    'plugins.availableList': '可使用的工具',
     'plugins.available': '可直接使用',
     'plugins.open': '開啟',
-    'plugins.close': '關閉外掛',
+    'plugins.close': '關閉工具',
     'plugins.pomodoro.name': 'Pomodoro',
     'plugins.pomodoro.desc': '安排專注與休息計時。',
     'plugins.finance.name': 'Finance Diary',
@@ -3512,6 +3512,7 @@ function applyLocale() {
   });
   updateSidebarToggleLabel();
   updateRailToggleLabel();
+  if (typeof syncRailMoreButton === 'function') syncRailMoreButton();
   const languageSelect = document.getElementById('seg-language');
   if (languageSelect) languageSelect.value = lang;
   const organizationName = document.getElementById('organization-name-overlay');
@@ -7612,6 +7613,8 @@ function syncSettingsPageShell() {
   for (const child of document.getElementById('app')?.children || []) {
     if (child.id !== 'sidebar') setElementInertOwner(child, 'settings-page', open);
   }
+  // The rail lights More as "More · Settings" while the page shows.
+  if (typeof updateNavChrome === 'function') updateNavChrome();
   if (open) {
     if (!settingsPageRoute) settingsPageRoute = settingsPageRouteKey();
     placeSettingsPage();
@@ -10984,8 +10987,10 @@ function clearContextMenuExpandedOwner() {
 
 function showContextMenu(x, y, items, opts) {
   const menu = document.getElementById('context-menu');
-  // One floating layer at a time: a menu closes the Inbox page's Space picker.
+  // One floating layer at a time: a menu closes the Inbox page's Space picker
+  // and the rail's More menu.
   if (typeof closeFloatingInboxSpacePicker === 'function') closeFloatingInboxSpacePicker();
+  if (typeof closeRailMoreMenu === 'function') closeRailMoreMenu();
   // Tear down any previously-open menu's listeners before opening a new one.
   if (_cmCleanup) { _cmCleanup(); _cmCleanup = null; }
   clearContextMenuExpandedOwner();
@@ -11086,6 +11091,9 @@ function hideContextMenu() {
   document.getElementById('context-menu').classList.add('hidden');
   if (_cmCleanup) { _cmCleanup(); _cmCleanup = null; }
   clearContextMenuExpandedOwner();
+  // Callers close "the open menu" to make room for another layer; the rail's
+  // More menu is one too.
+  if (typeof closeRailMoreMenu === 'function') closeRailMoreMenu();
 }
 
 function showAnchoredContextMenu(anchor, items, opts = {}) {
@@ -22482,9 +22490,7 @@ function renderSpaceNav() {
     ws.categories.forEach((cat, categoryIndex) => {
       const count = cat.groups.reduce((n, g) => n + g.items.length, 0);
       const el = document.createElement('button');
-      const inbox = cat.groups.find(g => g.name === 'Inbox');
-      const showingInbox = !!activeGroupPage && activeGroupPage.groupId === inbox?.id;
-      el.className = 'space-item' + (!activeSearch && !activeHome && !activeLibraryMode && !activeCalendar && !showingInbox && cat.id === ws.activeCatId ? ' active' : '');
+      el.className = 'space-item' + (spaceNavItemIsCurrent(ws, cat) ? ' active' : '');
       el.dataset.catId = cat.id;
       const duplicateName = ws.categories.some((candidate, candidateIndex) => (
         candidateIndex !== categoryIndex && candidate.name === cat.name
@@ -22536,54 +22542,84 @@ function updateNavChrome() {
   setCount('nav-inbox-count', Array.isArray(inbox?.items) ? inbox.items.length : 0);
   setCount('nav-archive-count', (s.archive || []).length);
   setCount('nav-trash-count', (s.trash || []).length);
-  const home = document.getElementById('nav-home');
-  if (home) home.classList.toggle('active', !!activeHome);
-  const search = document.getElementById('nav-search');
-  if (search) search.classList.toggle('active', !!activeSearch);
-  const all = document.getElementById('nav-all');
-  if (all) all.classList.toggle('active', activeLibraryMode === 'all');
-  const favorites = document.getElementById('nav-favorites');
-  if (favorites) favorites.classList.toggle('active', activeLibraryMode === 'favorites');
-  const readLater = document.getElementById('nav-read-later');
-  if (readLater) readLater.classList.toggle('active', activeLibraryMode === 'read-later');
-  const archive = document.getElementById('nav-archive');
-  if (archive) archive.classList.toggle('active', activeLibraryMode === 'archive');
-  const trash = document.getElementById('nav-trash');
-  if (trash) trash.classList.toggle('active', activeLibraryMode === 'trash');
+  // The rail lights one entry for the page on screen (2026-11 More board).
+  // Favorites and Read later are views of All links, so All links lights for
+  // them. Archive, Trash and the Settings page are More's: More lights and
+  // names the page. While Settings shows, the page under it is not lit.
+  const morePage = railMorePage();
+  const underSettings = morePage === 'settings';
+  const light = (element, on) => {
+    if (!element) return;
+    const lit = !underSettings && !!on;
+    element.classList.toggle('active', lit);
+    if (lit) element.setAttribute('aria-current', 'page'); else element.removeAttribute('aria-current');
+  };
+  light(document.getElementById('nav-home'), activeHome);
+  light(document.getElementById('nav-search'), activeSearch);
+  light(document.getElementById('nav-all'), ['all', 'favorites', 'read-later'].includes(activeLibraryMode));
+  light(document.getElementById('nav-favorites'), activeLibraryMode === 'favorites');
+  light(document.getElementById('nav-read-later'), activeLibraryMode === 'read-later');
+  light(document.getElementById('nav-archive'), activeLibraryMode === 'archive');
+  light(document.getElementById('nav-trash'), activeLibraryMode === 'trash');
+  document.querySelectorAll('#space-nav .space-item').forEach(element => {
+    light(element, spaceNavItemIsCurrent(ws, ws?.categories.find(cat => cat.id === element.dataset.catId)));
+  });
   const inboxNav = document.getElementById('nav-inbox');
   if (inboxNav) {
     const catName = activeCat()?.name || '';
     const scopedLabel = catName ? `${tr('nav.inbox')} · ${catName}` : tr('nav.inbox');
-    inboxNav.classList.toggle('active', !!activeGroupPage && activeGroupPage.groupId === (inbox && inbox.id));
+    light(inboxNav, !!activeGroupPage && activeGroupPage.groupId === (inbox && inbox.id));
     inboxNav.setAttribute('aria-label', scopedLabel);
     inboxNav.title = scopedLabel;
     const label = inboxNav.querySelector('.nav-lbl');
     if (label) label.textContent = scopedLabel;
   }
-  // Plan owns the calendar surface (Upcoming, Sort inbox, and the Calendar).
+  let pending = 0;
+  try { pending = collectPendingReminders({ scope: ws ? ws.id : undefined }).length; } catch {}
+  _pendingReminderCount = pending;
+  // Plan owns the calendar surface (Upcoming, Sort inbox, and the Calendar),
+  // and with it the pending-reminder signal.
   const planNav = document.getElementById('nav-plan');
   if (planNav) {
-    planNav.classList.toggle('active', !!activeCalendar);
-    if (activeCalendar) planNav.setAttribute('aria-current', 'page'); else planNav.removeAttribute('aria-current');
+    light(planNav, activeCalendar);
     let todayCount = 0;
     try { todayCount = typeof planTodayCount === 'function' ? planTodayCount(ws) : 0; } catch {}
     const planCount = document.getElementById('nav-plan-count');
     if (planCount) planCount.textContent = todayCount > 0 ? tr('plan.navToday', { count: todayCount }) : '';
-    planNav.setAttribute('aria-label', todayCount > 0 ? `${tr('nav.plan')}, ${tr('plan.navToday', { count: todayCount })}` : tr('nav.plan'));
+    syncPlanReminderSignal(todayCount);
   }
   // A reminder card whose to-do was finished or moved elsewhere closes on the
   // next render rather than waiting for the next poll.
   if (typeof checkPlanDue === 'function' && typeof planDueShown !== 'undefined' && planDueShown) checkPlanDue();
-  const moreNav = document.getElementById('nav-more');
-  if (moreNav) moreNav.classList.toggle('active', !!activeSearch || (!!activeCalendar && !planNav) || ['favorites', 'read-later', 'archive', 'trash'].includes(activeLibraryMode));
-  let pending = 0;
-  try { pending = collectPendingReminders({ scope: ws ? ws.id : undefined }).length; } catch {}
-  _pendingReminderCount = pending;
+  syncRailMoreButton(morePage);
   syncTopbarMoreState();
 }
-// Cached so the visible overflow can signal pending reminders and label the
-// Calendar route without recomputing during menu focus movement.
+// Cached so Plan in the rail can signal pending reminders without recomputing.
 let _pendingReminderCount = 0;
+
+// Whether a Space in the rail is the page on screen (its board, not its Inbox).
+function spaceNavItemIsCurrent(ws, cat) {
+  if (!ws || !cat) return false;
+  const inbox = cat.groups.find(g => g.name === 'Inbox');
+  const showingInbox = !!activeGroupPage && activeGroupPage.groupId === inbox?.id;
+  return !activeSearch && !activeHome && !activeLibraryMode && !activeCalendar && !showingInbox && cat.id === ws.activeCatId;
+}
+
+// More in the rail names the page of its own that is on screen: "More ·
+// Archive", read as "More, showing Archive"; its tooltip says the same when
+// the rail is collapsed to icons.
+function syncRailMoreButton(page = railMorePage()) {
+  const button = document.getElementById('nav-more');
+  if (!button) return;
+  const names = { archive: 'nav.archive', trash: 'nav.trash', settings: 'action.settings' };
+  const pageName = names[page] ? tr(names[page]) : '';
+  const label = pageName ? `${tr('action.more')} · ${pageName}` : tr('action.more');
+  button.classList.toggle('active', !!pageName);
+  button.setAttribute('aria-label', pageName ? tr('nav.moreShowing', { page: pageName }) : tr('action.more'));
+  button.title = label;
+  const text = button.querySelector('.nav-lbl');
+  if (text) text.textContent = label;
+}
 
 // The bento-board layout itself (formerly the body of renderBoard).
 function renderBoardView() {
@@ -35478,6 +35514,8 @@ function openSettingsDrawer(tab, opener = null) {
   try { renderAppearanceSettings(); } catch {}
   try { renderCaptureSettings(); } catch {}
   setTimeout(() => {
+    // From the rail's More, focus lands on the page's heading (2026-11 More board).
+    if (typeof consumeSettingsHeadingFocus === 'function' && consumeSettingsHeadingFocus(d)) return;
     const active = d.querySelector('#drawer-tabs .dt.active');
     // No scroll: a palette entry may have opened the page at Storage or Backup.
     if (active) active.focus({ preventScroll: true });
@@ -36030,20 +36068,30 @@ function toggleReorderMode() {
   if (on) toast('Reorder mode on — drag to rearrange. Esc to exit.');
 }
 
-// The overflow is the single visible owner for secondary routes. Keep its
-// organize state, reminder signal, tooltip, and screen-reader name in sync.
+// The top bar's ⋯ shows whether Select or Reorder mode is on. Pending
+// reminders signal on Plan in the rail instead (2026-11 More board): the
+// Calendar left More for Plan, so its dot went with it.
 function syncTopbarMoreState() {
   const button = document.getElementById('more-btn');
   if (!button) return;
   const organizeOn = itemSelMode || document.body.classList.contains('reorder-mode');
-  const reminderCount = Math.max(0, Number(_pendingReminderCount) || 0);
-  const label = reminderCount > 0
-    ? tr('action.moreReminderCount', { count: reminderCount })
-    : tr('action.more');
+  const label = tr('action.more');
   button.classList.toggle('active', organizeOn);
-  button.classList.toggle('has-notif', reminderCount > 0);
   button.title = label;
   button.setAttribute('aria-label', label);
+}
+
+// Plan in the rail carries the one pending-reminder signal: a small "when" dot
+// on its icon, and the count in its accessible name next to today's count.
+function syncPlanReminderSignal(todayCount = 0) {
+  const plan = document.getElementById('nav-plan');
+  if (!plan) return;
+  const reminders = Math.max(0, Number(_pendingReminderCount) || 0);
+  const name = [tr('nav.plan')];
+  if (todayCount > 0) name.push(tr('plan.navToday', { count: todayCount }));
+  if (reminders > 0) name.push(tr('nav.planReminders', { count: reminders }));
+  plan.classList.toggle('has-notif', reminders > 0);
+  plan.setAttribute('aria-label', name.join(', '));
 }
 
 function updateModeButtonState() {
@@ -36134,31 +36182,390 @@ async function saveMostRecentOpenTab(event) {
   return true;
 }
 
+// More holds the secondary pages and the two utilities, in two named groups;
+// the rail's More menu and the top bar's ⋯ share this list. `key` names what
+// each entry opens. Calendar left More (Kai, 2026-11-07): it lives in Plan,
+// behind Plan's Calendar button, and in the palette.
 function secondaryNavigationItems(opener = null) {
   return [
     { label: tr('menu.findReview') },
-    { text: tr('nav.favorites'), icon: cmIcons.favorite, action: () => openLibrarySurface('favorites') },
-    { text: tr('nav.readLater'), icon: cmIcons.readLater, action: () => openLibrarySurface('read-later') },
-    { text: tr('nav.archive'), icon: cmIcons.archive, action: () => openLibrarySurface('archive') },
-    { text: tr('nav.trash'), icon: cmIcons.delete, action: () => openLibrarySurface('trash') },
-    { sep: true },
-    { text: tr('action.calendar'), icon: cmIcons.clock, sub: _pendingReminderCount > 0 ? String(_pendingReminderCount) : '', action: openCalendar },
+    { key: 'favorites', text: tr('nav.favorites'), icon: cmIcons.favorite, action: () => openLibrarySurface('favorites') },
+    { key: 'read-later', text: tr('nav.readLater'), icon: cmIcons.readLater, action: () => openLibrarySurface('read-later') },
+    { key: 'archive', text: tr('nav.archive'), icon: cmIcons.archive, action: () => openLibrarySurface('archive') },
+    { key: 'trash', text: tr('nav.trash'), icon: cmIcons.delete, action: () => openLibrarySurface('trash') },
     { sep: true },
     { label: tr('menu.options') },
-    { text: tr('action.plugins'), icon: cmIcons.stack, action: () => openToolsHub(opener) },
-    { text: tr('action.settings'), icon: MORE_OPTION_ICONS.settings, action: () => openSettingsDrawer('general', opener) },
+    { key: 'tools', text: tr('action.plugins'), icon: cmIcons.stack, action: () => openToolsHub(opener) },
+    { key: 'settings', text: tr('action.settings'), icon: MORE_OPTION_ICONS.settings, action: () => openSettingsDrawer('general', opener) },
   ];
 }
 
-function openSidebarMoreMenu(btn) {
-  if (!btn || typeof btn.getBoundingClientRect !== 'function') return false;
-  focusDialogOpener(btn);
-  const r = btn.getBoundingClientRect();
-  showContextMenu(r.left + 8, r.bottom + 6, secondaryNavigationItems(btn), {
-    focusFirst: true,
-    expandedOwner: btn,
-  });
+// ── The rail's More menu (2026-11 More board) ───────────────────────
+// More opens its own small menu. It rises from the button in 140 ms, with no
+// blur, and never covers it: above More at the button's width while the rail
+// is open, beside the rail while it is collapsed. One soft highlight glides
+// between the 44 px rows with the pointer or the arrow keys; a pointer at rest
+// never takes it. Enter, Space or ↓ on More open it on the first entry and ↑
+// on the last; ↑/↓ wrap, Home and End jump, and a letter jumps to the next
+// entry starting with it. Escape, Tab and a click anywhere outside close it
+// and hand focus back to More. Choosing a page lands focus on that page's
+// heading; Tools and Settings hand focus back to More when they close. No
+// counts; the page on screen is marked in blue with a dot.
+const RAIL_MORE_PATHS = {
+  favorites: 'M7.5 1.8l1.7 3.45 3.8.55-2.75 2.68.65 3.78-3.4-1.79-3.4 1.79.65-3.78L2 5.8l3.8-.55L7.5 1.8z',
+  'read-later': 'M4 2.2h7a1 1 0 0 1 1 1V13l-4.5-2.55L3 13V3.2a1 1 0 0 1 1-1zM5.3 5.4h4.4M5.3 7.6h3.1',
+  archive: 'M2.8 2.5h9.4a.8.8 0 0 1 .8.8v1.4a.8.8 0 0 1-.8.8H2.8a.8.8 0 0 1-.8-.8V3.3a.8.8 0 0 1 .8-.8zM3 5.5V12a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V5.5M6 8h3',
+  trash: 'M2.5 4h10M5.2 4V2.4h4.6V4M4 4l.6 8a1 1 0 0 0 1 .9h3.8a1 1 0 0 0 1-.9l.6-8M6.2 6.4v4M8.8 6.4v4',
+  tools: 'M2.5 2.5h4v4h-4zM8.5 2.5h4v4h-4zM2.5 8.5h4v4h-4zM10.5 8.5v4M8.5 10.5h4',
+  settings: 'M3 4.5h9M3 10.5h9M6 3v3M9.5 9v3',
+};
+let railMore = null;
+let railMoreHideTimer = 0;
+// Set by More just before it opens Settings, so the page lands on its heading.
+let settingsHeadingFocusPending = false;
+
+function railMoreReducedMotion() {
+  return document.body?.dataset.anim === 'off'
+    || !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+}
+
+// The page on screen that More itself stands for in the rail: Settings over
+// anything, else Archive or Trash. Favorites and Read later are views of All
+// links, which lights for them instead.
+function railMorePage() {
+  if (typeof isSettingsPageOpen === 'function' && isSettingsPageOpen()) return 'settings';
+  return activeLibraryMode === 'archive' || activeLibraryMode === 'trash' ? activeLibraryMode : '';
+}
+
+// The entry the menu marks as current: any page it opens that is on screen.
+function railMoreCurrentKey() {
+  const page = railMorePage();
+  if (page) return page;
+  return activeLibraryMode === 'favorites' || activeLibraryMode === 'read-later' ? activeLibraryMode : '';
+}
+
+// Where the menu sits. Rail open: above More, at its width, 8 px clear of it.
+// Rail collapsed: 9 px beside the rail, its foot level with More's. Always
+// inside the window; when the window is too short the list scrolls.
+function railMoreMenuPlacement(button, rail, menuHeight, viewport, collapsed) {
+  const gap = 8;
+  const fit = room => (menuHeight <= room ? null : Math.max(0, Math.floor(room)));
+  if (collapsed) {
+    const left = Math.round(rail.right + 9);
+    const width = Math.max(0, Math.min(240, viewport.width - left - gap));
+    const top = Math.max(gap, Math.round(button.bottom - menuHeight));
+    return { side: 'beside', left, width, top, maxHeight: fit(viewport.height - gap - top) };
+  }
+  const foot = button.top - gap;
+  const top = Math.max(gap, Math.round(foot - menuHeight));
+  return { side: 'above', left: Math.round(button.left), width: Math.round(button.width), top, maxHeight: fit(foot - top) };
+}
+
+// The row a key moves the highlight to, or null when the key is not a move.
+// Arrows wrap; a letter goes to the next entry that starts with it and stays
+// put when none does.
+function railMoreKeyTarget(key, act, labels) {
+  const count = labels.length;
+  if (!count) return null;
+  if (key === 'ArrowDown') return act < 0 ? 0 : (act + 1) % count;
+  if (key === 'ArrowUp') return act < 0 ? count - 1 : (act - 1 + count) % count;
+  if (key === 'Home') return 0;
+  if (key === 'End') return count - 1;
+  if (typeof key === 'string' && key.length === 1 && key.trim()) {
+    const wanted = key.toLocaleLowerCase();
+    for (let step = 1; step <= count; step += 1) {
+      const index = ((act < 0 ? -1 : act) + step) % count;
+      if (String(labels[index] || '').trim().charAt(0).toLocaleLowerCase() === wanted) return index;
+    }
+    return act;
+  }
+  return null;
+}
+
+function focusRailMoreElement(element) {
+  if (!element || typeof element.focus !== 'function') return false;
+  try { element.focus({ preventScroll: true }); } catch { try { element.focus(); } catch { return false; } }
+  return document.activeElement === element;
+}
+
+// A page heading takes focus without joining the tab order.
+function focusPageHeading(heading) {
+  if (!heading || !heading.isConnected || !heading.getClientRects().length
+      || heading.closest('[hidden], [inert], .hidden')) return false;
+  if (!heading.hasAttribute('tabindex')) heading.setAttribute('tabindex', '-1');
+  return focusRailMoreElement(heading);
+}
+
+function consumeSettingsHeadingFocus(page) {
+  if (!settingsHeadingFocusPending) return false;
+  settingsHeadingFocusPending = false;
+  return focusPageHeading(page?.querySelector('#sp-side-title'));
+}
+
+function paintRailMoreMenu(menu, items, currentKey) {
+  menu.textContent = '';
+  menu.setAttribute('aria-label', tr('action.more'));
+  const glide = document.createElement('span');
+  glide.className = 'mor-glide';
+  glide.setAttribute('aria-hidden', 'true');
+  glide.innerHTML = '<span class="mor-gi"></span>';
+  menu.appendChild(glide);
+  const rows = [];
+  let group = null;
+  for (const item of items) {
+    if (item.label) {
+      // The group names stay for screen readers; the menu shows no headers.
+      group = document.createElement('div');
+      group.className = 'mor-group';
+      group.setAttribute('role', 'group');
+      group.setAttribute('aria-label', item.label);
+      menu.appendChild(group);
+    } else if (item.sep) {
+      const rule = document.createElement('div');
+      rule.className = 'mor-sep';
+      rule.setAttribute('role', 'separator');
+      menu.appendChild(rule);
+      group = null;
+    } else if (item.key) {
+      const current = item.key === currentKey;
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = current ? 'mor-row is-current' : 'mor-row';
+      row.setAttribute('role', 'menuitem');
+      row.tabIndex = -1;
+      row.dataset.more = item.key;
+      if (current) row.setAttribute('aria-current', 'page');
+      row.innerHTML = `<svg width="16" height="16" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${RAIL_MORE_PATHS[item.key] || ''}"/></svg><span class="mor-label">${esc(item.text)}</span>${current ? '<span class="mor-dot" aria-hidden="true"></span>' : ''}`;
+      (group || menu).appendChild(row);
+      rows.push({ row, item });
+    }
+  }
+  return rows;
+}
+
+function placeRailMoreMenu(state) {
+  const { button, menu } = state;
+  const rail = document.getElementById('sidebar');
+  const collapsed = !!rail?.classList.contains('collapsed');
+  const b = button.getBoundingClientRect();
+  menu.style.maxHeight = 'none';
+  menu.style.width = collapsed ? '240px' : `${Math.round(b.width)}px`;
+  const place = railMoreMenuPlacement(b, rail ? rail.getBoundingClientRect() : b, menu.offsetHeight,
+    { width: window.innerWidth, height: window.innerHeight }, collapsed);
+  menu.dataset.side = place.side;
+  menu.style.left = `${place.left}px`;
+  menu.style.top = `${place.top}px`;
+  menu.style.width = `${place.width}px`;
+  menu.style.maxHeight = place.maxHeight === null ? 'none' : `${place.maxHeight}px`;
+  if (state.act >= 0) setRailMoreActive(state.act, { keyboard: state.keyboard, focus: false });
+}
+
+// One highlight for the row under the pointer or the keys. It appears in
+// place the first time and slides after that; the keyboard draws it as a ring.
+function setRailMoreActive(index, { keyboard = false, focus = true } = {}) {
+  const state = railMore;
+  if (!state) return false;
+  const was = state.act;
+  const entry = state.rows[index];
+  state.act = entry ? index : -1;
+  state.keyboard = !!entry && keyboard;
+  state.rows.forEach((candidate, i) => candidate.row.classList.toggle('is-hot', i === state.act));
+  const glide = state.glide;
+  if (!entry) {
+    glide.classList.remove('is-on', 'is-key');
+    return true;
+  }
+  const row = entry.row;
+  glide.classList.toggle('is-jump', was < 0);
+  glide.classList.toggle('is-key', state.keyboard);
+  glide.style.setProperty('--mor-y', `${row.offsetTop}px`);
+  glide.style.setProperty('--mor-h', `${row.offsetHeight}px`);
+  glide.classList.add('is-on');
+  if (state.menu.scrollHeight > state.menu.clientHeight) row.scrollIntoView({ block: 'nearest', behavior: 'instant' });
+  if (focus && document.activeElement !== row) focusRailMoreElement(row);
   return true;
+}
+
+function openSidebarMoreMenu(btn, { keyboard = false, at = 0 } = {}) {
+  if (!btn || typeof btn.getBoundingClientRect !== 'function') return false;
+  const menu = document.getElementById('rail-more-menu');
+  if (!menu) return false;
+  // A second press closes it.
+  if (railMore) return closeRailMoreMenu({ restoreFocus: true });
+  // One floating layer at a time: the shared menu and the Inbox Space picker give way.
+  hideContextMenu();
+  if (typeof closeFloatingInboxSpacePicker === 'function') closeFloatingInboxSpacePicker();
+  clearTimeout(railMoreHideTimer);
+  const rows = paintRailMoreMenu(menu, secondaryNavigationItems(btn), railMoreCurrentKey());
+  const state = { button: btn, menu, rows, glide: menu.querySelector('.mor-glide'), act: -1, keyboard: false, x: null, y: null, cleanup: null };
+  railMore = state;
+  menu.classList.remove('hidden', 'is-in', 'is-out');
+  placeRailMoreMenu(state);
+  if (!railMoreReducedMotion()) {
+    void menu.offsetWidth;
+    menu.classList.add('is-in');
+  }
+  btn.setAttribute('aria-expanded', 'true');
+  // A click anywhere else closes the menu, the rail's empty space included. A
+  // click on empty space would leave focus on <body>, so focus goes back to
+  // More once the click settles; a click on another control keeps its focus.
+  const outside = event => {
+    if (railMore !== state || menu.contains(event.target) || btn.contains(event.target)) return;
+    closeRailMoreMenu({ restoreFocus: false });
+    setTimeout(() => {
+      const active = document.activeElement;
+      if (railMore || !btn.isConnected) return;
+      if (!active || active === document.body || !active.isConnected || !active.getClientRects().length || menu.contains(active)) {
+        focusRailMoreElement(btn);
+      }
+    }, 0);
+  };
+  const reflow = rafThrottle(() => { if (railMore === state) placeRailMoreMenu(state); });
+  document.addEventListener('pointerdown', outside, true);
+  window.addEventListener('resize', reflow);
+  state.cleanup = () => {
+    document.removeEventListener('pointerdown', outside, true);
+    window.removeEventListener('resize', reflow);
+  };
+  // The keys open on an entry; the pointer opens with nothing lit, the menu
+  // itself holding focus, until the pointer moves.
+  if (keyboard && rows.length) setRailMoreActive(at < 0 ? rows.length - 1 : Math.min(at, rows.length - 1), { keyboard: true });
+  else focusRailMoreElement(menu);
+  return true;
+}
+
+function closeRailMoreMenu({ restoreFocus = false } = {}) {
+  const state = railMore;
+  if (!state) return false;
+  railMore = null;
+  state.cleanup?.();
+  state.button.setAttribute('aria-expanded', 'false');
+  const menu = state.menu;
+  const hide = () => {
+    menu.classList.add('hidden');
+    menu.classList.remove('is-in', 'is-out');
+    // Focus never stays behind on a hidden menu.
+    if (menu.contains(document.activeElement)) focusRailMoreElement(state.button);
+  };
+  clearTimeout(railMoreHideTimer);
+  if (restoreFocus) focusRailMoreElement(state.button);
+  if (railMoreReducedMotion()) hide();
+  else {
+    menu.classList.remove('is-in');
+    menu.classList.add('is-out');
+    railMoreHideTimer = setTimeout(() => { if (!railMore) hide(); }, 100);
+  }
+  return true;
+}
+
+function railMoreDestinationHeading(key) {
+  if (activeLibraryMode !== key) return null;
+  return document.getElementById(key === 'archive' || key === 'trash' ? 'archive-title' : 'library-title');
+}
+
+// Choosing an entry closes the menu and opens it; focus lands on the opened
+// page's heading. The page already on screen is only landed on, not reopened.
+function chooseRailMore(index) {
+  const state = railMore;
+  const entry = state?.rows[index];
+  if (!entry) return false;
+  const { key, action } = entry.item;
+  const button = state.button;
+  const current = entry.row.classList.contains('is-current');
+  closeRailMoreMenu({ restoreFocus: false });
+  if (!current) {
+    if (key === 'settings') settingsHeadingFocusPending = true;
+    // A page entry leaves Settings, even for the page that sits under it.
+    else if (key !== 'tools' && isSettingsPageOpen()) closeSettingsPage({ restoreFocus: false });
+    action?.();
+  }
+  if (key === 'tools') {
+    // The Tools window focuses its first tool and returns focus to More.
+    if (document.getElementById('tools-hub')?.classList.contains('hidden')) focusRailMoreElement(button);
+    return true;
+  }
+  if (key === 'settings') {
+    if (current && !focusPageHeading(document.getElementById('sp-side-title'))) focusRailMoreElement(button);
+    return true;
+  }
+  if (!focusPageHeading(railMoreDestinationHeading(key))) focusRailMoreElement(button);
+  return true;
+}
+
+function handleRailMoreKey(event) {
+  const state = railMore;
+  if (!state) return;
+  const { key } = event;
+  if (key === 'Escape' || key === 'Tab') {
+    event.preventDefault();
+    event.stopPropagation();
+    closeRailMoreMenu({ restoreFocus: true });
+    return;
+  }
+  if (key === 'Enter' || key === ' ') {
+    event.stopPropagation();
+    // A focused row chooses itself (the button's own click); with nothing lit
+    // the keys do nothing.
+    if (state.rows.some(entry => entry.row === event.target)) return;
+    event.preventDefault();
+    if (state.act >= 0) chooseRailMore(state.act);
+    return;
+  }
+  if (event.ctrlKey || event.metaKey || event.altKey) return;
+  const next = railMoreKeyTarget(key, state.act, state.rows.map(entry => entry.item.text));
+  if (next === null) return;
+  // Every move and letter stays in the menu: no one-key shortcut fires under it.
+  event.preventDefault();
+  event.stopPropagation();
+  if (next >= 0) setRailMoreActive(next, { keyboard: true });
+}
+
+function bindRailMoreMenu() {
+  const menu = document.getElementById('rail-more-menu');
+  const button = document.getElementById('nav-more');
+  if (!menu || !button) return;
+  // Enter and Space reach here as a click with no pointer (detail 0).
+  button.onclick = event => openSidebarMoreMenu(event.currentTarget, { keyboard: event.detail === 0, at: 0 });
+  button.addEventListener('keydown', event => {
+    if ((event.key !== 'ArrowDown' && event.key !== 'ArrowUp') || event.altKey || event.ctrlKey || event.metaKey) return;
+    event.preventDefault();
+    const at = event.key === 'ArrowUp' ? -1 : 0;
+    if (railMore) setRailMoreActive(at < 0 ? railMore.rows.length - 1 : 0, { keyboard: true });
+    else openSidebarMoreMenu(event.currentTarget, { keyboard: true, at });
+  });
+  menu.addEventListener('keydown', handleRailMoreKey);
+  menu.addEventListener('pointermove', event => {
+    const state = railMore;
+    if (!state || event.pointerType === 'touch') return;
+    // A pointer at rest, and the browser's own re-hover when the menu appears
+    // under it, never take the highlight: only real movement does.
+    const still = (!event.movementX && !event.movementY) || (event.clientX === state.x && event.clientY === state.y);
+    state.x = event.clientX;
+    state.y = event.clientY;
+    if (still) return;
+    const index = state.rows.findIndex(entry => entry.row.contains(event.target));
+    if (index < 0 || (index === state.act && !state.keyboard)) return;
+    setRailMoreActive(index, { keyboard: false });
+  });
+  menu.addEventListener('pointerleave', () => {
+    const state = railMore;
+    if (!state || state.keyboard || state.act < 0) return;
+    setRailMoreActive(-1);
+    focusRailMoreElement(menu);
+  });
+  // Focus moved by any means pulls the highlight along.
+  menu.addEventListener('focusin', event => {
+    const state = railMore;
+    const index = state ? state.rows.findIndex(entry => entry.row === event.target) : -1;
+    if (index >= 0 && index !== state.act) setRailMoreActive(index, { keyboard: state.keyboard, focus: false });
+  });
+  menu.addEventListener('click', event => {
+    const state = railMore;
+    const index = state ? state.rows.findIndex(entry => entry.row.contains(event.target)) : -1;
+    if (index < 0) return;
+    event.stopPropagation();
+    chooseRailMore(index);
+  });
 }
 
 function openMoreMenu(btn, anchor = btn) {
@@ -38139,7 +38546,7 @@ function bindStatic() {
   if (navPlan && typeof openPlan === 'function') navPlan.onclick = () => openPlan('upcoming');
   document.getElementById('nav-archive').onclick = () => openLibrarySurface('archive');
   document.getElementById('nav-trash').onclick = () => openLibrarySurface('trash');
-  document.getElementById('nav-more').onclick = e => openSidebarMoreMenu(e.currentTarget);
+  bindRailMoreMenu();
 
   // ── Opened-tabs rail ──
   const railToggle = document.getElementById('tabrail-toggle');
@@ -38510,6 +38917,13 @@ function bindStatic() {
       if (organizationDeleteOverlay && !organizationDeleteOverlay.classList.contains('hidden')) {
         e.preventDefault();
         closeOrganizationDeleteDialog();
+        return;
+      }
+      // The rail's More menu owns Escape while it is open (its own handler
+      // normally takes it); only the menu closes, and focus goes back to More.
+      if (railMore) {
+        e.preventDefault();
+        closeRailMoreMenu({ restoreFocus: true });
         return;
       }
       const higherLayerIds = ['state-recovery-overlay','paste-overlay','rich-text-link-overlay','reminder-overlay','calendar-task-overlay','planner-overlay','cmd-palette','modal-overlay','settings-drawer','ws-grid-overlay','ws-list','emoji-picker','import-overlay','cheatsheet-overlay','quota-overlay','organization-name-overlay','organization-delete-overlay','welcome','pomo-overlay','fin-overlay','habit-overlay','water-overlay','books-overlay','goals-overlay','workout-overlay','subs-overlay','tools-hub','about-overlay','context-menu'];

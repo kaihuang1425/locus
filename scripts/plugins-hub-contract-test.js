@@ -44,12 +44,12 @@ assert.match(
 );
 assert.match(
   hubHtml,
-  /id="hub-close"[^>]*type="button"[^>]*aria-label="Close plugins"[^>]*data-i18n-aria-label="plugins\.close"/,
-  'Plugins must expose a localized native Close control',
+  /id="hub-close"[^>]*type="button"[^>]*aria-label="Close tools"[^>]*data-i18n-aria-label="plugins\.close"/,
+  'Tools must expose a localized native Close control (Plugins renamed Tools, Kai 2026-11-07)',
 );
 assert.match(
   hubHtml,
-  /id="plugins-list"[^>]*aria-label="Available plugins"[^>]*data-i18n-aria-label="plugins\.availableList"/,
+  /id="plugins-list"[^>]*aria-label="Available tools"[^>]*data-i18n-aria-label="plugins\.availableList"/,
   'the optional registry must have a localized list name',
 );
 
@@ -88,8 +88,24 @@ for (const key of [
 }
 assert.ok(source.includes("'plugins.subtitle': '已內建在此研究版，需要時直接開啟，不必下載或登入。'"),
   'zh-TW must describe the packaged research boundary without translated enablement language');
-assert.ok(source.includes("'plugins.localNote': '外掛資料會留在此瀏覽器設定檔中。'"),
+assert.ok(source.includes("'plugins.localNote': '工具資料會留在此瀏覽器設定檔中。'"),
   'zh-TW must state the browser-profile storage boundary directly');
+// Plugins became Tools (Kai, 2026-11-07, round 2 board default 2): the visible
+// words change in both languages; the keys, ids and the tools stay.
+for (const [key, en, zh] of [
+  ['action.plugins', 'Tools', '工具'],
+  ['plugins.title', 'Tools', '工具'],
+  ['plugins.localNote', 'Tool data stays in this browser profile.', '工具資料會留在此瀏覽器設定檔中。'],
+  ['plugins.availableList', 'Available tools', '可使用的工具'],
+  ['plugins.close', 'Close tools', '關閉工具'],
+]) {
+  assert.ok(source.includes(`'${key}': '${en}',`) && source.includes(`'${key}': '${zh}',`),
+    `${key} reads "${en}" / "${zh}" (Plugins renamed Tools, 2026-11-07)`);
+}
+assert.doesNotMatch(source, /^\s{4}'(?:action\.plugins|menu\.plugins|plugins\.(?:title|localNote|availableList|close))': '[^']*(?:Plugin|plugin|外掛)/m,
+  'no visible Tools string still says Plugin (2026-11-07)');
+assert.match(hubHtml, /<h2 id="plugins-title" data-i18n="plugins\.title">Tools<\/h2>/,
+  'the Tools window is titled Tools before the language loads');
 assert.ok(source.includes("'plugins.available': '可直接使用'"),
   'zh-TW must describe real availability rather than a fictional installation state');
 

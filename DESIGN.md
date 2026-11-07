@@ -5580,3 +5580,51 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
 
   **Implemented: yes. Verified: suites and Edge (locus-redesign-evidence/pages/fixes-final).
   User-validated: no. Released: no.**
+
+- **2026-11-07 - The rail's More menu follows its board (round 2, area 01, More.dc.html).**
+  Kai's decisions: "Yes, a short rise (Recommended)" (decision 4) and the approved board defaults 1
+  (Calendar leaves More, its reminder dot moves to Plan) and 2 (Plugins becomes Tools).
+  - More opens its own menu, `#rail-more-menu` (classes `mor-`), not the shared context menu. It
+    rises from the button: a 140 ms fade and 6 px rise with no blur, and a 100 ms fall when it
+    closes. With the rail open it sits 8 px above More at the button's width; with the rail
+    collapsed it opens 9 px beside the rail, its foot level with More's. It never covers its
+    button. In a very short window the list scrolls. The shared `#context-menu` keeps its Index
+    look and no entrance motion (core-visual :377 now holds both rules).
+  - Six 44 px rows in two groups: Favorites, Read later, Archive, Trash; a rule; Tools, Settings.
+    No counts and no visible group headers; the group names stay for screen readers. The page on
+    screen is blue with a dot and `aria-current="page"`.
+  - One soft highlight glides between rows (160 ms). It appears in place the first time and slides
+    after that. The keyboard draws it as a blue ring. Only real pointer movement takes it, so a
+    menu that opens under a resting pointer lights nothing.
+  - Keys: Enter, Space or Down on More open the menu on the first entry; Up opens it on the last.
+    Up and Down wrap, Home and End jump, and a letter jumps to the next entry starting with it.
+    Letters stay in the menu, so the page's one-key shortcuts (C for Calendar) don't fire under it.
+    Escape, Tab, and a click anywhere outside (the empty rail included) close it. Focus returns to
+    More, unless the click landed on another control, which keeps its focus. A pointer open puts
+    focus on the menu itself with nothing lit.
+  - Choosing a page closes the menu and lands focus on that page's heading (Library, Archive or
+    Trash, Settings). Choosing the page already on screen only lands on it. A page entry chosen
+    while Settings shows leaves Settings first. Tools opens its window on the first tool. Tools
+    and Settings both return focus to More when they close.
+  - Calendar left More, and the top bar's ⋯ too, because they share `secondaryNavigationItems`.
+    It stays one click away through Plan's Calendar button, and in the palette (and on C). The
+    pending-reminder dot moved from the ⋯ to Plan in the rail: a 7 px orange dot on Plan's icon,
+    with the count in Plan's accessible name ("Plan, 2 today, Reminders: 13"). Where a theme has no
+    orange tuned for its rail, the dot's orange leans halfway to the rail's ink, so it holds 3:1 on
+    every rail. The ⋯ now reads plain "More".
+  - Plugins reads Tools in the menu, the Tools window's title, its close button, list name and
+    local note (en and zh-TW 工具). The keys (`action.plugins`, `plugins.*`), the ids and the tools
+    themselves are unchanged. The unused `menu.plugins` and `action.moreReminderCount` strings are
+    gone; `nav.moreShowing` and `nav.planReminders` are new.
+  - The rail's current-page light (`updateNavChrome`): Archive, Trash and the Settings page light
+    More, which reads "More · Archive" and is announced as "More, showing Archive". Favorites and
+    Read later light All links, because they are Library views. While Settings shows, the page
+    under it is no longer lit. The lit entry carries `aria-current="page"`. Find again lights
+    nothing (Search is not in More), and a group page lights its Space, as before. The rail's
+    rows, size and collapse are unchanged.
+  - Not changed, and noted: the rail's lit style is white on the locator, about 2.3:1 in Locus
+    Dark. That is the rail's own look (Home lit has it too), and More inherits it when lit.
+
+  **Implemented: yes. Verified: suites (more-menu, core-visual, onboarding, plugins hub; 18/18
+  mutations) and Edge (locus-redesign-evidence/round2/more, 66/66). User-validated: no.
+  Released: no.**
