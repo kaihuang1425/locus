@@ -689,7 +689,10 @@ function fakeClassList(initial = []) {
 const toastElements = new Map();
 const toastDocument = { activeElement: null };
 function fakeElement(id, classes = []) {
+  // Like a real element, every listener of a type hears the event (the
+  // receipt has two focusin listeners since final review A).
   const events = new Map();
+  const listeners = new Map();
   const attributes = new Map();
   const element = {
     id,
@@ -703,7 +706,10 @@ function fakeElement(id, classes = []) {
     scrollHeight: 0,
     scrollTop: 0,
     tabIndex: -1,
-    addEventListener(type, listener) { events.set(type, listener); },
+    addEventListener(type, listener) {
+      listeners.set(type, [...(listeners.get(type) || []), listener]);
+      events.set(type, event => listeners.get(type).forEach(each => each(event)));
+    },
     setAttribute(name, value) {
       attributes.set(name, String(value));
       if (name === 'tabindex') element.tabIndex = Number(value);

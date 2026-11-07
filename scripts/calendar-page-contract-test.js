@@ -312,11 +312,38 @@ async function testMove() {
   const stale = c.calendarMoveMenuItems(group, opener);
   eq(stale.map(entry => entry.text), ['reminder.editTitle…', 'reminder.removeNamed:{"name":"Launch"}'], 'a reminder that changed offers no day, only the reviewed picker');
 
-  const els = { 'q:a': { id: 'a' }, 'q:b': { id: 'b' } };
+  const shown = id => ({ id, getClientRects: () => [{}] });
+  const els = { 'q:a': shown('a'), 'q:b': shown('b') };
   const d = sandbox({ elements: els });
   d.__cal.session = { afterMove: ['missing', 'b', 'a'] };
   eq([d.calendarFocusAfterMove()?.id, d.__cal.session.afterMove], ['b', null], 'focus after a move takes the first neighbour still there, once');
   eq(d.calendarFocusAfterMove(), null, 'and nothing afterwards');
+
+  // Final review B: the last reminder of a day leaves the panel. Focus goes to
+  // a control on screen that is not a text field (Ctrl+Z skips fields): the
+  // selected day, else the panel's heading, else the pressed view.
+  const fakes = {};
+  const prep = vm.createContext({ CSS: { escape: value => String(value) }, document: { querySelector: selector => fakes[selector] || null } });
+  vm.runInContext(`let calendarPageSession = { afterMove: null };\n${extractFunction('calPrepareFocusAfter')}\n${extractFunction('calendarFocusAfterMove')}\nglobalThis.__plan = () => calendarPageSession.afterMove;`, prep, { filename: 'calendar-focus-after-move.js' });
+  const lone = (part) => {
+    const row = { dataset: { calKey: 'item:only:' }, closest: selector => (selector === '[data-cal-key]' ? row : selector === '.cld-due' ? part : null) };
+    row.parentElement = { children: [row] };
+    return { closest: selector => (selector === '[data-cal-key]' ? row : null) };
+  };
+  const fallbacks = ['.cld [data-cal-day][aria-pressed="true"]', '.cld .cld-panel .cld-ph', '.cld .cld-seg-btn[aria-pressed="true"]'];
+  prep.calPrepareFocusAfter(lone(null));
+  const panelPlan = prep.__plan();
+  eq(panelPlan, fallbacks, 'the only reminder of a day leaves the panel: focus goes to the selected day, else the panel heading, else the pressed view (final review B)');
+  ok(!panelPlan.some(selector => /cal-add-input|cal-filter-input|input/.test(selector)), 'never to the quick add field, where Ctrl+Z cannot undo the move (final review B)');
+  prep.calPrepareFocusAfter(lone({}));
+  eq(prep.__plan(), fallbacks, 'Past due falls back the same way (final review B)');
+  const hiddenDay = { id: 'day', getClientRects: () => [] };
+  Object.assign(fakes, { [fallbacks[0]]: hiddenDay, [fallbacks[1]]: shown('heading'), [fallbacks[2]]: shown('view') });
+  eq(prep.calendarFocusAfterMove()?.id, 'heading', 'a day that is not on screen is passed over for the panel heading (final review B)');
+  prep.calPrepareFocusAfter(lone(null));
+  Object.assign(fakes, { [fallbacks[0]]: shown('day') });
+  eq(prep.calendarFocusAfterMove()?.id, 'day', 'and the selected day comes first when it is on screen (final review B)');
+  ok(/head\.className = 'cld-ph';\n\s*\/\/[^\n]*\n\s*head\.tabIndex = -1;/.test(extractFunction('buildCalPanel')), 'the panel heading can take focus without joining the Tab order (final review B)');
 }
 
 // ── Quick add through the Add-task transaction ────────────────────

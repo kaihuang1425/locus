@@ -8080,6 +8080,48 @@ function restoreToastFocus() {
   return true;
 }
 
+// The page control that had focus before focus moved into the receipt.
+let toastPageFocus = null;
+
+function toastFocusIsLost() {
+  const active = document.activeElement;
+  return !active || active === document.body || active.isConnected === false || !active.getClientRects().length;
+}
+
+// Undo, or an action such as the reset's Undo, hides the receipt's button that
+// had focus. Focus goes back to the page: the control that opened the receipt
+// if it is still on screen, else the page control that had focus before the
+// receipt, else the page's heading; never a text field the receipt did not
+// come from, since Ctrl+Z and Escape skip fields. Undo moves it before the
+// repaint, so the page's own Undo focus (the row that came back, the same
+// control) takes over (final review A).
+function returnFocusFromToast() {
+  const t = document.getElementById('toast');
+  const usable = (el, field) => !!el && el !== document.body && el.isConnected !== false
+    && typeof el.focus === 'function' && !(t && t.contains(el))
+    && (field || !el.matches('input, textarea, select, [contenteditable="true"]'))
+    && !el.closest('[hidden], [inert], [aria-hidden="true"], .hidden')
+    && el.getClientRects().length > 0;
+  const candidates = [
+    [toastFocusReturn, true],
+    [toastPageFocus, false],
+    [document.querySelector('#board h1[tabindex]'), false],
+  ];
+  return candidates.some(([target, field]) => {
+    if (!usable(target, field)) return false;
+    try { target.focus({ preventScroll: true }); } catch { try { target.focus(); } catch { return false; } }
+    return document.activeElement === target;
+  });
+}
+
+// After the page has painted, a focus that still fell to <body> lands on a
+// control on screen.
+function settleFocusAfterToast(fallback) {
+  requestAnimationFrame(() => {
+    if (toastFocusIsLost()) fallback();
+  });
+}
+
 function syncToastMessageScrollAccess() {
   const t = document.getElementById('toast');
   const m = document.getElementById('toast-msg');
@@ -8327,6 +8369,16 @@ function removeToastEntry(entry, options = {}) {
 // the action offered under a generic failure line.
 function runToastAction(entry) {
   if (!entry?.action || entry.busy) return;
+  // The button that ran it goes busy, then hides or comes back (Retry): focus
+  // returns to it when it is back, else to the page (final review A).
+  const t = document.getElementById('toast');
+  const button = t && t.contains(document.activeElement) ? document.activeElement : null;
+  const settled = () => {
+    if (button) settleFocusAfterToast(() => {
+      if (!button.disabled && button.getClientRects().length) button.focus({ preventScroll: true });
+      else returnFocusFromToast();
+    });
+  };
   let result;
   try {
     result = entry.action();
@@ -8343,14 +8395,12 @@ function runToastAction(entry) {
         console.error('Notification action failed', error);
         settleToastAction(entry, { message: tr('toast.actionFailed'), tone: 'error', retry: true });
       },
-    );
+    ).then(settled);
     return;
   }
-  if (result && typeof result === 'object' && result.message) {
-    settleToastAction(entry, result);
-    return;
-  }
-  removeToastEntry(entry);
+  if (result && typeof result === 'object' && result.message) settleToastAction(entry, result);
+  else removeToastEntry(entry);
+  settled();
 }
 
 function settleToastAction(entry, outcome) {
@@ -8424,8 +8474,10 @@ function undoFromToast(entry) {
   const t = document.getElementById('toast');
   const focusWasInside = !!t && t.contains(document.activeElement);
   if (toastFront() === entry) paintToast(entry, { animation: 'is-morphing' });
-  if (focusWasInside) restoreToastFocus();
-  void performUndo(entry.undoActionId);
+  if (focusWasInside) returnFocusFromToast();
+  void Promise.resolve(performUndo(entry.undoActionId)).finally(() => {
+    if (focusWasInside) settleFocusAfterToast(() => focusAfterSurfaceLeave());
+  });
 }
 
 function dismissToast({ restoreFocus = false } = {}) {
@@ -8494,6 +8546,10 @@ function bindToastReceipt(t) {
     if (next && t.contains(next)) return;
     const hovered = toastHovered || (typeof t.matches === 'function' && t.matches(':hover'));
     if (!hovered) releaseToast();
+  });
+  t.addEventListener('focusin', event => {
+    const from = event?.relatedTarget || null;
+    if (!from || !t.contains(from)) toastPageFocus = from;
   });
   if (typeof window !== 'undefined') {
     window.addEventListener('resize', rafThrottle(syncToastMessageScrollAccess));
@@ -35042,7 +35098,9 @@ function calendarMoveMenuItems(entry, opener, { withOpen = false } = {}) {
 }
 
 // After a reminder leaves the panel or the Past due strip, focus goes to the
-// neighbour's Move button, else to the add field or the selected day.
+// neighbour's Move button, else to the selected day, the day panel's heading
+// or the pressed view. Never the add field: Ctrl+Z and Escape skip a text
+// field, so the move could not be undone from there (final review B).
 function calPrepareFocusAfter(source) {
   const session = calendarPageSession;
   const item = source?.closest?.('[data-cal-key]');
@@ -35053,7 +35111,9 @@ function calPrepareFocusAfter(source) {
   session.afterMove = [
     mv(siblings[index + 1]),
     mv(siblings[index - 1]),
-    item.closest('.cld-due') ? '.cld [data-cal-day][aria-pressed="true"]' : '#cal-add-input',
+    '.cld [data-cal-day][aria-pressed="true"]',
+    '.cld .cld-panel .cld-ph',
+    '.cld .cld-seg-btn[aria-pressed="true"]',
   ].filter(Boolean);
 }
 function calendarFocusAfterMove() {
@@ -35063,7 +35123,7 @@ function calendarFocusAfterMove() {
   session.afterMove = null;
   for (const selector of list) {
     const target = document.querySelector(selector);
-    if (target) return target;
+    if (target && !target.disabled && target.getClientRects().length > 0) return target;
   }
   return null;
 }
@@ -35211,6 +35271,8 @@ function buildCalPanel(entries, selected, now, emptyText, session = null) {
   if (session) session.counts.set(countKey, list.length);
   const head = document.createElement('div');
   head.className = 'cld-ph';
+  // A place for focus after a move when no day is on screen (never in Tab order).
+  head.tabIndex = -1;
   head.innerHTML = `<div class="cld-ph-text"><div class="cld-pwd${selected === todayStart ? ' is-today' : ''}">${rel ? `${esc(rel)} · ` : ''}${esc(weekday)}</div><div class="cld-pdate">${esc(date.toLocaleDateString(appLocale(), { month: 'long', day: 'numeric' }))}</div></div><span class="cld-pcount" aria-hidden="true">${spaceRollMarkup(list.length, roll.previous, roll.delay)}</span>`;
   inner.appendChild(head);
 

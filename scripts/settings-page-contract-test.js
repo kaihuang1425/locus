@@ -588,7 +588,14 @@ function testCss() {
     const block = layer.match(new RegExp(`\\n${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\{[^}]*\\}`))?.[0] || '';
     ok(rule.test(block), `${selector} is a 44 px target`);
   }
-  ok(/\.stg-seg button \{[^}]*min-height: 38px;[\s\S]*\.stg-seg button::before \{ content: ""; position: absolute; inset: -3px 0; \}/.test(layer), 'segments reach 44 px through the track padding');
+  // Final review C: each segment is itself a 44 px box (not a 38 px button
+  // with a pseudo-element strip), overlapping the track's 4 px padding so the
+  // track keeps its 46 px look, as the Calendar's view switch does.
+  const segButton = layer.match(/\n\.stg-seg button \{[^}]*\}/)?.[0] || '';
+  ok(/height: 44px;\n\s*margin: -3px 0;/.test(segButton) && !/min-height: 38px/.test(segButton), 'every Settings segment (Item size, Column width) is a 44 px box (final review C)');
+  ok(!/\.stg-seg button::before/.test(layer) && !/\.stg-seg[^{]*\{[^}]*(?:^|[\s;])(?:min-)?height: (?:[0-3]\d|4[0-3])px/m.test(layer), 'no segment is drawn below 44 px or reaches it through a ::before strip (final review C)');
+  ok(/\n\.stg-seg \{[^}]*padding: 4px;/.test(layer) && /\n\.stg-thumb \{[^}]*top: 4px;\n\s*bottom: 4px;/.test(layer), 'the track keeps its padding and its thumb, so it looks as before (final review C)');
+  eq([...html.matchAll(/<div class="stg-seg" id="(seg-[a-z]+)"/g)].map(match => match[1]), ['seg-size', 'seg-width'], 'Item size and Column width are the Settings segments the rule covers');
   ok(/@container \(max-width: 640px\) \{\n  \.stg-body \{ flex-direction: column;[\s\S]*\.stg-nav \{[^}]*flex-direction: row;[^}]*overflow-x: auto;/.test(layer), 'at phone width the list becomes one scrolling strip');
   ok(/\.stg-main \{[^}]*position: relative;[^}]*overflow-x: hidden;/.test(layer), 'no horizontal scroll, and hidden descriptions stay inside the page');
   ok(/@media \(prefers-reduced-motion: reduce\) \{\n  #settings-drawer,\n  #settings-drawer \*,\n  #settings-drawer \*::before,\n  #settings-drawer \*::after \{ animation: none !important; transition: none !important;/.test(layer), 'reduced motion stops everything');

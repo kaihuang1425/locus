@@ -5451,7 +5451,10 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
 
 - **2026-11-07 - Fixes from the final review: Details, Find again and the palette, the Calendar (R2).**
   - Focus never falls to `<body>`. A Calendar rebuild (paging, Month / Week / Agenda, Today, Undo,
-    quick add) gives focus back to the same control, else the selected day, else the pressed view;
+    quick add) gives focus back to the same control, else the selected day, else the pressed view
+    (correction, final acceptance review: this held for Ctrl+Z only; Undo from the receipt's button
+    dropped focus to `<body>`, and a move of a day's last reminder put focus in the quick add field,
+    until the fixes in the entry below);
     the filter's second Escape goes to the selected day. Leaving Find again or the Calendar (Escape,
     C) returns focus to the control that opened it, else the page's heading, the top bar's search or
     the rail entry; never a text field. The quick add field is read-only, not disabled, while it saves.
@@ -5548,4 +5551,32 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
     the finding covered repaints), and the Space Board's repaint at 600 cards.
 
   **Implemented: yes. Verified: suites and Edge (locus-redesign-evidence/pages/fixes-r1).
+  User-validated: no. Released: no.**
+
+- **2026-11-07 - Fixes from the final acceptance review (A to C).**
+  - Undo from the receipt by keyboard leaves focus on a control on the page, never on `<body>`. The
+    Undo button hides once it runs, and the control that opened the receipt has often left with its
+    row. So focus goes back to the page before the repaint: the opener if it is still on screen, else
+    the page control that had focus before focus moved into the receipt, else the page's heading;
+    never a text field the receipt did not come from (Ctrl+Z and Escape skip fields). Each page's own
+    Undo focus then applies, as for Ctrl+Z: the Inbox card or row, the Library row, the Calendar's
+    selected day, the Archive or Trash row. If the repaint still leaves focus on `<body>`,
+    `focusAfterSurfaceLeave` places it after the paint.
+  - An action on the receipt (the Use core defaults Undo, Retry, a confirmed ask) whose button hides
+    when it settles returns focus the same way; a Retry that stays offered gets focus back.
+  - Escape and the close button keep their rule: focus goes back to the opener when it is there.
+  - After the last reminder of a Calendar day moves (Move to, Clear), focus goes to the selected day,
+    else the day panel's heading (focusable, not in the Tab order), else the pressed view; never the
+    quick add field, so Ctrl+Z undoes the move and focus follows the Calendar's Undo rule.
+  - Settings segments (Item size, Column width) are 44 px boxes that overlap their track's padding,
+    as the Calendar's view switch does, so the track keeps its 46 px look; the focus ring sits inside
+    the box.
+  - The receipt is the dark card in every theme. It took `--today-now`, which falls back to `--text`
+    and is light in the older dark themes (Nord, Dracula, Aurora and nine more), so its text was
+    about 1:1. The card is now the registry card, else the theme's registry, else the canvas dark
+    `#19231f`; its ink holds 13.7:1 or more in all 19 themes (Edge), and the notifications suite
+    computes it per theme. Light themes that drew the card in their own `--text` now use the same
+    canvas dark.
+
+  **Implemented: yes. Verified: suites and Edge (locus-redesign-evidence/pages/fixes-final).
   User-validated: no. Released: no.**

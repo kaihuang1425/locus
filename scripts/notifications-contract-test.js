@@ -92,7 +92,28 @@ function testToastWiring() {
   for (const [tone, colour] of [['info', '#35423c'], ['warning', '#ff5b2e'], ['error', '#e0281b']]) {
     ok(new RegExp(`#toast\\[data-tone="${tone}"\\][^{]*\\{ --toast-icon: ${colour}; \\}`).test(css), `${tone} receipts use the ${colour} icon circle`);
   }
-  ok(/background: var\(--today-now, #19231f\);/.test(css), 'the receipt is the dark registry card');
+  ok(/background: var\(--registry-card, var\(--registry-bg, #19231f\)\);/.test(css), 'the receipt is the dark registry card');
+  // The receipt's ink and muted text hold 4.5:1 on its card in every bundled
+  // theme (the card once fell back to --text, light in the dark themes).
+  const themesCss = read('themes.css');
+  const lum = hex => {
+    const v = hex.replace('#', '');
+    const full = v.length === 3 ? v.split('').map(c => c + c).join('') : v;
+    return [0, 2, 4].map(i => parseInt(full.slice(i, i + 2), 16) / 255)
+      .map(c => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4))
+      .reduce((sum, c, i) => sum + c * [0.2126, 0.7152, 0.0722][i], 0);
+  };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+  const themeBlocks = [...themesCss.matchAll(/^\[data-theme="([a-z-]+)"\] \{([\s\S]*?)^\}/gm)];
+  ok(themeBlocks.length >= 19, 'every bundled theme is read');
+  const token = (body, name) => body.match(new RegExp(`--${name}:\\s*(#[0-9a-fA-F]{3,6})\\b`))?.[1] || null;
+  const failing = themeBlocks.flatMap(([, theme, body]) => {
+    const card = token(body, 'registry-card') || token(body, 'registry-bg') || '#19231f';
+    return [['#f6f3eb', 'ink'], ['#aeb9b3', 'muted']]
+      .filter(([ink]) => ratio(ink, card) < 4.5)
+      .map(([ink, role]) => `${theme} ${role} ${ratio(ink, card).toFixed(2)}`);
+  });
+  ok(failing.length === 0, `the receipt text holds 4.5:1 on its card in every theme (final review): ${failing.join(', ')}`);
 }
 
 // ── The real toast controller in a VM (N17) ──
@@ -113,14 +134,24 @@ function toastHarness() {
     };
   };
   const inside = ['toast-msg', 'toast-action', 'toast-undo', 'toast-keep', 'toast-close'];
-  const el = (id, init = []) => {
+  // A fake element is on screen while connected and neither hidden nor
+  // .hidden; a field matches the field selector (final review A).
+  const el = (id, init = [], { field = false } = {}) => {
     const events = new Map();
+    const listeners = new Map();
     const element = {
       id, dataset: {}, classList: classes(init), style: { setProperty() {} }, textContent: '', hidden: false, disabled: false,
       onclick: null, isConnected: true, offsetWidth: 1, scrollHeight: 0, clientHeight: 0, scrollTop: 0, events,
-      addEventListener: (type, fn) => events.set(type, fn), setAttribute() {}, removeAttribute() {}, getAttribute() { return null; },
-      querySelector: () => null, matches: () => false,
-      focus() { doc.activeElement = element; },
+      addEventListener: (type, fn) => {
+        listeners.set(type, [...(listeners.get(type) || []), fn]);
+        events.set(type, event => listeners.get(type).forEach(listener => listener(event)));
+      },
+      setAttribute() {}, removeAttribute() {}, getAttribute() { return null; },
+      querySelector: () => null,
+      matches: selector => field && /input/.test(selector),
+      closest: () => null,
+      getClientRects: () => (element.isConnected && !element.hidden && !element.classList.contains('hidden') ? [{}] : []),
+      focus() { if (element.getClientRects().length) doc.activeElement = element; },
       contains: target => target === element || (id === 'toast' && inside.includes(target?.id)),
     };
     els.set(id, element);
@@ -130,8 +161,16 @@ function toastHarness() {
   ['toast-msg', 'toast-sub', 'toast-drain', 'toast-close'].forEach(id => el(id));
   ['toast-action', 'toast-undo', 'toast-keep', 'toast-behind'].forEach(id => el(id, ['hidden']));
   const opener = el('opener');
+  const row = el('row');
+  const heading = el('heading');
+  const field = el('field', [], { field: true });
+  doc.body = el('body');
   doc.activeElement = opener;
   doc.getElementById = id => els.get(id) || null;
+  doc.querySelector = selector => (selector === '#board h1[tabindex]' ? heading : null);
+  const renders = [];
+  let onRender = () => {};
+  let surfaceLeaves = 0;
   const timers = new Map();
   let nextTimer = 1;
   const history = [];
@@ -151,7 +190,9 @@ function toastHarness() {
     window: { addEventListener() {} },
     rafThrottle: fn => fn,
     tr: (key, vars) => (vars ? `${key}:${JSON.stringify(vars)}` : key),
-    renderAll() {},
+    // Records where focus is when the page repaints after Undo.
+    renderAll() { renders.push(doc.activeElement?.id ?? null); onRender(); },
+    focusAfterSurfaceLeave() { surfaceLeaves += 1; heading.focus(); return doc.activeElement === heading; },
     reconcileRemindersAfterHistoryChange() {},
     chrome: {
       runtime: { sendMessage: async message => { sent.push(message.type); return { ok: reconcileOk }; } },
@@ -171,7 +212,11 @@ function toastHarness() {
     return true;
   };
   return {
-    t: context.__t, host, opener, els, doc, history, timers, sent, fire,
+    t: context.__t, host, opener, row, heading, field, els, doc, history, timers, sent, fire, renders,
+    surfaceLeaves: () => surfaceLeaves,
+    onRender: fn => { onRender = fn; },
+    // Focus moves into the receipt from a page control (Tab or a shortcut).
+    enter: (from, id = 'toast-undo') => { host.events.get('focusin')?.({ relatedTarget: from }); doc.activeElement = els.get(id); },
     setReconcile: value => { reconcileOk = value; },
     msg: () => els.get('toast-msg').textContent,
     shown: id => !els.get(id).classList.contains('hidden'),
@@ -252,6 +297,104 @@ async function testToastController() {
   e.t.clearItemReminderNotice('t1');
   await flush();
   eq(e.sent, ['clear:te-notif-t1'], 'the card can clear the item’s system notice');
+}
+
+// Final review A: Undo from the receipt by keyboard hides the button that had
+// focus. Focus goes back to the page before the repaint (so the page's own
+// Undo focus takes over), and never ends on <body> or in a text field.
+async function testToastUndoFocus() {
+  const undoBy = async (e, id = 3) => {
+    e.history.push(id); e.t.toast('Archived', { undo: id });
+    return e;
+  };
+  // The control that opened the receipt left with its row: focus goes to the
+  // page control that had focus before the receipt, before the repaint.
+  let e = await undoBy(toastHarness());
+  e.opener.isConnected = false;
+  e.enter(e.row);
+  e.els.get('toast-undo').onclick();
+  await flush(); await flush();
+  eq([e.history.length, e.renders, e.doc.activeElement.id, e.surfaceLeaves()], [0, ['row'], 'row', 0], 'Undo from the receipt moves focus to the page control that had it before the repaint (final review A)');
+  // The repaint replaced that control too: the last resort lands on a control.
+  e = await undoBy(toastHarness());
+  e.opener.isConnected = false;
+  e.enter(e.row);
+  e.onRender(() => { e.row.isConnected = false; e.doc.activeElement = e.doc.body; });
+  e.els.get('toast-undo').onclick();
+  await flush(); await flush();
+  eq([e.renders, e.doc.activeElement.id, e.surfaceLeaves()], [['row'], 'heading', 1], 'when the repaint drops focus to <body>, it lands on the page heading (final review A)');
+  // Entered from <body>: the page heading takes focus before the repaint.
+  e = await undoBy(toastHarness());
+  e.opener.isConnected = false;
+  e.enter(null);
+  e.els.get('toast-undo').onclick();
+  await flush(); await flush();
+  eq([e.renders, e.doc.activeElement.id], [['heading'], 'heading'], 'with no page control to go back to, the page heading takes focus before the repaint');
+  // A text field is never where Undo leaves focus (Ctrl+Z skips fields).
+  e = await undoBy(toastHarness());
+  e.opener.isConnected = false;
+  e.enter(e.field);
+  e.els.get('toast-undo').onclick();
+  await flush(); await flush();
+  eq([e.renders, e.doc.activeElement.id], [['heading'], 'heading'], 'a text field that had focus is skipped for the heading');
+  // A hidden opener is skipped too.
+  e = await undoBy(toastHarness());
+  e.opener.hidden = true;
+  e.enter(e.row);
+  e.els.get('toast-undo').onclick();
+  await flush(); await flush();
+  eq(e.renders, ['row'], 'an opener that is no longer on screen is skipped');
+  // N14 kept: an opener still on screen takes focus back, as before.
+  e = await undoBy(toastHarness());
+  e.enter(e.row);
+  e.els.get('toast-undo').onclick();
+  await flush(); await flush();
+  eq([e.renders, e.doc.activeElement.id, e.surfaceLeaves()], [['opener'], 'opener', 0], 'the control that opened the receipt keeps first claim while it is on screen');
+  // Undo by pointer without focus in the receipt leaves focus alone.
+  e = await undoBy(toastHarness());
+  e.opener.isConnected = false;
+  e.doc.activeElement = e.row;
+  e.els.get('toast-undo').onclick();
+  await flush(); await flush();
+  eq([e.renders, e.surfaceLeaves()], [['row'], 0], 'Undo with focus outside the receipt does not move focus');
+  // Escape and the close button keep their behaviour (no page fallback).
+  for (const how of ['escape', 'close']) {
+    e = await undoBy(toastHarness());
+    e.opener.isConnected = false;
+    e.enter(e.row, how === 'close' ? 'toast-close' : 'toast-undo');
+    if (how === 'close') e.els.get('toast-close').onclick();
+    else e.host.events.get('keydown')({ key: 'Escape', preventDefault() {}, stopPropagation() {} });
+    await flush(); await flush();
+    eq([e.history.length, e.surfaceLeaves(), e.doc.activeElement.id === 'row'], [1, 0, false], `${how} closes the receipt, undoes nothing and keeps its focus rule`);
+  }
+  // An action labelled Undo (Use core defaults): when the button hides after
+  // it settles, focus goes back to the control that opened the receipt.
+  e = toastHarness();
+  e.t.toast('Core defaults', { actionLabel: 'Undo', action: () => Promise.resolve({ message: 'Undone', tone: 'info' }) });
+  e.enter(e.row, 'toast-action');
+  e.els.get('toast-action').onclick();
+  await flush(); await flush(); await flush();
+  eq([e.shown('toast-action'), e.doc.activeElement.id], [false, 'opener'], 'after an action settles and its button hides, focus returns to the opener (final review A)');
+  e = toastHarness();
+  e.opener.isConnected = false;
+  e.t.toast('Core defaults', { actionLabel: 'Undo', action: () => Promise.resolve({ message: 'Undone', tone: 'info' }) });
+  e.enter(e.row, 'toast-action');
+  e.els.get('toast-action').onclick();
+  await flush(); await flush(); await flush();
+  eq(e.doc.activeElement.id, 'row', 'else to the page control that had focus before the receipt');
+  // Retry stays offered: focus comes back to it.
+  e = toastHarness();
+  e.t.toast('history.reminderReconcileWarning', { tone: 'warning', ...e.t.reminderReconcileRetry() });
+  e.enter(e.row, 'toast-action');
+  e.els.get('toast-action').onclick();
+  e.doc.activeElement = e.doc.body;
+  await flush(); await flush(); await flush();
+  eq([e.shown('toast-action'), e.doc.activeElement.id], [true, 'toast-action'], 'a Retry that is still offered gets focus back');
+  // The production wiring: Undo moves focus before performUndo repaints, and
+  // the last resort is the shared surface fallback.
+  const undoFn = newtabFunction('undoFromToast');
+  ok(/if \(focusWasInside\) returnFocusFromToast\(\);\n\s*void Promise\.resolve\(performUndo\(entry\.undoActionId\)\)\.finally\(\(\) => \{\n\s*if \(focusWasInside\) settleFocusAfterToast\(\(\) => focusAfterSurfaceLeave\(\)\);/.test(undoFn), 'Undo returns focus to the page first, then falls back to focusAfterSurfaceLeave after the paint');
+  ok(/\[document\.querySelector\('#board h1\[tabindex\]'\), false\]/.test(newtabFunction('returnFocusFromToast')), 'the page heading is the non-field fallback');
 }
 
 // The popup receipt controller (2026-11 popup board) runs in a VM against fake
@@ -584,12 +727,13 @@ function testLocales() {
 async function main() {
   testToastWiring();
   await testToastController();
+  await testToastUndoFocus();
   await testPopupReceipt();
   await testSystemNotifications();
   testDueCard();
   await testSnoozeKeepsWarning();
   testLocales();
-  console.log(`Notification contracts passed: ${checks} checks (toast controller run in a VM: stale Undo, history reset, hover hold, focus return, Retry and Keep results; drain cascade, Escape, Undo morph, popup tones, system notice with Done/Snooze and stale guards, Group/Space copy, due card across workspaces and repeats, locales)`);
+  console.log(`Notification contracts passed: ${checks} checks (toast controller run in a VM: stale Undo, history reset, hover hold, focus return, keyboard Undo and action focus back on the page, Retry and Keep results; drain cascade, Escape, Undo morph, popup tones, system notice with Done/Snooze and stale guards, Group/Space copy, due card across workspaces and repeats, locales)`);
 }
 
 main().catch(error => {

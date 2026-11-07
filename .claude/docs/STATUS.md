@@ -299,6 +299,20 @@ Slices, in order:
 
 ## Done (newest first)
 
+- **2026-11-07 - Fixes from the final acceptance review (A to C).**
+  Undo from the receipt by keyboard no longer drops focus to `<body>`: focus goes back to the page
+  before the repaint (the opener if it is still on screen, else the page control that had focus,
+  else the heading; never a text field), so each page's own Undo focus applies, and
+  `focusAfterSurfaceLeave` is the last resort. The Use core defaults Undo (an action) does the same
+  once it settles, and Retry keeps focus. Escape and the close button are unchanged. After the last
+  reminder of a Calendar day moves, focus lands on the selected day instead of the quick add field,
+  so Ctrl+Z undoes it. Settings segments (Item size, Column width) are 44 px boxes on a 46 px track.
+  Suites: notifications, calendar page, settings page, core visual (its fake element now keeps every
+  listener); 14/14 mutations caught. Evidence: `locus-redesign-evidence/pages/fixes-final/` (Edge
+  157: keyboard Undo on Inbox, Library, Calendar, Archive, Trash and Settings at 1440 and 390,
+  before and after). The receipt is now the dark card in every theme: its text was about 1:1 in 12
+  of 19 themes, where the card fell back to the light `--text`; it holds 13.7:1 or more in all 19.
+
 - **2026-11-07 - Final-review fixes for the Inbox, Library and Space pages (R1-1 to R1-15).**
   The Library keeps unchanged rows and draws 120 at a time (the rest as the list scrolls, or Show
   more): at 614 links a repaint went from 1.0–1.5 s to about 30 ms and a filter keystroke from
