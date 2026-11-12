@@ -7551,7 +7551,7 @@ function jsonSize(value) {
 function renderAboutSettings() {
   const el = document.getElementById('sp-about-version');
   if (!el) return;
-  let version = '3.1.0';
+  let version = '3.1.1';
   try { version = chrome.runtime.getManifest?.().version || version; } catch {}
   el.textContent = version;
 }
@@ -36545,7 +36545,7 @@ function openAppMenu(anchor) {
 function openAbout() {
   const ov = document.getElementById('about-overlay');
   if (!ov) return;
-  let ver = '3.1.0';
+  let ver = '3.1.1';
   try { if (typeof chrome !== 'undefined' && chrome.runtime?.getManifest) ver = chrome.runtime.getManifest().version || ver; } catch {}
   const vEl = document.getElementById('about-version');
   if (vEl) vEl.textContent = 'v' + ver;

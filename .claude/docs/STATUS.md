@@ -9,6 +9,20 @@ entry records a completed implementation cycle; it does not by itself mean verif
 user-validated, or released.
 Last updated: 2026-11-12.
 
+## Chrome Web Store package candidate (2026-11-12)
+
+- Version 3.1.1 fixes the overlength manifest description and updates displayed
+  version fallbacks. Permissions and data schema are unchanged.
+- `scripts/package-extension.py` builds a reproducible runtime-only ZIP and
+  unpacked copy, checks asset closure and records SHA-256 hashes. Public privacy
+  and preparation documents are in `docs/PRIVACY.md` and `docs/STORE-PREPARATION.md`.
+- All 50 suites and 63 JavaScript syntax checks passed. The companion suite passed
+  its 66 checks with normal Windows pipe permissions after the sandbox blocked it.
+  Obsolete Settings contract expectations were aligned with the existing UI.
+- Installed-browser testing and required store screenshots remain pending. A
+  localhost artwork-preview attempt could not be reached by the browser; no UI
+  verification is claimed. Nothing has been submitted to the Chrome Web Store.
+
 ## Landing page candidate (2026-11-12)
 
 - Rebuilt `docs/index.html` as a responsive English landing page with a small,

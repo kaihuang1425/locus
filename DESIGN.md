@@ -5646,3 +5646,22 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
 
   **Implemented: yes. Verified: landing-page browser interactions and responsive
   layout. User-validated: no. Public-site deployment: no.**
+
+
+- **2026-11-12 - Chrome Web Store package candidate.** Bumped the manifest to
+  3.1.1, shortened its description to 112 characters and updated the two displayed
+  version fallbacks. No permission, schema or feature changes.
+  - Added a deterministic Python packaging script with an explicit runtime
+    allowlist, local-asset closure checks, ZIP integrity verification and hashes.
+  - Added a public privacy policy, a landing-footer privacy link and Store
+    preparation notes. Listing material retains the noncommercial research-alpha
+    limit and discloses optional finance, health and assistant data handling.
+  - Updated obsolete Settings/privacy test expectations to the existing direct
+    controls and live appearance preview. All 50 suites and 63 syntax checks
+    passed; the companion test passed 66 checks with normal Windows pipe access.
+  - Browser installation approval is pending. The localhost screenshot preview
+    was unreachable after bounded connection attempts. Required screenshots and
+    installed-extension verification are still outstanding; no Store submission.
+
+  **Implemented: package and listing preparation. Verified: static/contracts and
+  archive structure. Installed-browser release check: pending. Released: no.**

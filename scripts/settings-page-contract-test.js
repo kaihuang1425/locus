@@ -2,7 +2,7 @@
 
 // Contract test for the Settings page (canvas board Settings.dc.html): a page
 // beside the rail with seven sections and a sliding pill, cards of rows whose
-// switches have a springy knob, the theme preview that crossfades, the Plan
+// switches have a springy knob, the responsive appearance controls, the Plan
 // section (Auto-plan rules and the AI companion off switch on the optional
 // permission, no stored field), the download that fills before the shared
 // receipt, and Privacy & data as one section. Production slices of newtab.js
@@ -70,8 +70,8 @@ function testMarkup() {
 // ── 2. Rows: every switch is a labelled native checkbox with a knob ─────
 function testRows() {
   const switches = [...markup.matchAll(/<span class="stg-sw"><input type="checkbox" role="switch" id="([a-z-]+)" class="stg-sw-in"[^>]*><span class="stg-sw-track" aria-hidden="true"><span class="stg-knob"><\/span><\/span><\/span>/g)].map(m => m[1]);
-  eq(switches, ['tog-hibernate', 'tog-autoswitch', 'tog-urls', 'tog-anim', 'tog-capture-ask', 'tog-capture-remember', 'tog-capture-close',
-    'tog-capture-dedupe', 'tog-capture-title', 'tog-capture-favicon', 'tog-plan-rollover', 'tog-plan-warn', 'tog-companion', 'tog-blur'],
+  eq(switches, ['tog-hibernate', 'tog-autoswitch', 'tog-urls', 'tog-anim', 'tog-capture-ask', 'tog-capture-remember', 'tog-capture-title',
+    'tog-capture-favicon', 'tog-capture-dedupe', 'tog-capture-close', 'tog-plan-rollover', 'tog-plan-warn', 'tog-companion', 'tog-blur'],
     'every on/off setting is the board\'s switch');
   for (const id of switches) {
     ok(new RegExp(`<label class="stg-l" for="${id}"`).test(markup), `#${id} has a visible label`);
@@ -88,14 +88,16 @@ function testRows() {
   ok(/<p id="(?:general|appearance|privacy)-status" class="stg-status"/.test(markup) && /<p id="capture-policy-status" class="stg-status"/.test(markup),
     'each preference status speaks to assistive technology (and shows on failure)');
   ok(!/<svg/.test(between('<!-- ── General ── -->', '<!-- ── Appearance ── -->', markup)), 'General draws its chevron in CSS, no icon residue');
-  ok(/<details id="general-workspace-plugin" class="stg-card stg-disc">/.test(markup)
-    && /<details id="appearance-style-pack" class="stg-card stg-disc">/.test(markup)
-    && /<details id="privacy-screen-plugin" class="stg-card stg-disc">/.test(markup), 'the three plugins stay one click away as disclosures');
+  ok(!/<details id="(?:general-workspace-plugin|appearance-style-pack|privacy-screen-plugin)"/.test(markup),
+    'workspace, appearance and privacy controls are directly available without retired plugin disclosures');
+  for (const id of ['tog-autoswitch', 'seg-font', 'tog-blur']) {
+    ok(new RegExp(`id="${id}"`).test(markup), `the direct setting #${id} remains reachable`);
+  }
 }
 
 // ── 3. Every earlier control is still on the page ───────────────────────
 function testReachable() {
-  for (const id of ['seg-language', 'show-tour-btn', 'theme-grid', 'seg-size', 'theme-pack-grid', 'seg-width', 'seg-font', 'appearance-pack-reset',
+  for (const id of ['seg-language', 'show-tour-btn', 'theme-grid', 'seg-size', 'seg-font', 'appearance-reset',
     'capture-destination', 'shortcuts-customize', 'shortcuts-global-list', 'shortcuts-filter', 'shortcuts-app-list', 'shortcuts-empty',
     'storage-bar-meter', 'storage-refresh', 'storage-breakdown', 'storage-open-archive', 'export-btn', 'import-json-btn', 'import-file',
     'bookmarks-btn', 'paste-import-btn', 'sp-about-version', 'settings-open-planner']) {
@@ -351,7 +353,7 @@ function shellHarness(overrides = {}) {
     openPlan: view => log.push(['openPlan', view]),
     openPlannerDialog: opener => { log.push(['planner', opener?.id || null]); return true; },
   });
-  vm.runInContext(`${shellSource}\nglobalThis.__x = { moveSettingsPill, springSettingsSwitch, paintAppearancePreview, paintAppearanceChoices, showSettingsPage, syncSettingsPageShell,
+  vm.runInContext(`${shellSource}\nglobalThis.__x = { moveSettingsPill, springSettingsSwitch, paintAppearanceChoices, showSettingsPage, syncSettingsPageShell,
     closeSettingsPage, handleSettingsRailClick, closeSettingsPageOnRouteChange, renderPlanSettings, paintSettingsCompanion, setSettingsCompanion,
     runSettingsExport, openPlannerFromSettings, isOpen: isSettingsPageOpen };`, context, { filename: 'settings-shell.js' });
   return {
@@ -368,22 +370,9 @@ async function testShell() {
   eq(h.nav.dataset.pill, 'on', 'and shows');
   ok(h.x.springSettingsSwitch(h.input) && h.knob.classLog.join(' ') === '-is-sprung +is-sprung', 'a flipped switch replays the knob\'s squash (drop, reflow, add)');
 
-  h.x.paintAppearancePreview('folio');
-  const [a, b] = h.preview.children;
-  ok(h.preview.children.length === 2 && a.classList.contains('is-front') && a.dataset.theme === 'folio', 'the preview paints the current theme on its front layer');
-  h.x.paintAppearancePreview('folio-dark');
-  ok(b.classList.contains('is-front') && !a.classList.contains('is-front') && b.dataset.theme === 'folio-dark' && b.classList.contains('is-dark'),
-    'a new theme paints the back layer and crossfades it to the front');
-  eq(b.style.getPropertyValue('--pv-ground'), '#171d19', 'with that theme\'s ground');
-  h.x.paintAppearancePreview('folio-dark');
-  ok(b.classList.contains('is-front') && b.classLog.filter(c => c === '+is-front').length === 1, 'the same theme does not replay the crossfade');
-  h.x.paintAppearancePreview('auto');
-  ok(a.classList.contains('is-front') && a.classList.contains('is-split') && a.style.getPropertyValue('--pv-ground-2') === '#171d19', 'System shows two flat halves');
-  h.x.paintAppearanceChoices({ size: 'compact', width: 'wide' }, 'folio-dark');
-  eq([h.grid.style.getPropertyValue('--stg-ring'), h.grid.dataset.ring, h.segSize.style.getPropertyValue('--stg-i'), h.segWidth.style.getPropertyValue('--stg-i')],
-    ['2', 'on', '0', '2'], 'the ring and the thumbs slide to the chosen mode, size and width');
-  h.x.paintAppearanceChoices({ size: 'normal', width: 'normal' }, 'nord');
-  eq(h.grid.dataset.ring, 'off', 'a Style plugin theme hides the core ring');
+  // The redesigned theme cards and live board preview are exercised by
+  // appearance-settings-contract-test.js. The retired crossfade is gone.
+  ok(!source.includes('function paintAppearancePreview('), 'the retired crossfade renderer is absent');
 
   // Opening: the work area goes inert, the rail stays usable, the page sits beside it.
   ok(h.x.showSettingsPage(h.drawer) && h.x.isOpen(), 'the page opens');
@@ -520,9 +509,9 @@ function testBindings() {
   ok(/const granted = on && typeof plannerRequestNativePermission === 'function'\n\s*\? plannerRequestNativePermission\(\)/.test(init),
     'the permission prompt opens inside the click');
   ok(/if \(!closeSettingsPage\(\{ restoreFocus: false \}\)\) return;\n\s*openLibrarySurface\('archive'\);/.test(init), 'Open archive leaves Settings, then opens Archive');
-  ok(/appearancePackReset\.onclick = \(\) => \{ void resetAppearanceStylePack\(appearancePackReset\); \};/.test(init)
-    && /if \(!await commitAppearanceSettingsChange\(button\.id, patch\)\) return false;\n\s*toast\(tr\('settings\.stylePackResetDone'\), \{\n\s*actionLabel: tr\('history\.undoAction'\),\n\s*action: \(\) => undoAppearanceStylePackReset\(button, patch, previous\),/.test(extractFunction('resetAppearanceStylePack'))
-    && /return commitAppearanceSettingsChange\(button\.id, previous\)/.test(extractFunction('undoAppearanceStylePackReset')),
+  ok(/appearanceReset\.onclick = \(\) => \{ void resetAppearance\(appearanceReset\); \};/.test(init)
+    && /if \(!await commitAppearanceSettingsChange\(button\.id, patch\)\) return false;[\s\S]*?toast\(tr\('settings\.resetAppearanceDone'\), \{\n\s*actionLabel: tr\('history\.undoAction'\),\n\s*action: \(\) => undoAppearanceReset\(button, patch, previous\),/.test(extractFunction('resetAppearance'))
+    && /return commitAppearanceSettingsChange\(button\.id, previous\)/.test(extractFunction('undoAppearanceReset')),
   'Use core defaults offers Undo, which puts the exact previous choices back through the same write');
   ok(/shortcutsClear\.onclick = \(\) => \{\n\s*shortcutsFilter\.value = '';\n\s*filterAppShortcuts\(\);\n\s*shortcutsFilter\.focus\(\);/.test(init), 'Clear empties the filter and returns to it');
   ok(/document\.getElementById\('export-btn'\)\.onclick = \(\) => \{\n\s*runSettingsExport\(\);/.test(source), 'Download runs the filling export');
@@ -546,8 +535,8 @@ function testPermissionBoundary() {
 function testLocales() {
   const keys = ['settings.sectionsAria', 'settings.privacyData', 'settings.plan', 'settings.planSub', 'settings.companion', 'settings.companionPaired',
     'settings.companionConnected', 'settings.companionOff', 'settings.companionOffFailed', 'settings.companionNotInstalled', 'settings.companionReload',
-    'settings.companionNotConnected', 'settings.openInPlan', 'settings.filterShortcuts', 'settings.clearShortcutsFilter', 'settings.backupHeading',
-    'settings.bookmarksLabel', 'settings.linksLabel', 'settings.exportPreparing', 'settings.exportRequested', 'settings.stylePackResetDone'];
+    'settings.companionNotConnected', 'settings.filterShortcuts', 'settings.clearShortcutsFilter', 'settings.backupHeading',
+    'settings.bookmarksLabel', 'settings.linksLabel', 'settings.exportPreparing', 'settings.exportRequested', 'settings.resetAppearanceDone', 'settings.openPlanWithAi'];
   const enStart = source.indexOf('  en: {');
   const zhStart = source.indexOf("  'zh-TW': {");
   const en = source.slice(enStart, zhStart);
@@ -573,17 +562,17 @@ function testCss() {
   ok(!/#E0281B|#e0281b|var\(--red\)|var\(--today-badge\)/.test(layer), 'no red: nothing on Settings is waiting');
   const durations = [...layer.matchAll(/(?<![\w-])(\d*\.?\d+)(m?s)\b/g)].map(m => (m[2] === 'ms' ? Number(m[1]) : Number(m[1]) * 1000)).filter(ms => ms > 0);
   // Presses (0.1 s) and the check's 50 ms delay sit under the range by design.
-  ok(durations.every(ms => ms <= 320 || ms === 800), `motion runs at most 320 ms (the 0.8 s spinner is the only exception): ${[...new Set(durations)].join(', ')}`);
-  ok((layer.match(/infinite/g) || []).length === (layer.match(/stgSpin \.8s linear infinite/g) || []).length
+  ok(durations.every(ms => ms <= 320 || ms === 800 || ms === 1800), `motion runs at most 320 ms (the 0.8 s busy spinner and 1.8 s live preview are the exceptions): ${[...new Set(durations)].join(', ')}`);
+  ok((layer.match(/infinite/g) || []).length === (layer.match(/(?:stgSpin \.8s linear|stgBeat 1\.8s ease-in-out) infinite/g) || []).length
     && /\.stg-chip\[data-state="busy"\]::before \{[^}]*animation: stgSpin \.8s linear infinite;/.test(layer)
     && /#storage-capacity\[data-state="loading"\] \.stg-cap-head \.stg-btn svg \{ animation: stgSpin \.8s linear infinite; \}/.test(layer),
-  'only the busy spinners (connecting, checking storage) loop');
+  'only the busy spinners and the live appearance-preview marker loop');
   ok(/\.stg-knob \{[^}]*transition: left \.3s var\(--today-spring\), width \.16s ease;/.test(layer), 'the knob travels on the spring curve');
   ok(/@keyframes stgKnob \{ 0% \{ transform: scale\(1\.18, \.84\); \} 55% \{ transform: scale\(\.94, 1\.06\); \} 100% \{ transform: none; \} \}/.test(layer), 'and squashes like the board\'s');
-  ok(/\.stg-layer \{[^}]*transition: opacity \.32s ease;/.test(layer), 'the theme preview crossfades');
+  ok(/\.stg-pvg \{[^}]*transition: background-color \.28s ease;/.test(layer), 'the actual board preview responds to the chosen theme');
   for (const [selector, rule] of [
     ['.stg-btn', /min-height: 44px;/], ['.stg-select', /min-height: 44px;/], ['.stg-filter', /min-height: 44px;/], ['.stg-nav .dt', /min-height: 44px;/],
-    ['.stg-sw-in', /inset: -6px -4px;/], ['.stg-fonts button', /min-height: 44px;/], ['#settings-drawer .theme-card.compact', /min-height: 44px;/],
+    ['.stg-sw-in', /inset: -6px -4px;/], ['.stg-tc', /min-height: (?:44|[5-9]\d|\d{3})px;/],
   ]) {
     const block = layer.match(new RegExp(`\\n${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\{[^}]*\\}`))?.[0] || '';
     ok(rule.test(block), `${selector} is a 44 px target`);
@@ -595,7 +584,7 @@ function testCss() {
   ok(/height: 44px;\n\s*margin: -3px 0;/.test(segButton) && !/min-height: 38px/.test(segButton), 'every Settings segment (Item size, Column width) is a 44 px box (final review C)');
   ok(!/\.stg-seg button::before/.test(layer) && !/\.stg-seg[^{]*\{[^}]*(?:^|[\s;])(?:min-)?height: (?:[0-3]\d|4[0-3])px/m.test(layer), 'no segment is drawn below 44 px or reaches it through a ::before strip (final review C)');
   ok(/\n\.stg-seg \{[^}]*padding: 4px;/.test(layer) && /\n\.stg-thumb \{[^}]*top: 4px;\n\s*bottom: 4px;/.test(layer), 'the track keeps its padding and its thumb, so it looks as before (final review C)');
-  eq([...html.matchAll(/<div class="stg-seg" id="(seg-[a-z]+)"/g)].map(match => match[1]), ['seg-size', 'seg-width'], 'Item size and Column width are the Settings segments the rule covers');
+  eq([...html.matchAll(/<div class="stg-seg" id="(seg-[a-z]+)"/g)].map(match => match[1]), ['seg-size'], 'Item size is the remaining Settings segment covered by the target rule');
   ok(/@container \(max-width: 640px\) \{\n  \.stg-body \{ flex-direction: column;[\s\S]*\.stg-nav \{[^}]*flex-direction: row;[^}]*overflow-x: auto;/.test(layer), 'at phone width the list becomes one scrolling strip');
   ok(/\.stg-main \{[^}]*position: relative;[^}]*overflow-x: hidden;/.test(layer), 'no horizontal scroll, and hidden descriptions stay inside the page');
   ok(/@media \(prefers-reduced-motion: reduce\) \{\n  #settings-drawer,\n  #settings-drawer \*,\n  #settings-drawer \*::before,\n  #settings-drawer \*::after \{ animation: none !important; transition: none !important;/.test(layer), 'reduced motion stops everything');
@@ -615,6 +604,7 @@ async function testResetUndo() {
   const log = [];
   const context = vm.createContext({
     State: { get: () => ({ settings }) },
+    document: { activeElement: { getClientRects: () => [1] }, body: {}, getElementById: () => null },
     APPEARANCE_SETTING_DEFAULTS: { theme: 'folio', size: 'normal', width: 'normal', font: 'dm', showUrls: true, animate: true },
     isCoreAppearanceTheme: id => ['auto', 'folio', 'folio-dark'].includes(id),
     normalizeThemeId: id => id,
@@ -628,18 +618,18 @@ async function testResetUndo() {
   });
   // The acknowledged write is stubbed; like the real one (asserted below), it
   // withdraws an earlier reset's Undo once storage has accepted the change.
-  vm.runInContext(`${extractFunction('appearanceSettingValue')}\n${extractFunction('appearanceStylePackResetPatch')}\n${between('let appearanceResetUndo = null;', '\n// Download: the button fills')}
+  vm.runInContext(`${extractFunction('appearanceSettingValue')}\n${extractFunction('appearanceResetPatch')}\n${between('let appearanceResetUndo = null;', '\n// Download: the button fills')}
 async function commitAppearanceSettingsChange(id, patch) { writes.push([id, JSON.parse(JSON.stringify(patch))]); Object.assign(State.get().settings, patch); withdrawAppearanceResetUndo(); return true; }
-globalThis.x = { resetAppearanceStylePack, commitAppearanceSettingsChange, current: () => appearanceResetUndo };`, context, { filename: 'settings-reset-undo.js' });
-  const button = { id: 'appearance-pack-reset' };
+globalThis.x = { resetAppearance, commitAppearanceSettingsChange, current: () => appearanceResetUndo };`, context, { filename: 'settings-reset-undo.js' });
+  const button = { id: 'appearance-reset' };
 
-  ok(await context.x.resetAppearanceStylePack(button) === true, 'Use core defaults writes the core choices');
-  eq(context.writes, [['appearance-pack-reset', { theme: 'folio', font: 'dm' }]], '…only what differs from the core');
+  ok(await context.x.resetAppearance(button) === true, 'Use core defaults writes the core choices');
+  eq(context.writes, [['appearance-reset', { theme: 'folio', font: 'dm' }]], '…only what differs from the core');
   const first = toastEntries.at(-1);
-  eq([first.msg, first.actionLabel, typeof first.action, context.x.current() === first], ['settings.stylePackResetDone', 'history.undoAction', 'function', true], 'its receipt offers Undo');
+  eq([first.msg, first.actionLabel, typeof first.action, context.x.current() === first], ['settings.resetAppearanceDone', 'history.undoAction', 'function', true], 'its receipt offers Undo');
   const lateUndo = first.action;
   await context.x.commitAppearanceSettingsChange('theme-folio-dark', { theme: 'folio-dark' });
-  eq(log, [['settle', 'settings.stylePackResetDone', { message: 'settings.stylePackResetDone', tone: 'success' }]],
+  eq(log, [['settle', 'settings.resetAppearanceDone', { message: 'settings.resetAppearanceDone', tone: 'success' }]],
     'a later appearance choice withdraws that Undo: the message stays, the action goes and the receipt drains (finding R3-7)');
   eq([first.action, context.x.current()], [null, null], 'nothing is left to undo');
   const stale = await lateUndo();
@@ -648,20 +638,20 @@ globalThis.x = { resetAppearanceStylePack, commitAppearanceSettingsChange, curre
 
   Object.assign(settings, { theme: 'nord', font: 'lora' });
   log.length = 0;
-  await context.x.resetAppearanceStylePack(button);
+  await context.x.resetAppearance(button);
   const second = toastEntries.at(-1);
   const undone = await second.action();
   eq([undone.message, undone.tone, settings.theme, settings.font, context.writes.at(-1)],
-    ['history.undid:{"action":"settings.stylePackReset"}', 'info', 'nord', 'lora', ['appearance-pack-reset', { theme: 'nord', font: 'lora' }]],
+    ['history.undid:{"action":"settings.resetAppearance"}', 'info', 'nord', 'lora', ['appearance-reset', { theme: 'nord', font: 'lora' }]],
     'with no change in between, Undo puts the exact previous theme and typeface back');
   eq(log, [], 'the Undo’s own write does not withdraw itself');
 
   Object.assign(settings, { theme: 'nord', font: 'lora' });
-  await context.x.resetAppearanceStylePack(button);
+  await context.x.resetAppearance(button);
   const behind = toastEntries.at(-1);
   toastEntries.push({ msg: 'newer receipt', busy: false });
   await context.x.commitAppearanceSettingsChange('appearance-size-large', { size: 'large' });
-  ok(log.some(entry => entry[0] === 'remove' && entry[1] === 'settings.stylePackResetDone') && !toastEntries.includes(behind),
+  ok(log.some(entry => entry[0] === 'remove' && entry[1] === 'settings.resetAppearanceDone') && !toastEntries.includes(behind),
     'a reset receipt waiting behind a newer one leaves with its Undo');
 
   const commit = extractFunction('commitAppearanceSettingsChange');
@@ -691,9 +681,8 @@ function testContrast() {
   const white = { r: 255, g: 255, b: 255, a: 1 };
   const num = (pattern, label) => { const m = pattern.exec(layer); ok(m, `${label} is declared as a theme-aware mix`); return Number(m[1]) / 100; };
   const ink2 = num(/--stg-ink-2: color-mix\(in srgb, var\(--text2\) (\d+)%, var\(--text\)\);/, 'the secondary ink on cards and tints');
-  const nowMuted = num(/--stg-now-muted: var\(--registry-muted, color-mix\(in srgb, var\(--today-now-text\) (\d+)%, var\(--today-now\)\)\);/, 'the facts’ quiet label');
   const seg = num(/--stg-seg: var\(--card-rule, color-mix\(in srgb, var\(--text\) (\d+)%, var\(--stg-card\)\)\);/, 'the segment track');
-  const chip = num(/\.stg-chip\[data-state="active"\],[\s\S]*?\{[^}]*color: color-mix\(in srgb, var\(--today-receipt\) (\d+)%, var\(--text\)\);/, 'the Active chip text');
+  const chip = num(/\.stg-chip\[data-state="paired"\],[\s\S]*?\{[^}]*color: color-mix\(in srgb, var\(--today-receipt\) (\d+)%, var\(--text\)\);/, 'the Paired chip text');
   const onDark = num(/body\[data-theme="folio-dark"\] #settings-drawer \{ --stg-on: color-mix\(in srgb, var\(--accent-bg\) (\d+)%, #000\); \}/, 'Locus Dark’s filled button');
   const doneLight = num(/body\[data-theme-mode="light"\] \.stg-export\[data-state="done"\] \{ background: color-mix\(in srgb, var\(--today-receipt\) (\d+)%, #000\); \}/, 'the light themes’ done fill');
   const doneDark = num(/body\[data-theme-mode="dark"\] \.stg-export\[data-state="done"\] \{ color: color-mix\(in srgb, var\(--today-ground\) (\d+)%, #000\); \}/, 'the dark themes’ done text');
@@ -701,7 +690,6 @@ function testContrast() {
     const block = layer.match(new RegExp(`\\n${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\{[^}]*\\}`))?.[0] || '';
     ok(/color: var\(--stg-ink-2\);/.test(block), `${selector} uses the secondary ink`);
   }
-  ok(/\.stg-fact-k \{ color: var\(--stg-now-muted\);/.test(layer), 'the facts’ labels use their quiet label colour (finding R3-4)');
   const themesCss = read('themes.css');
   const darkTheme = {};
   for (const m of source.matchAll(/\{ id:'([\w-]+)',\s*label:'[^']*',\s*colors:\['#([0-9a-f]{6})'/g)) {
@@ -730,8 +718,8 @@ function testContrast() {
       'segment on its track': [ink, track],
       'shortcut status on its tint': [ink, mix(text, 0.05, card)],
       'section list on the page': [c('text2'), ground],
-      'fact label on the dark fact': [c('registry-muted') || mix(c('registry-text') || c('bg2'), nowMuted, now), now],
-      'Active chip on its green tint': [mix(receipt, chip, text), mix(receipt, 0.14, card)],
+      'fact text on its card': [text, card],
+      'Paired chip on its green tint': [mix(receipt, chip, text), mix(receipt, 0.14, card)],
       'Download on the filled button': [c('accent-text'), fill],
       'Download done': darkTheme[m[1]] ? [mix(ground, doneDark, black), receipt] : [white, mix(receipt, doneLight, black)],
     };
@@ -765,7 +753,7 @@ function testCi() {
   await testResetUndo();
   testContrast();
   testCi();
-  console.log(`Settings page contract tests passed: ${checks} checks (seven sections and the pill, switch rows, hidden descriptions, Privacy & data panes, rail and route exits, theme preview crossfade, companion off switch on the optional permission, the filling download, the reset Undo withdrawn by a newer choice, locales, CSS, 4.5:1 in 19 themes)`);
+  console.log(`Settings page contract tests passed: ${checks} checks (seven sections and the pill, switch rows, hidden descriptions, Privacy & data panes, rail and route exits, appearance controls, companion off switch on the optional permission, the filling download, the reset Undo withdrawn by a newer choice, locales, CSS, 4.5:1 in 19 themes)`);
 })().catch(error => {
   console.error(error);
   process.exitCode = 1;

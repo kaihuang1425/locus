@@ -40,8 +40,6 @@ for (const id of [
   'dp-privacy',
   'privacy-contract',
   'privacy-contract-title',
-  'privacy-screen-plugin',
-  'privacy-plugin-state',
   'privacy-mask-heading',
   'tog-blur',
   'privacy-status',
@@ -68,8 +66,10 @@ assert.match(dataHtml,
   /<button id="export-btn" class="stg-btn stg-btn-b stg-export"[^>]*type="button"[^>]*aria-describedby="data-backup-body data-export-hint"[\s\S]*id="import-json-btn"/,
   'backup must be the primary native action, with the download limit and restore path named');
 assert.match(privacyHtml,
-  /<details id="privacy-screen-plugin"[\s\S]*settings\.screenMaskPlugin[\s\S]*id="privacy-plugin-state"[^>]*data-state="available"[\s\S]*id="tog-blur"[^>]*data-settings-preference-control[^>]*aria-describedby="privacy-mask-hint privacy-mask-toggle-hint"/,
-  'the screen-share mask must stay inside one available, named local plugin');
+  /id="privacy-mask-heading"[^>]*data-i18n="settings\.screenSharing"[\s\S]*role="group" aria-labelledby="privacy-mask-heading"[\s\S]*id="tog-blur"[^>]*data-settings-preference-control[^>]*aria-describedby="privacy-mask-hint privacy-mask-toggle-hint"/,
+  'the screen-share mask must be a directly available, labelled setting');
+assert.equal(countId('privacy-screen-plugin') + countId('privacy-plugin-state'), 0,
+  'retired plugin wrappers must not return around the screen-sharing setting');
 assert.match(privacyHtml,
   /settings\.screenMaskHint">[^<]*(?:does not encrypt|不會加密)[^<]*</,
   'the plugin must distinguish display masking from stored-data security');
@@ -77,8 +77,8 @@ assert.match(privacyHtml,
   /id="privacy-status"[^>]*role="status"[^>]*aria-live="polite"[^>]*aria-atomic="true"[^>]*data-state="idle"/,
   'Privacy must expose one atomic persistence receipt');
 assert.doesNotMatch(privacyHtml,
-  /sp-privacy-hero|sp-privacy-shield|sp-privacy-checks|Privacy &amp; Security|Privacy & Security|Privacy blur mode|No tracking or analytics|style="|<svg/,
-  'Privacy must remove the promotional shield/checklist, vague security title, old blur language, inline style, and ornamental icons');
+  /sp-privacy-hero|sp-privacy-shield|sp-privacy-checks|Privacy &amp; Security|Privacy & Security|Privacy blur mode|No tracking or analytics|style="/,
+  'Privacy must remove the promotional shield/checklist, vague security title, old blur language, and inline style');
 
 assert.equal(manifest.host_permissions, undefined,
   'the exact zero-host-permission fact must remain true in the manifest');
@@ -105,11 +105,7 @@ for (const key of [
   'settings.privacyRecoveryLabel',
   'settings.privacyRecoveryValue',
   'settings.privacyRecoveryBody',
-  'settings.screenMaskPlugin',
-  'settings.screenMaskPluginHint',
-  'settings.screenMaskAvailable',
-  'settings.screenMaskActive',
-  'settings.screenMask',
+  'settings.screenSharing',
   'settings.screenMaskHint',
   'settings.screenMaskToggle',
   'settings.screenMaskToggleHint',
@@ -124,10 +120,10 @@ for (const key of [
 }
 assert.ok(source.includes("'settings.privacyData': '隱私與資料'"),
   'zh-TW must avoid claiming a broader Security surface');
-assert.ok(source.includes("'settings.privacyAccessValue': '零項網站存取權限'"),
-  'zh-TW must name host permissions in user-facing Taiwanese browser language');
-assert.ok(source.includes("'settings.screenMaskPlugin': '螢幕分享遮罩外掛'"),
-  'zh-TW must use the established local 外掛 terminology');
+assert.ok(source.includes("'settings.privacyAccessValue': '無法讀取網頁內容'"),
+  'zh-TW must describe the page-content boundary in the current approved copy');
+assert.ok(source.includes("'settings.screenSharing': '螢幕分享'"),
+  'zh-TW must use the current direct screen-sharing label');
 
 assert.match(privacyPrimitivesSource,
   /const PRIVACY_SETTING_KEYS = new Set\(\['blurPrivacy'\]\)[\s\S]*Object\.freeze\(\{ blurPrivacy: false \}\)/,
@@ -136,11 +132,11 @@ assert.match(privacyPrimitivesSource,
   /function privacySettingsPatchIsValid[\s\S]*entries\.length === 1[\s\S]*PRIVACY_SETTING_KEYS\.has[\s\S]*typeof entries\[0\]\[1\] === 'boolean'/,
   'Privacy must accept only one exact boolean patch');
 assert.match(privacyPrimitivesSource,
-  /function privacyScreenPluginIsActive[\s\S]*privacySettingValue\(settings, 'blurPrivacy'\) === true/,
+  /function privacyBlurIsOn[\s\S]*privacySettingValue\(settings, 'blurPrivacy'\) === true/,
   'the plugin Active state must derive from real compatible product state');
 assert.match(privacyControllerSource,
-  /function renderPrivacySettings[\s\S]*control\.checked = active[\s\S]*plugin\.open = active[\s\S]*plugin\.dataset\.locked[\s\S]*settings\.screenMaskActive[\s\S]*paintSettingsPreferenceBusy/,
-  'rendering must reconcile the toggle, legacy active state, disclosure, receipt, and Settings interlock');
+  /function renderPrivacySettings[\s\S]*privacyBlurIsOn\(settings\)[\s\S]*control\.checked = on[\s\S]*status\.dataset\.state = privacySettingsStatus\.state[\s\S]*paintSettingsPreferenceBusy/,
+  'rendering must reconcile the toggle, persistence receipt, and Settings interlock');
 assert.match(privacyControllerSource,
   /async function commitPrivacySettingsChange[\s\S]*State\.isRecoveryRequired[\s\S]*privacySettingsPending = transaction[\s\S]*applySettings\(\)[\s\S]*await State\.persistNow\(\)[\s\S]*State\.get\(\) !== state[\s\S]*State\.get\(\)\.settings !== settings[\s\S]*privacySettingsPatchFingerprint\(settings, keys\) !== expected[\s\S]*settings\.privacySaved/,
   'one controller must project, await one receipt, and reject state, owner, or touched-value drift before success');
@@ -161,9 +157,8 @@ assert.match(source,
 assert.match(source,
   /document\.getElementById\('tog-blur'\)\.onchange = e => \{[\s\S]*commitPrivacySettingsChange\(e\.target\.id, \{ blurPrivacy: !!e\.target\.checked \}\)/,
   'the retained toggle must use only the acknowledged Privacy controller');
-assert.match(source,
-  /const privacyPluginSummary[\s\S]*isPrivacySettingsPending\(\)[\s\S]*preventDefault\(\)[\s\S]*focusPrivacySettingsPendingControl\(\)/,
-  'the plugin disclosure must not close over its pending owner');
+assert.doesNotMatch(source, /const privacyPluginSummary/,
+  'the retired disclosure must not retain an unreachable event binding');
 assert.match(source,
   /const _closeDrawer = \(\) => \{[\s\S]*settingsPreferenceBlocksDismissal\(\)[\s\S]*focusSettingsPreferencePendingControl\(\)[\s\S]*return false/,
   'pending Privacy must block pointer dismissal and restore owner focus');
@@ -173,8 +168,7 @@ assert.match(source,
 
 for (const contract of [
   /\.stg-facts \{[^}]*display: grid;[^}]*grid-template-columns: repeat\(auto-fit, minmax\(170px, 1fr\)\)/,
-  /\.stg-facts \.privacy-fact \{[^}]*border-radius: 16px;[^}]*background: var\(--today-now\);[^}]*color: var\(--today-now-text\)/,
-  /\.stg-disc > summary\[aria-disabled="true"\],\n\.stg-disc\[data-locked="true"\] > summary \{ cursor: wait; \}/,
+  /\.stg-facts \.privacy-fact \{[^}]*border-radius: 16px;[^}]*background: var\(--stg-card\);[^}]*color: var\(--text\)/,
 ]) {
   assert.match(privacyCss, contract, `Privacy must use the Settings page layer: ${contract}`);
 }
@@ -185,8 +179,8 @@ assert.match(privacyCss,
   /@container \(max-width: 640px\) \{[\s\S]*\.stg-facts \{ grid-template-columns: repeat\(2, minmax\(0, 1fr\)\); gap: 8px; \}/,
   'the four facts must fold into two columns at phone width');
 assert.match(privacyCss,
-  /#settings-drawer :is\([^)]*\.stg-disc > summary\):focus-visible \{\n  outline: 2px solid var\(--index-focus, var\(--accent\)\);/,
-  'the native plugin disclosure must have a visible keyboard focus indicator');
+  /\.stg-sw-in:focus-visible \+ \.stg-sw-track \{ outline: 2px solid var\(--index-focus, var\(--accent\)\);/,
+  'the direct screen-sharing switch must have a visible keyboard focus indicator');
 assert.match(privacyCss,
   /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*#settings-drawer \*[\s\S]*transition:\s*none !important/,
   'Privacy must inherit the Settings reduced-motion boundary');
@@ -328,7 +322,7 @@ function buildHarness(overrides = {}) {
     '  commit: commitPrivacySettingsChange,\n' +
     '  pending: () => privacySettingsPending,\n' +
     '  status: () => ({ ...privacySettingsStatus }),\n' +
-    '  active: privacyScreenPluginIsActive,\n' +
+    '  active: privacyBlurIsOn,\n' +
     '};',
     Object.assign(context, { __calls: calls }),
   );

@@ -5,7 +5,7 @@
 </p>
 
 <p>
-  <a href="./manifest.json"><img src="https://img.shields.io/badge/version-v3.1.0-4f46e5?style=flat-square" alt="version v3.1.0"></a>
+  <a href="./manifest.json"><img src="https://img.shields.io/badge/version-v3.1.1-4f46e5?style=flat-square" alt="version v3.1.1"></a>
   <a href="./manifest.json"><img src="https://img.shields.io/badge/Manifest-MV3-0f766e?style=flat-square&logo=googlechrome&logoColor=white" alt="Manifest V3"></a>
   <img src="https://img.shields.io/badge/local--first-2563eb?style=flat-square" alt="local-first">
   <img src="https://img.shields.io/badge/host%20permissions-none-16a34a?style=flat-square" alt="no host permissions">
@@ -86,6 +86,20 @@ type:tab in:work domain:github.com "pull request" -is:done
 6. Open a new tab to launch Locus.
 
 After editing extension files, reload Locus from the browser extensions page.
+
+### Chrome Web Store preparation
+
+Version 3.1.1 has a reproducible, runtime-only packaging command:
+
+```sh
+python scripts/package-extension.py --output dist/chrome-web-store
+```
+
+Upload the resulting `locus-3.1.1-chrome-web-store.zip`, whose root contains
+`manifest.json`. The package excludes development files and the optional desktop
+companion. See the [privacy policy](./docs/PRIVACY.md) and
+[release preparation notes](./docs/STORE-PREPARATION.md). Store submission and the
+installed-browser release check remain pending.
 
 ### If a new tab opens something other than Locus
 
