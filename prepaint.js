@@ -35,7 +35,6 @@
   body.dataset.themeMode = darkThemes[theme] ? 'dark' : 'light';
   body.dataset.size = mirror.size || 'normal';
   body.dataset.font = mirror.font || 'dm';
-  body.dataset.width = mirror.width || 'normal';
   if (mirror.anim === 'off') body.dataset.anim = 'off';
 
   var reducedMotion = window.matchMedia

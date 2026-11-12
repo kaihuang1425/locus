@@ -22,6 +22,7 @@ function countId(id) {
 }
 
 const generalHtml = extractBetween('<!-- ── General ── -->', '<!-- ── Appearance ── -->', html);
+const aboutHtml = extractBetween('<!-- ── About ── -->', '<!-- Paste links import -->', html);
 // General's rows are drawn by the Settings page layer (2026-11 canvas board).
 const generalCss = extractBetween('   SETTINGS PAGE (2026-11 canvas)', '\n/* ----', css);
 const generalSource = extractBetween('const GENERAL_SETTING_KEYS', 'const CAPTURE_SETTING_CONTROL_IDS');
@@ -31,17 +32,17 @@ for (const id of [
   'general-preferences',
   'general-language-heading',
   'seg-language',
-  'general-opening-heading',
   'tog-hibernate',
-  'general-guide-heading',
   'show-tour-btn',
   'general-status',
-  'general-workspace-plugin',
-  'general-plugin-state',
-  'general-window-heading',
   'tog-autoswitch',
 ]) {
   assert.equal(countId(id), 1, 'General must preserve exactly one #' + id);
+}
+// Round 2 (Kai's decision 1): no Workspace extras plugin and no disclosure.
+for (const id of ['general-workspace-plugin', 'general-plugin-state', 'general-plugin-hint', 'general-window-heading',
+  'general-window-hint', 'general-opening-heading', 'general-opening-hint', 'general-guide-heading']) {
+  assert.equal(countId(id), 0, 'General no longer renders #' + id + ' (decision 1)');
 }
 // Just Today (2026-11-07): the calm new tab is gone, and with it the Welcome
 // screen toggle and the name it greeted.
@@ -72,18 +73,24 @@ for (const [controlId, hintId] of [
     new RegExp('id="' + controlId + '"[^>]*data-settings-preference-control[^>]*aria-describedby="' + hintId + '"'),
     '#' + controlId + ' must expose its exact effect to assistive technology');
 }
-assert.match(generalHtml,
-  /id="show-tour-btn"[^>]*type="button"[^>]*data-settings-preference-control[^>]*data-i18n="settings\.showTour"/,
-  'the first-save guide must remain one quiet native action in the core ledger');
+// The approved board moves the guide to About as "Welcome guide · Open guide".
+assert.match(aboutHtml,
+  /<span class="stg-l" id="about-guide-heading" data-i18n="settings\.welcomeGuide">Welcome guide<\/span>[\s\S]*<button id="show-tour-btn" class="stg-btn stg-go" type="button" data-settings-preference-control aria-describedby="about-guide-hint">\s*<span data-i18n="settings\.showTour">Open guide<\/span>/,
+  'the Welcome guide stays one quiet native action, now in About (the approved board)');
+assert.doesNotMatch(generalHtml, /show-tour-btn/, 'General no longer holds the guide');
 assert.match(generalHtml,
   /id="general-status"[^>]*role="status"[^>]*aria-live="polite"[^>]*aria-atomic="true"[^>]*data-state="idle"/,
   'General must expose one atomic persistence receipt');
+// Round 2, Kai's decision 1 (ported from "window switching must stay inside one
+// available local plugin"): an ordinary row that says what it does.
 assert.match(generalHtml,
-  /<details id="general-workspace-plugin"[\s\S]*settings\.workspacePlugin[\s\S]*id="general-plugin-state"[^>]*data-state="available"[\s\S]*id="tog-autoswitch"[\s\S]*<\/details>/,
-  'window switching must stay inside one available local plugin');
+  /<label class="stg-l" for="tog-autoswitch" data-i18n="settings\.autoSwitch">Switch Workspaces when I change windows<\/label>\s*<small class="sr-only" id="general-autoswitch-hint"[^>]*>When you focus a browser window, Locus opens the Workspace linked to it\.<\/small>/,
+  'window switching is the plain row "Switch Workspaces when I change windows", its effect kept as a hidden description (decision 1)');
+assert.doesNotMatch(generalHtml, /<details|plugin|Plugin|Available|data-state="available"/,
+  'General has no plugin disclosure and no Available chip (decision 1)');
 assert.match(generalHtml,
-  /id="general-plugin-hint"[^>]*data-i18n="settings\.workspacePluginHint">Optional browser-window switching\. Available locally and off by default\.<\/small>/,
-  'the static plugin fallback must disclose local availability and the inactive default');
+  /<label class="stg-l" for="tog-hibernate" data-i18n="settings\.hibernate">Ask before loading saved pages<\/label>/,
+  'the placeholder switch says what it does (the board\'s label)');
 assert.doesNotMatch(generalHtml,
   /Welcome screen|settings\.(?:welcomeScreen|showLanding|yourName|welcomeNamePlaceholder|saveWelcomeName)|general-plugin-controls|general-name-/,
   'the Workspace plugin must no longer offer a Welcome screen or a name for it');
@@ -93,32 +100,23 @@ assert.doesNotMatch(generalHtml,
 
 const languageIndex = generalHtml.indexOf('id="seg-language"');
 const hibernateIndex = generalHtml.indexOf('id="tog-hibernate"');
-const guideIndex = generalHtml.indexOf('id="show-tour-btn"');
-const pluginIndex = generalHtml.indexOf('id="general-workspace-plugin"');
-assert.ok(languageIndex >= 0 && languageIndex < hibernateIndex && hibernateIndex < guideIndex && guideIndex < pluginIndex,
-  'core language, saved-page opening, and first-save help must precede optional Workspace extras');
+const switchIndex = generalHtml.indexOf('id="tog-autoswitch"');
+assert.ok(languageIndex >= 0 && languageIndex < hibernateIndex && hibernateIndex < switchIndex,
+  'General reads Language, then saved-page loading, then window switching (the board)');
 
 for (const key of [
   'settings.generalSub',
   'settings.language',
   'settings.language.hint',
-  'settings.savedPageOpening',
-  'settings.savedPageOpeningHint',
   'settings.hibernate',
   'settings.hibernateHint',
   'settings.generalIdle',
   'settings.generalSaving',
   'settings.generalSaved',
   'settings.generalFailed',
-  'settings.workspacePlugin',
-  'settings.workspacePluginHint',
-  'settings.workspacePluginAvailable',
-  'settings.workspacePluginActive',
-  'settings.windowSwitching',
-  'settings.windowSwitchingHint',
   'settings.autoSwitch',
   'settings.autoSwitchHint',
-  'settings.tipsOnboarding',
+  'settings.welcomeGuide',
   'settings.firstSaveGuideHint',
   'settings.showTour',
 ]) {
@@ -134,17 +132,27 @@ for (const key of [
   'settings.yourNameHint',
   'settings.welcomeNamePlaceholder',
   'settings.saveWelcomeName',
+  // Round 2 (decision 1): the Workspace extras plugin and its disclosure.
+  'settings.workspacePlugin',
+  'settings.workspacePluginHint',
+  'settings.workspacePluginAvailable',
+  'settings.workspacePluginActive',
+  'settings.windowSwitching',
+  'settings.windowSwitchingHint',
+  'settings.savedPageOpening',
+  'settings.savedPageOpeningHint',
+  'settings.tipsOnboarding',
 ]) {
   assert.equal(source.split("    '" + key + "':").length - 1, 0, key + ' must be gone from English and zh-TW');
 }
-assert.ok(source.includes("'settings.workspacePlugin': '工作區外掛'"),
-  'zh-TW must use the native interface term 工作區外掛');
-assert.ok(source.includes("'settings.generalSub': '設定介面語言、已儲存網頁的開啟方式，以及選用的工作區功能。'"),
-  'zh-TW General scope must read naturally and preserve the core/plugin hierarchy');
-assert.ok(source.includes("'settings.workspacePluginHint': 'Optional browser-window switching. Available locally and off by default.'"),
-  'English plugin copy must state local availability and the inactive default');
-assert.ok(source.includes("'settings.workspacePluginHint': '選用的瀏覽器視窗切換功能；已內建，預設關閉。'"),
-  'zh-TW plugin copy must state local availability and the inactive default naturally');
+// Round 2, Kai's decision 1 (ported from "zh-TW must use the native interface
+// term 工作區外掛"): the row names its effect in Taiwan wording, with no 外掛.
+assert.ok(source.includes("'settings.autoSwitch': '切換視窗時一併切換工作區'"),
+  'zh-TW names window switching by what it does (decision 1)');
+assert.ok(source.includes("'settings.generalSub': '介面語言、已儲存網頁的開啟方式與視窗切換。'"),
+  'zh-TW General scope names its three rows naturally');
+assert.ok(source.includes("'settings.hibernate': '載入已儲存網頁前先詢問'"),
+  'zh-TW names the placeholder switch by what it does');
 const initialStateSource = extractBetween('const createInitialState = () => ({', '\n  });');
 assert.match(initialStateSource, /blurPrivacy:false, windowSync:false,/,
   'fresh state keeps its privacy and window defaults');
@@ -161,9 +169,11 @@ assert.doesNotMatch(generalSource, /showLanding|'profile'|profile-name|NameDraft
 assert.match(generalSource,
   /function generalSettingsPatchIsValid[\s\S]*entries\.length !== 1[\s\S]*SUPPORTED_LOCALES\.includes[\s\S]*typeof value !== 'boolean'/,
   'General must validate one exact language or boolean patch');
+assert.doesNotMatch(generalSource, /generalWorkspacePluginIsActive|general-workspace-plugin|general-plugin-state|workspacePlugin/,
+  'no Workspace plugin state is derived or painted any more (decision 1)');
 assert.match(generalSource,
-  /function generalWorkspacePluginIsActive\(settings\) \{\n  return generalSettingValue\(settings, 'autoSwitchWorkspace'\) === true;\n\}/,
-  'Workspace plugin Active state must derive from window switching, its one real setting');
+  /return \{ language, autoSwitch: generalSettingValue\(settings, 'autoSwitchWorkspace'\) === true \};/,
+  'General reports window switching from its one real setting');
 assert.match(generalSource,
   /const GENERAL_SETTING_DEFAULTS = Object\.freeze\(\{\n  hibernate: true,\n  autoSwitchWorkspace: false,\n\}\);/,
   'missing compatible bytes must retain Hibernate while window switching stays inactive');
@@ -198,10 +208,11 @@ for (const contract of [
   /\.stg-content\.sp-enter \{ animation: stgIn \.3s var\(--today-ease\) both; \}/,
   /\.stg-select \{[^}]*min-width: 220px;[^}]*max-width: 100%;[^}]*min-height: 44px;[^}]*border-radius: 12px/,
   /\.stg-row \{[^}]*display: flex;[^}]*flex-wrap: wrap;[^}]*min-height: 64px/,
-  /\.stg-disc > summary\[aria-disabled="true"\],\n\.stg-disc\[data-locked="true"\] > summary \{ cursor: wait; \}/,
 ]) {
   assert.match(generalCss, contract, 'General must use the Settings page layer: ' + contract);
 }
+assert.doesNotMatch(css, /\.stg-disc\b|\.stg-chev\b|\.stg-disc-body\b/,
+  'no disclosure styles remain: Settings has no plugins to open (decision 1)');
 // The board's motion (the springy knob, the rise of a disclosure) uses scale
 // and translate; decorative gradients and glass blur stay out.
 assert.doesNotMatch(generalCss, /(?:linear|radial|conic)-gradient\s*\(|backdrop-filter/,
@@ -296,7 +307,7 @@ function buildHarness(overrides) {
     '  commit: commitGeneralSettingsChange,\n' +
     '  pending: () => generalSettingsPending,\n' +
     '  status: () => ({ ...generalSettingsStatus }),\n' +
-    '  pluginActive: generalWorkspacePluginIsActive,\n' +
+    '  value: generalSettingValue,\n' +
     '};',
     Object.assign(context, { __calls: calls }),
   );
@@ -426,14 +437,14 @@ async function run() {
   assert.equal(blocked.calls.recoveries, 1,
     'recovery preflight must return to the existing recovery layer');
 
-  const plugin = buildHarness();
-  assert.equal(plugin.api.pluginActive(plugin.state().settings), false,
-    'a stored showLanding: true and a Welcome name must not mark the Workspace plugin active');
-  plugin.state().settings.autoSwitchWorkspace = true;
-  assert.equal(plugin.api.pluginActive(plugin.state().settings), true,
-    'the real window-switch setting must mark the Workspace plugin active');
-  assert.equal(plugin.api.pluginActive({}), false,
-    'missing bytes must keep the optional Workspace plugin available rather than active');
+  const windows = buildHarness();
+  assert.equal(windows.api.value(windows.state().settings, 'autoSwitchWorkspace'), false,
+    'a stored showLanding: true and a Welcome name do not turn window switching on');
+  assert.equal(windows.api.value({}, 'autoSwitchWorkspace'), false,
+    'missing bytes keep window switching off');
+  assert.equal(await windows.api.commit('tog-autoswitch', { autoSwitchWorkspace: true }), true,
+    'the plain row turns window switching on through the same acknowledged write');
+  assert.equal(windows.state().settings.autoSwitchWorkspace, true);
 
   console.log('General settings contract tests passed');
 }

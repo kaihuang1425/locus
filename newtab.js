@@ -60,8 +60,8 @@ const I18N = {
     'plan.autoTitle': 'Auto-plan',
     'plan.autoOn': 'Auto-plan is on',
     'plan.autoOff': 'Auto-plan is off',
-    'plan.rule.rollOver': 'Unfinished things move to tomorrow',
-    'plan.rule.warn': 'Warn me when a day has more than 5',
+    'plan.rule.rollOver': 'Move yesterday\'s unfinished to-dos to today',
+    'plan.rule.warn': 'Warn when a day has more than 5 to-dos',
     'plan.ruleFailed': 'Couldn’t save that rule',
     'plan.rolledOverOne': 'Moved 1 to today',
     'plan.rolledOver': 'Moved {count} to today',
@@ -444,79 +444,56 @@ const I18N = {
     'settings.archive': 'Archive',
     'settings.data': 'Import & Export',
     'settings.theme': 'Theme',
-    'settings.themeMode': 'Color mode',
-    'settings.themeModeHint': 'Follow this device, or keep Locus consistently light or dark.',
     'settings.theme.system': 'System',
     'settings.theme.systemHint': 'Matches this device',
     'settings.theme.light': 'Locus Light',
     'settings.theme.lightHint': 'Warm paper',
     'settings.theme.dark': 'Locus Dark',
     'settings.theme.darkHint': 'Low-glare ink',
-    'settings.language': 'Interface language',
+    'settings.language': 'Language',
     'settings.language.en': 'English',
     'settings.language.zhTW': 'Traditional Chinese',
     'settings.language.hint': 'New browser profiles start with the closest supported language.',
     'settings.itemSize': 'Item size',
-    'settings.densityHint': 'Change how much saved information fits on the board.',
+    'settings.densityHint': 'Sets the size of saved items on every page that lists them.',
     'settings.size.compact': 'Compact',
     'settings.size.normal': 'Normal',
     'settings.size.large': 'Large',
-    'settings.columnWidth': 'Column width',
-    'settings.columnWidthHint': 'Tune how much horizontal room each board column uses.',
-    'settings.width.narrow': 'Narrow',
-    'settings.width.normal': 'Normal',
-    'settings.width.wide': 'Wide',
     'settings.fontFamily': 'Typeface',
-    'settings.fontFamilyHint': 'Choose one locally bundled reading voice.',
-    'settings.font.sans': 'Sans serif',
-    'settings.font.serif': 'Serif',
-    'settings.font.mono': 'Monospace',
-    'settings.font.system': 'Device default',
     'settings.font.systemName': 'System font',
     'settings.closeTabs': 'Close tabs when saved',
-    'settings.hibernate': 'Open saved pages as placeholders',
-    'settings.hibernateHint': 'The website loads only after you choose Continue.',
+    'settings.hibernate': 'Ask before loading saved pages',
+    'settings.hibernateHint': 'A saved page opens as a Locus placeholder. The website loads only after you choose Continue.',
     'settings.showUrls': 'Show URLs on cards',
     'settings.showUrlsHint': 'Show the saved address below each page title.',
-    'settings.animations': 'Motion',
-    'settings.animationsHint': 'Use short transitions that explain a change of state.',
-    'settings.cardDetails': 'Card details',
-    'settings.cardDetailsHint': 'Keep useful context visible without adding another toolbar.',
+    'settings.animations': 'Animations',
+    'settings.animationsHint': 'Short movements that show what changed. Your device\'s reduced-motion setting also turns them off.',
     'settings.appearanceIdle': 'Appearance is stored in this browser profile.',
     'settings.appearanceSaving': 'Saving appearance…',
     'settings.appearanceSaved': 'Appearance saved in this browser profile.',
     'settings.appearanceFailed': 'Locus could not confirm this appearance change. Reload the latest saved data before continuing.',
-    'settings.stylePack': 'Style plugin',
-    'settings.stylePackHint': 'Optional local themes, typefaces, and column widths. Nothing is downloaded.',
-    'settings.stylePackAvailable': 'Available',
-    'settings.stylePackActive': 'Active',
-    'settings.moreThemes': 'More themes',
-    'settings.moreThemesHint': 'Use a local visual variant without changing saved content.',
-    'settings.stylePackReset': 'Use core defaults',
-    'settings.stylePackResetHint': 'Resets only optional theme, typeface, and width choices.',
-    'settings.autoSwitch': 'Follow the active browser window',
-    'settings.autoSwitchHint': 'Switch to the Workspace linked to that window.',
+    'settings.resetAppearance': 'Reset appearance',
+    'settings.resetAppearanceHint': 'Puts back Locus Light, DM Sans, Normal size, URLs and animations.',
+    'settings.resetAppearanceDone': 'Appearance reset',
+    'settings.preview': 'Preview',
+    'settings.previewGroup': 'Reading',
+    'settings.previewTodo': 'Book the Kyoto rail pass',
+    'settings.autoSwitch': 'Switch Workspaces when I change windows',
+    'settings.autoSwitchHint': 'When you focus a browser window, Locus opens the Workspace linked to it.',
     'settings.showTour': 'Open guide',
     'settings.shortcuts': 'Shortcuts',
     'settings.archivedItems': 'Archived items',
     'settings.storage': 'Storage',
     'settings.exportJson': 'Export all data as JSON',
     'settings.general': 'General',
-    'settings.generalSub': 'Language, saved-page opening, and optional Workspace extras.',
-    'settings.savedPageOpening': 'Saved pages',
-    'settings.savedPageOpeningHint': 'Choose whether reopening a saved page loads its website immediately.',
+    'settings.generalSub': 'Language, saved-page opening and window switching.',
     'settings.generalIdle': 'General preferences are stored in this browser profile.',
     'settings.generalSaving': 'Saving general preferences…',
     'settings.generalSaved': 'General preferences saved in this browser profile.',
     'settings.generalFailed': 'Locus could not confirm this preference change. Reload the latest saved data before continuing.',
-    'settings.workspacePlugin': 'Workspace extras plugin',
-    'settings.workspacePluginHint': 'Optional browser-window switching. Available locally and off by default.',
-    'settings.workspacePluginAvailable': 'Available',
-    'settings.workspacePluginActive': 'Active',
-    'settings.windowSwitching': 'Window switching',
-    'settings.windowSwitchingHint': 'Follow the Workspace linked to the browser window you focus.',
     'settings.firstSaveGuideHint': 'Review one open tab and its exact Workspace › Space › Inbox destination.',
-    'settings.appearanceSub': 'Color mode, density, and card details. Optional styles stay out of the way.',
+    'settings.welcomeGuide': 'Welcome guide',
+    'settings.appearanceSub': 'Theme, typeface, item size and animations.',
     'settings.capture': 'Capture',
     'settings.captureSub': 'Choose where browser tabs are saved and what happens after Locus confirms the copy.',
     'settings.captureContractTitle': 'What happens when you save',
@@ -527,7 +504,7 @@ const I18N = {
     'settings.captureSourceAction': 'Save starts only when you ask',
     'settings.captureLocalLabel': 'Confirmed local copy',
     'settings.captureAfterLabel': 'Source after receipt',
-    'settings.captureDestinationActive': 'Active Space › Inbox',
+    'settings.captureDestinationActive': 'Inbox of the Space you\'re in',
     'settings.captureDestinationPath': '{workspace} › {space} › {group}',
     'settings.captureDestinationUnavailable': 'Destination unavailable',
     'settings.captureDestinationUnavailableHint': 'Saving stops and the source tab stays open.',
@@ -547,22 +524,22 @@ const I18N = {
     'settings.capturePolicySaving': 'Saving capture preferences…',
     'settings.capturePolicySaved': 'Capture preferences saved in this browser profile.',
     'settings.capturePolicyFailed': 'Locus could not confirm this capture-preference change. Reload the latest saved data before continuing.',
-    'settings.captureDestinationHeading': 'Destination',
-    'settings.captureDestinationLabel': 'Quick saves go to',
+    'settings.captureDestinationHeading': 'Where saves go',
+    'settings.captureDestinationLabel': 'New saves go to',
     'settings.captureDestinationHint': 'Used by Save in the toolbar popup, the keyboard shortcut and the context menu. If unavailable, saving stops and the source tab stays open.',
     'settings.captureAsk': 'Ask where to save in the popup',
-    'settings.captureAskHint': 'Off: Save goes straight to the quick-save destination.',
-    'settings.captureRemember': 'Remember the last destination',
-    'settings.captureRememberHint': 'A popup choice becomes the next quick-save destination.',
+    'settings.captureAskHint': 'Off: Save goes straight to the place chosen above.',
+    'settings.captureRemember': 'Remember my last pick in the popup',
+    'settings.captureRememberHint': 'A place you pick in the popup becomes where new saves go.',
     'settings.captureSourceHeading': 'Source tab',
-    'settings.captureClose': 'Close after confirmed save',
+    'settings.captureClose': 'Close the tab once it\'s saved',
     'settings.captureCloseHint': 'An unconfirmed save never closes the source tab.',
-    'settings.captureRecordHeading': 'Saved record',
-    'settings.captureDedupe': 'Skip duplicate URLs',
+    'settings.captureRecordHeading': 'Each save',
+    'settings.captureDedupe': 'Skip pages already in that Inbox',
     'settings.captureDedupeHint': 'Do not add another record when the destination already has the same URL.',
-    'settings.captureTitle': 'Save page title',
+    'settings.captureTitle': 'Save the page title',
     'settings.captureTitleHint': 'When off, the site domain is used as the title.',
-    'settings.captureFavicon': 'Save site icon',
+    'settings.captureFavicon': 'Save the site icon',
     'settings.captureFaviconHint': 'Keep the browser-provided site icon reference with the local record.',
     'settings.shortcutsSub': 'Speed up your workflow with keyboard shortcuts.',
     'settings.privacySub': 'What Locus stores, can access, and how to recover it.',
@@ -574,7 +551,7 @@ const I18N = {
     'settings.dataBackupLoading': 'Reading current Locus data…',
     'settings.dataBackupSummary': '{workspaces} · {items} · about {size}',
     'settings.dataExportLimit': 'Locus can request the download, but cannot verify that the browser saved the file.',
-    'settings.downloadBackup': 'Download JSON backup',
+    'settings.downloadBackup': 'Download backup',
     'settings.dataRestoreTitle': 'Restore from a backup',
     'settings.dataRestoreBody': 'Choose a Locus or compatible legacy export. Review its contents and choose Merge or Replace before anything changes.',
     'settings.dataChooseStatus': 'No file selected. Current data is unchanged.',
@@ -585,15 +562,16 @@ const I18N = {
     'settings.dataReviewBlocked': 'Another recovery step is active. Finish it, then choose “{file}” again.',
     'settings.dataReviewCanceled': 'Review canceled. Current data is unchanged.',
     'settings.dataImportCompleted': 'Import completed. Choose another backup when needed.',
-    'settings.dataOtherTitle': 'Add into the current Space',
+    'settings.dataOtherTitle': 'Import into {space}',
+    'settings.dataOtherTitleFallback': 'Import into this Space',
     'settings.dataOtherBody': 'Bookmarks and pasted links add records; they do not restore a complete Locus backup.',
     'settings.bookmarksImporting': 'Importing bookmarks…',
     'settings.about': 'About Locus',
     'settings.aboutSub': 'Built with focus. Designed for your privacy.',
     'settings.profile': 'Local preferences',
-    'settings.tipsOnboarding': 'First-save guide',
-    'settings.globalShortcuts': 'In the browser',
-    'settings.customizeShortcuts': 'Customize',
+    'settings.globalShortcuts': 'Anywhere in the browser',
+    'settings.customizeShortcuts': 'Change keys',
+    'settings.setShortcut': 'Set key',
     'settings.globalShortcutsHint': 'These work anywhere in the browser and are managed by the browser itself.',
     'settings.inAppShortcuts': 'Inside Locus',
     'settings.searchShortcuts': 'Filter',
@@ -601,7 +579,8 @@ const I18N = {
     'settings.privacyData': 'Privacy & data',
     'settings.plan': 'Plan',
     'settings.planSub': 'Auto-plan rules and the optional AI companion.',
-    'settings.companion': 'Local AI companion',
+    'settings.companion': 'Connect the companion app',
+    'settings.companionHint': 'Plan with AI talks to a companion program installed on this computer. Turning this on asks the browser for permission.',
     'settings.companionPaired': 'Paired {id}',
     'settings.companionConnected': 'Companion connected',
     'settings.companionOff': 'AI companion off',
@@ -609,15 +588,14 @@ const I18N = {
     'settings.companionNotInstalled': 'Not installed',
     'settings.companionReload': 'Reload to connect',
     'settings.companionNotConnected': 'Not connected',
-    'settings.openInPlan': 'Open in Plan',
+    'settings.openPlanWithAi': 'Open Plan with AI',
     'settings.filterShortcuts': 'Filter shortcuts',
     'settings.clearShortcutsFilter': 'Clear',
     'settings.backupHeading': 'Backup',
     'settings.bookmarksLabel': 'Browser bookmarks',
-    'settings.linksLabel': 'Links',
+    'settings.linksLabel': 'A list of links',
     'settings.exportPreparing': 'Preparing…',
     'settings.exportRequested': 'Download requested',
-    'settings.stylePackResetDone': 'Style back to core defaults',
     'settings.noShortcuts': 'No shortcuts match.',
     'shortcuts.title': 'Keyboard shortcuts',
     'shortcuts.close': 'Close',
@@ -633,7 +611,7 @@ const I18N = {
     'shortcuts.undo': 'Undo the last change',
     'shortcuts.redo': 'Redo the last change',
     'shortcuts.focusTabFilter': 'Focus the opened-tabs filter',
-    'shortcuts.toggleCalendar': 'Open or close the reminders calendar',
+    'shortcuts.toggleCalendar': 'Open or close Calendar',
     'shortcuts.moveGroupFocus': 'Move between items in a Group',
     'shortcuts.activateFocusedItem': 'Open, complete, or expand the focused item',
     'shortcuts.moveFocusedItem': 'Move the focused item or selection',
@@ -644,29 +622,26 @@ const I18N = {
     'settings.privacyContractTitle': 'What Locus stores and can access',
     'settings.privacyFactsAria': 'Locus data and access facts',
     'settings.privacyStorageLabel': 'Storage',
-    'settings.privacyStorageValue': 'This browser profile',
+    'settings.privacyStorageValue': 'Stays in this browser',
     'settings.privacyStorageBody': 'Workspace data and preferences are stored locally for this browser profile.',
     'settings.privacyNetworkLabel': 'Locus network',
-    'settings.privacyNetworkValue': 'No backend connection',
+    'settings.privacyNetworkValue': 'No Locus servers',
     'settings.privacyNetworkBody': 'Extension pages cannot make network requests. Choosing Open still loads the saved website in a browser tab.',
     'settings.privacyAccessLabel': 'Browser access',
-    'settings.privacyAccessValue': 'Zero host permissions',
+    'settings.privacyAccessValue': 'Can\'t read what\'s on your pages',
     'settings.privacyAccessBody': 'Locus can manage tabs, bookmarks, storage, alarms, notifications, and favicons, but cannot automatically inspect page content.',
     'settings.privacyRecoveryLabel': 'Recovery',
-    'settings.privacyRecoveryValue': 'Manual JSON backup',
+    'settings.privacyRecoveryValue': 'Back up before uninstalling',
     'settings.privacyRecoveryBody': 'Uninstalling Locus or losing this profile can erase local data. Download a backup first.',
-    'settings.screenMaskPlugin': 'Screen-share mask plugin',
-    'settings.screenMaskPluginHint': 'Optional local display mask. It changes only what Locus displays.',
-    'settings.screenMaskAvailable': 'Available',
-    'settings.screenMaskActive': 'Active',
-    'settings.screenMask': 'Mask saved content',
+    'settings.screenSharing': 'Screen sharing',
     'settings.screenMaskHint': 'Obscures saved titles and locations in Locus and hides destinations in capture notifications. It does not encrypt, delete, or change saved data.',
-    'settings.screenMaskToggle': 'Use the screen-share mask',
-    'settings.screenMaskToggleHint': 'The mask stays on until you turn it off.',
-    'settings.privacyIdle': 'The screen-share mask setting is stored in this browser profile.',
-    'settings.privacySaving': 'Saving the screen-share mask setting…',
-    'settings.privacySaved': 'Screen-share mask setting saved in this browser profile.',
-    'settings.privacyFailed': 'Locus could not confirm this screen-share mask change. Reload the latest saved data before continuing.',
+    'settings.screenMaskToggle': 'Blur titles and places',
+    'settings.screenMaskToggleHint': 'The blur stays on until you turn it off.',
+    'settings.maskSample': 'Kyoto rail pass',
+    'settings.privacyIdle': 'The blur setting is stored in this browser profile.',
+    'settings.privacySaving': 'Saving the blur setting…',
+    'settings.privacySaved': 'Blur setting saved in this browser profile.',
+    'settings.privacyFailed': 'Locus could not confirm this blur change. Reload the latest saved data before continuing.',
     'settings.storageUsageAria': 'Exact browser-profile storage usage',
     'settings.storageChecking': 'Checking',
     'settings.storageRefresh': 'Check again',
@@ -679,7 +654,7 @@ const I18N = {
     'settings.storageStateUnavailable': 'Unavailable',
     'settings.storageHint': "The ruler shows Chrome's exact local-storage total for Locus in this browser profile.",
     'settings.storagePersistenceHint': 'Download a backup before uninstalling the extension or deleting this browser profile; either action removes the Locus data stored there.',
-    'settings.openArchive': 'Open archive',
+    'settings.openArchive': 'Open Archive',
     'settings.storageArchiveLoading': 'Checking Archive…',
     'settings.storageArchiveOne': '1 archived item · about {bytes}',
     'settings.storageArchiveMany': '{count} archived items · about {bytes}',
@@ -738,10 +713,6 @@ const I18N = {
     'paste.duplicateGroup': '{name}, group {position} of {count}',
     'settings.exportJsonHint': 'A complete backup of every workspace',
     'settings.exportHint': 'Exports are plain JSON. Keep the file yourself; compatibility with future versions is verified per release.',
-    'settings.proof.account': 'No account',
-    'settings.proof.server': 'No Locus server',
-    'settings.proof.host': 'No host permissions',
-    'settings.proof.export': 'User-managed JSON export',
     'landing.searchPlaceholder': 'Search saved work…',
     'landing.searchSaved': 'Search saved work',
     'palette.ariaLabel': 'Command palette',
@@ -1772,8 +1743,8 @@ const I18N = {
     'plan.autoTitle': '自動規劃',
     'plan.autoOn': '自動規劃已開啟',
     'plan.autoOff': '自動規劃已關閉',
-    'plan.rule.rollOver': '沒做完的事自動移到明天',
-    'plan.rule.warn': '一天超過 5 項時提醒我',
+    'plan.rule.rollOver': '把昨天沒做完的待辦移到今天',
+    'plan.rule.warn': '一天超過 5 項待辦時提醒我',
     'plan.ruleFailed': '無法儲存這項規則',
     'plan.rolledOverOne': '已將 1 項移到今天',
     'plan.rolledOver': '已將 {count} 項移到今天',
@@ -2156,79 +2127,56 @@ const I18N = {
     'settings.archive': '封存',
     'settings.data': '匯入與匯出',
     'settings.theme': '主題',
-    'settings.themeMode': '顯示模式',
-    'settings.themeModeHint': '跟隨此裝置的顯示模式，或固定使用 Locus 淺色或深色主題。',
     'settings.theme.system': '依照裝置',
     'settings.theme.systemHint': '跟隨此裝置',
     'settings.theme.light': 'Locus 淺色',
     'settings.theme.lightHint': '溫暖紙張',
     'settings.theme.dark': 'Locus 深色',
     'settings.theme.darkHint': '低眩光墨色',
-    'settings.language': '介面語言',
+    'settings.language': '語言',
     'settings.language.en': 'English',
     'settings.language.zhTW': '繁體中文',
     'settings.language.hint': '新的瀏覽器設定檔會先依瀏覽器語言選擇最接近的支援語言。',
     'settings.itemSize': '項目大小',
-    'settings.densityHint': '調整看板可同時顯示的儲存內容多寡。',
+    'settings.densityHint': '設定各頁面中已儲存項目的顯示大小。',
     'settings.size.compact': '精簡',
     'settings.size.normal': '標準',
     'settings.size.large': '大型',
-    'settings.columnWidth': '欄寬',
-    'settings.columnWidthHint': '調整看板每一欄的橫向空間。',
-    'settings.width.narrow': '窄',
-    'settings.width.normal': '標準',
-    'settings.width.wide': '寬',
     'settings.fontFamily': '字體',
-    'settings.fontFamilyHint': '選擇一款已內建於 Locus 的閱讀字體。',
-    'settings.font.sans': '無襯線體',
-    'settings.font.serif': '襯線體',
-    'settings.font.mono': '等寬字體',
-    'settings.font.system': '裝置預設',
     'settings.font.systemName': '系統字體',
     'settings.closeTabs': '儲存後關閉分頁',
-    'settings.hibernate': '先以預留頁開啟已儲存網頁',
-    'settings.hibernateHint': '選擇「繼續」後才會載入網站。',
+    'settings.hibernate': '載入已儲存網頁前先詢問',
+    'settings.hibernateHint': '已儲存的網頁會先以 Locus 預留頁開啟，選擇「繼續」後才會載入網站。',
     'settings.showUrls': '在卡片上顯示網址',
     'settings.showUrlsHint': '在每個網頁標題下方顯示儲存的網址。',
-    'settings.animations': '動態效果',
-    'settings.animationsHint': '使用短暫動態效果，協助辨識狀態變化。',
-    'settings.cardDetails': '卡片資訊',
-    'settings.cardDetailsHint': '保留實用資訊，不再增加工具列。',
+    'settings.animations': '動畫',
+    'settings.animationsHint': '以簡短的動態呈現變化；裝置開啟「減少動態效果」時也會關閉。',
     'settings.appearanceIdle': '外觀設定會儲存在這個瀏覽器設定檔中。',
     'settings.appearanceSaving': '正在儲存外觀設定…',
     'settings.appearanceSaved': '外觀設定已存入這個瀏覽器設定檔。',
     'settings.appearanceFailed': 'Locus 無法確認這次外觀變更是否已儲存。請重新載入最新資料後再繼續。',
-    'settings.stylePack': '樣式外掛',
-    'settings.stylePackHint': '選用更多本機主題、字體與欄寬。不會下載任何內容。',
-    'settings.stylePackAvailable': '可使用',
-    'settings.stylePackActive': '使用中',
-    'settings.moreThemes': '更多主題',
-    'settings.moreThemesHint': '套用本機視覺樣式，不會變更已儲存的內容。',
-    'settings.stylePackReset': '使用核心預設值',
-    'settings.stylePackResetHint': '只會重設選用的主題、字體與欄寬。',
-    'settings.autoSwitch': '跟隨目前使用的瀏覽器視窗',
-    'settings.autoSwitchHint': '切換至與該視窗連結的工作區。',
+    'settings.resetAppearance': '重設外觀',
+    'settings.resetAppearanceHint': '恢復 Locus 淺色、DM Sans、標準大小，並重新顯示網址與動畫。',
+    'settings.resetAppearanceDone': '外觀已重設',
+    'settings.preview': '預覽',
+    'settings.previewGroup': '閱讀',
+    'settings.previewTodo': '預訂京都鐵路周遊券',
+    'settings.autoSwitch': '切換視窗時一併切換工作區',
+    'settings.autoSwitchHint': '切換到某個瀏覽器視窗時，Locus 會開啟與該視窗連結的工作區。',
     'settings.showTour': '開啟引導',
     'settings.shortcuts': '快捷鍵',
     'settings.archivedItems': '封存項目',
     'settings.storage': '儲存空間',
     'settings.exportJson': '匯出所有資料為 JSON',
     'settings.general': '一般',
-    'settings.generalSub': '設定介面語言、已儲存網頁的開啟方式，以及選用的工作區功能。',
-    'settings.savedPageOpening': '已儲存網頁',
-    'settings.savedPageOpeningHint': '選擇重新開啟已儲存網頁時，是否要立即載入網站。',
+    'settings.generalSub': '介面語言、已儲存網頁的開啟方式與視窗切換。',
     'settings.generalIdle': '一般設定會儲存在此瀏覽器設定檔中。',
     'settings.generalSaving': '正在儲存一般設定…',
     'settings.generalSaved': '一般設定已儲存',
     'settings.generalFailed': '無法確認這項設定是否已儲存。請重新載入最新資料後再繼續。',
-    'settings.workspacePlugin': '工作區外掛',
-    'settings.workspacePluginHint': '選用的瀏覽器視窗切換功能；已內建，預設關閉。',
-    'settings.workspacePluginAvailable': '可使用',
-    'settings.workspacePluginActive': '使用中',
-    'settings.windowSwitching': '視窗切換',
-    'settings.windowSwitchingHint': '跟隨目前使用的瀏覽器視窗，開啟與該視窗連結的工作區。',
     'settings.firstSaveGuideHint': '檢查一個開啟中的分頁，以及確切的「工作區 › 空間 › 收件匣」儲存位置。',
-    'settings.appearanceSub': '調整顯示模式、項目大小與卡片資訊；其他樣式收在選用外掛中。',
+    'settings.welcomeGuide': '歡迎導覽',
+    'settings.appearanceSub': '主題、字體、項目大小與動畫。',
     'settings.capture': '擷取',
     'settings.captureSub': '選擇分頁的儲存位置，以及確認儲存後是否關閉原分頁。',
     'settings.captureContractTitle': '儲存分頁時會發生什麼事',
@@ -2239,7 +2187,7 @@ const I18N = {
     'settings.captureSourceAction': '只有主動要求時才會儲存',
     'settings.captureLocalLabel': '已確認儲存的副本',
     'settings.captureAfterLabel': '確認後的原分頁',
-    'settings.captureDestinationActive': '目前空間 › 收件匣',
+    'settings.captureDestinationActive': '目前所在空間的收件匣',
     'settings.captureDestinationPath': '{workspace} › {space} › {group}',
     'settings.captureDestinationUnavailable': '儲存位置無法使用',
     'settings.captureDestinationUnavailableHint': '無法確認儲存位置時，會停止儲存並保留原分頁。',
@@ -2260,19 +2208,19 @@ const I18N = {
     'settings.capturePolicySaved': '擷取偏好已存入這個瀏覽器設定檔。',
     'settings.capturePolicyFailed': 'Locus 無法確認這次擷取偏好是否已儲存。請重新載入最新資料後再繼續。',
     'settings.captureDestinationHeading': '儲存位置',
-    'settings.captureDestinationLabel': '快速儲存到',
+    'settings.captureDestinationLabel': '新儲存的項目放到',
     'settings.captureDestinationHint': '工具列彈出視窗的「儲存」、鍵盤快速鍵與右鍵選單都會存到這裡；若無法確認位置，會停止儲存並保留原分頁。',
     'settings.captureAsk': '在彈出視窗中詢問儲存位置',
-    'settings.captureAskHint': '關閉時，按「儲存」會直接存到快速儲存位置。',
-    'settings.captureRemember': '記住上次使用的位置',
-    'settings.captureRememberHint': '在彈出視窗選擇的位置，會成為下一次快速儲存位置。',
+    'settings.captureAskHint': '關閉時，按「儲存」會直接存到上方選擇的位置。',
+    'settings.captureRemember': '記住我在彈出視窗的上次選擇',
+    'settings.captureRememberHint': '在彈出視窗選擇的位置，會成為之後新儲存項目的位置。',
     'settings.captureSourceHeading': '原分頁',
-    'settings.captureClose': '確認儲存後關閉原分頁',
+    'settings.captureClose': '儲存完成後關閉分頁',
     'settings.captureCloseHint': '未確認儲存時不會關閉分頁。',
-    'settings.captureRecordHeading': '儲存紀錄',
-    'settings.captureDedupe': '略過重複網址',
+    'settings.captureRecordHeading': '每次儲存',
+    'settings.captureDedupe': '略過收件匣裡已有的網頁',
     'settings.captureDedupeHint': '目的地已有相同網址時，不再新增一筆。',
-    'settings.captureTitle': '儲存頁面標題',
+    'settings.captureTitle': '儲存網頁標題',
     'settings.captureTitleHint': '關閉後，改用網站網域作為標題。',
     'settings.captureFavicon': '儲存網站圖示',
     'settings.captureFaviconHint': '將瀏覽器提供的網站圖示參照保留在本機紀錄中。',
@@ -2286,7 +2234,7 @@ const I18N = {
     'settings.dataBackupLoading': '正在整理目前的 Locus 資料…',
     'settings.dataBackupSummary': '{workspaces} · {items} · 約 {size}',
     'settings.dataExportLimit': 'Locus 只能請瀏覽器下載檔案，無法確認檔案是否已儲存完成。',
-    'settings.downloadBackup': '下載 JSON 備份',
+    'settings.downloadBackup': '下載備份',
     'settings.dataRestoreTitle': '從備份還原',
     'settings.dataRestoreBody': '選擇 Locus 或支援的舊版匯出檔。任何資料變更前，都會先讓你檢查內容並選擇「合併」或「全部取代」。',
     'settings.dataChooseStatus': '尚未選擇檔案。目前資料沒有變更。',
@@ -2297,15 +2245,16 @@ const I18N = {
     'settings.dataReviewBlocked': '目前有其他復原步驟尚未完成。完成後，請再選擇一次「{file}」。',
     'settings.dataReviewCanceled': '已取消檢查。目前資料沒有變更。',
     'settings.dataImportCompleted': '匯入完成。需要時可再選擇其他備份。',
-    'settings.dataOtherTitle': '加入目前空間',
+    'settings.dataOtherTitle': '匯入到「{space}」',
+    'settings.dataOtherTitleFallback': '匯入到目前空間',
     'settings.dataOtherBody': '書籤與貼上的連結會新增項目，不會還原完整的 Locus 備份。',
     'settings.bookmarksImporting': '正在匯入書籤…',
     'settings.about': '關於 Locus',
     'settings.aboutSub': '為專注而生，為隱私而設計。',
     'settings.profile': '本機偏好設定',
-    'settings.tipsOnboarding': '首次儲存引導',
-    'settings.globalShortcuts': '瀏覽器中',
-    'settings.customizeShortcuts': '自訂',
+    'settings.globalShortcuts': '在瀏覽器任何地方',
+    'settings.customizeShortcuts': '變更按鍵',
+    'settings.setShortcut': '設定按鍵',
     'settings.globalShortcutsHint': '這些快捷鍵在瀏覽器任何地方都有效，由瀏覽器管理。',
     'settings.inAppShortcuts': 'Locus 內',
     'settings.searchShortcuts': '篩選',
@@ -2313,7 +2262,8 @@ const I18N = {
     'settings.privacyData': '隱私與資料',
     'settings.plan': '規劃',
     'settings.planSub': '自動規劃規則，以及選用的 AI 輔助程式。',
-    'settings.companion': '本機 AI 輔助程式',
+    'settings.companion': '連接輔助程式',
+    'settings.companionHint': '「用 AI 規劃」會與這台電腦上安裝的輔助程式連線；開啟時瀏覽器會先詢問權限。',
     'settings.companionPaired': '已配對 {id}',
     'settings.companionConnected': '已連接輔助程式',
     'settings.companionOff': '已關閉 AI 輔助程式',
@@ -2321,15 +2271,14 @@ const I18N = {
     'settings.companionNotInstalled': '尚未安裝',
     'settings.companionReload': '重新整理後再連接',
     'settings.companionNotConnected': '未連接',
-    'settings.openInPlan': '在規劃中開啟',
+    'settings.openPlanWithAi': '開啟「用 AI 規劃」',
     'settings.filterShortcuts': '篩選快捷鍵',
     'settings.clearShortcutsFilter': '清除',
     'settings.backupHeading': '備份',
     'settings.bookmarksLabel': '瀏覽器書籤',
-    'settings.linksLabel': '連結',
+    'settings.linksLabel': '一串連結',
     'settings.exportPreparing': '準備中…',
     'settings.exportRequested': '已要求下載',
-    'settings.stylePackResetDone': '已恢復核心樣式',
     'settings.noShortcuts': '沒有符合的快捷鍵',
     'shortcuts.title': '鍵盤快捷鍵',
     'shortcuts.close': '關閉',
@@ -2345,7 +2294,7 @@ const I18N = {
     'shortcuts.undo': '復原上一項變更',
     'shortcuts.redo': '重做上一項變更',
     'shortcuts.focusTabFilter': '將焦點移到已開啟分頁篩選器',
-    'shortcuts.toggleCalendar': '開啟或關閉提醒行事曆',
+    'shortcuts.toggleCalendar': '開啟或關閉行事曆',
     'shortcuts.moveGroupFocus': '在群組項目之間移動焦點',
     'shortcuts.activateFocusedItem': '開啟、完成或展開目前項目',
     'shortcuts.moveFocusedItem': '移動目前項目或所選項目',
@@ -2356,29 +2305,26 @@ const I18N = {
     'settings.privacyContractTitle': 'Locus 會儲存與存取哪些內容',
     'settings.privacyFactsAria': 'Locus 的資料與存取界線',
     'settings.privacyStorageLabel': '儲存位置',
-    'settings.privacyStorageValue': '此瀏覽器設定檔',
+    'settings.privacyStorageValue': '只存在這個瀏覽器',
     'settings.privacyStorageBody': '工作區資料與偏好會儲存在此瀏覽器設定檔的本機空間。',
     'settings.privacyNetworkLabel': 'Locus 網路連線',
-    'settings.privacyNetworkValue': '無後端連線',
+    'settings.privacyNetworkValue': '沒有 Locus 伺服器',
     'settings.privacyNetworkBody': '擴充功能頁面無法自行連上網路。你選擇「開啟」後，瀏覽器分頁仍會載入該網站。',
     'settings.privacyAccessLabel': '瀏覽器存取權',
-    'settings.privacyAccessValue': '零項網站存取權限',
+    'settings.privacyAccessValue': '無法讀取網頁內容',
     'settings.privacyAccessBody': 'Locus 可以管理分頁、書籤、儲存空間、排程、通知和網站圖示，但無法自動讀取網頁內容。',
     'settings.privacyRecoveryLabel': '資料救援',
-    'settings.privacyRecoveryValue': '手動 JSON 備份',
+    'settings.privacyRecoveryValue': '解除安裝前請先備份',
     'settings.privacyRecoveryBody': '解除安裝 Locus 或遺失此設定檔，可能會清除本機資料。請先下載備份。',
-    'settings.screenMaskPlugin': '螢幕分享遮罩外掛',
-    'settings.screenMaskPluginHint': '選用的本機顯示遮罩，只會改變 Locus 顯示的內容。',
-    'settings.screenMaskAvailable': '可使用',
-    'settings.screenMaskActive': '使用中',
-    'settings.screenMask': '隱藏已儲存內容',
+    'settings.screenSharing': '螢幕分享',
     'settings.screenMaskHint': '會遮住 Locus 中儲存的標題與位置，並隱藏擷取通知中的目的地。不會加密、刪除或變更已儲存的資料。',
-    'settings.screenMaskToggle': '使用螢幕分享遮罩',
-    'settings.screenMaskToggleHint': '開啟後會持續套用，直到你將它關閉。',
-    'settings.privacyIdle': '螢幕分享遮罩設定會儲存在此瀏覽器設定檔中。',
-    'settings.privacySaving': '正在儲存螢幕分享遮罩設定…',
-    'settings.privacySaved': '螢幕分享遮罩設定已儲存。',
-    'settings.privacyFailed': '無法確認這次螢幕分享遮罩變更是否已儲存。請重新載入最新資料後再繼續。',
+    'settings.screenMaskToggle': '模糊標題與位置',
+    'settings.screenMaskToggleHint': '開啟後會持續模糊，直到你將它關閉。',
+    'settings.maskSample': '京都鐵路周遊券',
+    'settings.privacyIdle': '模糊設定會儲存在此瀏覽器設定檔中。',
+    'settings.privacySaving': '正在儲存模糊設定…',
+    'settings.privacySaved': '模糊設定已儲存。',
+    'settings.privacyFailed': '無法確認這次模糊設定變更是否已儲存。請重新載入最新資料後再繼續。',
     'settings.storageUsageAria': '瀏覽器設定檔的本機儲存空間用量',
     'settings.storageChecking': '正在查看',
     'settings.storageRefresh': '重新查看',
@@ -2450,10 +2396,6 @@ const I18N = {
     'paste.duplicateGroup': '{name}，第 {position} 個群組，共 {count} 個',
     'settings.exportJsonHint': '所有工作區的完整備份',
     'settings.exportHint': '匯出為純 JSON。檔案由你自行保管；未來版本的相容性會逐版驗證。',
-    'settings.proof.account': '免帳號',
-    'settings.proof.server': '無 Locus 伺服器',
-    'settings.proof.host': '免主機權限',
-    'settings.proof.export': '使用者保管的 JSON 匯出',
     'landing.searchPlaceholder': '搜尋已儲存內容…',
     'landing.searchSaved': '搜尋已儲存內容',
     'palette.ariaLabel': '指令面板',
@@ -3601,7 +3543,7 @@ const State = (() => {
     workspaces: [], activeWsId: null, archive: [], trash: [], recentEmoji: [],
     columnWidths: {},
     settings: {
-      theme:'folio', size:'normal', font:'dm', width:'normal',
+      theme:'folio', size:'normal', font:'dm',
       language: browserLanguage(),
       closeTabOnSave:true, hibernate:true, showUrls:true,
       animate:true, confirmDelete:true, sidebarCollapsed:false,
@@ -6041,14 +5983,14 @@ const THEMES = [
   { id:'tabento',          label:'Rice Paper',       colors:['#f3ead7','#c2761a','#d2542f'] },
   { id:'tabento-dark',     label:'Lacquer',          colors:['#17120d','#f5b841','#ec6f4c'] },
   { id:'aurora',           label:'Aurora',           colors:['#0a0c14','#5eead4','#a78bfa'] },
-  { id:'dark',             label:'Dark',             colors:['#0b0b10','#6366f1','#9b9bb4'] },
-  { id:'light',            label:'Light',            colors:['#f4f4f7','#4f46e5','#52525e'] },
+  { id:'dark',             label:'Indigo Dark',      colors:['#0b0b10','#6366f1','#9b9bb4'] },
+  { id:'light',            label:'Indigo Light',     colors:['#f4f4f7','#4f46e5','#52525e'] },
   { id:'dracula',          label:'Dracula',          colors:['#282a36','#bd93f9','#50fa7b'] },
   { id:'nord',             label:'Nord',             colors:['#2e3440','#88c0d0','#a3be8c'] },
   { id:'rose-pine',        label:'Rosé Pine',        colors:['#191724','#eb6f92','#9ccfd8'] },
   { id:'tokyo-night',      label:'Tokyo Night',      colors:['#1a1b26','#7aa2f7','#bb9af7'] },
-  { id:'solarized-dark',   label:'Solar. Dark',      colors:['#002b36','#268bd2','#2aa198'] },
-  { id:'solarized-light',  label:'Solar. Light',     colors:['#fdf6e3','#268bd2','#859900'] },
+  { id:'solarized-dark',   label:'Solarized Dark',   colors:['#002b36','#268bd2','#2aa198'] },
+  { id:'solarized-light',  label:'Solarized Light',  colors:['#fdf6e3','#268bd2','#859900'] },
   { id:'gruvbox',          label:'Gruvbox',          colors:['#282828','#fabd2f','#b8bb26'] },
   { id:'catppuccin',       label:'Catppuccin',       colors:['#1e1e2e','#cba6f7','#f5c2e7'] },
   { id:'sepia',            label:'Sepia',            colors:['#f4ecd8','#8b4513','#5c7a2a'] },
@@ -6076,99 +6018,149 @@ function isDarkTheme(id) {
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5; // Rec.601 luma
 }
 
-const CORE_APPEARANCE_THEMES = Object.freeze([
-  {
-    id: 'auto',
-    labelKey: 'settings.theme.system',
-    hintKey: 'settings.theme.systemHint',
-    colors: ['#fffdf8', '#3158db', '#171d19'],
-    system: true,
-  },
-  {
-    id: 'folio',
-    labelKey: 'settings.theme.light',
-    hintKey: 'settings.theme.lightHint',
-    colors: ['#fffdf8', '#3158db', '#19231f'],
-  },
-  {
-    id: 'folio-dark',
-    labelKey: 'settings.theme.dark',
-    hintKey: 'settings.theme.darkHint',
-    colors: ['#171d19', '#8fa8ff', '#f4efe4'],
-  },
-]);
-
-function isCoreAppearanceTheme(id) {
-  return id === 'auto' || id === 'folio' || id === 'folio-dark';
-}
+// One theme picker (round 2, Kai's decision 1): System, Locus Light and Locus
+// Dark first, then every other bundled theme. Each card is a small Locus drawn
+// in that theme's own colours (themes.css tokens, scoped to the card's preview).
+// The cards are radios: arrows, Home and End pick and focus, and one ring
+// slides to the chosen card.
+const APPEARANCE_THEME_CHOICES = Object.freeze([
+  { id: 'auto', labelKey: 'settings.theme.system', hintKey: 'settings.theme.systemHint', system: true },
+  { id: 'folio', labelKey: 'settings.theme.light', hintKey: 'settings.theme.lightHint' },
+  { id: 'folio-dark', labelKey: 'settings.theme.dark', hintKey: 'settings.theme.darkHint' },
+  ...THEMES.filter(theme => theme.id !== 'folio' && theme.id !== 'folio-dark').map(theme => ({ id: theme.id, label: theme.label })),
+].map(choice => Object.freeze(choice)));
 
 function themeDisplayName(id) {
-  const core = CORE_APPEARANCE_THEMES.find(theme => theme.id === id);
-  if (core) return tr(core.labelKey);
-  return THEMES.find(theme => theme.id === id)?.label || String(id || '');
+  const choice = APPEARANCE_THEME_CHOICES.find(theme => theme.id === id);
+  if (!choice) return String(id || '');
+  return choice.labelKey ? tr(choice.labelKey) : choice.label;
 }
 
-function createThemeChoiceButton(theme, { compact = false } = {}) {
+const THEME_MINI_MARKUP = '<span class="stg-mrail"></span><span class="stg-mbody"><span class="stg-mh"></span><span class="stg-mnow"><i></i></span><span class="stg-mcards"><span><b></b><i></i></span><span><b></b><i></i></span></span></span>';
+
+function createThemeMini(id, half = false) {
+  const mini = document.createElement('span');
+  mini.className = half ? 'stg-mini is-half' : 'stg-mini';
+  // The theme's own tokens paint this preview only; the card keeps the page's.
+  mini.dataset.theme = id;
+  mini.innerHTML = THEME_MINI_MARKUP;
+  return mini;
+}
+
+function createThemeChoiceButton(choice) {
   const button = document.createElement('button');
   button.type = 'button';
-  button.id = `appearance-theme-${theme.id}`;
-  button.className = `theme-card${compact ? ' compact' : ''}`;
-  button.dataset.theme = theme.id;
+  button.id = `appearance-theme-${choice.id}`;
+  button.className = 'stg-tc';
+  button.setAttribute('role', 'radio');
+  button.setAttribute('aria-checked', 'false');
+  button.tabIndex = -1;
+  button.dataset.themeChoice = choice.id;
   button.dataset.appearanceTheme = 'true';
   button.dataset.settingsPreferenceControl = 'true';
-  if (theme.labelKey) button.dataset.themeLabelKey = theme.labelKey;
-  if (theme.hintKey) button.dataset.themeHintKey = theme.hintKey;
-  button.setAttribute('aria-pressed', 'false');
+  if (choice.hintKey) button.dataset.themeHintKey = choice.hintKey;
 
   const preview = document.createElement('span');
-  preview.className = `th-preview${theme.system ? ' system' : ''}`;
+  preview.className = 'stg-tprev';
   preview.setAttribute('aria-hidden', 'true');
-  const colors = Array.isArray(theme.colors) ? theme.colors : ['#fffdf8', '#3158db', '#19231f'];
-  for (const [index, color] of colors.slice(0, 3).entries()) {
-    const swatch = document.createElement('span');
-    swatch.className = `th-swatch swatch-${index + 1}`;
-    swatch.style.setProperty('--theme-swatch', color);
-    preview.appendChild(swatch);
-  }
-
-  const copy = document.createElement('span');
-  copy.className = 'th-copy';
+  // System shows Locus Light and Locus Dark as two flat halves.
+  preview.appendChild(createThemeMini(choice.system ? 'folio' : choice.id));
+  if (choice.system) preview.appendChild(createThemeMini('folio-dark', true));
   const name = document.createElement('span');
-  name.className = 'th-name';
-  name.textContent = theme.labelKey ? tr(theme.labelKey) : theme.label;
-  copy.appendChild(name);
-  if (theme.hintKey) {
+  name.className = 'stg-tn';
+  name.textContent = themeDisplayName(choice.id);
+  button.append(preview, name);
+  if (choice.hintKey) {
     const hint = document.createElement('span');
     hint.className = 'th-meta sr-only';
-    hint.textContent = tr(theme.hintKey);
-    copy.appendChild(hint);
+    hint.textContent = tr(choice.hintKey);
+    button.appendChild(hint);
   }
-
-  button.appendChild(preview);
-  button.appendChild(copy);
   button.onclick = () => {
-    void commitAppearanceSettingsChange(button.id, { theme: theme.id });
+    void commitAppearanceSettingsChange(button.id, { theme: choice.id });
   };
   return button;
 }
 
 function buildThemeGrid() {
   const grid = document.getElementById('theme-grid');
-  const packGrid = document.getElementById('theme-pack-grid');
-  if (!grid || !packGrid) return;
+  if (!grid) return;
   grid.textContent = '';
-  packGrid.textContent = '';
   const ring = document.createElement('span');
   ring.className = 'stg-ring';
   ring.setAttribute('aria-hidden', 'true');
+  ring.innerHTML = '<span class="stg-tchk"><svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M3.5 8.5l3 3 6-7" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
   grid.appendChild(ring);
-  for (const theme of CORE_APPEARANCE_THEMES) {
-    grid.appendChild(createThemeChoiceButton(theme));
-  }
-  for (const theme of THEMES.filter(candidate => !isCoreAppearanceTheme(candidate.id))) {
-    packGrid.appendChild(createThemeChoiceButton(theme, { compact: true }));
+  for (const choice of APPEARANCE_THEME_CHOICES) grid.appendChild(createThemeChoiceButton(choice));
+  grid.onkeydown = handleThemeGridKey;
+  if (typeof ResizeObserver === 'function' && !grid.dataset.observed) {
+    grid.dataset.observed = 'true';
+    // The grid changes its column count with the page width; the ring follows
+    // at once instead of sliding.
+    new ResizeObserver(() => placeThemeRing(grid, { instant: true })).observe(grid);
   }
   renderAppearanceSettings();
+}
+
+// Arrow keys move through the cards in reading order and wrap; Home and End go
+// to the first and last. Each move picks the theme and focuses its card.
+function handleThemeGridKey(event) {
+  const steps = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
+  if (!(event.key in steps) && event.key !== 'Home' && event.key !== 'End') return false;
+  const grid = event.currentTarget || document.getElementById('theme-grid');
+  const cards = [...(grid?.querySelectorAll('.stg-tc') || [])];
+  if (!cards.length) return false;
+  event.preventDefault();
+  const from = Math.max(0, cards.indexOf(document.activeElement) >= 0
+    ? cards.indexOf(document.activeElement)
+    : cards.findIndex(card => card.getAttribute('aria-checked') === 'true'));
+  const to = event.key === 'Home' ? 0
+    : event.key === 'End' ? cards.length - 1
+      : (from + steps[event.key] + cards.length) % cards.length;
+  const target = cards[to];
+  try { target.focus({ preventScroll: false }); } catch { target.focus(); }
+  if (target.getAttribute('aria-checked') !== 'true') target.click();
+  return true;
+}
+
+// The ring is measured from the chosen card, so it lands correctly at any
+// column count. The first placement (and a resize) does not slide; a new choice
+// slides there and its check pops.
+let appearanceRingTheme = '';
+function placeThemeRing(grid = document.getElementById('theme-grid'), { instant = false } = {}) {
+  const ring = grid?.querySelector('.stg-ring');
+  if (!ring) return false;
+  const card = grid.querySelector('.stg-tc[aria-checked="true"]');
+  if (!card || !card.offsetWidth) {
+    ring.classList.remove('is-on', 'is-live');
+    delete ring.dataset.box;
+    return false;
+  }
+  const box = [card.offsetLeft, card.offsetTop, card.offsetWidth, card.offsetHeight];
+  const id = card.dataset.themeChoice;
+  const moved = ring.dataset.box !== box.join(',');
+  const first = !ring.classList.contains('is-on');
+  if (first || instant) ring.classList.remove('is-live');
+  ring.style.setProperty('--stg-rx', `${box[0]}px`);
+  ring.style.setProperty('--stg-ry', `${box[1]}px`);
+  ring.style.setProperty('--stg-rw', `${box[2]}px`);
+  ring.style.setProperty('--stg-rh', `${box[3]}px`);
+  ring.dataset.box = box.join(',');
+  ring.classList.add('is-on');
+  if (first || instant) {
+    void ring.offsetWidth;
+    ring.classList.add('is-live');
+  }
+  if (!first && appearanceRingTheme && appearanceRingTheme !== id) {
+    const check = ring.querySelector('.stg-tchk');
+    if (check) {
+      check.classList.remove('is-pop');
+      void check.offsetWidth;
+      check.classList.add('is-pop');
+    }
+  }
+  appearanceRingTheme = id;
+  return moved;
 }
 
 const GENERAL_SETTING_KEYS = new Set([
@@ -6214,14 +6206,6 @@ function generalSettingsPatchIsValid(patch) {
   return true;
 }
 
-function generalWorkspacePluginIsActive(settings) {
-  return generalSettingValue(settings, 'autoSwitchWorkspace') === true;
-}
-
-function isGeneralSettingsPending() {
-  return !!generalSettingsPending;
-}
-
 function focusGeneralSettingsPendingControl() {
   const control = document.getElementById(generalSettingsPending?.controlId || '');
   if (!control || typeof control.focus !== 'function') return false;
@@ -6253,23 +6237,6 @@ function renderGeneralSettings() {
     if (control) control.checked = generalSettingValue(settings, key) === true;
   }
 
-  const plugin = document.getElementById('general-workspace-plugin');
-  const pluginState = document.getElementById('general-plugin-state');
-  const pluginActive = generalWorkspacePluginIsActive(settings);
-  if (pluginState) {
-    delete pluginState.dataset.i18n;
-    pluginState.dataset.state = pluginActive ? 'active' : 'available';
-    pluginState.textContent = tr(pluginActive
-      ? 'settings.workspacePluginActive'
-      : 'settings.workspacePluginAvailable');
-  }
-  const pluginSummary = plugin?.querySelector('summary');
-  if (plugin) {
-    plugin.dataset.locked = String(!!pending);
-    if (pending && plugin.contains(document.getElementById(pending.controlId))) plugin.open = true;
-  }
-  if (pluginSummary) pluginSummary.setAttribute('aria-disabled', String(!!pending));
-
   const status = document.getElementById('general-status');
   if (status) {
     delete status.dataset.i18n;
@@ -6277,7 +6244,7 @@ function renderGeneralSettings() {
     status.textContent = tr(generalSettingsStatus.key);
   }
   paintSettingsPreferenceBusy();
-  return { language, pluginActive };
+  return { language, autoSwitch: generalSettingValue(settings, 'autoSwitchWorkspace') === true };
 }
 
 function projectGeneralSettingsChange(keys) {
@@ -6523,6 +6490,10 @@ function captureSettingsDestinationOptions(state) {
   for (const entry of hierarchy.spaces) {
     const id = captureSettingsId(entry.space?.id);
     if (!id || idCounts.get(id) !== 1) continue;
+    // Only Spaces that have an Inbox are offered (round 2); a Space chosen
+    // earlier stays listed so the select never misstates the stored choice.
+    const inboxes = (Array.isArray(entry.space.groups) ? entry.space.groups : []).filter(group => group?.name === 'Inbox');
+    if (inboxes.length !== 1 && id !== requested) continue;
     const workspaceId = captureSettingsId(entry.workspace?.id);
     const exactWorkspace = workspaceId
       ? captureSettingsUniqueMatch(hierarchy.workspaces, candidate => candidate?.id === workspaceId)
@@ -6762,10 +6733,11 @@ async function commitCaptureSettingsChange(controlId, patch) {
   return true;
 }
 
+// Column width was removed (round 2, Kai's decision 2): a stored width is
+// carried untouched and never read, with no schema bump.
 const APPEARANCE_SETTING_KEYS = new Set([
   'theme',
   'size',
-  'width',
   'font',
   'showUrls',
   'animate',
@@ -6773,7 +6745,6 @@ const APPEARANCE_SETTING_KEYS = new Set([
 const APPEARANCE_SETTING_DEFAULTS = Object.freeze({
   theme: 'folio',
   size: 'normal',
-  width: 'normal',
   font: 'dm',
   showUrls: true,
   animate: true,
@@ -6799,7 +6770,6 @@ function appearanceSettingsPatchIsValid(patch) {
     if (!APPEARANCE_SETTING_KEYS.has(key)) return false;
     if (key === 'theme' && !(value === 'auto' || THEMES.some(theme => theme.id === value))) return false;
     if (key === 'size' && !['compact', 'normal', 'large'].includes(value)) return false;
-    if (key === 'width' && !['narrow', 'normal', 'wide'].includes(value)) return false;
     if (key === 'font' && !['dm', 'inter', 'geist', 'plex', 'lora', 'mono', 'geist-mono', 'system'].includes(value)) return false;
     if ((key === 'showUrls' || key === 'animate') && typeof value !== 'boolean') return false;
   }
@@ -6847,10 +6817,6 @@ function privacySettingsPatchIsValid(patch) {
     && typeof entries[0][1] === 'boolean';
 }
 
-function isPrivacySettingsPending() {
-  return !!privacySettingsPending;
-}
-
 function focusPrivacySettingsPendingControl() {
   const control = document.getElementById(privacySettingsPending?.controlId || '');
   if (!control || typeof control.focus !== 'function') return false;
@@ -6863,7 +6829,7 @@ function privacySettingsBlocksDismissal() {
   return !!privacySettingsPending && !!drawer && !drawer.classList.contains('hidden');
 }
 
-function privacyScreenPluginIsActive(settings) {
+function privacyBlurIsOn(settings) {
   return privacySettingValue(settings, 'blurPrivacy') === true;
 }
 
@@ -6885,19 +6851,22 @@ function settingsPreferenceBlocksDismissal() {
     || privacySettingsBlocksDismissal();
 }
 
-function appearanceStylePackIsActive(settings) {
-  const theme = normalizeThemeId(appearanceSettingValue(settings, 'theme'));
-  return !isCoreAppearanceTheme(theme)
-    || appearanceSettingValue(settings, 'font') !== 'dm'
-    || appearanceSettingValue(settings, 'width') !== 'normal';
+// Reset appearance puts back everything on Appearance: theme, typeface, item
+// size, URLs and animations (round 2). Only what differs is written.
+function appearanceResetPatch(settings) {
+  const patch = {};
+  for (const [key, value] of Object.entries(APPEARANCE_SETTING_DEFAULTS)) {
+    const current = appearanceSettingValue(settings, key);
+    const same = typeof value === 'boolean'
+      ? (current !== false) === value
+      : (key === 'theme' ? normalizeThemeId(current) : current) === value;
+    if (!same) patch[key] = value;
+  }
+  return patch;
 }
 
-function appearanceStylePackResetPatch(settings) {
-  const patch = {};
-  if (!isCoreAppearanceTheme(normalizeThemeId(appearanceSettingValue(settings, 'theme')))) patch.theme = 'folio';
-  if (appearanceSettingValue(settings, 'font') !== 'dm') patch.font = 'dm';
-  if (appearanceSettingValue(settings, 'width') !== 'normal') patch.width = 'normal';
-  return patch;
+function appearanceLookIsChanged(settings) {
+  return Object.keys(appearanceResetPatch(settings)).length > 0;
 }
 
 function renderAppearanceSettings() {
@@ -6906,42 +6875,40 @@ function renderAppearanceSettings() {
   if (!settings || typeof settings !== 'object' || Array.isArray(settings)) return null;
   const theme = normalizeThemeId(appearanceSettingValue(settings, 'theme'));
 
-  document.querySelectorAll('[data-appearance-theme]').forEach(button => {
-    const selected = button.dataset.theme === theme;
-    button.classList.toggle('active', selected);
-    button.setAttribute('aria-pressed', String(selected));
-    const name = button.querySelector('.th-name');
+  // The theme cards are radios with one tab stop: the chosen card, else the first.
+  const cards = [...document.querySelectorAll('[data-appearance-theme]')];
+  const chosen = cards.some(button => button.dataset.themeChoice === theme);
+  cards.forEach((button, index) => {
+    const selected = button.dataset.themeChoice === theme;
+    button.setAttribute('aria-checked', String(selected));
+    button.tabIndex = selected || (!chosen && index === 0) ? 0 : -1;
+    const name = button.querySelector('.stg-tn');
     const hint = button.querySelector('.th-meta');
-    if (name) name.textContent = button.dataset.themeLabelKey
-      ? tr(button.dataset.themeLabelKey)
-      : themeDisplayName(button.dataset.theme);
+    if (name) name.textContent = themeDisplayName(button.dataset.themeChoice);
     if (hint && button.dataset.themeHintKey) hint.textContent = tr(button.dataset.themeHintKey);
   });
 
-  for (const [id, key] of [['seg-size', 'size'], ['seg-width', 'width'], ['seg-font', 'font']]) {
-    document.querySelectorAll(`#${id} button`).forEach(button => {
-      const selected = button.dataset.val === appearanceSettingValue(settings, key);
-      button.classList.toggle('active', selected);
-      button.setAttribute('aria-pressed', String(selected));
-    });
+  document.querySelectorAll('#seg-size button').forEach(button => {
+    const selected = button.dataset.val === appearanceSettingValue(settings, 'size');
+    button.classList.toggle('active', selected);
+    button.setAttribute('aria-pressed', String(selected));
+  });
+  const font = document.getElementById('seg-font');
+  if (font) {
+    font.value = appearanceSettingValue(settings, 'font');
+    // The select shows the chosen typeface in its own face.
+    font.dataset.font = font.value;
   }
   for (const [id, key] of [['tog-urls', 'showUrls'], ['tog-anim', 'animate']]) {
     const control = document.getElementById(id);
     if (control) control.checked = appearanceSettingValue(settings, key) !== false;
   }
 
-  const packActive = appearanceStylePackIsActive(settings);
-  const pack = document.getElementById('appearance-style-pack');
-  if (pack && pack.dataset.initialized !== 'true') {
-    pack.open = packActive;
-    pack.dataset.initialized = 'true';
-  }
-  const packState = document.getElementById('appearance-pack-state');
-  if (packState) {
-    delete packState.dataset.i18n;
-    packState.dataset.state = packActive ? 'active' : 'available';
-    packState.textContent = tr(packActive ? 'settings.stylePackActive' : 'settings.stylePackAvailable');
-  }
+  // Reset appearance shows only when something differs from the defaults, and
+  // stays while its own write waits.
+  const changed = appearanceLookIsChanged(settings);
+  const resetRow = document.getElementById('appearance-reset-row');
+  if (resetRow) resetRow.hidden = !changed && appearanceSettingsPending?.controlId !== 'appearance-reset';
   const status = document.getElementById('appearance-status');
   if (status) {
     delete status.dataset.i18n;
@@ -6950,7 +6917,7 @@ function renderAppearanceSettings() {
   }
   if (typeof paintAppearanceChoices === 'function') paintAppearanceChoices(settings, theme);
   paintSettingsPreferenceBusy();
-  return { theme, packActive };
+  return { theme, changed };
 }
 
 async function commitAppearanceSettingsChange(controlId, patch) {
@@ -7018,7 +6985,7 @@ async function commitAppearanceSettingsChange(controlId, patch) {
   }
   appearanceSettingsPending = null;
   appearanceSettingsStatus = { key: 'settings.appearanceSaved', state: 'success' };
-  // A newer appearance choice ends an earlier "Use core defaults" Undo.
+  // A newer appearance choice ends an earlier Reset appearance Undo.
   withdrawAppearanceResetUndo();
   renderAppearanceSettings();
   return true;
@@ -7028,28 +6995,9 @@ function renderPrivacySettings() {
   const state = State.get();
   const settings = state?.settings;
   if (!settings || typeof settings !== 'object' || Array.isArray(settings)) return null;
-  const pending = privacySettingsPending;
-  const active = privacyScreenPluginIsActive(settings);
+  const on = privacyBlurIsOn(settings);
   const control = document.getElementById('tog-blur');
-  if (control) control.checked = active;
-
-  const plugin = document.getElementById('privacy-screen-plugin');
-  if (plugin && plugin.dataset.initialized !== 'true') {
-    plugin.open = active;
-    plugin.dataset.initialized = 'true';
-  }
-  if (plugin) {
-    plugin.dataset.locked = String(!!pending);
-    if (pending) plugin.open = true;
-  }
-  const pluginSummary = plugin?.querySelector('summary');
-  if (pluginSummary) pluginSummary.setAttribute('aria-disabled', String(!!pending));
-  const pluginState = document.getElementById('privacy-plugin-state');
-  if (pluginState) {
-    delete pluginState.dataset.i18n;
-    pluginState.dataset.state = active ? 'active' : 'available';
-    pluginState.textContent = tr(active ? 'settings.screenMaskActive' : 'settings.screenMaskAvailable');
-  }
+  if (control) control.checked = on;
   const status = document.getElementById('privacy-status');
   if (status) {
     delete status.dataset.i18n;
@@ -7057,7 +7005,7 @@ function renderPrivacySettings() {
     status.textContent = tr(privacySettingsStatus.key);
   }
   paintSettingsPreferenceBusy();
-  return { pluginActive: active };
+  return { on };
 }
 
 async function commitPrivacySettingsChange(controlId, patch) {
@@ -7251,10 +7199,12 @@ function shortcutRowsForSurface(surface, commands = null) {
     .filter(definition => definition.surfaces.includes(surface))
     .map(definition => {
       let keys = [...definition.keys];
+      let unset = false;
       if (definition.commandName && liveCommands) {
         const command = liveCommands.get(definition.commandName);
         if (command) {
           const shortcut = String(command.shortcut || '').trim();
+          unset = !shortcut;
           keys = shortcut ? shortcut.split('+').filter(Boolean) : [tr('shortcuts.notSet')];
         }
       }
@@ -7263,6 +7213,7 @@ function shortcutRowsForSurface(surface, commands = null) {
         commandName: definition.commandName || '',
         label: tr(definition.labelKey),
         keys,
+        unset,
       };
     });
 }
@@ -7294,6 +7245,28 @@ function renderShortcutRows(host, rows) {
   if (!host) return;
   host.textContent = '';
   rows.forEach(row => host.appendChild(shortcutRow(row.keys, row.label)));
+}
+
+// Settings' browser shortcuts: a command with no key says "Not set" and offers
+// Set key, which opens the browser's own shortcuts page (as Change keys does).
+function renderBrowserShortcutRows(host, rows) {
+  if (!host) return;
+  host.textContent = '';
+  rows.forEach(row => {
+    if (!row.unset) { host.appendChild(shortcutRow(row.keys, row.label)); return; }
+    const item = document.createElement('div');
+    item.className = 'sp-shortcut-row is-unset';
+    item.setAttribute('role', 'listitem');
+    item.innerHTML = `<span class="sp-shortcut-lbl">${esc(row.label)}</span><span class="stg-nset">${esc(row.keys[0])}</span><button type="button" class="stg-btn" data-shortcut-set>${esc(tr('settings.setShortcut'))}</button>`;
+    item.querySelector('[data-shortcut-set]').onclick = openBrowserShortcutSettings;
+    host.appendChild(item);
+  });
+}
+
+function openBrowserShortcutSettings() {
+  const url = /Edg\//.test(navigator.userAgent) ? 'edge://extensions/shortcuts' : 'chrome://extensions/shortcuts';
+  try { chrome.tabs.create({ url }); } catch { toast(tr('shortcuts.customizeFallback', { url }), { duration: 5000 }); }
+  return url;
 }
 
 function paintShortcutStatus(status, key, state = '') {
@@ -7329,12 +7302,12 @@ async function renderShortcutsSettings() {
   if (!globalList) return;
   const status = document.getElementById('shortcuts-global-status');
   const generation = ++shortcutSettingsGeneration;
-  renderShortcutRows(globalList, shortcutRowsForSurface('browser'));
+  renderBrowserShortcutRows(globalList, shortcutRowsForSurface('browser'));
   globalList.setAttribute('aria-busy', 'true');
   paintShortcutStatus(status, 'shortcuts.checkingBrowser', 'loading');
   const result = await readBrowserShortcutCommands();
   if (generation !== shortcutSettingsGeneration) return;
-  renderShortcutRows(globalList, shortcutRowsForSurface('browser', result.commands));
+  renderBrowserShortcutRows(globalList, shortcutRowsForSurface('browser', result.commands));
   globalList.setAttribute('aria-busy', 'false');
   paintShortcutStatus(status, result.failed ? 'shortcuts.browserFallback' : '', result.failed ? 'error' : '');
 }
@@ -7548,6 +7521,16 @@ function renderDataSettings() {
     fileStatus.dataset.state = dataTransferFileStatus.state;
   }
 
+  // Bookmarks and pasted links go into the Space you are in; the heading names it.
+  const importTitle = document.getElementById('data-other-space');
+  if (importTitle) {
+    delete importTitle.dataset.i18n;
+    const space = typeof activeCat === 'function' ? activeCat() : null;
+    importTitle.textContent = space?.name
+      ? tr('settings.dataOtherTitle', { space: space.name })
+      : tr('settings.dataOtherTitleFallback');
+  }
+
   const bookmarksButton = document.getElementById('bookmarks-btn');
   const bookmarksLabel = bookmarksButton?.querySelector('span');
   if (bookmarksButton) {
@@ -7705,70 +7688,13 @@ function springSettingsSwitch(input) {
   return true;
 }
 
-// Appearance: the ring slides to the chosen core mode, the size and width
-// thumbs slide to their choice, and the preview crossfades to the new theme.
-let appearancePreviewTheme = '';
-const APPEARANCE_PREVIEW_MARKUP = '<span class="stg-pv-rail"></span><span class="stg-pv-body"><span class="stg-pv-clock"></span><span class="stg-pv-now"><i></i></span><span class="stg-pv-cards"><span></span><span></span><span></span></span></span>';
-
-function settingsThemeColors(id) {
-  const core = CORE_APPEARANCE_THEMES.find(theme => theme.id === id);
-  return core?.colors || THEMES.find(theme => theme.id === id)?.colors || CORE_APPEARANCE_THEMES[1].colors;
-}
-
-function paintAppearancePreviewLayer(layer, id) {
-  const colors = settingsThemeColors(id);
-  layer.dataset.theme = id;
-  layer.classList.toggle('is-dark', id !== 'auto' && isDarkTheme(id));
-  layer.classList.toggle('is-split', id === 'auto');
-  layer.style.setProperty('--pv-ground', colors[0]);
-  layer.style.setProperty('--pv-accent', colors[1]);
-  layer.style.setProperty('--pv-ground-2', colors[2]);
-}
-
-function paintAppearancePreview(theme) {
-  const host = document.getElementById('appearance-preview');
-  if (!host) return false;
-  if (host.children.length !== 2) {
-    host.textContent = '';
-    for (let index = 0; index < 2; index++) {
-      const layer = document.createElement('span');
-      layer.className = 'stg-layer';
-      layer.innerHTML = APPEARANCE_PREVIEW_MARKUP;
-      host.appendChild(layer);
-    }
-    appearancePreviewTheme = '';
-  }
-  const [first, second] = host.children;
-  if (!appearancePreviewTheme) {
-    paintAppearancePreviewLayer(first, theme);
-    first.classList.add('is-front');
-    second.classList.remove('is-front');
-  } else if (appearancePreviewTheme !== theme) {
-    const front = first.classList.contains('is-front') ? first : second;
-    const back = front === first ? second : first;
-    paintAppearancePreviewLayer(back, theme);
-    back.classList.add('is-front');
-    front.classList.remove('is-front');
-  }
-  appearancePreviewTheme = theme;
-  return true;
-}
-
+// Appearance: the ring slides to the chosen theme card and the size thumb to
+// the chosen size. The Preview needs no painting: it draws with the page's own
+// theme, typeface, size, URL and animation settings.
 function paintAppearanceChoices(settings, theme) {
-  const grid = document.getElementById('theme-grid');
-  const index = CORE_APPEARANCE_THEMES.findIndex(core => core.id === theme);
-  if (grid) {
-    grid.style.setProperty('--stg-ring', String(Math.max(0, index)));
-    grid.dataset.ring = index < 0 ? 'off' : 'on';
-  }
-  for (const [id, key, values] of [
-    ['seg-size', 'size', ['compact', 'normal', 'large']],
-    ['seg-width', 'width', ['narrow', 'normal', 'wide']],
-  ]) {
-    const seg = document.getElementById(id);
-    if (seg) seg.style.setProperty('--stg-i', String(Math.max(0, values.indexOf(appearanceSettingValue(settings, key)))));
-  }
-  paintAppearancePreview(theme);
+  const seg = document.getElementById('seg-size');
+  if (seg) seg.style.setProperty('--stg-i', String(Math.max(0, ['compact', 'normal', 'large'].indexOf(appearanceSettingValue(settings, 'size')))));
+  return placeThemeRing(document.getElementById('theme-grid'));
 }
 
 // Plan: the two Auto-plan rules (Plan's own setting and receipt) and the
@@ -7871,11 +7797,11 @@ function openPlannerFromSettings() {
     : false;
 }
 
-// "Use core defaults" offers Undo on the shared receipt. That Undo puts back
-// the exact optional theme, typeface and width, but only while the reset is the
-// newest appearance change: as with a receipt whose Undo is no longer the
-// latest action, a later appearance change takes the Undo away (the message
-// stays and drains), so a newer choice is never overwritten.
+// Reset appearance offers Undo on the shared receipt. That Undo puts back the
+// exact previous theme, typeface, size, URLs and animations, but only while the
+// reset is the newest appearance change: as with a receipt whose Undo is no
+// longer the latest action, a later appearance change takes the Undo away (the
+// message stays and drains), so a newer choice is never overwritten (R3-7).
 let appearanceResetUndo = null;
 
 function withdrawAppearanceResetUndo() {
@@ -7886,21 +7812,27 @@ function withdrawAppearanceResetUndo() {
   return removeToastEntry(entry);
 }
 
-async function resetAppearanceStylePack(button) {
+async function resetAppearance(button) {
   const settings = State.get()?.settings || {};
-  const patch = appearanceStylePackResetPatch(settings);
+  const patch = appearanceResetPatch(settings);
   if (!Object.keys(patch).length) return false;
   const previous = Object.fromEntries(Object.keys(patch).map(key => [key, appearanceSettingValue(settings, key)]));
   if (!await commitAppearanceSettingsChange(button.id, patch)) return false;
-  toast(tr('settings.stylePackResetDone'), {
+  // The button leaves with the change; focus stays on the page, on Animations,
+  // so the receipt hands focus back there and Ctrl+Z still reaches the page.
+  const active = document.activeElement;
+  if (!active || active === document.body || active === button || !active.getClientRects?.().length) {
+    try { document.getElementById('tog-anim')?.focus({ preventScroll: true }); } catch {}
+  }
+  toast(tr('settings.resetAppearanceDone'), {
     actionLabel: tr('history.undoAction'),
-    action: () => undoAppearanceStylePackReset(button, patch, previous),
+    action: () => undoAppearanceReset(button, patch, previous),
   });
   appearanceResetUndo = toastFront();
   return true;
 }
 
-function undoAppearanceStylePackReset(button, patch, previous) {
+function undoAppearanceReset(button, patch, previous) {
   appearanceResetUndo = null;
   const settings = State.get()?.settings || {};
   // A newer choice (here or from another tab) is never overwritten.
@@ -7908,7 +7840,7 @@ function undoAppearanceStylePackReset(button, patch, previous) {
     return { message: tr('history.undoStale'), tone: 'warning' };
   }
   return commitAppearanceSettingsChange(button.id, previous).then(ok => (ok
-    ? { message: tr('history.undid', { action: tr('settings.stylePackReset') }), tone: 'info' }
+    ? { message: tr('history.undid', { action: tr('settings.resetAppearance') }), tone: 'info' }
     : { message: tr('toast.actionFailed'), tone: 'error' }));
 }
 
@@ -7970,7 +7902,6 @@ function applySettings() {
   document.body.dataset.themeMode = isDarkTheme(theme) ? 'dark' : 'light';
   document.body.dataset.size = s.size;
   document.body.dataset.font = s.font;
-  document.body.dataset.width = s.width || 'normal';
   document.body.dataset.showUrls = s.showUrls ? 'on' : 'off';
   document.body.dataset.anim = s.animate ? 'on' : 'off';
   document.body.classList.toggle('blur-privacy', !!s.blurPrivacy);
@@ -7980,7 +7911,7 @@ function applySettings() {
   try {
     localStorage.setItem('te_settings_mirror', JSON.stringify({
       theme: s.theme, size: s.size, font: s.font,
-      width: s.width || 'normal', anim: s.animate ? 'on' : 'off',
+      anim: s.animate ? 'on' : 'off',
       language
     }));
   } catch {}
@@ -38669,10 +38600,7 @@ function bindStatic() {
     shortcutsFilter.focus();
   };
   const shortcutsCustomize = document.getElementById('shortcuts-customize');
-  if (shortcutsCustomize) shortcutsCustomize.onclick = () => {
-    const url = /Edg\//.test(navigator.userAgent) ? 'edge://extensions/shortcuts' : 'chrome://extensions/shortcuts';
-    try { chrome.tabs.create({ url }); } catch { toast(tr('shortcuts.customizeFallback', { url }), { duration: 5000 }); }
-  };
+  if (shortcutsCustomize) shortcutsCustomize.onclick = openBrowserShortcutSettings;
   const storageRefreshBtn = document.getElementById('storage-refresh');
   if (storageRefreshBtn) storageRefreshBtn.onclick = () => {
     if (storageRefreshBtn.getAttribute('aria-disabled') === 'true') return;
@@ -38711,16 +38639,14 @@ function bindStatic() {
   document.querySelectorAll('#seg-size button').forEach(b => b.onclick = () => {
     void commitAppearanceSettingsChange(b.id, { size: b.dataset.val });
   });
-  document.querySelectorAll('#seg-width button').forEach(b => b.onclick = () => {
-    void commitAppearanceSettingsChange(b.id, { width: b.dataset.val });
-  });
-  document.querySelectorAll('#seg-font button').forEach(b => b.onclick = () => {
-    void commitAppearanceSettingsChange(b.id, { font: b.dataset.val });
-  });
-  const appearancePackReset = document.getElementById('appearance-pack-reset');
-  // The reset's receipt offers Undo, which puts back the exact optional theme,
-  // typeface, and width through the same acknowledged write.
-  if (appearancePackReset) appearancePackReset.onclick = () => { void resetAppearanceStylePack(appearancePackReset); };
+  const fontSelect = document.getElementById('seg-font');
+  if (fontSelect) fontSelect.onchange = e => {
+    void commitAppearanceSettingsChange(e.target.id, { font: e.target.value });
+  };
+  const appearanceReset = document.getElementById('appearance-reset');
+  // The reset's receipt offers Undo, which puts back the exact previous theme,
+  // typeface, size, URLs and animations through the same acknowledged write.
+  if (appearanceReset) appearanceReset.onclick = () => { void resetAppearance(appearanceReset); };
   const bindGeneralToggle = (id, key) => {
     const control = document.getElementById(id);
     if (!control) return;
@@ -38739,22 +38665,6 @@ function bindStatic() {
     void commitPrivacySettingsChange(e.target.id, { blurPrivacy: !!e.target.checked });
   };
   bindGeneralToggle('tog-autoswitch', 'autoSwitchWorkspace');
-  const workspacePlugin = document.getElementById('general-workspace-plugin');
-  const workspacePluginSummary = workspacePlugin?.querySelector('summary');
-  if (workspacePluginSummary) workspacePluginSummary.onclick = e => {
-    if (!isGeneralSettingsPending()) return;
-    e.preventDefault();
-    e.stopPropagation();
-    focusGeneralSettingsPendingControl();
-  };
-  const privacyPlugin = document.getElementById('privacy-screen-plugin');
-  const privacyPluginSummary = privacyPlugin?.querySelector('summary');
-  if (privacyPluginSummary) privacyPluginSummary.onclick = e => {
-    if (!isPrivacySettingsPending()) return;
-    e.preventDefault();
-    e.stopPropagation();
-    focusPrivacySettingsPendingControl();
-  };
 
   const captureDestination = document.getElementById('capture-destination');
   if (captureDestination) captureDestination.onchange = e => {

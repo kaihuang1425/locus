@@ -821,7 +821,7 @@
 
           <div class="stg-content" id="stg-content">
             <h2 class="stg-h" id="sp-title" data-i18n="settings.general">General</h2>
-            <p class="sr-only" id="sp-sub" data-i18n="settings.generalSub">Language, saved-page opening, and optional Workspace extras.</p>
+            <p class="sr-only" id="sp-sub" data-i18n="settings.generalSub">Language, saved-page opening and window switching.</p>
 
             <!-- ── General ── -->
             <div class="drawer-sections stg-pane" id="dp-general">
@@ -835,37 +835,17 @@
                       <option value="zh-TW" data-i18n="settings.language.zhTW">Traditional Chinese</option>
                     </select>
                   </div>
-                  <div class="stg-row" role="group" aria-labelledby="general-opening-heading" aria-describedby="general-opening-hint">
-                    <span class="sr-only" id="general-opening-heading" data-i18n="settings.savedPageOpening">Saved pages</span>
-                    <span class="sr-only" id="general-opening-hint" data-i18n="settings.savedPageOpeningHint">Choose whether reopening a saved page loads its website immediately.</span>
-                    <label class="stg-l" for="tog-hibernate" data-i18n="settings.hibernate">Open saved pages as placeholders</label>
-                    <small class="sr-only" id="general-hibernate-hint" data-i18n="settings.hibernateHint">The website loads only after you choose Continue.</small>
+                  <div class="stg-row">
+                    <label class="stg-l" for="tog-hibernate" data-i18n="settings.hibernate">Ask before loading saved pages</label>
+                    <small class="sr-only" id="general-hibernate-hint" data-i18n="settings.hibernateHint">A saved page opens as a Locus placeholder. The website loads only after you choose Continue.</small>
                     <span class="stg-sw"><input type="checkbox" role="switch" id="tog-hibernate" class="stg-sw-in" data-settings-preference-control aria-describedby="general-hibernate-hint" checked><span class="stg-sw-track" aria-hidden="true"><span class="stg-knob"></span></span></span>
                   </div>
-                  <div class="stg-row" role="group" aria-labelledby="general-guide-heading" aria-describedby="general-guide-hint">
-                    <span class="stg-l" id="general-guide-heading" data-i18n="settings.tipsOnboarding">First-save guide</span>
-                    <span class="sr-only" id="general-guide-hint" data-i18n="settings.firstSaveGuideHint">Review one open tab and its exact Workspace › Space › Inbox destination.</span>
-                    <button id="show-tour-btn" class="stg-btn" type="button" data-settings-preference-control data-i18n="settings.showTour">Open guide</button>
+                  <div class="stg-row">
+                    <label class="stg-l" for="tog-autoswitch" data-i18n="settings.autoSwitch">Switch Workspaces when I change windows</label>
+                    <small class="sr-only" id="general-autoswitch-hint" data-i18n="settings.autoSwitchHint">When you focus a browser window, Locus opens the Workspace linked to it.</small>
+                    <span class="stg-sw"><input type="checkbox" role="switch" id="tog-autoswitch" class="stg-sw-in" data-settings-preference-control aria-describedby="general-autoswitch-hint"><span class="stg-sw-track" aria-hidden="true"><span class="stg-knob"></span></span></span>
                   </div>
                 </div>
-
-                <details id="general-workspace-plugin" class="stg-card stg-disc">
-                  <summary aria-describedby="general-plugin-hint">
-                    <strong data-i18n="settings.workspacePlugin">Workspace extras plugin</strong>
-                    <small class="sr-only" id="general-plugin-hint" data-i18n="settings.workspacePluginHint">Optional browser-window switching. Available locally and off by default.</small>
-                    <span id="general-plugin-state" class="stg-chip" data-state="available" data-i18n="settings.workspacePluginAvailable">Available</span>
-                    <span class="stg-chev" aria-hidden="true"></span>
-                  </summary>
-                  <div class="stg-disc-body" role="group" aria-labelledby="general-window-heading" aria-describedby="general-window-hint">
-                    <span class="sr-only" id="general-window-heading" data-i18n="settings.windowSwitching">Window switching</span>
-                    <span class="sr-only" id="general-window-hint" data-i18n="settings.windowSwitchingHint">Follow the Workspace linked to the browser window you focus.</span>
-                    <div class="stg-row">
-                      <label class="stg-l" for="tog-autoswitch" data-i18n="settings.autoSwitch">Follow the active browser window</label>
-                      <small class="sr-only" id="general-autoswitch-hint" data-i18n="settings.autoSwitchHint">Switch to the Workspace linked to that window.</small>
-                      <span class="stg-sw"><input type="checkbox" role="switch" id="tog-autoswitch" class="stg-sw-in" data-settings-preference-control aria-describedby="general-autoswitch-hint"><span class="stg-sw-track" aria-hidden="true"><span class="stg-knob"></span></span></span>
-                    </div>
-                  </div>
-                </details>
 
                 <p id="general-status" class="stg-status" role="status" aria-live="polite" aria-atomic="true" data-state="idle" data-i18n="settings.generalIdle">General preferences are stored in this browser profile.</p>
               </section>
@@ -874,81 +854,82 @@
             <!-- ── Appearance ── -->
             <div class="drawer-sections stg-pane hidden" id="dp-appearance">
               <section id="appearance-profile" class="stg-group" aria-labelledby="appearance-theme-heading" aria-describedby="appearance-status" aria-busy="false">
-                <div class="stg-tprev" id="appearance-preview" aria-hidden="true"></div>
-                <h3 class="sr-only" id="appearance-theme-heading" data-i18n="settings.themeMode">Color mode</h3>
-                <p class="sr-only" id="appearance-theme-hint" data-i18n="settings.themeModeHint">Follow this device, or keep Locus consistently light or dark.</p>
-                <div class="stg-themes" id="theme-grid" role="group" aria-labelledby="appearance-theme-heading" aria-describedby="appearance-theme-hint"></div>
+                <h3 class="stg-gh" id="appearance-theme-heading" data-i18n="settings.theme">Theme</h3>
+                <!-- One picker for all themes: each card is a small Locus in its
+                     own colours; a ring slides to the chosen one. -->
+                <div class="stg-tgw">
+                  <div class="stg-themes" id="theme-grid" role="radiogroup" aria-labelledby="appearance-theme-heading"></div>
+                </div>
 
-                <div class="stg-card">
-                  <div class="stg-row">
-                    <span class="stg-l" id="appearance-density-heading" data-i18n="settings.itemSize">Item size</span>
-                    <span class="sr-only" id="appearance-density-hint" data-i18n="settings.densityHint">Change how much saved information fits on the board.</span>
-                    <div class="stg-seg" id="seg-size" role="group" aria-labelledby="appearance-density-heading" aria-describedby="appearance-density-hint">
-                      <span class="stg-thumb" aria-hidden="true"></span>
-                      <button id="appearance-size-compact" type="button" data-settings-preference-control data-val="compact" aria-pressed="false" data-i18n="settings.size.compact">Compact</button>
-                      <button id="appearance-size-normal" type="button" data-settings-preference-control data-val="normal" aria-pressed="true" data-i18n="settings.size.normal">Normal</button>
-                      <button id="appearance-size-large" type="button" data-settings-preference-control data-val="large" aria-pressed="false" data-i18n="settings.size.large">Large</button>
+                <div class="stg-card stg-split">
+                  <div class="stg-rows">
+                    <div class="stg-row">
+                      <label class="stg-l" for="seg-font" data-i18n="settings.fontFamily">Typeface</label>
+                      <select id="seg-font" class="stg-select stg-font" data-settings-preference-control data-font="dm">
+                        <option value="dm" data-font="dm">DM Sans</option>
+                        <option value="inter" data-font="inter">Inter</option>
+                        <option value="geist" data-font="geist">Geist</option>
+                        <option value="plex" data-font="plex">IBM Plex Sans</option>
+                        <option value="lora" data-font="lora">Lora</option>
+                        <option value="mono" data-font="mono">JetBrains Mono</option>
+                        <option value="geist-mono" data-font="geist-mono">Geist Mono</option>
+                        <option value="system" data-font="system" data-i18n="settings.font.systemName">System font</option>
+                      </select>
                     </div>
-                  </div>
-                  <div role="group" aria-labelledby="appearance-details-heading" aria-describedby="appearance-details-hint">
-                    <span class="sr-only" id="appearance-details-heading" data-i18n="settings.cardDetails">Card details</span>
-                    <span class="sr-only" id="appearance-details-hint" data-i18n="settings.cardDetailsHint">Keep useful context visible without adding another toolbar.</span>
+                    <div class="stg-row">
+                      <span class="stg-l" id="appearance-density-heading" data-i18n="settings.itemSize">Item size</span>
+                      <span class="sr-only" id="appearance-density-hint" data-i18n="settings.densityHint">Sets the size of saved items on every page that lists them.</span>
+                      <div class="stg-seg" id="seg-size" role="group" aria-labelledby="appearance-density-heading" aria-describedby="appearance-density-hint">
+                        <span class="stg-thumb" aria-hidden="true"></span>
+                        <button id="appearance-size-compact" type="button" data-settings-preference-control data-val="compact" aria-pressed="false" data-i18n="settings.size.compact">Compact</button>
+                        <button id="appearance-size-normal" type="button" data-settings-preference-control data-val="normal" aria-pressed="true" data-i18n="settings.size.normal">Normal</button>
+                        <button id="appearance-size-large" type="button" data-settings-preference-control data-val="large" aria-pressed="false" data-i18n="settings.size.large">Large</button>
+                      </div>
+                    </div>
                     <div class="stg-row">
                       <label class="stg-l" for="tog-urls" data-i18n="settings.showUrls">Show URLs on cards</label>
                       <small class="sr-only" id="appearance-urls-hint" data-i18n="settings.showUrlsHint">Show the saved address below each page title.</small>
                       <span class="stg-sw"><input type="checkbox" role="switch" id="tog-urls" class="stg-sw-in" data-settings-preference-control aria-describedby="appearance-urls-hint" checked><span class="stg-sw-track" aria-hidden="true"><span class="stg-knob"></span></span></span>
                     </div>
                     <div class="stg-row">
-                      <label class="stg-l" for="tog-anim" data-i18n="settings.animations">Motion</label>
-                      <small class="sr-only" id="appearance-motion-hint" data-i18n="settings.animationsHint">Use short transitions that explain a change of state.</small>
+                      <label class="stg-l" for="tog-anim" data-i18n="settings.animations">Animations</label>
+                      <small class="sr-only" id="appearance-motion-hint" data-i18n="settings.animationsHint">Short movements that show what changed. Your device's reduced-motion setting also turns them off.</small>
                       <span class="stg-sw"><input type="checkbox" role="switch" id="tog-anim" class="stg-sw-in" data-settings-preference-control aria-describedby="appearance-motion-hint" checked><span class="stg-sw-track" aria-hidden="true"><span class="stg-knob"></span></span></span>
                     </div>
                   </div>
+                  <!-- The Preview draws with the page's own theme, typeface, item
+                       size, URL and animation settings, so it shows each change. -->
+                  <figure class="stg-pv" id="appearance-preview" aria-labelledby="appearance-preview-cap">
+                    <figcaption class="stg-pvcap" id="appearance-preview-cap" data-i18n="settings.preview">Preview</figcaption>
+                    <div class="stg-pvg" aria-hidden="true">
+                      <div class="stg-pvcol">
+                        <div class="stg-pvh"><span data-i18n="settings.previewGroup">Reading</span><span class="stg-pvn">3</span></div>
+                        <div class="stg-pvlist">
+                          <div class="stg-pvc">
+                            <span class="stg-pvf is-a">I</span>
+                            <span class="stg-pvtx"><span class="stg-pv-title">Local-first software</span><span class="stg-pv-uw"><span class="stg-pv-url">inkandswitch.com</span></span></span>
+                          </div>
+                          <div class="stg-pvc">
+                            <span class="stg-pvf is-b">C</span>
+                            <span class="stg-pvtx"><span class="stg-pv-title">chrome.storage · Chrome for Developers</span><span class="stg-pv-uw"><span class="stg-pv-url">developer.chrome.com</span></span></span>
+                          </div>
+                          <div class="stg-pvc is-todo">
+                            <span class="stg-pvk"></span>
+                            <span class="stg-pvtx"><span class="stg-pv-title" data-i18n="settings.previewTodo">Book the Kyoto rail pass</span><span class="stg-pvtime"><span class="stg-pvbeat"></span>09:00</span></span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </figure>
                 </div>
 
-                <details id="appearance-style-pack" class="stg-card stg-disc">
-                  <summary aria-describedby="appearance-pack-hint">
-                    <strong data-i18n="settings.stylePack">Style plugin</strong>
-                    <small class="sr-only" id="appearance-pack-hint" data-i18n="settings.stylePackHint">Optional local themes, typefaces, and column widths. Nothing is downloaded.</small>
-                    <span id="appearance-pack-state" class="stg-chip" data-state="available" data-i18n="settings.stylePackAvailable">Available</span>
-                    <span class="stg-chev" aria-hidden="true"></span>
-                  </summary>
-                  <div class="stg-disc-body">
-                    <section aria-labelledby="appearance-pack-themes-heading" aria-describedby="appearance-pack-themes-hint">
-                      <h3 class="stg-sub-h" id="appearance-pack-themes-heading" data-i18n="settings.moreThemes">More themes</h3>
-                      <span class="sr-only" id="appearance-pack-themes-hint" data-i18n="settings.moreThemesHint">Use a local visual variant without changing saved content.</span>
-                      <div class="stg-packs" id="theme-pack-grid" role="group" aria-labelledby="appearance-pack-themes-heading"></div>
-                    </section>
-                    <div class="stg-row">
-                      <span class="stg-l" id="appearance-width-heading" data-i18n="settings.columnWidth">Column width</span>
-                      <span class="sr-only" id="appearance-width-hint" data-i18n="settings.columnWidthHint">Tune how much horizontal room each board column uses.</span>
-                      <div class="stg-seg" id="seg-width" role="group" aria-labelledby="appearance-width-heading" aria-describedby="appearance-width-hint">
-                        <span class="stg-thumb" aria-hidden="true"></span>
-                        <button id="appearance-width-narrow" type="button" data-settings-preference-control data-val="narrow" aria-pressed="false" data-i18n="settings.width.narrow">Narrow</button>
-                        <button id="appearance-width-normal" type="button" data-settings-preference-control data-val="normal" aria-pressed="true" data-i18n="settings.width.normal">Normal</button>
-                        <button id="appearance-width-wide" type="button" data-settings-preference-control data-val="wide" aria-pressed="false" data-i18n="settings.width.wide">Wide</button>
-                      </div>
-                    </div>
-                    <section aria-labelledby="appearance-font-heading" aria-describedby="appearance-font-hint">
-                      <h3 class="stg-sub-h" id="appearance-font-heading" data-i18n="settings.fontFamily">Typeface</h3>
-                      <span class="sr-only" id="appearance-font-hint" data-i18n="settings.fontFamilyHint">Choose one locally bundled reading voice.</span>
-                      <div class="stg-fonts" id="seg-font" role="group" aria-labelledby="appearance-font-heading">
-                        <button id="appearance-font-dm" type="button" data-settings-preference-control data-val="dm" aria-pressed="true"><span class="font-sample">DM Sans</span><span class="sr-only" data-i18n="settings.font.sans">Sans serif</span></button>
-                        <button id="appearance-font-inter" type="button" data-settings-preference-control data-val="inter" aria-pressed="false"><span class="font-sample">Inter</span><span class="sr-only" data-i18n="settings.font.sans">Sans serif</span></button>
-                        <button id="appearance-font-geist" type="button" data-settings-preference-control data-val="geist" aria-pressed="false"><span class="font-sample">Geist</span><span class="sr-only" data-i18n="settings.font.sans">Sans serif</span></button>
-                        <button id="appearance-font-plex" type="button" data-settings-preference-control data-val="plex" aria-pressed="false"><span class="font-sample">IBM Plex Sans</span><span class="sr-only" data-i18n="settings.font.sans">Sans serif</span></button>
-                        <button id="appearance-font-lora" type="button" data-settings-preference-control data-val="lora" aria-pressed="false"><span class="font-sample">Lora</span><span class="sr-only" data-i18n="settings.font.serif">Serif</span></button>
-                        <button id="appearance-font-mono" type="button" data-settings-preference-control data-val="mono" aria-pressed="false"><span class="font-sample">JetBrains Mono</span><span class="sr-only" data-i18n="settings.font.mono">Monospace</span></button>
-                        <button id="appearance-font-geist-mono" type="button" data-settings-preference-control data-val="geist-mono" aria-pressed="false"><span class="font-sample">Geist Mono</span><span class="sr-only" data-i18n="settings.font.mono">Monospace</span></button>
-                        <button id="appearance-font-system" type="button" data-settings-preference-control data-val="system" aria-pressed="false"><span class="font-sample" data-i18n="settings.font.systemName">System font</span><span class="sr-only" data-i18n="settings.font.system">Device default</span></button>
-                      </div>
-                    </section>
-                    <div class="stg-disc-foot">
-                      <button id="appearance-pack-reset" type="button" class="stg-btn" data-settings-preference-control aria-describedby="appearance-reset-hint" data-i18n="settings.stylePackReset">Use core defaults</button>
-                      <small class="sr-only" id="appearance-reset-hint" data-i18n="settings.stylePackResetHint">Resets only optional theme, typeface, and width choices.</small>
-                    </div>
-                  </div>
-                </details>
+                <div class="stg-reset" id="appearance-reset-row" hidden>
+                  <button id="appearance-reset" class="stg-btn" type="button" data-settings-preference-control aria-describedby="appearance-reset-hint">
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.5-3.6M3 2.5v3h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span data-i18n="settings.resetAppearance">Reset appearance</span>
+                  </button>
+                  <small class="sr-only" id="appearance-reset-hint" data-i18n="settings.resetAppearanceHint">Puts back Locus Light, DM Sans, Normal size, URLs and animations.</small>
+                </div>
 
                 <p id="appearance-status" class="stg-status" role="status" aria-live="polite" aria-atomic="true" data-state="idle" data-i18n="settings.appearanceIdle">Appearance is stored in this browser profile.</p>
               </section>
@@ -958,7 +939,7 @@
             <div class="drawer-sections stg-pane hidden" id="dp-capture">
               <!-- The settings-derived save contract stays as the section's
                    description for assistive technology; the board shows only
-                   the controls. -->
+                   the controls and a preview of the saved record. -->
               <section id="capture-contract" class="stg-contract sr-only" aria-labelledby="capture-contract-title" aria-describedby="capture-policy-status" aria-busy="false">
                 <h3 id="capture-contract-title" data-i18n="settings.captureContractTitle">What happens when you save</h3>
                 <p data-i18n="settings.captureContractBody">The source tab changes only after Locus confirms the local copy.</p>
@@ -983,50 +964,51 @@
                 </div>
               </section>
 
-              <h3 class="stg-gh" id="capture-destination-heading" data-i18n="settings.captureDestinationHeading">Destination</h3>
+              <h3 class="stg-gh" id="capture-destination-heading" data-i18n="settings.captureDestinationHeading">Where saves go</h3>
               <div class="stg-card capture-setting-controls" role="group" aria-labelledby="capture-destination-heading">
                 <div class="stg-row">
-                  <label class="stg-l" for="capture-destination" data-i18n="settings.captureDestinationLabel">Quick saves go to</label>
+                  <label class="stg-l" for="capture-destination" data-i18n="settings.captureDestinationLabel">New saves go to</label>
                   <select id="capture-destination" class="stg-select" data-settings-preference-control aria-describedby="capture-destination-hint"></select>
                   <small class="sr-only" id="capture-destination-hint" data-i18n="settings.captureDestinationHint">Used by Save in the toolbar popup, the keyboard shortcut and the context menu. If unavailable, saving stops and the source tab stays open.</small>
                 </div>
                 <div class="stg-row">
                   <label class="stg-l" for="tog-capture-ask" data-i18n="settings.captureAsk">Ask where to save in the popup</label>
-                  <small class="sr-only" id="capture-ask-hint" data-i18n="settings.captureAskHint">Off: Save goes straight to the quick-save destination.</small>
+                  <small class="sr-only" id="capture-ask-hint" data-i18n="settings.captureAskHint">Off: Save goes straight to the place chosen above.</small>
                   <span class="stg-sw"><input type="checkbox" role="switch" id="tog-capture-ask" class="stg-sw-in" data-settings-preference-control aria-describedby="capture-ask-hint"><span class="stg-sw-track" aria-hidden="true"><span class="stg-knob"></span></span></span>
                 </div>
                 <div class="stg-row">
-                  <label class="stg-l" for="tog-capture-remember" data-i18n="settings.captureRemember">Remember the last destination</label>
-                  <small class="sr-only" id="capture-remember-hint" data-i18n="settings.captureRememberHint">A popup choice becomes the next quick-save destination.</small>
+                  <label class="stg-l" for="tog-capture-remember" data-i18n="settings.captureRemember">Remember my last pick in the popup</label>
+                  <small class="sr-only" id="capture-remember-hint" data-i18n="settings.captureRememberHint">A place you pick in the popup becomes where new saves go.</small>
                   <span class="stg-sw"><input type="checkbox" role="switch" id="tog-capture-remember" class="stg-sw-in" data-settings-preference-control aria-describedby="capture-remember-hint" checked><span class="stg-sw-track" aria-hidden="true"><span class="stg-knob"></span></span></span>
                 </div>
               </div>
 
-              <h3 class="stg-gh" id="capture-source-heading" data-i18n="settings.captureSourceHeading">Source tab</h3>
-              <div class="stg-card capture-setting-controls" role="group" aria-labelledby="capture-source-heading">
-                <div class="stg-row">
-                  <label class="stg-l" for="tog-capture-close" data-i18n="settings.captureClose">Close after confirmed save</label>
-                  <small class="sr-only" id="capture-close-hint" data-i18n="settings.captureCloseHint">An unconfirmed save never closes the source tab.</small>
-                  <span class="stg-sw"><input type="checkbox" role="switch" id="tog-capture-close" class="stg-sw-in" data-settings-preference-control aria-describedby="capture-close-hint" checked><span class="stg-sw-track" aria-hidden="true"><span class="stg-knob"></span></span></span>
+              <h3 class="stg-gh" id="capture-record-heading" data-i18n="settings.captureRecordHeading">Each save</h3>
+              <div class="stg-card">
+                <div class="capture-setting-controls" role="group" aria-labelledby="capture-record-heading">
+                  <div class="stg-row">
+                    <label class="stg-l" for="tog-capture-title" data-i18n="settings.captureTitle">Save the page title</label>
+                    <small class="sr-only" id="capture-title-hint" data-i18n="settings.captureTitleHint">When off, the site domain is used as the title.</small>
+                    <span class="stg-sw"><input type="checkbox" role="switch" id="tog-capture-title" class="stg-sw-in" data-settings-preference-control aria-describedby="capture-title-hint" checked><span class="stg-sw-track" aria-hidden="true"><span class="stg-knob"></span></span></span>
+                  </div>
+                  <div class="stg-row">
+                    <label class="stg-l" for="tog-capture-favicon" data-i18n="settings.captureFavicon">Save the site icon</label>
+                    <small class="sr-only" id="capture-favicon-hint" data-i18n="settings.captureFaviconHint">Keep the browser-provided site icon reference with the local record.</small>
+                    <span class="stg-sw"><input type="checkbox" role="switch" id="tog-capture-favicon" class="stg-sw-in" data-settings-preference-control aria-describedby="capture-favicon-hint" checked><span class="stg-sw-track" aria-hidden="true"><span class="stg-knob"></span></span></span>
+                  </div>
+                  <div class="stg-row">
+                    <label class="stg-l" for="tog-capture-dedupe" data-i18n="settings.captureDedupe">Skip pages already in that Inbox</label>
+                    <small class="sr-only" id="capture-dedupe-hint" data-i18n="settings.captureDedupeHint">Do not add another record when the destination already has the same URL.</small>
+                    <span class="stg-sw"><input type="checkbox" role="switch" id="tog-capture-dedupe" class="stg-sw-in" data-settings-preference-control aria-describedby="capture-dedupe-hint" checked><span class="stg-sw-track" aria-hidden="true"><span class="stg-knob"></span></span></span>
+                  </div>
                 </div>
-              </div>
-
-              <h3 class="stg-gh" id="capture-record-heading" data-i18n="settings.captureRecordHeading">Saved record</h3>
-              <div class="stg-card capture-setting-controls" role="group" aria-labelledby="capture-record-heading">
-                <div class="stg-row">
-                  <label class="stg-l" for="tog-capture-dedupe" data-i18n="settings.captureDedupe">Skip duplicate URLs</label>
-                  <small class="sr-only" id="capture-dedupe-hint" data-i18n="settings.captureDedupeHint">Do not add another record when the destination already has the same URL.</small>
-                  <span class="stg-sw"><input type="checkbox" role="switch" id="tog-capture-dedupe" class="stg-sw-in" data-settings-preference-control aria-describedby="capture-dedupe-hint" checked><span class="stg-sw-track" aria-hidden="true"><span class="stg-knob"></span></span></span>
-                </div>
-                <div class="stg-row">
-                  <label class="stg-l" for="tog-capture-title" data-i18n="settings.captureTitle">Save page title</label>
-                  <small class="sr-only" id="capture-title-hint" data-i18n="settings.captureTitleHint">When off, the site domain is used as the title.</small>
-                  <span class="stg-sw"><input type="checkbox" role="switch" id="tog-capture-title" class="stg-sw-in" data-settings-preference-control aria-describedby="capture-title-hint" checked><span class="stg-sw-track" aria-hidden="true"><span class="stg-knob"></span></span></span>
-                </div>
-                <div class="stg-row">
-                  <label class="stg-l" for="tog-capture-favicon" data-i18n="settings.captureFavicon">Save site icon</label>
-                  <small class="sr-only" id="capture-favicon-hint" data-i18n="settings.captureFaviconHint">Keep the browser-provided site icon reference with the local record.</small>
-                  <span class="stg-sw"><input type="checkbox" role="switch" id="tog-capture-favicon" class="stg-sw-in" data-settings-preference-control aria-describedby="capture-favicon-hint" checked><span class="stg-sw-track" aria-hidden="true"><span class="stg-knob"></span></span></span>
+                <div class="capture-setting-controls" role="group" aria-labelledby="capture-source-heading">
+                  <span class="sr-only" id="capture-source-heading" data-i18n="settings.captureSourceHeading">Source tab</span>
+                  <div class="stg-row">
+                    <label class="stg-l" for="tog-capture-close" data-i18n="settings.captureClose">Close the tab once it's saved</label>
+                    <small class="sr-only" id="capture-close-hint" data-i18n="settings.captureCloseHint">An unconfirmed save never closes the source tab.</small>
+                    <span class="stg-sw"><input type="checkbox" role="switch" id="tog-capture-close" class="stg-sw-in" data-settings-preference-control aria-describedby="capture-close-hint" checked><span class="stg-sw-track" aria-hidden="true"><span class="stg-knob"></span></span></span>
+                  </div>
                 </div>
               </div>
 
@@ -1038,24 +1020,27 @@
               <h3 class="stg-gh" id="plan-rules-heading" data-i18n="plan.autoTitle">Auto-plan</h3>
               <div class="stg-card" role="group" aria-labelledby="plan-rules-heading">
                 <div class="stg-row">
-                  <label class="stg-l" for="tog-plan-rollover" data-i18n="plan.rule.rollOver">Unfinished things move to tomorrow</label>
+                  <label class="stg-l" for="tog-plan-rollover" data-i18n="plan.rule.rollOver">Move yesterday's unfinished to-dos to today</label>
                   <span class="stg-sw"><input type="checkbox" role="switch" id="tog-plan-rollover" class="stg-sw-in" data-plan-rule="planRollOver"><span class="stg-sw-track" aria-hidden="true"><span class="stg-knob"></span></span></span>
                 </div>
                 <div class="stg-row">
-                  <label class="stg-l" for="tog-plan-warn" data-i18n="plan.rule.warn">Warn me when a day has more than 5</label>
+                  <label class="stg-l" for="tog-plan-warn" data-i18n="plan.rule.warn">Warn when a day has more than 5 to-dos</label>
                   <span class="stg-sw"><input type="checkbox" role="switch" id="tog-plan-warn" class="stg-sw-in" data-plan-rule="planWarnOverload" checked><span class="stg-sw-track" aria-hidden="true"><span class="stg-knob"></span></span></span>
                 </div>
               </div>
-              <h3 class="stg-gh" id="plan-ai-heading" data-i18n="planner.title">Plan with AI</h3>
+              <div class="stg-ghrow">
+                <h3 class="stg-gh" id="plan-ai-heading" data-i18n="planner.title">Plan with AI</h3>
+                <button id="settings-open-planner" class="stg-btn stg-go" type="button">
+                  <span data-i18n="settings.openPlanWithAi">Open Plan with AI</span>
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+              </div>
               <div class="stg-card" role="group" aria-labelledby="plan-ai-heading">
                 <div class="stg-row">
-                  <label class="stg-l" for="tog-companion" data-i18n="settings.companion">Local AI companion</label>
+                  <label class="stg-l" for="tog-companion" data-i18n="settings.companion">Connect the companion app</label>
                   <span id="settings-companion-state" class="stg-chip" role="status" aria-live="polite" hidden></span>
-                  <span class="stg-sw"><input type="checkbox" role="switch" id="tog-companion" class="stg-sw-in" aria-describedby="settings-companion-state"><span class="stg-sw-track" aria-hidden="true"><span class="stg-knob"></span></span></span>
-                </div>
-                <div class="stg-row">
-                  <span class="stg-l" id="settings-planner-label" data-i18n="planner.title">Plan with AI</span>
-                  <button id="settings-open-planner" class="stg-btn" type="button" aria-describedby="settings-planner-label" data-i18n="settings.openInPlan">Open in Plan</button>
+                  <small class="sr-only" id="settings-companion-hint" data-i18n="settings.companionHint">Plan with AI talks to a companion program installed on this computer. Turning this on asks the browser for permission.</small>
+                  <span class="stg-sw"><input type="checkbox" role="switch" id="tog-companion" class="stg-sw-in" aria-describedby="settings-companion-state settings-companion-hint"><span class="stg-sw-track" aria-hidden="true"><span class="stg-knob"></span></span></span>
                 </div>
               </div>
             </div>
@@ -1063,9 +1048,9 @@
             <!-- ── Shortcuts ── -->
             <div class="drawer-sections stg-pane hidden" id="dp-shortcuts">
               <div class="stg-ghrow">
-                <h3 class="stg-gh" id="shortcuts-global-heading" data-i18n="settings.globalShortcuts">In the browser</h3>
+                <h3 class="stg-gh" id="shortcuts-global-heading" data-i18n="settings.globalShortcuts">Anywhere in the browser</h3>
                 <button id="shortcuts-customize" class="stg-btn" type="button" aria-describedby="shortcuts-global-hint">
-                  <span data-i18n="settings.customizeShortcuts">Customize</span>
+                  <span data-i18n="settings.customizeShortcuts">Change keys</span>
                   <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M6 3.5h6.5V10M12.5 3.5 4 12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 </button>
               </div>
@@ -1095,48 +1080,47 @@
             <div class="drawer-sections stg-pane hidden" id="dp-privacy">
               <section id="privacy-contract" class="stg-group" aria-labelledby="privacy-contract-title" aria-describedby="privacy-status" aria-busy="false">
                 <h3 class="sr-only" id="privacy-contract-title" data-i18n="settings.privacyContractTitle">What Locus stores and can access</h3>
+                <!-- Four light tiles; each keeps its plain explanation as a
+                     hidden description. -->
                 <div class="privacy-fact-grid stg-facts" role="list" data-i18n-aria-label="settings.privacyFactsAria" aria-label="Locus data and access facts">
                   <article class="privacy-fact" role="listitem">
-                    <span class="stg-fact-k" data-i18n="settings.privacyStorageLabel">Storage</span>
-                    <strong data-i18n="settings.privacyStorageValue">This browser profile</strong>
+                    <span class="stg-fi" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2.8 3.5h10.4v7H2.8zM1.3 12.8h13.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                    <span class="sr-only" data-i18n="settings.privacyStorageLabel">Storage</span>
+                    <strong data-i18n="settings.privacyStorageValue">Stays in this browser</strong>
                     <p class="sr-only" data-i18n="settings.privacyStorageBody">Workspace data and preferences are stored locally for this browser profile.</p>
                   </article>
                   <article class="privacy-fact" role="listitem">
-                    <span class="stg-fact-k" data-i18n="settings.privacyNetworkLabel">Locus network</span>
-                    <strong data-i18n="settings.privacyNetworkValue">No backend connection</strong>
+                    <span class="stg-fi" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M4.6 12.5h6.6a2.6 2.6 0 0 0 .5-5.2A3.6 3.6 0 0 0 4.9 6.6a3 3 0 0 0-.3 5.9zM2.5 2.5l11 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                    <span class="sr-only" data-i18n="settings.privacyNetworkLabel">Locus network</span>
+                    <strong data-i18n="settings.privacyNetworkValue">No Locus servers</strong>
                     <p class="sr-only" data-i18n="settings.privacyNetworkBody">Extension pages cannot make network requests. Choosing Open still loads the saved website in a browser tab.</p>
                   </article>
                   <article class="privacy-fact" role="listitem">
-                    <span class="stg-fact-k" data-i18n="settings.privacyAccessLabel">Browser access</span>
-                    <strong data-i18n="settings.privacyAccessValue">Zero host permissions</strong>
+                    <span class="stg-fi" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M1.5 8s2.4-4.5 6.5-4.5S14.5 8 14.5 8s-2.4 4.5-6.5 4.5S1.5 8 1.5 8zM8 9.8a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6zM2.5 2.5l11 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                    <span class="sr-only" data-i18n="settings.privacyAccessLabel">Browser access</span>
+                    <strong data-i18n="settings.privacyAccessValue">Can't read what's on your pages</strong>
                     <p class="sr-only" data-i18n="settings.privacyAccessBody">Locus can manage tabs, bookmarks, storage, alarms, notifications, and favicons, but cannot automatically inspect page content.</p>
                   </article>
                   <article class="privacy-fact recovery" role="listitem">
-                    <span class="stg-fact-k" data-i18n="settings.privacyRecoveryLabel">Recovery</span>
-                    <strong data-i18n="settings.privacyRecoveryValue">Manual JSON backup</strong>
+                    <span class="stg-fi" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 2v8m0 0l3-3m-3 3L5 7M3 12.5v1h10v-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                    <span class="sr-only" data-i18n="settings.privacyRecoveryLabel">Recovery</span>
+                    <strong data-i18n="settings.privacyRecoveryValue">Back up before uninstalling</strong>
                     <p class="sr-only" data-i18n="settings.privacyRecoveryBody">Uninstalling Locus or losing this profile can erase local data. Download a backup first.</p>
                   </article>
                 </div>
 
-                <details id="privacy-screen-plugin" class="stg-card stg-disc">
-                  <summary aria-describedby="privacy-plugin-hint">
-                    <strong data-i18n="settings.screenMaskPlugin">Screen-share mask plugin</strong>
-                    <small class="sr-only" id="privacy-plugin-hint" data-i18n="settings.screenMaskPluginHint">Optional local display mask. It changes only what Locus displays.</small>
-                    <span id="privacy-plugin-state" class="stg-chip" data-state="available" data-i18n="settings.screenMaskAvailable">Available</span>
-                    <span class="stg-chev" aria-hidden="true"></span>
-                  </summary>
-                  <div class="stg-disc-body" role="group" aria-labelledby="privacy-mask-heading">
-                    <span class="sr-only" id="privacy-mask-heading" data-i18n="settings.screenMask">Mask saved content</span>
+                <h3 class="stg-gh" id="privacy-mask-heading" data-i18n="settings.screenSharing">Screen sharing</h3>
+                <div class="stg-card" role="group" aria-labelledby="privacy-mask-heading">
+                  <div class="stg-row">
+                    <label class="stg-l" for="tog-blur" data-i18n="settings.screenMaskToggle">Blur titles and places</label>
+                    <span class="stg-msk" aria-hidden="true"><span class="stg-msk-t" data-i18n="settings.maskSample">Kyoto rail pass</span></span>
                     <span class="sr-only" id="privacy-mask-hint" data-i18n="settings.screenMaskHint">Obscures saved titles and locations in Locus and hides destinations in capture notifications. It does not encrypt, delete, or change saved data.</span>
-                    <div class="stg-row">
-                      <label class="stg-l" for="tog-blur" data-i18n="settings.screenMaskToggle">Use the screen-share mask</label>
-                      <small class="sr-only" id="privacy-mask-toggle-hint" data-i18n="settings.screenMaskToggleHint">The mask stays on until you turn it off.</small>
-                      <span class="stg-sw"><input type="checkbox" role="switch" id="tog-blur" class="stg-sw-in" data-settings-preference-control aria-describedby="privacy-mask-hint privacy-mask-toggle-hint"><span class="stg-sw-track" aria-hidden="true"><span class="stg-knob"></span></span></span>
-                    </div>
+                    <small class="sr-only" id="privacy-mask-toggle-hint" data-i18n="settings.screenMaskToggleHint">The blur stays on until you turn it off.</small>
+                    <span class="stg-sw"><input type="checkbox" role="switch" id="tog-blur" class="stg-sw-in" data-settings-preference-control aria-describedby="privacy-mask-hint privacy-mask-toggle-hint"><span class="stg-sw-track" aria-hidden="true"><span class="stg-knob"></span></span></span>
                   </div>
-                </details>
+                </div>
 
-                <p id="privacy-status" class="stg-status" role="status" aria-live="polite" aria-atomic="true" data-state="idle" data-i18n="settings.privacyIdle">The screen-share mask setting is stored in this browser profile.</p>
+                <p id="privacy-status" class="stg-status" role="status" aria-live="polite" aria-atomic="true" data-state="idle" data-i18n="settings.privacyIdle">The blur setting is stored in this browser profile.</p>
               </section>
             </div>
 
@@ -1166,7 +1150,10 @@
                 <div id="storage-breakdown" class="stg-legend" role="list" aria-label="Estimated Locus data breakdown" data-i18n-aria-label="settings.storageBreakdownAria" aria-describedby="storage-breakdown-hint storage-breakdown-total" aria-busy="true"></div>
                 <div class="stg-row" id="storage-archive-row">
                   <span class="stg-l"><span data-i18n="settings.archivedItems">Archived items</span> <small id="storage-archive-meta" class="stg-meta" aria-live="polite" aria-atomic="true" data-i18n="settings.storageArchiveLoading">Checking Archive…</small></span>
-                  <button id="storage-open-archive" class="stg-btn" type="button" data-i18n="settings.openArchive">Open archive</button>
+                  <button id="storage-open-archive" class="stg-btn stg-go" type="button">
+                    <span data-i18n="settings.openArchive">Open Archive</span>
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
                 </div>
               </div>
             </div>
@@ -1184,7 +1171,7 @@
                     <span class="stg-export-label">
                       <svg class="stg-export-ico" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2v8m0 0l3-3m-3 3L5 7M3 12.5v1h10v-1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
                       <svg class="stg-export-done" width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                      <span class="stg-export-text" data-i18n="settings.downloadBackup">Download JSON backup</span>
+                      <span class="stg-export-text" data-i18n="settings.downloadBackup">Download backup</span>
                     </span>
                   </button>
                 </section>
@@ -1196,23 +1183,23 @@
                   </button>
                   <input type="file" id="import-file" accept=".json" hidden>
                 </section>
-                <section class="stg-sources" aria-labelledby="data-other-title" aria-describedby="data-other-body">
-                  <span class="sr-only" id="data-other-title" data-i18n="settings.dataOtherTitle">Add into the current Space</span>
-                  <span class="sr-only" id="data-other-body" data-i18n="settings.dataOtherBody">Bookmarks and pasted links add records; they do not restore a complete Locus backup.</span>
-                  <div class="stg-row">
-                    <span class="stg-l" id="data-bookmarks-label" data-i18n="settings.bookmarksLabel">Browser bookmarks</span>
-                    <button id="bookmarks-btn" class="stg-btn" type="button" aria-describedby="data-other-body">
-                      <span data-i18n="settings.importBookmarks">Import bookmarks</span>
-                    </button>
-                  </div>
-                  <div class="stg-row">
-                    <span class="stg-l" id="data-links-label" data-i18n="settings.linksLabel">Links</span>
-                    <button id="paste-import-btn" class="stg-btn" type="button" aria-describedby="data-other-body">
-                      <span data-i18n="settings.pasteLinks">Paste links</span>
-                    </button>
-                  </div>
-                </section>
               </div>
+              <h3 class="stg-gh" id="data-other-title"><span id="data-other-space" data-i18n="settings.dataOtherTitleFallback">Import into this Space</span></h3>
+              <section class="stg-card stg-sources" aria-labelledby="data-other-title" aria-describedby="data-other-body">
+                <span class="sr-only" id="data-other-body" data-i18n="settings.dataOtherBody">Bookmarks and pasted links add records; they do not restore a complete Locus backup.</span>
+                <div class="stg-row">
+                  <span class="stg-l" id="data-bookmarks-label" data-i18n="settings.bookmarksLabel">Browser bookmarks</span>
+                  <button id="bookmarks-btn" class="stg-btn" type="button" aria-describedby="data-other-body">
+                    <span data-i18n="settings.importBookmarks">Import bookmarks</span>
+                  </button>
+                </div>
+                <div class="stg-row">
+                  <span class="stg-l" id="data-links-label" data-i18n="settings.linksLabel">A list of links</span>
+                  <button id="paste-import-btn" class="stg-btn" type="button" aria-describedby="data-other-body">
+                    <span data-i18n="settings.pasteLinks">Paste links</span>
+                  </button>
+                </div>
+              </section>
             </div>
 
             <!-- ── About ── -->
@@ -1225,13 +1212,15 @@
                     <small id="sp-about-version" class="stg-meta">Version 3.1.0</small>
                   </div>
                 </div>
-                <ul class="stg-proof">
-                  <li><svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="settings.proof.account">No account</span></li>
-                  <li><svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="settings.proof.server">No Locus server</span></li>
-                  <li><svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="settings.proof.host">No host permissions</span></li>
-                  <li><svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span data-i18n="settings.proof.export">Export anytime</span></li>
-                </ul>
-                <p class="stg-licence">Locus · by Eric · Locus Research and Contribution License</p>
+                <p class="stg-licence">By Eric · Locus Research and Contribution License</p>
+                <div class="stg-row" role="group" aria-labelledby="about-guide-heading">
+                  <span class="stg-l" id="about-guide-heading" data-i18n="settings.welcomeGuide">Welcome guide</span>
+                  <span class="sr-only" id="about-guide-hint" data-i18n="settings.firstSaveGuideHint">Review one open tab and its exact Workspace › Space › Inbox destination.</span>
+                  <button id="show-tour-btn" class="stg-btn stg-go" type="button" data-settings-preference-control aria-describedby="about-guide-hint">
+                    <span data-i18n="settings.showTour">Open guide</span>
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
+                </div>
               </div>
             </div>
           </div>

@@ -25,7 +25,7 @@ const appearanceHtml = extractBetween('<!-- ── Appearance ── -->', '<!--
 const appearanceCss = extractBetween('   SETTINGS PAGE (2026-11 canvas)', '\n/* ----', css);
 const appearanceSource = extractBetween('const APPEARANCE_SETTING_KEYS', '\n// SETTINGS PAGE');
 const appearanceCommitSource = extractBetween('async function commitAppearanceSettingsChange', '\nfunction renderPrivacySettings');
-const themeBuilderSource = extractBetween('const CORE_APPEARANCE_THEMES', '\nconst CAPTURE_SETTING_CONTROL_IDS');
+const themeBuilderSource = extractBetween('const APPEARANCE_THEME_CHOICES', '\nconst CAPTURE_SETTING_CONTROL_IDS');
 
 for (const id of [
   'dp-appearance',
@@ -37,16 +37,13 @@ for (const id of [
   'appearance-size-compact',
   'appearance-size-normal',
   'appearance-size-large',
-  'appearance-details-heading',
   'tog-urls',
   'tog-anim',
   'appearance-status',
-  'appearance-style-pack',
-  'appearance-pack-state',
-  'theme-pack-grid',
-  'seg-width',
   'seg-font',
-  'appearance-pack-reset',
+  'appearance-preview',
+  'appearance-reset-row',
+  'appearance-reset',
 ]) {
   assert.equal(countId(id), 1, `Appearance must preserve exactly one #${id}`);
 }
@@ -54,9 +51,10 @@ for (const id of [
 assert.match(appearanceHtml,
   /id="appearance-profile"[^>]*aria-labelledby="appearance-theme-heading"[^>]*aria-describedby="appearance-status"[^>]*aria-busy="false"/,
   'Appearance must expose one named, described, busy-capable preference boundary');
+// Round 2, Kai's decision 1: one picker for every theme, a named radio group.
 assert.match(appearanceHtml,
-  /id="theme-grid"[^>]*role="group"[^>]*aria-labelledby="appearance-theme-heading"[^>]*aria-describedby="appearance-theme-hint"/,
-  'the three core color modes must share one accessible group name and consequence');
+  /<h3 class="stg-gh" id="appearance-theme-heading" data-i18n="settings\.theme">Theme<\/h3>[\s\S]*id="theme-grid"[^>]*role="radiogroup"[^>]*aria-labelledby="appearance-theme-heading"/,
+  'every theme is one picker: a radio group under the visible Theme heading (decision 1)');
 assert.match(appearanceHtml,
   /id="seg-size"[^>]*role="group"[^>]*aria-labelledby="appearance-density-heading"[^>]*aria-describedby="appearance-density-hint"/,
   'density choices must share one accessible group name and explanation');
@@ -73,29 +71,57 @@ for (const [controlId, hintId] of [
 assert.match(appearanceHtml,
   /id="appearance-status"[^>]*role="status"[^>]*aria-live="polite"[^>]*aria-atomic="true"[^>]*data-state="idle"/,
   'Appearance must expose one atomic persistence receipt');
+// Round 2, Kai's decisions 1 and 2 (ported from "optional themes, typefaces,
+// and column width must stay inside one available local Style plugin").
+assert.doesNotMatch(appearanceHtml, /<details|plugin|Plugin|外掛|data-state="available"|>Available</,
+  'Appearance has no plugin disclosure and no Available chip: themes and the typeface are ordinary choices (decision 1)');
+assert.ok(appearanceHtml.indexOf('id="theme-grid"') < appearanceHtml.indexOf('id="seg-font"')
+  && appearanceHtml.indexOf('id="seg-font"') < appearanceHtml.indexOf('id="seg-size"')
+  && appearanceHtml.indexOf('id="seg-size"') < appearanceHtml.indexOf('id="tog-urls"')
+  && appearanceHtml.indexOf('id="tog-urls"') < appearanceHtml.indexOf('id="tog-anim"')
+  && appearanceHtml.indexOf('id="tog-anim"') < appearanceHtml.indexOf('id="appearance-preview"')
+  && appearanceHtml.indexOf('id="appearance-preview"') < appearanceHtml.indexOf('id="appearance-reset"'),
+  'Appearance reads Theme, then Typeface, Item size, Show URLs and Animations beside the Preview, then Reset appearance');
 assert.match(appearanceHtml,
-  /<details id="appearance-style-pack"[\s\S]*<strong data-i18n="settings\.stylePack">Style plugin<\/strong>[\s\S]*id="appearance-pack-state"[^>]*data-state="available"[\s\S]*id="theme-pack-grid"[\s\S]*id="seg-width"[\s\S]*id="seg-font"/,
-  'optional themes, typefaces, and column width must stay inside one available local Style plugin');
+  /<label class="stg-l" for="seg-font" data-i18n="settings\.fontFamily">Typeface<\/label>\s*<select id="seg-font" class="stg-select stg-font" data-settings-preference-control/,
+  'Typeface is an ordinary labelled row (decision 1)');
+assert.equal((appearanceHtml.match(/<option value="[a-z-]+" data-font="[a-z-]+"/g) || []).length, 8,
+  'all eight typefaces stay choosable, each shown in its own face');
+assert.equal(countId('seg-width') + countId('appearance-width-narrow') + countId('appearance-width-normal') + countId('appearance-width-wide'), 0,
+  'Column width is removed (decision 2)');
+assert.match(appearanceHtml,
+  /<figure class="stg-pv" id="appearance-preview" aria-labelledby="appearance-preview-cap">\s*<figcaption class="stg-pvcap" id="appearance-preview-cap" data-i18n="settings\.preview">Preview<\/figcaption>\s*<div class="stg-pvg" aria-hidden="true">/,
+  'the board\'s live Preview sits beside the controls, labelled, its sample hidden from assistive technology (decision 2)');
+assert.match(appearanceHtml,
+  /<div class="stg-reset" id="appearance-reset-row" hidden>\s*<button id="appearance-reset" class="stg-btn" type="button" data-settings-preference-control aria-describedby="appearance-reset-hint">/,
+  'Reset appearance is one hidden-until-changed action with its consequence described');
 assert.doesNotMatch(appearanceHtml, /theme-cycle-btn|Cycle theme|style="|clean &amp; modern|geometric minimal|coder/,
   'Appearance must remove the cycling shortcut, inline font residue, and prototype marketing labels');
 
+// Round 2, Kai's decision 1 (ported from "System, Locus Light, and Locus Dark
+// must be the only promoted color modes" and "legacy-compatible visual variants
+// must render only into the optional Style plugin").
 assert.match(themeBuilderSource,
-  /const CORE_APPEARANCE_THEMES = Object\.freeze\([\s\S]*id: 'auto'[\s\S]*id: 'folio'[\s\S]*id: 'folio-dark'/,
-  'System, Locus Light, and Locus Dark must be the only promoted color modes');
+  /const APPEARANCE_THEME_CHOICES = Object\.freeze\(\[\n  \{ id: 'auto'[^\n]*\n  \{ id: 'folio'[^\n]*\n  \{ id: 'folio-dark'[^\n]*\n  \.\.\.THEMES\.filter\(theme => theme\.id !== 'folio' && theme\.id !== 'folio-dark'\)/,
+  'System, Locus Light and Locus Dark come first, then every other bundled theme, in one picker (decision 1)');
 assert.match(themeBuilderSource,
-  /function createThemeChoiceButton[\s\S]*document\.createElement\('button'\)[\s\S]*button\.type = 'button'[\s\S]*aria-pressed[\s\S]*commitAppearanceSettingsChange/,
-  'every theme must be a native selected-state button using the acknowledged preference boundary');
+  /function createThemeChoiceButton[\s\S]*document\.createElement\('button'\)[\s\S]*button\.type = 'button'[\s\S]*setAttribute\('role', 'radio'\)[\s\S]*aria-checked[\s\S]*commitAppearanceSettingsChange/,
+  'every theme is a native button with the radio role and checked state, using the acknowledged preference boundary');
 assert.match(themeBuilderSource,
-  /for \(const theme of CORE_APPEARANCE_THEMES\)[\s\S]*grid\.appendChild[\s\S]*THEMES\.filter\(candidate => !isCoreAppearanceTheme\(candidate\.id\)\)[\s\S]*packGrid\.appendChild/,
-  'legacy-compatible visual variants must render only into the optional Style plugin');
+  /for \(const choice of APPEARANCE_THEME_CHOICES\) grid\.appendChild\(createThemeChoiceButton\(choice\)\);/,
+  'every theme renders into the one picker (decision 1)');
+assert.doesNotMatch(themeBuilderSource, /packGrid|theme-pack-grid|compact: true|isCoreAppearanceTheme/,
+  'no second, hidden theme grid remains');
+assert.match(themeBuilderSource,
+  /mini\.dataset\.theme = id;/,
+  'each card\'s preview carries its own theme, so it is drawn in that theme\'s colours');
 assert.doesNotMatch(themeBuilderSource, /card\.innerHTML|document\.createElement\('div'\).*theme-card|State\.persist\(\)|cycleTheme/,
   'theme construction must not restore pointer-only cards, fire-and-forget writes, or theme cycling');
 assert.doesNotMatch(source, /theme-cycle-btn|function cycleTheme\(|palette\.nextTheme|action\.cycleTheme/,
   'optional themes must not leak into a primary shortcut or cycling control');
 
 for (const key of [
-  'settings.themeMode',
-  'settings.themeModeHint',
+  'settings.theme',
   'settings.theme.system',
   'settings.theme.systemHint',
   'settings.theme.light',
@@ -103,45 +129,54 @@ for (const key of [
   'settings.theme.dark',
   'settings.theme.darkHint',
   'settings.densityHint',
-  'settings.columnWidthHint',
-  'settings.fontFamilyHint',
-  'settings.font.sans',
-  'settings.font.serif',
-  'settings.font.mono',
-  'settings.font.system',
+  'settings.fontFamily',
   'settings.font.systemName',
   'settings.showUrlsHint',
+  'settings.animations',
   'settings.animationsHint',
-  'settings.cardDetails',
-  'settings.cardDetailsHint',
   'settings.appearanceIdle',
   'settings.appearanceSaving',
   'settings.appearanceSaved',
   'settings.appearanceFailed',
-  'settings.stylePack',
-  'settings.stylePackHint',
-  'settings.stylePackAvailable',
-  'settings.stylePackActive',
-  'settings.moreThemes',
-  'settings.moreThemesHint',
-  'settings.stylePackReset',
-  'settings.stylePackResetHint',
+  'settings.preview',
+  'settings.previewGroup',
+  'settings.previewTodo',
+  'settings.resetAppearance',
+  'settings.resetAppearanceHint',
+  'settings.resetAppearanceDone',
 ]) {
   const escaped = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   assert.equal((source.match(new RegExp(`^\\s{4}'${escaped}':`, 'gm')) || []).length, 2,
     `${key} must exist exactly once in English and once in native zh-TW`);
 }
-assert.ok(source.includes("'settings.stylePack': '樣式外掛'"),
-  'zh-TW must use the native interface term 樣式外掛 for the optional Style plugin');
-assert.ok(source.includes("'settings.appearanceSub': '調整顯示模式、項目大小與卡片資訊；其他樣式收在選用外掛中。'"),
-  'zh-TW Appearance scope must describe the core choices and optional plugin naturally');
+// Round 2, Kai's decision 1 (ported from "zh-TW must use the native interface
+// term 樣式外掛 for the optional Style plugin"): no plugin, in either language.
+for (const key of ['settings.stylePack', 'settings.stylePackHint', 'settings.stylePackAvailable', 'settings.stylePackActive',
+  'settings.moreThemes', 'settings.moreThemesHint', 'settings.stylePackReset', 'settings.stylePackResetHint', 'settings.stylePackResetDone',
+  'settings.columnWidth', 'settings.columnWidthHint', 'settings.width.narrow', 'settings.width.normal', 'settings.width.wide',
+  'settings.themeMode', 'settings.themeModeHint', 'settings.cardDetails', 'settings.cardDetailsHint', 'settings.fontFamilyHint']) {
+  assert.equal((source.match(new RegExp(`^\\s{4}'${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}':`, 'gm')) || []).length, 0,
+    `${key} is gone from English and zh-TW (decisions 1 and 2)`);
+}
+assert.doesNotMatch(source.match(/\n {4}'settings\.[^\n]*/g).join('\n'), /plugin|Plugin|外掛/,
+  'no Settings string says plugin (外掛) in either language (decision 1)');
+assert.ok(source.includes("'settings.appearanceSub': '主題、字體、項目大小與動畫。'"),
+  'zh-TW Appearance scope names the theme, typeface, item size and animations');
+for (const [id, en] of [['dark', 'Indigo Dark'], ['light', 'Indigo Light'], ['solarized-dark', 'Solarized Dark'], ['solarized-light', 'Solarized Light']]) {
+  assert.match(source, new RegExp(`\\{ id:'${id}',\\s*label:'${en}',`),
+    `the ${id} theme is named ${en} in both languages; its id is unchanged (round 2 rename)`);
+}
+assert.doesNotMatch(source, /label:'(?:Light|Dark|Solar\. Dark|Solar\. Light)'/,
+  'the old Light, Dark and Solar. names are gone');
 
 assert.match(appearanceSource,
-  /const APPEARANCE_SETTING_KEYS = new Set\([\s\S]*'theme'[\s\S]*'size'[\s\S]*'width'[\s\S]*'font'[\s\S]*'showUrls'[\s\S]*'animate'/,
-  'the Appearance boundary must explicitly allowlist the existing stored keys');
+  /const APPEARANCE_SETTING_KEYS = new Set\(\[\n  'theme',\n  'size',\n  'font',\n  'showUrls',\n  'animate',\n\]\);/,
+  'the Appearance boundary allowlists exactly its five stored keys; Column width is gone (decision 2)');
 assert.match(appearanceSource,
-  /function appearanceSettingsPatchIsValid[\s\S]*THEMES\.some[\s\S]*\['compact', 'normal', 'large'\][\s\S]*\['narrow', 'normal', 'wide'\][\s\S]*typeof value !== 'boolean'/,
+  /function appearanceSettingsPatchIsValid[\s\S]*THEMES\.some[\s\S]*\['compact', 'normal', 'large'\][\s\S]*typeof value !== 'boolean'/,
   'Appearance must validate every persisted value before mutation');
+assert.doesNotMatch(appearanceSource, /'narrow'|'wide'|'width'/,
+  'nothing in Appearance writes or validates a column width (decision 2)');
 assert.match(appearanceSource,
   /async function commitAppearanceSettingsChange[\s\S]*State\.isRecoveryRequired[\s\S]*appearanceSettingsPending = transaction[\s\S]*applySettings\(\)[\s\S]*await State\.persistNow\(\)[\s\S]*State\.get\(\) !== state[\s\S]*appearanceSettingsPatchFingerprint\(settings, keys\) !== expected[\s\S]*appearanceSaved/,
   'one controller must preview, await one receipt, and reject graph or touched-value drift before success');
@@ -166,14 +201,14 @@ assert.match(source,
   'pending Appearance must retain Tab trapping while owning Escape and lower shortcuts');
 
 for (const contract of [
-  /\.stg-themes \{[^}]*display: grid;[^}]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/,
-  /#settings-drawer \.theme-card \{[^}]*min-height: 56px;[^}]*border-radius: 16px;[^}]*color: var\(--stg-ink\)/,
-  /\.stg-ring \{[^}]*left: calc\(\(100% - 20px\) \/ 3 \* var\(--stg-ring, 0\) \+ 10px \* var\(--stg-ring, 0\)\);[^}]*transition: left \.3s var\(--today-ease\)/,
+  /\.stg-themes \{[^}]*display: grid;[^}]*grid-template-columns: repeat\(5, minmax\(0, 1fr\)\)/,
+  /\.stg-tc \{[^}]*min-height: 44px;[^}]*border-radius: 16px;/,
+  /\.stg-ring \{[^}]*transform: translate\(calc\(var\(--stg-rx, 0px\) - 5px\), calc\(var\(--stg-ry, 0px\) - 5px\)\);/,
+  /\.stg-ring\.is-live \{ transition: transform \.3s var\(--today-ease\), width \.3s var\(--today-ease\), height \.3s var\(--today-ease\)/,
   /\.stg-seg \{[^}]*width: 276px;[^}]*max-width: 100%;/,
   /\.stg-thumb \{[^}]*left: calc\(4px \+ \(100% - 8px\) \/ var\(--stg-n\) \* var\(--stg-i, 1\)\);[^}]*transition: left \.3s var\(--today-ease\)/,
-  /\.stg-layer \{[^}]*opacity: 0;[^}]*transition: opacity \.32s ease;/,
-  /\.stg-layer\.is-front \{ opacity: 1; \}/,
-  /\.stg-disc > summary \{[^}]*min-height: 64px;/,
+  /\.stg-pvc \{[^}]*padding: calc\(12px \+ var\(--dn-pad-y\)\) calc\(12px \+ var\(--dn-pad-x\)\);[^}]*transition: padding \.28s ease/,
+  /body\[data-show-urls="off"\] \.stg-pv-uw \{ grid-template-rows: 0fr; opacity: 0; \}/,
   /\.stg-status:not\(\[data-state="error"\]\) \{[^}]*position: absolute;[^}]*clip: rect\(0 0 0 0\)/,
 ]) {
   assert.match(appearanceCss, contract, `Appearance must use the Settings page layer: ${contract}`);
@@ -182,8 +217,8 @@ for (const contract of [
 assert.doesNotMatch(appearanceCss, /(?:linear|radial|conic)-gradient\s*\(/,
   'Appearance must not use decorative gradients');
 assert.match(appearanceCss,
-  /@container \(max-width: 640px\) \{[\s\S]*\.stg-themes \{ grid-template-columns: 1fr; gap: 8px; \}/,
-  'the three modes must stack, with the ring following, at phone width');
+  /@container stgthemes \(max-width: 619px\) \{ \.stg-themes \{ grid-template-columns: repeat\(4, [\s\S]*@container stgthemes \(max-width: 439px\) \{ \.stg-themes \{ grid-template-columns: repeat\(3, [\s\S]*@container stgthemes \(max-width: 299px\) \{ \.stg-themes \{ grid-template-columns: repeat\(2, /,
+  'the picker steps from five columns to four, three and two as its width shrinks; the ring is measured, so it follows');
 assert.match(appearanceCss,
   /@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*#settings-drawer \*[\s\S]*transition:\s*none !important/,
   'Appearance must inherit the Settings reduced-motion boundary');
@@ -191,11 +226,11 @@ assert.match(appearanceCss,
   /body\[data-anim="off"\] #settings-drawer \*,[\s\S]*transition: none !important/,
   'the product Motion preference must suppress Appearance transitions immediately');
 assert.match(appearanceCss,
-  /@media \(forced-colors:\s*active\)[\s\S]*\.stg-ring \{ box-shadow: none; outline: 2px solid Highlight; \}[\s\S]*\.stg-seg button\[aria-pressed="true"\][\s\S]*\{ color: Highlight; \}/,
+  /@media \(forced-colors:\s*active\)[\s\S]*\.stg-ring \{ border-color: Highlight; \}[\s\S]*\.stg-tc\[aria-checked="true"\] \.stg-tn,\n  \.stg-seg button\[aria-pressed="true"\][\s\S]*\{ color: Highlight; \}/,
   'forced colors must preserve the active theme, font, and density indicators');
 assert.match(themeBuilderSource,
   /const ring = document\.createElement\('span'\);[\s\S]*ring\.className = 'stg-ring';[\s\S]*grid\.appendChild\(ring\);/,
-  'the core modes carry one ring that slides to the chosen mode');
+  'the picker carries one ring that slides to the chosen theme');
 assert.match(themeBuilderSource,
   /hint\.className = 'th-meta sr-only';/,
   'theme hints stay in the button, hidden visually');
@@ -208,22 +243,16 @@ const CONTROL_IDS = [
   'appearance-size-compact',
   'appearance-size-normal',
   'appearance-size-large',
-  'appearance-width-narrow',
-  'appearance-width-normal',
-  'appearance-width-wide',
-  'appearance-font-dm',
-  'appearance-font-inter',
-  'appearance-font-lora',
+  'seg-font',
   'tog-urls',
   'tog-anim',
-  'appearance-pack-reset',
+  'appearance-reset',
 ];
 
 function initialSettings(overrides = {}) {
   return {
     theme: 'folio',
     size: 'normal',
-    width: 'normal',
     font: 'dm',
     showUrls: true,
     animate: true,
@@ -287,8 +316,8 @@ function buildHarness(overrides = {}) {
     '  commit: commitAppearanceSettingsChange,\n' +
     '  pending: () => appearanceSettingsPending,\n' +
     '  status: () => ({ ...appearanceSettingsStatus }),\n' +
-    '  active: appearanceStylePackIsActive,\n' +
-    '  resetPatch: appearanceStylePackResetPatch,\n' +
+    '  changed: appearanceLookIsChanged,\n' +
+    '  resetPatch: appearanceResetPatch,\n' +
     '};',
     Object.assign(context, { __calls: calls }),
   );
@@ -331,7 +360,7 @@ async function run() {
   assert.equal(await runPending, true,
     'an exact acknowledged Appearance choice must complete');
   assert.equal(pending.calls.withdraws, 1,
-    'an accepted Appearance choice withdraws an earlier "Use core defaults" Undo, so it can never overwrite this newer choice (finding R3-7)');
+    'an accepted Appearance choice withdraws an earlier Reset appearance Undo, so it can never overwrite this newer choice (finding R3-7)');
   assert.equal(pending.api.pending(), null,
     'acknowledgement must release the Appearance interlock');
   assert.deepEqual({ ...pending.api.status() },
@@ -389,7 +418,7 @@ async function run() {
   let releaseAdoption;
   const adopted = buildHarness();
   adopted.setPersistNow(() => new Promise(resolve => { releaseAdoption = resolve; }));
-  const adoptedRun = adopted.api.commit('appearance-font-inter', { font: 'inter' });
+  const adoptedRun = adopted.api.commit('seg-font', { font: 'inter' });
   adopted.setState({ settings: initialSettings({ font: 'inter' }) });
   releaseAdoption({ ok: true });
   assert.equal(await adoptedRun, false,
@@ -408,7 +437,9 @@ async function run() {
   assert.equal(blocked.calls.recoveries, 1,
     'recovery preflight must return to the existing recovery layer');
 
-  const plugin = buildHarness({
+  // Round 2: Reset appearance puts back everything on Appearance (approved
+  // default 3); a stored column width is never read, written or reset.
+  const changed = buildHarness({
     theme: 'tabento',
     size: 'large',
     width: 'wide',
@@ -416,19 +447,31 @@ async function run() {
     showUrls: false,
     animate: false,
   });
-  assert.equal(plugin.api.active(plugin.state().settings), true,
-    'any optional theme, typeface, or width must mark the Style plugin active');
-  assert.deepEqual({ ...plugin.api.resetPatch(plugin.state().settings) }, {
+  assert.equal(changed.api.changed(changed.state().settings), true,
+    'any theme, typeface, size, URL or animation change offers Reset appearance');
+  assert.deepEqual({ ...changed.api.resetPatch(changed.state().settings) }, {
     theme: 'folio',
-    width: 'normal',
+    size: 'normal',
     font: 'dm',
-  }, 'Style plugin reset must touch only its optional appearance keys');
-  assert.equal(plugin.state().settings.size, 'large',
-    'Style plugin reset modeling must leave core density untouched');
-  assert.equal(plugin.state().settings.showUrls, false,
-    'Style plugin reset modeling must leave card details untouched');
-  assert.equal(plugin.state().settings.animate, false,
-    'Style plugin reset modeling must leave Motion untouched');
+    showUrls: true,
+    animate: true,
+  }, 'Reset appearance resets the theme, typeface, item size, URLs and animations, and never the retired column width (default 3, decision 2)');
+  assert.equal(await changed.api.commit('appearance-reset', changed.api.resetPatch(changed.state().settings)), true,
+    'the reset is one acknowledged write');
+  assert.equal(changed.calls.persists, 1, '…one write for all five choices');
+  assert.equal(changed.state().settings.width, 'wide',
+    'a stored column width is carried untouched (decision 2: no schema bump, as settings.showLanding in 3875e85)');
+  assert.equal(changed.api.changed(changed.state().settings), false, 'after the reset nothing differs, so Reset hides');
+  assert.equal(await changed.api.commit('tog-urls', { width: 'narrow' }), false,
+    'a column width can no longer be written (decision 2)');
+  for (const [settings, expected] of [
+    [{}, {}],
+    [{ theme: 'auto' }, { theme: 'folio' }],
+    [{ showUrls: undefined, animate: 'yes' }, {}],
+  ]) {
+    assert.deepEqual({ ...changed.api.resetPatch(settings) }, expected,
+      `Reset compares with the defaults as the app reads them: ${JSON.stringify(settings)}`);
+  }
 
   console.log('Appearance settings contract tests passed');
 }
