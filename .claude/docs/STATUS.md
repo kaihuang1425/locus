@@ -7,7 +7,23 @@ Product priorities and evidence language follow
 [`docs/PRODUCT_SUCCESS_SYSTEM.md`](../../docs/PRODUCT_SUCCESS_SYSTEM.md). A "Done"
 entry records a completed implementation cycle; it does not by itself mean verified,
 user-validated, or released.
-Last updated: 2026-11-06.
+Last updated: 2026-11-12.
+
+## Landing page candidate (2026-11-12)
+
+- Rebuilt `docs/index.html` as a responsive English landing page with a small,
+  interactive workspace illustration. Save/search, notes, tasks, selected-plan
+  approval and Undo use sample data held only in memory.
+- Kept the research-alpha label, manual installation instructions, local-storage
+  limits, optional external AI disclosure and `noindex` status. The extension
+  runtime and the older marketing candidate are unchanged.
+- Browser checks passed at 1440 × 900 and 390 × 844: no horizontal overflow,
+  save/search/Undo, note edits, task completion/addition, plan selection including
+  empty selection, reset, FAQ expansion, installation dialog and Escape/focus
+  return. Motion pause stops animation; system reduced motion is also respected
+  by CSS and the initial state. Browser console reported no errors or warnings.
+- Source remains on the development branch. A canonical public site/domain and
+  owner review of this new page remain separate from implementation verification.
 
 ## Design system track (decided 2026-08-31)
 

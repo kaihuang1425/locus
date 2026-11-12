@@ -5628,3 +5628,21 @@ JSON export. Do not use “private by default,” “nothing leaves,” “never
   **Implemented: yes. Verified: suites (more-menu, core-visual, onboarding, plugins hub; 18/18
   mutations) and Edge (locus-redesign-evidence/round2/more, 66/66). User-validated: no.
   Released: no.**
+
+- **2026-11-12 - Interactive landing page candidate.** Rebuilt `docs/index.html`
+  around “Close the tabs. Keep your place.”, using a dark outer page and a warm
+  workspace illustration. Sample tabs can be saved, searched and undone; notes
+  can be edited; tasks can be added/completed; a sample plan requires explicit
+  selection and approval. All preview state is in memory and resets on reload.
+  - Local font and logo assets; no analytics, remote fonts, AI calls or build step.
+  - Installation opens accurate unpacked-extension instructions. The page states
+    the research-alpha status, optional external AI handling, local profile
+    storage and user-managed backups. `noindex` is retained.
+  - Checked at 1440 × 900 and 390 × 844 with no horizontal overflow. Exercised
+    save/search/Undo, notes, tasks, plan selection and zero-selection state,
+    reset, FAQ, installation dialog, Escape/focus return, and motion pause.
+    Browser console had no errors or warnings. Native reduced motion is covered
+    by CSS and media-query handling; OS preference emulation was not performed.
+
+  **Implemented: yes. Verified: landing-page browser interactions and responsive
+  layout. User-validated: no. Public-site deployment: no.**
